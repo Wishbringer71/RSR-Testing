@@ -23620,6 +23620,23 @@ Anforderungen B1 bis B6 in Konzept 13 geprüft, keine Flickrunde.
   die Abweisungsspur nennt auch einen nur sperrenden Blick; „held" statt „avoided" für einen nur sperrenden; Feldname.
   Offen benannt: Weist RSR einen eigenen Druck erst bei der Ausführung aus der Warteschlange ab, zählt es ihn als gedrückt
   (T5).
+- *Sechste unabhängige Prüfung (auf 7eab1df06):* kein Befund hoher, sieben mittlerer Schwere, alle im Lernteil. Er war in
+  fünf Runden an vier Stellen gewachsen (Anmeldung im Vorlauf, Anmeldung nur sperrender Blicke, Urteil im Paket, zweiter
+  Treffer in `Landed`), und jede Stelle las den Zustand anders. Nach `CLAUDE.md`, „Prüfgrad", nicht weiter geflickt,
+  sondern zurück zur Anforderung B3 und neu gebaut, Konzept 13 zuerst („Lernen und gestufter Rückfall"): eine Regel an
+  einer Stelle (`Learn`), die die Stufe nur aus dem Gelernten liest – nichts gelernt → sperren oder lassen, sperren und
+  zweiter Treffer → lassen, gelassen bleibt gelassen. Damit behoben: M1 ein noch als vertraut angemeldeter zweiter Blick
+  überschrieb das Gelernte (drei Treffer statt zwei); M7 der zweite Treffer über einen Helfer gleichen Namens kam nie an
+  (`Landed` prüfte nur Quelle und Id; der zweite Weg ist entfallen). Weiter: M2 „widerlegt" einmal je Paket gegen den
+  Blick, dessen Paket es ist; M3 eine Anmeldung je Blick, solange er offen ist, statt einmal je Kampf (Euphrosynes
+  wiederkehrender Status); M4 Marker, Status und Mitglied zählen ein Paket erst ab ihrer Frist; M5 ihre Frist rückt mit
+  dem Blick nach und schließt erst, wenn er verschwunden ist; M6 angemeldet wird auch, wenn RSR nur ein Ziel zurückhält,
+  ohne Vorlauf und mit der Option aus (Gegenthese im Konzept: lernt auch aus einem Fehler des Spielers; Preis Sperre statt
+  Drehung, ohne die Anmeldung keine Grenze). Niedrig, eingearbeitet: Anmeldung vor dem Ausschalten von „Auto face target";
+  die Abweisungsspur nennt nur den Blick, der die Richtung zum Ziel nimmt; Kommentar zu `Pending`; die Identität `ZoneKey`
+  entfernt; Schlüssel von Wirken und Mitglied über `HashCode.Combine` statt XOR; eine gehaltene Richtung endet mit ihrem
+  Blick, nicht erst mit dem Kampf. Unverändert: die Anlage im Abschluss von `Harmed` (je Paket, nicht je Bild). Prüfgrad:
+  statisch, Compile, CI.
 
 ### A810 · Seine Angabe: LLM-Framework als allgemeines Regelwerk (14.11.2026)
 
