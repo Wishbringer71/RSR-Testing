@@ -1052,11 +1052,14 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
       Liegt die Rate über (750 − 250) je geheilten LP, verliert der Lauf Punkte. *Messmittel (gebaut):* RSR schreibt
       jedes Fenster des Crucible (Name beginnt mit „XBM") beim ersten Öffnen je Lauf mit seinen Werten in
       `DefenseTrace.log` („crucible window …"), also auch die Abrechnung am Ende samt LP-Punkten. Aus ihr folgt die Rate.
-      Selbst nachsteuern kann RSR erst, wenn der Aufbau dieses Fensters bekannt ist; den nennt keine Quelle. Einen Text
-      unter den Werten liest RSR über Dalamuds `SafeMemory`, Seite für Seite bis zum Nullbyte. Ein Zeiger auf
-      unlesbaren Speicher steht als „unreadable“ in der Zeile. Bis A764 las RSR den Text ungeprüft. Am 13.11.2026 um
-      18:50 traf das beim Öffnen eines Crucible-Fensters einen solchen Zeiger, und das Spiel stürzte ab
-      (`AccessViolationException` in `BestiaryTrace.Values`; .NET kann sie nicht abfangen).
+      Selbst nachsteuern kann RSR erst, wenn der Aufbau dieses Fensters bekannt ist; den nennt keine Quelle. Die Werte
+      liest RSR über Dalamuds `SafeMemory`: jeden Wert des Fensters einzeln, einen Text darunter Seite für Seite bis zum
+      Nullbyte. Ein unlesbarer Wert oder Text steht als „unreadable“ in der Zeile. Bei einem unlesbaren Wert oder einem
+      Typ, den das Spiel nicht kennt (`AtkValueType`), endet die Zeile dort; so erzeugt eine falsche Anzahl keine
+      endlose Zeile. Bis A764 las RSR den Text ungeprüft, bis A787 das Feld der Werte. Beides brachte das Spiel zum
+      Absturz, denn .NET kann eine `AccessViolationException` nicht abfangen: am 13.11.2026 um 18:50 an einem Text, am
+      14.11.2026 um 11:21 beim Aufbau eines Crucible-Fensters nach „XBMPetParty“, auf Stand 57f3f5455 mit dem Fix aus
+      A764. Welcher Wert den zweiten Absturz auslöste, zeigt der Bericht nicht.
     - *Unversehrte Bestien (gebaut):* Fällt der letzte Gegner des Endkampfs vor dem nächsten GCD, stehen alle übrigen
       Begleiter des Kaders bei voller LP und fehlt dem Begleiter im Feld LP, geht der kleinste Heilgegenstand „to self or
       familiar", der ihn auf 100 % bringt, an ihn – vor dem Auffüllen des Spielers, 1.000 vor 250. Die LP der übrigen

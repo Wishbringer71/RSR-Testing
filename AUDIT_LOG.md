@@ -22832,6 +22832,25 @@ und Auge zur Laufzeit“.
   despite …“ fehlt, „gaze: avoided #3499 …“ steht da. Eine Zeile „gaze: turn undone …“ belegt M1, ihr Fehlen bei
   „turned …“-Zeilen widerlegt es. Getroffene, die richtig sahen, widerlegen den Ort oder den Winkel.
 
+### A787 · Spielabsturz im Crucible trotz A764: das Feld der Fensterwerte (14.11.2026)
+
+Upload vom 14.11.2026 (zwei Absturzberichte, `DefenseTrace.log` auf 57f3f5455).
+- *10:51:07, nicht RSR:* `AccessViolationException` im Plugin Interjection (`EnemyList.UpdateIndex`, aus der
+  Gegnerliste). Dasselbe Plugin warf seit dem 08.11.2026 an derselben Stelle 15.700 abgefangene
+  `NullReferenceException` (`dalamud.old.log`). RSR steht in keinem Stapel dieses Berichts.
+- *11:21:58, RSR:* `AccessViolationException` in `BestiaryTrace.Values`, aus `CrucibleWindowTrace.OnWindow` beim
+  Aufbau (`OnAddonSetup`) eines Crucible-Fensters, 0,65 s nach der Zeile zu „XBMPetParty“. Der Fix aus A764 liest nur
+  Texte über `SafeMemory`; das Feld der Werte selbst (`values[i]`) las `Values` weiter direkt. Zeigt das Feld oder
+  seine Anzahl über den Speicher hinaus, den das Spiel hält, schließt das Spiel; .NET fängt das nicht ab.
+- *Klasse:* Alle Leser von Fensterwerten erhoben. `Values` trägt jede Trace-Zeile („crucible window …“, „menu …“,
+  „agent …“). Der Schatzleser (`BeastmasterCrucibleTreasure`) liest nur Zahlen aus dem lebenden Fenster innerhalb der
+  Anzahl, die das Fenster selbst nennt.
+- *Behoben:* Jeder Wert wird einzeln über `SafeMemory.ReadBytes` kopiert. Die Zeile endet beim ersten unlesbaren Wert
+  oder Typ, den `AtkValueType` nicht kennt. Ein Text, der kein gültiger SeString ist, steht als „unparsable“ da, statt
+  den Parser auf fremde Bytes loszulassen. Konzept 21, „K15“.
+- *Vorhersage:* In seinem nächsten Crucible-Lauf öffnet jedes Fenster ohne Absturz. Steht dabei „unreadable“ oder
+  „not one the game knows“ in einer Zeile „crucible window …“, hat der Fix genau den Fall abgefangen.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

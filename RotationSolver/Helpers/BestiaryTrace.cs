@@ -255,11 +255,31 @@ internal static class BestiaryTrace
 			return "no values";
 		}
 
+		// A787: the values themselves are read through SafeMemory as well. The window's array or its count may point past
+		// what the game maps; read directly, that closed the game on 14.11.2026 although the texts were already read safely
+		// (A764). The line ends at the first value that cannot be read or carries a type the game does not know, so a wrong
+		// count writes no endless line.
 		var text = new StringBuilder();
+		var size = sizeof(AtkValue);
 		for (var i = 0; i < count; i++)
 		{
-			var value = values[i];
 			text.Append(i == 0 ? string.Empty : " | ").Append(i).Append(' ');
+			if (!Dalamud.SafeMemory.ReadBytes((nint)(values + i), size, out var raw))
+			{
+				return text.Append("unreadable").ToString();
+			}
+
+			AtkValue value;
+			fixed (byte* copy = raw)
+			{
+				value = *(AtkValue*)copy;
+			}
+
+			if (!Enum.IsDefined(value.Type))
+			{
+				return text.Append("type ").Append((int)value.Type).Append(", not one the game knows").ToString();
+			}
+
 			_ = value.Type switch
 			{
 				AtkValueType.Int => text.Append("int ").Append(value.Int),
@@ -299,17 +319,31 @@ internal static class BestiaryTrace
 			var chunk = page - (int)(address % page);
 			if (!Dalamud.SafeMemory.ReadBytes(address, chunk, out var read))
 			{
-				return bytes.Count == 0 ? "unreadable" : $"{new ReadOnlySeStringSpan(bytes.ToArray()).ExtractText()}... unreadable";
+				return bytes.Count == 0 ? "unreadable" : $"{Decoded(bytes)}... unreadable";
 			}
 
 			var end = Array.IndexOf(read, (byte)0);
 			bytes.AddRange(end < 0 ? read : read.AsSpan(0, end).ToArray());
 			if (end >= 0)
 			{
-				return new ReadOnlySeStringSpan(bytes.ToArray()).ExtractText();
+				return Decoded(bytes);
 			}
 
 			address += chunk;
+		}
+	}
+
+	// A787: bytes from memory the game may have reused need not be a valid SeString; the parser's error stays a word in
+	// the line.
+	private static string Decoded(List<byte> bytes)
+	{
+		try
+		{
+			return new ReadOnlySeStringSpan(bytes.ToArray()).ExtractText();
+		}
+		catch (Exception ex)
+		{
+			return $"unparsable ({ex.GetType().Name})";
 		}
 	}
 
