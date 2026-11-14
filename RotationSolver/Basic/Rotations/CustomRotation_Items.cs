@@ -137,6 +137,12 @@ public partial class CustomRotation
 				continue;
 			}
 
+			// A780 (concept 03, "In der Lernphase"): no tincture in the first burst of a pull while learning the fight.
+			if (TinctureWaitsWhileLearning(medicine.EffectSeconds))
+			{
+				return false;
+			}
+
 			if (medicine.CanUse(out act, clippingCheck))
 			{
 				return true;

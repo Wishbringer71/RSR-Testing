@@ -39,6 +39,52 @@ public partial class CustomRotation
 		? DataCenter.LastPullSeconds
 		: 0f;
 
+	// A780: per territory, the combat time of the second burst - the first ask for a tincture after a gap longer than
+	// the tincture lasts - and this pull's state of it.
+	private static readonly Dictionary<uint, float> _secondBurstAt = [];
+	private static float _lastAskAt;
+	private static float _lastCombatSeen;
+	private static bool _laterBurst;
+
+	/// <summary>
+	/// While learning a fight, the tincture of the pull's first burst waits (concept 03, "In der Lernphase", A780): a wipe
+	/// before the second burst wastes it, and every pull that reaches the second burst drinks one there anyway. Not in a
+	/// cleared duty, and not once the last pull here reached the second burst; a burst counts as later when the rotation
+	/// asks again after a gap longer than the tincture lasts.
+	/// </summary>
+	internal static bool TinctureWaitsWhileLearning(float effectSeconds)
+	{
+		var combat = DataCenter.InCombat ? DataCenter.CombatTimeRaw : 0f;
+		if (combat < _lastCombatSeen)
+		{
+			_lastAskAt = 0f;
+			_laterBurst = false;
+		}
+
+		_lastCombatSeen = combat;
+		var territory = DataCenter.Territory?.Id ?? 0;
+		if (DataCenter.InCombat)
+		{
+			if (!_laterBurst && combat - _lastAskAt > effectSeconds)
+			{
+				_laterBurst = true;
+				if (territory != 0 && (!_secondBurstAt.TryGetValue(territory, out var known) || combat < known))
+				{
+					_secondBurstAt[territory] = combat;
+				}
+			}
+
+			_lastAskAt = combat;
+		}
+
+		if (_laterBurst || InClearedDuty)
+		{
+			return false;
+		}
+
+		return !(_secondBurstAt.TryGetValue(territory, out var second) && LastPullTime >= second);
+	}
+
 	/// <summary>Set once this rotation has asked for a tincture in a fight; a rotation that never does holds no potion.</summary>
 	private bool _asksForTinctureInCombat;
 

@@ -560,6 +560,33 @@ merklich schneller zu beenden; sie kostet Geld, und sie für einen gewöhnlichen
   acht bis zehn Minuten sind das zwei Tinkturen (Pull und sechste Minute; Wiederverwendung 300 s). Revolverklinge,
   Dunkelritter und Barde tranken dort nur die im Countdown, die zweite nie; Maschinist und Viper tranken gar keine, weil
   ihr eigener Schalter ab Werk aus stand. Gerade dort, wo die Tinktur ihr Geld wert ist, fehlte sie also.
+- *Opener oder später, alle Jobs* (seine Präzisierung vom 14.11.2026: „Generalisierung vor Spezialisierung solange keine
+  Nachteile. Der trinkzeitpunkt richtet sich nach Schaden, da prozentuale Erhöhung“; A780). Eine Tinktur hebt den
+  Hauptwert für 30 s (`ItemAction.Data`: Status 49, Wert, 30 s), also gehört sie in das 30-s-Fenster mit dem meisten
+  eigenen Schaden.
+  - *Gemessen an FFLogs (14.11.2026):* die je 8 besten Kämpfe aller 21 Jobs an drei Savage-Bossen der laufenden Stufe
+    (AAC Heavyweight, Begegnungen 101, 103, 104, je 8 bis 9,5 min). Der erste Trank fällt bei 441 der 504 Kämpfe in
+    die ersten 15 s, bei jedem Job in mindestens zwei Dritteln (am wenigsten Maschinist und Weise mit 16 von 24); in 8
+    Kämpfen gab es keinen.
+  - Abweichungen hängen am Kampf, nicht am Job: Die Viper trinkt beim ersten Boss in 5 von 8 Kämpfen erst bei 2 min,
+    beim dritten und vierten nie. Der Maschinist trinkt beim vierten Boss in 4 von 8 erst bei 6 min. The Balance nennt
+    beim Maschinisten den Trank bei 2 min als lieber, wo der Kampf es erlaubt.
+  - *Schluss:* Der Höhepunkt über 30 s liegt bei allen Jobs im Opener: aufgesparte Ressourcen und alle Gruppenbuffs
+    zugleich. Die Rotationen lösen die Tinktur deshalb im Countdown oder im ersten Burst aus, danach in jedem Burst.
+    Die Kampfabweichungen hängen an Phasen und Pausen. Ohne Kampfmodul kennt RSR sie nicht; benannt, nicht gebaut.
+- *In der Lernphase* (A780, aus A779 verallgemeinert):
+  - Jeder Wipe vor dem zweiten Burst kostet die Opener-Tinktur ohne Nutzen (seine Regel A501). Ein Zug, der den
+    zweiten Burst erreicht, verbraucht in beiden Fällen eine.
+  - *Regel* (`UseBurstMedicine`, für alle Jobs): In einem Kampf, den der Spieler noch nicht geschafft hat
+    (`InClearedDuty`, aus dem Spiel), wartet die Tinktur im ersten Burst des Zugs. Das ist der Countdown und die
+    Kampfzeit, solange ein Opener-Trank noch wirken würde (seine Dauer aus `ItemAction.Data`).
+  - *Ausnahme:* Der letzte Zug im selben Gebiet (`LastPullTime`) reichte bis zur zweiten Gelegenheit. Diese misst RSR je
+    Gebiet selbst als den ersten Aufruf nach dieser Wartezeit. Dann kommen Wipes spät, die Tinktur kostet im Opener
+    nichts mehr, und der Schadenscheck zählt.
+  - *Im Kampf:* Erster Zug eines neuen Savage: keine Tinktur im Opener, die erste im 2-Minuten-Burst. Hat ein Zug den
+    2-Minuten-Burst erreicht, trinkt der nächste im Opener. Im geschafften Kampf trinkt jeder Zug im Opener.
+  - Der Schnitter verlor dafür seine eigenen Schalter „Use potion“ und „First Potion timing“ (Upstream 6462f8a90), wie
+    die anderen Schalter unten. Sie stellten dieselbe Frage ein zweites Mal.
 - *Entfernt* sind die Schalter der Rotationen, die dieselbe Frage ein zweites Mal stellten: beim Beschwörer „Use potion",
   „Potion timing" und „Only use potion during a big summon" (Upstream 444388102), beim Weißmagier „Use Tincture/Gemdraught
   when about to use Presence of Mind", bei der Viper „Experimental Pot Usage", beim Maschinisten „Use burst medicine in

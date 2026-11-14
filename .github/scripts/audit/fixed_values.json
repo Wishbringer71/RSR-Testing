@@ -2392,6 +2392,16 @@
    "status": "exception",
    "loop": "A778",
    "reason": "How far an oriented action's target may lie off the facing for the action to go off. The game data names no angle; BossModReborn measured it (ActionManagerEx: \"target has to be within 45 degrees of character orientation\") and turns within it. If it is narrower, the action is refused and tried again, while the facing stays safe."
+  },
+  {
+   "file": "RotationSolver/Basic/Actions/MedicineItem.Tincture.cs",
+   "code": "private const int EffectSecondsColumn = 2;",
+   "values": [
+    "2"
+   ],
+   "status": "exception",
+   "loop": "A780",
+   "reason": "A column of the ItemAction sheet (an identity, not a quantity): for the gemdraughts Data holds the status (49), its value and the seconds (xivapi v2, items 44157, 44162, 45995: [49, 644|662|686, 30]). The seconds themselves come from the sheet."
   }
  ]
 }

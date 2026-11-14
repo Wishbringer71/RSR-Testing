@@ -22596,6 +22596,35 @@ Seine Frage (14.11.2026): „War denn die Änderung am trank Schnitter sinnvoll?
   (TODO).
 - *Prüfgrad:* Compile, Prüfskripte; im Spiel nicht beobachtet.
 
+### A780 · Seine Präzisierung: Trinkzeitpunkt nach Schaden, Generalisierung; Opener für alle Jobs gemessen, Lernphase allgemein (14.11.2026)
+
+Seine Angabe (14.11.2026): „Gut erkannt, Generalisierung vor Spezialisierung solange keine Nachteile. Der trinkzeitpunkt
+richtet sich nach Schaden, da prozentuale Erhöhung. Also ist die Frage, ob bei allen Rotationen aller Klassen, der
+schadenshöhepunkt über trankwirkzeit wirklich beim opener ist.“ Einordnung: Präzisierung (Generalisierung) und Frage.
+- *Messung (FFLogs v2, 14.11.2026):* je 8 beste Kämpfe aller 21 Jobs an drei Savage-Bossen der laufenden Stufe (AAC
+  Heavyweight 101, 103, 104). Der erste Trank fällt in 441 von 504 Kämpfen in die ersten 15 s, bei jedem Job in mindestens
+  zwei Dritteln; in 8 Kämpfen gab es keinen. Abweichungen hängen am Kampf: Viper beim ersten Boss 5 von 8 bei 2 min,
+  Maschinist beim vierten 4 von 8 bei 6 min. Namen der Spieler sind nicht erfasst.
+- *The Balance (Opener-Seiten, 14.11.2026):*
+  - Im Text belegt sind nur der Maschinist („much prefer a 2 minute pot if possible“, Patch 7.3) und der Weißmagier
+    (Tinktur nach dem Pull, 7.4).
+  - Die übrigen Seiten zeigen den Trank nur in Grafiken.
+- *Antwort:* Ja. Der Höhepunkt über 30 s liegt bei allen Jobs im Opener; Abweichungen kommen aus dem Kampf, nicht aus dem
+  Job.
+- *Rotationen:* Alle lösen die Tinktur im Countdown oder in ihrem Burst-Fenster aus. Die Fenster sind verschieden lang:
+  Der Krieger fragt bis etwa 37 s, der Tänzer im Kampf erst bei 2 min.
+- *Umgesetzt (Konzept 03, „In der Lernphase“):*
+  - `TinctureWaitsWhileLearning` in `UseBurstMedicine` für alle Jobs. Im noch nicht geschafften Kampf wartet die Tinktur
+    im ersten Burst des Zugs.
+  - Ein späterer Burst beginnt, wenn die Rotation nach einer Pause, länger als die Tinktur wirkt, wieder fragt. Die Dauer
+    kommt aus `ItemAction.Data`, Spalte als Festwert-Ausnahme.
+  - Ausnahme: Der letzte Zug im Gebiet erreichte den je Gebiet gemessenen zweiten Burst.
+  - Der Schnitter verliert „Use potion“ und „First Potion timing“ (Upstream 6462f8a90) und damit die Sonderregel aus
+    A779. `InClearedDuty` und `LastPullTime` bleiben als allgemeine Tatsachen.
+- *Benannt, nicht gebaut:* Kampfabhängige Verschiebungen (Phasen, Pausen) brauchen Kampfwissen, das RSR ohne Modul nicht
+  hat.
+- *Prüfgrad:* Compile, Prüfskripte; Messung an FFLogs; im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

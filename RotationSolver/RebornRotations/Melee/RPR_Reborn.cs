@@ -58,19 +58,6 @@ public sealed class RPR_Reborn : ReaperRotation
 	[RotationConfig(CombatType.PvE, Name = "Wait up to 2 gcd for the ideal positional before Blood Stalk")]
     public bool WaitForPositional { get; set; } = false;
 
-	public enum PotTiming : byte
-    {
-	[Description("Opener")] FirstArcaneCircle,
-	[Description("2 Minutes")] FromSecondArcaneCircle,
-	[Description("Opener once the duty is cleared or the last pull passed 2 minutes, else 2 minutes")] Automatic,
-    }
-
-    [RotationConfig(CombatType.PvE, Name = "Use potion")]
-    public bool UsePotion { get; set; } = true;
-
-    [RotationConfig(CombatType.PvE, Name = "First Potion timing", Parent = nameof(UsePotion))]
-    public PotTiming PotionTiming { get; set; } = PotTiming.Automatic;
-
 	public enum ArcaneCircleOpener
     {
 	[Description("Balance")]
@@ -305,17 +292,12 @@ public sealed class RPR_Reborn : ReaperRotation
 	protected override bool GeneralAbility(IAction nextGCD, out IAction? act)
     {
 	var prePot = Pooling == PoolingType.Invasive && RefreshDDBeforeArcaneCircle;
-    var potDue = UsePotion && (PotionTiming == PotTiming.FirstArcaneCircle || CombatTime > 30f);
-
-    // A779 (concept 14, "Schnitter"): the opener pot pays in a duty already cleared, and while learning once the last
-    // pull here outlasted an Arcane Circle recast (wipes come late, the damage check counts); before that, wipes in the
-    // first two minutes would waste it.
-    potDue |= UsePotion && PotionTiming == PotTiming.Automatic
-        && (InClearedDuty || LastPullTime >= ArcaneCirclePvE.Cooldown.RecastTimeOneChargeRaw);
-    var potWindow = HasArcaneCircle
+        var potWindow = HasArcaneCircle
 	    || (prePot && IsBurst && CurrentTarget != null && ArcaneCirclePvE.Cooldown.WillHaveOneCharge(3));
 
-	if (potDue && InCombat && potWindow && UseBurstMedicine(out act))
+	// A780 (concept 03, "In der Lernphase"): when the tincture goes is the universal rule's, as for every job; upstream's
+	// "Use potion" and "First Potion timing" (6462f8a90) asked it a second time.
+	if (InCombat && potWindow && UseBurstMedicine(out act))
         {
 	    return true;
         }
