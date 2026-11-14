@@ -22624,6 +22624,8 @@ schadenshöhepunkt über trankwirkzeit wirklich beim opener ist.“ Einordnung: 
 - *Benannt, nicht gebaut:* Kampfabhängige Verschiebungen (Phasen, Pausen) brauchen Kampfwissen, das RSR ohne Modul nicht
   hat.
 - *Prüfgrad:* Compile, Prüfskripte; Messung an FFLogs; im Spiel nicht beobachtet.
+- *Quellen am Auftragsende:* lalalazy 078f80b4c bringt nur Fensterumbauten (LazySkywardTracker, LazyRetainerLive,
+  LazyFoodBuff), nichts zu Crucible oder Kampf. Upstream unverändert.
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
