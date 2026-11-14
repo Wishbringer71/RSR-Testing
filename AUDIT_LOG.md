@@ -23628,6 +23628,17 @@ ADR 0001 bis 0009, Hooks, Prüfskripte unter `llmfw/`; nur angesehen, nichts üb
 solange es im Aufbau ist; der Abgleich beginnt erst, wenn es fertig ist. Die erste Fassung der Regel sah ihn schon beim
 nächsten Anlass vor; berichtigt in CLAUDE.md.
 
+### A811 · Quelle BossMod c50e67f37..26b68ea4a ausgewertet: rohe Position der Figuren (14.11.2026)
+
+Zwei Commits (14.11.2026). Inhalt: `Actor.RawPosition` – das Feld `obj->Position`, wo es von `GetPosition()` abweicht
+(„99 % of the time" gleich); das Ereignisobjekt der Laser der Heavy Artillery Unit (A24) liest sie. Dazu zwei Zonen der
+KI (MultiLineStack, Forked Tower) umgekehrt und die Version 7.5.8.3.
+- *Für RSR:* Dalamuds `IGameObject.Position` liest das rohe Feld (`GameObject.cs:260`, goatcorp/Dalamud 43b3411) – das,
+  was BossMod jetzt `ActualPosition` nennt. RSR misst Gegner und Flächen also schon mit dieser Position; wo `GetPosition()`
+  abweicht, sind es nach BossMods Befund Figuren mit eigener Platzierungsposition, die RSR nicht als Gegner liest. Die
+  übrigen Änderungen betreffen BossMods eigene KI, die RSR nicht liest. Keine Änderung.
+- *Prüfgrad:* Quelltext beider Werkzeuge; Laufzeit nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
