@@ -22706,6 +22706,8 @@ wurden und was davon übernommen werden kann“. Zuletzt verglichen in A751.
       kommt der erste bei etwa 2 min.
     - Wirkt nicht: „Medicated“ in den ersten 30 s des ersten Zugs eines nicht geschafften Kampfs, oder gar keiner im
       2-Minuten-Burst eines Zugs, der ihn erreicht.
+  *Stand 14.11.2026 (Upload 10:25–11:22, Stand 57f3f5455):* offen; gespielt wurden M4 normal, Fülle des Todes, Goldklamm und
+  das zweite Crucible-Brett, kein Inhalt mit Blick, keine Tinktur getrunken.
 - *Prüfgrad:* Regeldateien geprüft (`check_rule_files.py`), alle CI-Schritte lokal.
 
 ### A783 · Seine Vorgabe: im Spiel auswerten und lernen, kein Supergau; Blickwache erkennt ihren Fehlschlag (14.11.2026)
@@ -22734,6 +22736,7 @@ daraus lernen.“ Einordnung: Antwort auf Frage 1 aus A782 und Vorgabe.
   die die Figur dreht. Die Tinkturregeln greifen nicht in Leben und Tod ein.
 - *Vorhersage, Ergänzung zu A782:* Wirkt: Nach jeder Zeile „gaze: turned …“ folgt „gaze: avoided …“ für denselben Blick.
   Wirkt nicht: „gaze: hit despite …“. Danach stehen für diesen Blick im Gebiet keine Zeilen „gaze: turned“ mehr.
+  *Stand 14.11.2026:* offen, kein Inhalt mit Blick gespielt.
 - *Prüfgrad:* Compile, alle CI-Schritte lokal; im Spiel nicht beobachtet.
 
 ### A784 · Seine Vorgabe: im Loop entscheiden; unabhängige Prüfrunden für Konzepte über Leben und Tod (14.11.2026)
@@ -22831,6 +22834,7 @@ und Auge zur Laufzeit“.
   landed #3499 …“ Getroffene, die nach RSRs Auge falsch sahen, und keine Getroffenen, die richtig sahen; „gaze: hit
   despite …“ fehlt, „gaze: avoided #3499 …“ steht da. Eine Zeile „gaze: turn undone …“ belegt M1, ihr Fehlen bei
   „turned …“-Zeilen widerlegt es. Getroffene, die richtig sahen, widerlegen den Ort oder den Winkel.
+  *Stand 14.11.2026:* offen, kein Inhalt mit Blick gespielt.
 
 ### A787 · Spielabsturz im Crucible trotz A764: das Feld der Fensterwerte (14.11.2026)
 
@@ -22902,6 +22906,24 @@ Frischer Prüfer ohne Zwischenstand (A784), Stand 57f3f5455, BossModReborn 35a90
   an action“ auch für Waffenfertigkeiten. Eine Zeile „gaze: hit despite …“ nennt die Folge, „… bears out …“ oder „… does
   not bear out …“. Nach einem Fehlschlag fehlt für diesen Blick im selben Gebiet jede weitere „turned …“-Zeile, auch in
   einer neuen Runde, bis zum nächsten Build.
+
+### A790 · Upload vom 14.11.2026: Auswertung der übrigen Dateien (14.11.2026)
+
+Zwei Absturzberichte, ein ACT-Mitschnitt (10:25–11:22), `DefenseTrace.log` und Tabellen auf 57f3f5455; das
+FFLogs-Archiv enthielt drei schon ausgewertete Mitschnitte (byte-gleich).
+- *Abstürze:* 10:51 im Plugin Interjection, nicht RSR; 11:21 in RSR, behoben in A787.
+- *Wiederbelebung:* „an enemy“ bei Toten der eigenen Gruppe, behoben in A788.
+- *Ultratrank „refused“ um 11:09:51:* kein Defekt. Status 583 („You do not have that item.“) galt der normalen
+  Qualität, die hohe war benutzbar; das Spiel nahm den Druck in dem Moment nicht an, und 1,4 s später ging der HQ-Trank
+  durch (ACT, Aktion 0x20FFC95).
+- *Wipe in Goldklamm, 11:09, Weißmagier auf Stufe 49:* Der Tank starb um 11:09:43; RSR wirkte Spontaneität und
+  Wiederbeleben. Ab 11:09:46.7 begann RSR ein hartgewirktes Wiederbeleben (7,8 s) auf den zweiten Toten; kein Lebender
+  stand da in der kritischen Klasse (nächste Zeile 49,8), also nach Konzept 11 und seiner Einstellung „Hard-cast raise“.
+  Fünf Zauber brachen durch Bewegung ab. Kein Defekt von RSR erkennbar; der Pull überstieg die Heilung auf dieser Stufe.
+- *Dalamud-Log:* nur „Command /rsr not found“ beim Start, bevor RSR geladen war.
+- *Tabellen:* alle lesbar; Flächenpotential 358 → 360, Tankbuster 102 → 104, ungeminderte Fläche 154 → 158, eine
+  Trefferserienlücke mehr.
+- *Vorhersagen:* A782, A783 und A786 offen (Stand im Eintrag); A787 bis A789 gelten ab dem nächsten Build.
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
