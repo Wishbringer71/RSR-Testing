@@ -6,5 +6,7 @@
   {"id": "gaze-no-hit-after-turn", "archive": "A783",
    "kind": "absent", "situation": "gaze: turned ", "match": "gaze: hit despite "},
   {"id": "raise-no-enemy-label", "archive": "A788",
-   "kind": "absent", "situation": "raise: .* dead ", "match": "raise: .* - an enemy$"}
+   "kind": "absent", "situation": "raise: .* dead ", "match": "raise: .* - an enemy$"},
+  {"id": "hook-no-fault", "archive": "A794",
+   "kind": "absent", "situation": "combat started", "match": "hook fault: "}
 ]

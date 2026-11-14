@@ -68,35 +68,46 @@ public sealed unsafe partial class ActionManagerEx : IDisposable
 		_instance = null;
 	}
 
+	// Concept 24, "Fehlertoleranz" (A794): outside a try that catches everything, a detour runs only the game's original;
+	// an exception that leaves it closes the game. check_hook_guards.py holds every detour to this.
 	private void UpdateDetour(ActionManager* self)
 	{
-		if (Service.Config.RemoveCooldownDelay && self->ActionQueued)
+		try
 		{
-			CooldownDelayTweak.StartAdjustment(self->AnimationLock, GetRemainingCooldown(self, self->QueuedActionType, self->QueuedActionId),
-				Framework.Instance()->FrameDeltaTime);
+			if (Service.Config.RemoveCooldownDelay && self->ActionQueued)
+			{
+				CooldownDelayTweak.StartAdjustment(self->AnimationLock, GetRemainingCooldown(self, self->QueuedActionType, self->QueuedActionId),
+					Framework.Instance()->FrameDeltaTime);
+			}
+		}
+		catch (Exception ex)
+		{
+			HookFault.Report("ActionManagerEx.Update: cooldown delay", ex);
 		}
 
 		try
 		{
 			_updateHook!.Original(self);
-			// Clipping, GCD time with nothing queued and the fight's line (concept 03, A753). A793: a fault in the fork's
-			// code must not reach the game, which closes on an exception thrown into its own update.
+			// Clipping, GCD time with nothing queued and the fight's line (concept 03, A753).
 			try
 			{
 				AnimationLockTweak.Frame(self, Framework.Instance()->FrameDeltaTime);
 			}
 			catch (Exception ex)
 			{
-				if (!_frameFaultLogged)
-				{
-					_frameFaultLogged = true;
-					PluginLog.Warning($"[ActionManagerEx] Action timing failed (once per session): {ex}");
-				}
+				HookFault.Report("ActionManagerEx.Update: action timing", ex);
 			}
 		}
 		finally
 		{
-			CooldownDelayTweak.StopAdjustment();
+			try
+			{
+				CooldownDelayTweak.StopAdjustment();
+			}
+			catch (Exception ex)
+			{
+				HookFault.Report("ActionManagerEx.Update: cooldown delay", ex);
+			}
 		}
 	}
 
@@ -106,7 +117,6 @@ public sealed unsafe partial class ActionManagerEx : IDisposable
 
 		// A786 (concept 13, "Richtig stehen und weiter treffen"): every action the game runs passes here - RSR's press, the
 		// game's queue and the player's own press - so a gaze due gets a safe facing instead of the game's turn at the target.
-		// A793: guarded - an exception from here closed the game at the first action of a fight (14.11.2026, 13:58).
 		uint? facing = null;
 		try
 		{
@@ -114,7 +124,7 @@ public sealed unsafe partial class ActionManagerEx : IDisposable
 		}
 		catch (Exception ex)
 		{
-			PluginLog.Warning($"[ActionManagerEx] Gaze facing failed: {ex}");
+			HookFault.Report("ActionManagerEx.UseActionLocation: gaze facing", ex);
 		}
 
 		bool result;
@@ -124,7 +134,14 @@ public sealed unsafe partial class ActionManagerEx : IDisposable
 		}
 		finally
 		{
-			GazeWatch.RestoreFacing(facing);
+			try
+			{
+				GazeWatch.RestoreFacing(facing);
+			}
+			catch (Exception ex)
+			{
+				HookFault.Report("ActionManagerEx.UseActionLocation: gaze facing", ex);
+			}
 		}
 
 		if (self->LastUsedActionSequence == prevSequence)
@@ -164,7 +181,7 @@ public sealed unsafe partial class ActionManagerEx : IDisposable
 		}
 		catch (Exception ex)
 		{
-			PluginLog.Warning($"[ActionManagerEx] Failed to apply the action tweaks: {ex.Message}");
+			HookFault.Report("ActionManagerEx.UseActionLocation: action tweaks", ex);
 		}
 
 		return result;
@@ -172,9 +189,19 @@ public sealed unsafe partial class ActionManagerEx : IDisposable
 
 	private void ReceiveActionEffectDetour(uint casterEntityId, Character* casterPtr, Vector3* targetPos, ActionEffectHandler.Header* header, ActionEffectHandler.TargetEffects* effects, GameObjectId* targetEntityIds)
 	{
-		var actionManager = ActionManager.Instance();
-		var packetAnimLock = header->AnimationLock;
-		var prevAnimLock = actionManager == null ? 0 : actionManager->AnimationLock;
+		ActionManager* actionManager = null;
+		var packetAnimLock = 0f;
+		var prevAnimLock = 0f;
+		try
+		{
+			actionManager = ActionManager.Instance();
+			packetAnimLock = header->AnimationLock;
+			prevAnimLock = actionManager == null ? 0 : actionManager->AnimationLock;
+		}
+		catch (Exception ex)
+		{
+			HookFault.Report("ActionManagerEx.ReceiveActionEffect: before", ex);
+		}
 
 		_receiveActionEffectHook!.Original(casterEntityId, casterPtr, targetPos, header, effects, targetEntityIds);
 
@@ -187,17 +214,17 @@ public sealed unsafe partial class ActionManagerEx : IDisposable
 		}
 		catch (Exception ex)
 		{
-			PluginLog.Warning($"[ActionManagerEx] Tankbuster answer failed: {ex.Message}");
-		}
-
-		// Measured with the setting off too; only the reduction asks it (A753).
-		if (actionManager == null || header->SourceSequence == 0 || casterEntityId != Player.Object?.EntityId)
-		{
-			return;
+			HookFault.Report("ActionManagerEx.ReceiveActionEffect: tankbuster answer", ex);
 		}
 
 		try
 		{
+			// Measured with the setting off too; only the reduction asks it (A753).
+			if (actionManager == null || header->SourceSequence == 0 || casterEntityId != Player.Object?.EntityId)
+			{
+				return;
+			}
+
 			AnimationLockTweak.NoteAnswer(header->SourceSequence);
 			var reduction = AnimationLockTweak.Apply(header->SourceSequence, prevAnimLock, actionManager->AnimationLock,
 				packetAnimLock, header->AnimationLock, out var delay);
@@ -218,7 +245,7 @@ public sealed unsafe partial class ActionManagerEx : IDisposable
 		}
 		catch (Exception ex)
 		{
-			PluginLog.Warning($"[ActionManagerEx] Failed to apply the animation lock tweak: {ex.Message}");
+			HookFault.Report("ActionManagerEx.ReceiveActionEffect: animation lock", ex);
 		}
 	}
 

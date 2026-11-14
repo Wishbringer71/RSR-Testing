@@ -23015,6 +23015,33 @@ kleinen teil anpasst“ (Vorgabe; die Prüfung folgt in A794).
 - *Zurückgestellt:* Der Umbau der Blickwache nach der vierten Prüfrunde (ein Zeitfenster, Abweisen ohne sichere
   Richtung) liegt ungeprüft im Stash; er kommt erst nach der Prüfung A794.
 
+### A794 · Absturzklasse „Ausnahme in einem Hook“ für alle Detours geschlossen, CI-Prüfung (14.11.2026)
+
+Sein Auftrag (14.11.2026): „alles mit den änderungen crucible seit dem letzten erfolgreichen crucible ingame lauf kritisch
+prüfen. es darf nicht sein, dass der part nun jedes mal crashed und du immer nur einen kleinen teil anpasst“ (Vorgabe).
+- *Stand:* Letzter Crucible-Lauf ohne Absturz am 11.11.2026, 14:53, Build 03af7190f (31 Kämpfe, Spur normal beendet).
+  Seitdem drei Abstürze, drei Klassen-Einzelstellen: A764, A787 (Lesen von Fensterwerten), A793 (Ausnahme aus einem Hook).
+  Umfang seit 03af7190f: 135 Commits, 185 C#-Dateien.
+- *Befund:* `ActionManagerEx.UpdateDetour` (Upstream, je Bild) rief vor seinem `try` `CooldownDelayTweak.StartAdjustment`,
+  dessen Grenze der Fork seit A753 aus `AnimationLockTweak.MeanFrameTime` nimmt. Ebenso ungeschützt: das `finally` mit
+  `GazeWatch.RestoreFacing`, das Lesen von `ActionManager.Instance()` und `Player.Object` in `ReceiveActionEffectDetour`,
+  die Bedingungen von `UseActionDetour` (`DataCenter.State`, `InCombat`) und `SetAutoAttackStateDetour`
+  (`PlayerHasNoCastingStatus` mit Fork-Code aus A439). Keine dieser Stellen warf bisher; jede Fork-Zeile in einem
+  Aufgerufenen hätte die Klasse wieder geöffnet. Meine Aussage in A793, die Hooks von Upstream berühre der Fork nicht,
+  war falsch (C196).
+- *Behoben, als Klasse:* In jedem der neun Detours läuft außerhalb eines `try`, dessen `catch` jede Ausnahme nimmt, nur
+  der Originalaufruf; was ein `finally` ausführt, hat ein eigenes `try`. Ein Fehler wird je Stelle einmal je Sitzung
+  geschrieben (`HookFault.Report`: Dalamud-Protokoll mit Stapel, `DefenseTrace.log` „hook fault: …“). Anforderung,
+  Optionen samt Nullvariante und Falsifikation: Konzept 24, „Fehlertoleranz: Code, den das Spiel aufruft“.
+- *Prüfmittel:* `check_hook_guards.py` (CI, Selbsttest gegen konstruierte Fehler) findet Detours an ihrer Anmeldung
+  (`HookFrom…`, `[EzHook(…, nameof(…))]`) und weist jeden Aufruf, Konstruktor und Memberzugriff außer `.Original`
+  außerhalb eines vollständigen `try` ab. Anforderung: Absturz des Spiels, dreimal in drei Tagen.
+- *Gegenprobe Crucible-Zeiger:* Fensterwerte und ihre Texte über `SafeMemory` (A764, A787); Bestienwerte nur innerhalb
+  der Feldgrößen der Spielstruktur. Die übrigen Klassen (Zeiger, Schleifen, Rekursion, Threads, Ereignisquellen) prüft
+  ein unabhängiger Prüfer über den ganzen Umfang seit 03af7190f; Ergebnis im nächsten Eintrag.
+- *Vorhersage:* `predictions/2026-11-14.json`, „hook-no-fault“: In keiner Sitzung mit Kampf steht „hook fault:“.
+- *Prüfgrad:* Compile ohne Warnung, 58 CI-Schritte grün, Prüfskript; Laufzeit nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -23362,3 +23389,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C193 | A775 und Konzept 14, „Schnitter“ (Stand A775): Trank ab Werk im Opener, weil The Balance es so führt und ein Kampf von 7 min damit zwei Tränke trägt | Der Preis war nicht gewogen: In der Lernphase verschwendet jeder Wipe vor zwei Minuten den Opener-Trank (seine Regel A501). Voreinstellung jetzt „Automatic“ nach Abschluss des Kampfs und Dauer des letzten Zugs (A779). |
 | C194 | A780 und Konzept 03/14 (Stand A780): Der Schadenshöhepunkt über 30 s liege bei allen Jobs im Opener, belegt durch den Trinkzeitpunkt der Besten; Schnitter „deckt sich“ | Der Trinkzeitpunkt belegt nur Verhalten. Gemessen am Schaden (A781) ist der 2-Minuten-Burst bei Schnitter, Viper, Barde, Dragoon und Tänzer stärker; die Besten trinken im Opener wegen der Zahl der Tränke. |
 | C195 | A765 und Konzept 11, „Ein totes Mitglied ist kein Gegner“ (Stand A765): Das Flackern zwischen „a candidate“ und „an enemy“ am 13.11.2026 sei die Antwort von `IsEnemy` auf tote Allianzmitglieder | Nicht belegt. Die Begründung der Zeile fragte `IsTargetMoving` ein zweites Mal und schrieb für einen Toten in Bewegung „an enemy“; am 14.11.2026 stand das bei Gruppenmitgliedern, für die `IsEnemy` nicht mehr gefragt wird (A788). Die Behebung aus A765 bleibt ohne Preis. |
+| C196 | A793 (Stand A793): Die Hooks von Upstream (AutoAttack, UseAction) berühre der Fork nicht; Fork-Code in den Hooks sei mit den drei Absicherungen geschützt | Der Fork erreicht sie über ihre Aufgerufenen: `UpdateDetour` rief vor seinem `try` `CooldownDelayTweak.StartAdjustment` mit Fork-Grenze (A753), `SetAutoAttackStateDetour` `PlayerHasNoCastingStatus` mit Fork-Code (A439). Behoben als Klasse in A794 (14.11.2026) |

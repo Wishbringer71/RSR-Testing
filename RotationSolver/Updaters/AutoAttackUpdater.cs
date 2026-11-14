@@ -117,9 +117,23 @@ namespace RotationSolver.Updaters
 
 		private static unsafe bool SetAutoAttackStateDetour(AutoAttackState* self, bool value, bool sendPacket, bool isInstant)
 		{
-			if (value && Player.Available && DataCenter.IsActivated() && PlayerHasNoCastingStatus())
+			// Concept 24, "Fehlertoleranz" (A794): the condition runs fork code (A439), so it is read where a fault is caught.
+			var prevent = false;
+			try
 			{
-				PluginLog.Debug("[AutoAttackUpdater] Prevented auto attack activation due to NoCastingStatus.");
+				prevent = value && Player.Available && DataCenter.IsActivated() && PlayerHasNoCastingStatus();
+				if (prevent)
+				{
+					PluginLog.Debug("[AutoAttackUpdater] Prevented auto attack activation due to NoCastingStatus.");
+				}
+			}
+			catch (Exception ex)
+			{
+				HookFault.Report("AutoAttackUpdater.SetAutoAttackState", ex);
+			}
+
+			if (prevent)
+			{
 				return true;
 			}
 

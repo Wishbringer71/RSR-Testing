@@ -161,6 +161,12 @@ jobs:
       - name: Check fork members stay out of upstream's files
         run: python3 .github/scripts/audit/check_fork_placement.py
 
+      # A .NET exception that leaves a hook detour closes the game (A793). Outside a try that catches every exception a
+      # detour runs only the game's original function - upstream's detours too, as fork code reaches them through their
+      # callees (concept 24, "Fehlertoleranz: Code, den das Spiel aufruft", A794).
+      - name: Check hook detours keep faults from the game
+        run: python3 .github/scripts/audit/check_hook_guards.py
+
       # ---- 2. Generated files and game data: what the code takes from the game sheets and from upstream's lists.
 
       # What a defensive action takes off a hit is stated in its own effect text and generated into

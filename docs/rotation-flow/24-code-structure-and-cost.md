@@ -247,6 +247,53 @@ eine lange Sitzung: unverändert, kein Nutzen im Kampf gegen eine Zeile Merge-Lo
 Gegner (`TargetUpdater.UpdateAreaCasters`: `AreaCasters`, `AreaCastHelperIds`, `CastingEnemies`) werden je Bild geleert
 und neu gefüllt, nicht neu angelegt (A750). Ihre Leser lesen sie nur im selben Bild.
 
+### Fehlertoleranz: Code, den das Spiel aufruft
+
+*Anforderung (A794).* Kein Fehler in RSR beendet das Spiel. Geschützt wird der Spieler und, in einem Inhalt mit
+Gruppe, die Gruppe: Ein Absturz trennt ihn mitten im Kampf, die Gruppe verliert einen Spieler bis zur Rückkehr, im
+Crucible ist der Lauf verloren. Sein Auftrag (14.11.2026): „alles mit den änderungen crucible seit dem letzten
+erfolgreichen crucible ingame lauf kritisch prüfen. es darf nicht sein, dass der part nun jedes mal crashed und du
+immer nur einen kleinen teil anpasst". Seit dem letzten Lauf ohne Absturz (11.11.2026, Build 03af7190f) endete jeder
+Versuch im Crucible mit einem Absturz, zweimal beim Lesen von Fensterwerten (A764, A787), einmal durch eine Ausnahme
+aus einem Hook (A793). Jede Behebung schloss die eine Stelle, nicht die Klasse.
+
+*Die Klassen und was sie trifft* (ISO/IEC 25010, Zuverlässigkeit: Fehlertoleranz):
+1. *Ausnahme in einem Hook.* Ein Hook ersetzt eine Funktion des Spiels; sein Ersatz (Detour) läuft in nativem Code.
+   Eine .NET-Ausnahme, die ihn verlässt, beendet das Spiel (A793: Überlauf in `GazeWatch.AddMargins`, Absturz bei der
+   ersten Aktion jedes Kampfes). Fängt Dalamud nicht ab: Der Detour wird direkt als Funktionszeiger aufgerufen.
+2. *Lesen über einen ungültigen Zeiger* (AccessViolation): von .NET nicht abfangbar; ein try hilft nicht, nur ein
+   geprüfter Zeiger oder ein Lesen über `SafeMemory` (A787).
+3. *Stapelüberlauf, Endlosschleife*: ebenfalls nicht abfangbar.
+4. *Ausnahme in einem Ereignis* (`Framework.Update`, `AddonLifecycle`, ECommons' `ActionEffect`, IPC): Die Quelle fängt
+   ab und schreibt ins Protokoll; das Spiel läuft weiter, RSRs Teil fällt für dieses Ereignis aus.
+
+*Gewählt für Klasse 1:* In jedem Detour läuft außerhalb eines try, dessen catch jede Ausnahme nimmt, nur der Aufruf der
+Originalfunktion; Locals, Parameter, Literale und Feldlesungen über einen Zeiger der Spielstruktur (`self->Feld`)
+dürfen stehen, weil sie keine .NET-Ausnahme werfen. Jeder Aufruf, jeder Konstruktor, jedes gelesene Member außer
+`.Original` steht in einem solchen try. Ein `finally` schützt nicht: Was es ausführt, bekommt sein eigenes try. Der
+Originalaufruf bleibt außerhalb: In einem try würde eine Ausnahme aus dem Detour eines anderen Plugins weiter unten in
+der Kette abgefangen und die Funktion des Spiels danach ein zweites Mal aufgerufen. Ein Fehler wird je Stelle einmal
+je Sitzung geschrieben, ins Dalamud-Protokoll mit Stapel und ins `DefenseTrace.log` als „hook fault: <Stelle> …"
+(`HookFault.Report`); danach läuft das Spiel ohne RSRs Teil an dieser Stelle weiter.
+*Gilt für jeden Detour, auch die von Upstream:* Die Gefahr kommt über die Aufgerufenen. Upstreams Bild-Hook
+(`ActionManagerEx.UpdateDetour`) rief vor seinem try `CooldownDelayTweak.StartAdjustment` auf, dessen Grenze der Fork
+seit A753 aus `AnimationLockTweak.MeanFrameTime` nimmt; eine Ausnahme dort hätte jedes Bild mit einer gedrückten
+Aktion das Spiel beendet. Preis: einige Zeilen Merge-Logistik in vier Dateien von Upstream.
+*Optionen:* (0) Nullvariante, jede Stelle bei ihrem Absturz absichern – dreimal gescheitert, jede neue Fork-Zeile in
+einem Aufgerufenen öffnet die Klasse wieder. (1) Gewählt: ganzer Detour außer dem Originalaufruf im try, lexikalisch
+in der CI geprüft. (2) Die Aufgerufenen transitiv auf Fork-Änderungen prüfen – ein Aufrufgraph über Eigenschaften,
+Schnittstellen und Delegaten ist ohne Compiler unvollständig, und eine Lücke bliebe still. (3) Auch den Originalaufruf
+in das try – doppelter Aufruf der Spielfunktion (oben). (4) Rückbau: die Hooks des Forks entfernen – nimmt die
+Blickwache, die Zeitmessung der Aktionen und den Ausgleich der Bildrate.
+*Prüfmittel:* `check_hook_guards.py` (CI) findet die Detours an ihrer Anmeldung (`HookFrom…`, `[EzHook(…, nameof(…))]`),
+nicht an ihrem Namen; ein angemeldeter Detour ohne gefundenen Rumpf schlägt an. Selbsttest gegen konstruierte Fehler.
+*Falsifikation.* Kein Defekt? Widerlegt: A793 und der ungeschützte Aufruf im Bild-Hook. Option falsch? Ein
+abgefangener Fehler lässt einen halben Zustand zurück – geprüft je Detour: die Blickrichtung stellt ein eigenes,
+geschütztes `finally` zurück, der Bildratenausgleich wird im `finally` beendet, die übrigen schreiben nur eigene
+Messungen. Ausgeliefert, und nichts ändert sich? Möglich, wenn der nächste Absturz aus Klasse 2 oder 3 kommt; dafür die
+Prüfung der Zeiger und Schleifen unten. *Vorhersage* (`predictions/2026-11-14.json`, „hook-no-fault"): In keiner
+Sitzung mit Kampf steht „hook fault:"; steht eine, nennt sie Stelle und Ausnahme, und das Spiel lief weiter.
+
 ### Analyzer auf Fork-Zeilen
 
 - *Behoben:* `MainWindow_Debug` las ein Aktionsblatt mit `GetRow`, das für eine unbekannte Id eine Ausnahme wirft;
