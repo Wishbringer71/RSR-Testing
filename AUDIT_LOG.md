@@ -23180,7 +23180,12 @@ das brett mitnimmt". Grundlage: das Abrechnungsfenster `XBMResult` in seiner Spu
   Begleiter über dem Synchronrang; wer auf 25 steht, ist kein Nachzügler mehr. Die Fensterpositionen sind feste Werte des
   Spiels (Ausnahmen in `fixed_values.json`, Loop hier): Die Struktur des Fensters nennt keine Quelle, gelesen ist sie aus
   seiner Spur, und jede Lesung prüft sich selbst.
-- *Konzept:* 21, K7 „Der echte Rang aus der Abrechnung".
+- *Sparsamkeit (750) verloren durch den Sand der Zeit vor Kampf 8,* genommen, weil „a fight on the way to the final fight
+  was never measured" – dieselbe unbekannte Last, die im Endkampf die Feder freigab (A797). *Behoben:* Ein ungemessener
+  Kampf außer dem Endkampf zählt so schwer wie der schwerste gemessene des Bretts, wie im Laden (K13); nur ein
+  ungemessener Endkampf lässt den Weg unbekannt. Die Spur nennt den Kampf. Der Endkampf von Brett 2 ist seit diesem Lauf
+  gemessen (32 %, „the heaviest so far stored").
+- *Konzept:* 21, K7 „Der echte Rang aus der Abrechnung", K15 „Kein Gegenstand".
 - *Vorhersage:* Nach dem nächsten Brett steht „crucible result: true ranks learned - …" mit den Rängen danach; eine Zeile
   „crucible result: ranks not read" widerlegt die Lage der Werte.
 - *Prüfgrad:* Laufzeitbeobachtung (Abrechnung in seiner Spur), Compile, CI; das Lesen nicht im Spiel beobachtet.

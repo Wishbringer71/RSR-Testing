@@ -150,11 +150,42 @@ public partial class BeastmasterRotation
 		return load is { } heaviest && share > heaviest;
 	}
 
-	// A709: a fight's net loss and deepest dip with the gear worn, as LoadNow takes the raw load.
+	// A709: a fight's net loss and deepest dip with the gear worn, as LoadNow takes the raw load. A799: a fight never measured
+	// but the final one counts as heavy as the heaviest measured of the board, as the shop counts it (K13); an unmeasured
+	// final fight leaves the way unknown - it is heavier than the others (A661).
 	private static (float Through, float Peak)? NeedNow(uint battle)
-		=> CrucibleBoard.NetLoad(battle) is { } net && CrucibleBoard.DipLoad(battle) is { } dip
-			? (WornShare(net), WornShare(dip))
-			: null;
+	{
+		if (CrucibleBoard.NetLoad(battle) is { } net && CrucibleBoard.DipLoad(battle) is { } dip)
+		{
+			return (WornShare(net), WornShare(dip));
+		}
+
+		if (!CrucibleBoard.IsFinalBattle(battle) && HeaviestMeasuredOfBoard() is { } heaviest)
+		{
+			return (WornShare(heaviest.Net), WornShare(heaviest.Dip));
+		}
+
+		_scoreUnmeasured = battle;
+		return null;
+	}
+
+	// The fight that left the way unknown at the last weighing, for the trace (A799).
+	private static uint _scoreUnmeasured;
+
+	// A799: the heaviest net loss and dip measured among the fights of the board the run is on, but its final fight.
+	private static (float Net, float Dip)? HeaviestMeasuredOfBoard()
+	{
+		(float Net, float Dip)? heaviest = null;
+		foreach (var fight in CrucibleBoard.FightsOfBoard(CrucibleBoard.CurrentBoard))
+		{
+			if (!CrucibleBoard.IsFinalBattle(fight) && CrucibleBoard.NetLoad(fight) is { } net && CrucibleBoard.DipLoad(fight) is { } dip)
+			{
+				heaviest = heaviest is { } h ? (Math.Max(h.Net, net), Math.Max(h.Dip, dip)) : (net, dip);
+			}
+		}
+
+		return heaviest;
+	}
 
 	private static float WornShare(float bare)
 	{
@@ -331,6 +362,7 @@ public partial class BeastmasterRotation
 		}
 
 		_scoreKeepAt = now;
+		_scoreUnmeasured = 0;
 		var keep = CarriesToFinal(false, out var share, out var load);
 		if (_scoreKeepTraced != keep)
 		{
@@ -340,7 +372,7 @@ public partial class BeastmasterRotation
 				? $"crucible score: items kept for {bonus} - you at {share:P0} carry the heaviest way to the final fight, {load:P0}"
 				: load is { } need
 					? $"crucible score: items go again - the heaviest way to the final fight, {need:P0}, is more than your {share:P0}"
-					: "crucible score: items go again - a fight on the way to the final fight was never measured");
+					: $"crucible score: items go again - fight {_scoreUnmeasured} on the way, the final fight, was never measured on this board");
 		}
 
 		_scoreKeep = keep;

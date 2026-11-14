@@ -998,7 +998,11 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     gemessen – dann geht der Schutz wie bisher, und die Tabelle lernt aus dem Treffer. Die Versicherungen ohne Gefahr – Sand der Zeit, Wiederaufstehen, Auto-Trank gegen
     einen Endgegner – gehen bei erhaltenem Bonus nur, wenn der Spieler die schwerste Last
     bis einschließlich Endkampf nicht mit seinen LP trägt (`CrucibleRoute.WorstAhead` ohne Lager, mit der getragenen
-    Ausrüstung) oder ein Kampf auf dem Weg nie gemessen wurde (sichere Seite). *Schaden, TP und Stärkung aus Gegenständen*
+    Ausrüstung) oder der Endkampf auf diesem Brett nie gemessen wurde (sichere Seite: er ist schwerer als die übrigen,
+    A661). Ein anderer Kampf, der nie gemessen wurde, zählt so schwer wie der schwerste gemessene des Bretts – wie im
+    Laden (K13). *Im Kampf (14.11.2026, Brett 2):* Vor Kampf 8 nahm RSR den Sand der Zeit („a fight on the way to the final
+    fight was never measured"), bei 4 % Last je Kampf; das kostete Sparsamkeit (750). Die Spur nennt jetzt den Kampf,
+    der ungemessen ist. *Schaden, TP und Stärkung aus Gegenständen*
     gehen bei erhaltenem Bonus nur, wenn belegt ist, dass er den Weg nicht trägt – eine unbekannte Last gibt sie nicht frei
     (A796): Sie schützen nicht, und die unmittelbare Gefahr deckt die Heilung unter der Trankschwelle. *Im Kampf
     (14.11.2026, Brett 2):* Zu Beginn des Endkampfs hielt er zehn Gegenstände (Sammelleidenschaft, 1.000); RSR nahm die
