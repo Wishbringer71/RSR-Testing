@@ -23523,6 +23523,18 @@ Hinweis unter Level zählte Tausche unter dem Cap als „at or above"; Falsifika
   board N: the familiars lost … HP"; widerlegt, wenn die Abrechnung ohne sie kommt. „crucible-synced": In einer Sitzung
   mit Brettkämpfen keine Zeile „above the level the content syncs to". „team-rank-step-runs" (A803) wird erstmals
   beurteilbar.
+- *Unabhängige Prüfung (eine Runde, auf 2739d0cc6):* bestätigt: die 39 Gebiete und die Gleichheit ihrer Felder; ein Gebiet
+  (509), dessen eigene Bedingung eine andere ist als die, die es nennt, behält die eigene; Aufbau nur im Gebietswechsel
+  (Spielthread); kein anderer Leser der Inhaltsfelder ändert sein Urteil (keines der 39 ist Hochleistung); der Tausch
+  endet. Befunde, eingearbeitet, Konzept zuerst: (Hoch) Der Tausch maß „stärker" am Rang, die Gefährdung an LP; auf
+  Rang 10 reicht die VIT von 130 bis 197 – ein Büffel auf Rang 7 hätte einem Baumhörnchen auf Rang 8 weichen können,
+  und der Kader wäre schwächer geworden. Jetzt zählen die LP auf dem Kampfrang (ohne gezeigtes Verhältnis der Rang).
+  (Mittel) Die Rangstufe lernte über den ganzen Kader und las über die Kämpfer; jetzt beide über die Kämpfer, ohne
+  solche über alle. Niedrig: das kleinste Verhältnis LP/VIT statt des Mittels (ein veralteter Rang hob es); ein Lauf,
+  dessen erster Verlust nach dem Endkampf kam, lernte keinen Verlust je Brett; die Rangsuche legte je Frame eine Liste
+  an, jetzt eine Spanne; der Hinweis unter Safe win nannte „0 stronger"; mehrere Bedingungen je Gebiet geben dem
+  Rennen den Namen des ersten (Preis im Konzept 03, kein Leser urteilt danach).
+- *Prüfgrad nach der Runde:* Compile, CI (58 Schritte).
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

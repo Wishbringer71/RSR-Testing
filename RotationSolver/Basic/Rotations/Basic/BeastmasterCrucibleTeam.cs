@@ -120,20 +120,20 @@ public partial class BeastmasterRotation
 			}
 		}
 
-		// A807: the ratio the game shows, not a figure in the code - floor(VIT x 6.7) in all 57 pairs of his uploads.
-		long health = 0;
-		long vitality = 0;
+		// A807: the ratio the game shows, not a figure in the code - floor(VIT x 6.7) in all 57 pairs of his uploads. The
+		// smallest pair's: a stale rank too low raises a pair's ratio and would give every other familiar too many HP.
+		var perVitality = 0d;
 		foreach (var candidate in all)
 		{
 			if (shown.TryGetValue(candidate.Pet, out var hp)
-				&& CrucibleBoard.FamiliarVitality(candidate.Pet, CrucibleBoard.FightingRank(candidate.Rank, candidate.OverRank, sync)) is > 0 and var vit)
+				&& CrucibleBoard.FamiliarVitality(candidate.Pet, CrucibleBoard.FightingRank(candidate.Rank, candidate.OverRank, sync)) is > 0 and var vit
+				&& (perVitality <= 0d || (double)hp / vit < perVitality))
 			{
-				health += hp;
-				vitality += vit;
+				perVitality = (double)hp / vit;
 			}
 		}
 
-		return new TeamHealth(shown, sync, vitality > 0 ? (double)health / vitality : 0d);
+		return new TeamHealth(shown, sync, perVitality);
 	}
 
 	// K7 (A807): what the team screen shows, and the HP per point of vitality it shows at the board's sync.
@@ -338,10 +338,10 @@ public partial class BeastmasterRotation
 	}
 
 	// K7 (A806, A807; his rule "die niedrigsten vorrang, ausser ... gefährdet"): while the team is endangered (with
-	// `unknownEndangers`, also while unmeasured), the first of `outside` - in its order, the lowest first - that fights
-	// stronger takes the team's weakest place, one at a time: the lowest fighting rank, at equal rank the later in the
-	// team's order (the one it wanted last); a place that holds a role only goes to one that holds the same. The number of
-	// such swaps.
+	// `unknownEndangers`, also while unmeasured), the first of `outside` - in its order, the lowest first - that is
+	// stronger takes the team's weakest place, one at a time: the fewest HP at the rank it fights with, at equal the later
+	// in the team's order (the one it wanted last); a place that holds a role only goes to one that holds the same. The
+	// number of such swaps.
 	private static int Strengthen(uint board, List<TeamCandidate> team, List<TeamCandidate> outside, bool interrupting, int sync,
 		int recommended, TeamHealth health, bool unknownEndangers)
 	{
@@ -351,7 +351,7 @@ public partial class BeastmasterRotation
 			var roles = RoleHolders(team, interrupting);
 			var place = -1;
 			var stronger = -1;
-			var weakest = int.MaxValue;
+			var weakest = long.MaxValue;
 
 			// From the end: at equal rank the later place is found first and kept.
 			for (var i = team.Count - 1; i >= 0; i--)
@@ -387,9 +387,12 @@ public partial class BeastmasterRotation
 
 		return swaps;
 
-		// What a familiar adds on the horns: the rank it fights with, none below the recommended rank (K6).
-		int Strength(TeamCandidate candidate) => candidate.OverRank || candidate.Rank >= recommended
-			? CrucibleBoard.FightingRank(candidate.Rank, candidate.OverRank, sync) : 0;
+		// What a familiar adds on the horns (A807): its HP at the rank it fights with - what the danger turns on; at one rank
+		// vitality spans 130 to 197 among familiars - or that rank while the screen shows no HP per vitality; none below the
+		// recommended rank (K6).
+		long Strength(TeamCandidate candidate) => !(candidate.OverRank || candidate.Rank >= recommended) ? 0
+			: health.PerVitality > 0d ? health.Of(candidate)
+			: CrucibleBoard.FightingRank(candidate.Rank, candidate.OverRank, sync);
 	}
 
 	// K7 (A807): the roles a familiar of the team holds - healing or protecting before the boss (B5), interrupting (K4).
@@ -591,8 +594,9 @@ public partial class BeastmasterRotation
 			var outside = order.Count > size ? order.GetRange(size, order.Count - size) : [];
 			var swapped = Strengthen(board, chosen, outside, interrupting, sync, recommended, health, true);
 
-			CrucibleTeamSizeNote = $"Safe win: the full team, the lowest in rank as long as passing is safe; {swapped} stronger in place of "
-				+ "low ones - the low team does not carry the losses measured on this board, or none are measured yet.";
+			CrucibleTeamSizeNote = "Safe win: the full team, the lowest in rank as long as passing is safe"
+				+ (swapped > 0 ? $"; {swapped} stronger in place of low ones - the low team does not carry the losses measured on this board, "
+					+ "or none are measured yet." : ".");
 		}
 		else if (!leveled)
 		{

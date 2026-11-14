@@ -1430,34 +1430,36 @@ internal static class CrucibleBoard
 	}
 
 	// A729: the ranks to read for a team at <rank> - the measured ones at or below it, nearest first, until they count the
-	// runs that show a spread; null with fewer, and then the heaviest over all runs holds. The caller holds the store's gate.
-	private static List<int>? RanksToRead(Dictionary<uint, int> store, uint key, int rank)
+	// runs that show a spread; null with fewer, and then the heaviest over all runs holds. The span from the team's rank
+	// down to the last one read, without a list (A807: read every frame on the board since the team rank is known).
+	// The caller holds the store's gate.
+	private static (int Top, int Bottom)? RanksToRead(Dictionary<uint, int> store, uint key, int rank)
 	{
-		var ranks = new List<int>();
+		var top = Math.Min(rank, (int)RankStride - 1);
 		var runs = 0;
-		for (var r = Math.Min(rank, (int)RankStride - 1); r > 0; r--)
+		for (var r = top; r > 0; r--)
 		{
 			if (RankKey(key, r, RankSlot.Value) is not { } at || !store.ContainsKey(at))
 			{
 				continue;
 			}
 
-			ranks.Add(r);
 			runs += RankKey(key, r, RankSlot.Runs) is { } counted ? store.GetValueOrDefault(counted) : 0;
 			if (runs >= SpreadRuns)
 			{
-				return ranks;
+				return (top, r);
 			}
 		}
 
 		return null;
 	}
 
-	// A729: the heaviest value of <key> over <ranks>; null where none holds it. The caller holds the store's gate.
-	private static int? HeaviestAt(Dictionary<uint, int> store, uint key, List<int> ranks)
+	// A729: the heaviest value of <key> over the measured ranks of <ranks>; null where none holds it. The caller holds the
+	// store's gate.
+	private static int? HeaviestAt(Dictionary<uint, int> store, uint key, (int Top, int Bottom) ranks)
 	{
 		int? heaviest = null;
-		foreach (var rank in ranks)
+		for (var rank = ranks.Top; rank >= ranks.Bottom; rank--)
 		{
 			if (RankKey(key, rank, RankSlot.Value) is { } at && store.TryGetValue(at, out var value)
 				&& (heaviest is not { } before || value > before))
@@ -1637,8 +1639,11 @@ internal static class CrucibleBoard
 		}
 
 		var sync = SyncRank(board);
+		var recommended = RecommendedRank(board);
 		long sum = 0;
 		var count = 0;
+		long allSum = 0;
+		var allCount = 0;
 		var ranks = new Dictionary<BeastmasterPet, int>();
 		foreach (var member in party->SelectedPets.AsSpan())
 		{
@@ -1647,18 +1652,27 @@ internal static class CrucibleBoard
 				continue;
 			}
 
-			var rank = FightingRank(TrueRankOf(party, (BeastmasterPet)member.PetId), party->IsPetOverSyncedRank(member.PetId), sync);
+			var trueRank = TrueRankOf(party, (BeastmasterPet)member.PetId);
+			var over = party->IsPetOverSyncedRank(member.PetId);
+			var rank = FightingRank(trueRank, over, sync);
 			if (rank <= 0)
 			{
 				continue;
 			}
 
 			ranks[(BeastmasterPet)member.PetId] = rank;
-			sum += rank;
-			count++;
+			allSum += rank;
+			allCount++;
+
+			// A807: the step over the familiars the horn choice sends in (K6), as the team's danger check reads it.
+			if (over || trueRank >= recommended)
+			{
+				sum += rank;
+				count++;
+			}
 		}
 
-		var step = RankStep(sum, count);
+		var step = count > 0 ? RankStep(sum, count) : RankStep(allSum, allCount);
 		if (step <= 0)
 		{
 			return;
@@ -2189,7 +2203,9 @@ internal static class CrucibleBoard
 		{
 			_lossRun = _run;
 			_runFamiliarLoss = 0;
-			_lossFinalOver = false;
+
+			// A807: a run's first loss after its final fight ended (the familiar out leaving) still closes it.
+			_lossFinalOver = _finalOverRun == _run;
 			_runUseLosses.Clear();
 		}
 
@@ -2352,8 +2368,8 @@ internal static class CrucibleBoard
 			for (var rank = 1u; rank < FamiliarKeyStride; rank++)
 			{
 				var key = (board * FamiliarKeyStride) + rank;
-				int? use = ranks != null
-					? HeaviestAt(OtherConfiguration.CrucibleFamiliarLossByRank, key, ranks)
+				int? use = ranks is { } span
+					? HeaviestAt(OtherConfiguration.CrucibleFamiliarLossByRank, key, span)
 					: OtherConfiguration.CrucibleFamiliarLoss.TryGetValue(key, out var all) ? all : null;
 				if (use is not { } loss)
 				{

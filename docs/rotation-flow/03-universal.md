@@ -1454,7 +1454,9 @@ RSR beim Gebietswechsel aus der `ContentFinderCondition` des Gebiets (`Territory
 Stelle. Nennt das Gebietsblatt keine, gilt die `ContentFinderCondition`, die das Gebiet nennt; nennen es mehrere, die
 erste. Das betrifft 39 Gebiete (xivapi, 14.11.2026): die fünf Bretter des Crucible, die zehn Gebiete der Himmelssäule,
 die Karten von Crystalline Conflict, Chocobo-Rennen, Lord of Verminion, Mahjong, Air Force One und das Diadem. Wo
-mehrere ein Gebiet nennen, stimmen Art, Stufe und Hochleistung in allen 39 überein; die erste ändert nur die Zeile.
+mehrere ein Gebiet nennen, stimmen Art, Stufe und Hochleistung in allen 39 überein; die erste ändert nur Zeile und
+Namen (ein Rennen heißt in der Zeitleiste nach dem ersten seiner Strecke, „Race 2 - Keep Away"; kein Leser urteilt nach
+ihnen).
 *Warum:* Mit der Zeile 0 galt die Himmelssäule nicht als Tiefes Gewölbe – Pomander und Magicite (Konzept 23) ruhten dort –,
 und auf den Brettern las RSR kein Brett: kein Bonus, kein Teamrang, kein Verlust je Brett (Konzept 21). Die Spalte
 des Gebiets bleibt erste Quelle, wo sie etwas nennt.

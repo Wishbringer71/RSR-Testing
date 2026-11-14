@@ -891,9 +891,12 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
   Verlust der Begleiter je Lauf, je Einsatz und je Kampf (`CrucibleFamiliarLoss`), der Schaden je Potenz der Begleiter
   (`CrucibleFamiliarHits`) – wird zusätzlich je **Rangstufe** gelernt (Dateien `…ByRank.json`) und aus der Stufe
   gelesen, die zum Kader des Laufs passt.
-  - *Rangstufe des Laufs:* das abgerundete Mittel der Ränge des Kaders, je Begleiter der synchronisierte Rang
-    (`GetSyncedRank`), höchstens der Synchronrang des Bretts (`XBMContent.SyncRank`) und genau dieser, wenn der Begleiter
-    über ihm steht (`IsPetOverSyncedRank`). Gelesen, wenn das Teamfenster das Brett zeigt (`AgentXBMPetParty.ContentId`):
+  - *Rangstufe des Laufs:* das abgerundete Mittel der Kampfränge der Begleiter, die die Hornwahl einsetzt – über dem
+    Synchronrang oder ab dem empfohlenen Rang (K6); ohne solche aller. Je Begleiter der echte Rang (`GetSyncedRank`,
+    A803), höchstens der Synchronrang des Bretts (`XBMContent.SyncRank`) und genau dieser, wenn der Begleiter über ihm
+    steht (`IsPetOverSyncedRank`). Lernen und Lesen zählen dieselben (A807, unabhängige Prüfung, mittel): Zählte das
+    Lernen alle, lernte ein Lauf mit zwei Kämpfern auf Rang 15 und fünf Nachzüglern auf Rang 3 die Stufe 6, und ein Kader
+    mit Kämpfern auf Rang 7 las die Verluste, die Rang-15-Begleiter getragen hatten. Gelesen, wenn das Teamfenster das Brett zeigt (`AgentXBMPetParty.ContentId`):
     beim Betreten und mit jedem Hornfenster vor einem Kampf; die Spur nennt sie („crucible team rank …"). Vor dem Brett
     (Teamgröße, K7) gilt die Stufe der gewählten Begleiter. Für den Schaden je Potenz zählt der Rang des Begleiters
     selbst: Seine Werte stehen je Rang im Blatt.
@@ -2264,25 +2267,29 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
   Tausch (`RoleHolders`): die ersten zwei, die heilen oder schützen, und der erste Seelen-Begleiter, wo Gegner
   unterbrechbar zaubern; ein Seelen-Begleiter, der heilt, hält beide.
   *Tausch gegen Gefährdung (Z4, „die niedrigsten Vorrang"):* immer der rangniedrigste, der den Kader stärker macht, einer
-  nach dem anderen, bis er nicht mehr gefährdet ist – nicht der stärkste. Er ersetzt den schwächsten Platz (niedrigster
-  Kampfrang; bei gleichem der spätere in der Reihenfolge, also der, den die Reihenfolge zuletzt wollte), für den einer
-  außerhalb stärker kämpft und dieselbe Rolle trägt, wo der Platz eine hält (A807: vorher war jeder Rollenträger
+  nach dem anderen, bis er nicht mehr gefährdet ist – nicht der stärkste. *Stärker* heißt mehr LP auf dem Rang, mit dem
+  er kämpft (die Größe, an der die Gefährdung hängt); wer unter dem empfohlenen Rang steht, zählt 0. Der Rang allein
+  taugt nicht: Auf Rang 10 reicht die VIT von 130 (Baumhörnchen, Mandragora, Uragnit) bis 197 (Eisgolem, Kobra), und ein
+  Büffel auf Rang 7 hat mehr LP als ein Baumhörnchen auf Rang 8 (A807, unabhängige Prüfung, hoch). Ohne gezeigtes
+  Verhältnis LP/VIT zählt der Kampfrang. Er ersetzt den schwächsten Platz (die wenigsten LP; bei gleichen der spätere in
+  der Reihenfolge, also der, den die Reihenfolge zuletzt wollte), für den einer außerhalb mehr LP hat und dieselbe Rolle
+  trägt, wo der Platz eine hält (A807: vorher war jeder Rollenträger
   ausgenommen – ein Heiler auf Rang 7 blieb auch, wenn ein Heiler auf Rang 10 zu Hause stand). *Eine Rolle muss kämpfen:* Die Hornwahl
   setzt einen Begleiter unter dem empfohlenen Rang nur ein, wenn weniger andere leben als Hörner da sind (K6); ein
   Heiler dort fehlte vor dem Boss (unabhängige Prüfung A806, hoch). Darum nimmt jede Rolle zuerst einen Begleiter ab dem
   empfohlenen Rang – unter Level und Safe win davon den rangniedrigsten, unter Score den stärksten –, einen darunter nur,
   wo keiner ab ihm die Rolle trägt. *LP eines Begleiters (A807):* die gezeigten, wo das Teamfenster ihn im Kader zeigt;
   sonst seine VIT auf dem Rang, mit dem er auf diesem Brett kämpft, mal dem Verhältnis von LP zu VIT der gezeigten
-  Begleiter, abgerundet. Das Verhältnis kommt aus dem Spiel, nicht als Zahl in den Code: Es ist das, was das Fenster
-  gerade zeigt (6,7 in allen 57 Paaren); zeigt das Fenster keinen Begleiter mit bekanntem Rang, ist die Gefährdung
-  unbekannt. Damit macht ein Tausch den Kader messbar stärker – ein Rang mehr bringt mindestens 3 VIT, meist 5 bis 9,
-  also mindestens 20 LP (alle Zeilen des Blatts, xivapi 14.11.2026; Puk Rang 9 → 10: VIT 130 → 137, LP 871 → 917) –, und die Rangstufe, deren Verluste gelten, steigt mit. Vorher setzte die
+  Begleiter, abgerundet. Das Verhältnis kommt aus dem Spiel, nicht als Zahl in den Code: das kleinste, das das Fenster
+  gerade zeigt (6,7 in allen 57 Paaren; das kleinste, weil ein veralteter zu niedriger Rang das Verhältnis eines Paars
+  hebt und dann jedem anderen zu viele LP gäbe); zeigt das Fenster keinen Begleiter mit bekanntem Rang, ist die
+  Gefährdung unbekannt. Damit macht ein Tausch den Kader messbar stärker, wenn der neue mehr LP hat (oben). Vorher setzte die
   Prüfung für jeden nicht gezeigten die kleinsten gezeigten LP an: Ein stärkerer brachte so keine LP, und Level und
   Safe win tauschten bei gemessener Gefährdung jeden Platz ohne Rolle (unabhängige Prüfung A806, mittel).
   | Ziel | Reihenfolge nach den Rollen | Auffüllen | Unbekannte Gefährdung |
   |---|---|---|---|
-  | Level | unter dem Cap zuerst, dann der niedrigste Rang; bei gleichem Rang wer eine Schwäche neu abdeckt, dann der Schwächenwert, dann wer im letzten Lauf fehlte | jeder Platz unter dem Cap; fehlen welche, die niedrigsten am oder über dem Cap, bis nicht gefährdet; ist auch ein voller Kader unter dem Cap gefährdet, tritt an die Stelle des schwächsten Platzes der rangniedrigste außerhalb, der stärker kämpft (eine Rolle nur gegen dieselbe) – zuerst unter dem Cap, dann am oder über ihm –, bis nicht gefährdet | als gefährdet beim Auffüllen (volle Größe); kein Tausch eines Kaders unter dem Cap (Z2) |
-  | Safe win | der niedrigste Rang insgesamt, dann wie Level | volle Größe; solange gefährdet, tritt an die Stelle des schwächsten Platzes der rangniedrigste außerhalb, der stärker kämpft (eine Rolle nur gegen dieselbe) | als gefährdet: getauscht, bis keiner stärker kämpft |
+  | Level | unter dem Cap zuerst, dann der niedrigste Rang; bei gleichem Rang wer eine Schwäche neu abdeckt, dann der Schwächenwert, dann wer im letzten Lauf fehlte | jeder Platz unter dem Cap; fehlen welche, die niedrigsten am oder über dem Cap, bis nicht gefährdet; ist auch ein voller Kader unter dem Cap gefährdet, tritt an die Stelle des schwächsten Platzes der rangniedrigste außerhalb, der mehr LP hat (eine Rolle nur gegen dieselbe) – zuerst unter dem Cap, dann am oder über ihm –, bis nicht gefährdet | als gefährdet beim Auffüllen (volle Größe); kein Tausch eines Kaders unter dem Cap (Z2) |
+  | Safe win | der niedrigste Rang insgesamt, dann wie Level | volle Größe; solange gefährdet, tritt an die Stelle des schwächsten Platzes der rangniedrigste außerhalb, der mehr LP hat (eine Rolle nur gegen dieselbe) | als gefährdet: getauscht, bis keiner stärker kämpft |
   | Score | der stärkste nach dem Rang, mit dem er kämpft; bei gleichem wer eine Schwäche neu abdeckt, dann der Schwächenwert, dann wer im letzten Lauf fehlte (Z9: reihum auch nach dem Höchstrang) | die kleinste Zahl ab dem Kern (Rollen und jede Schwäche, höchstens die Größe des Bretts), die nicht gefährdet ist; dann ein Team einer Gattung, wo es mehr Punkte bringt, dieselben Schwächen und Rollen hält (Rollen nur mit Begleitern, die kämpfen) und selbst nicht gefährdet ist – kleiner als die Größe des Bretts nur, wenn gemessen ungefährdet | volle Größe; ein Team einer Gattung nur in voller Größe |
   Ohne Begleiter unter Rang 25 wählt Level wie Score (seine Vorgabe: danach „weniger, so dass punktezahl erhöht werden
   kann").
