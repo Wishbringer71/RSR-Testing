@@ -23747,6 +23747,25 @@ meine Anweisungen". Einordnung: Vorgabe; eingetragen in `CLAUDE.md`, „Bevor ic
   - Widerrufen: A812s Aussage, beide Teile seien entbehrlich (C202).
 - *Prüfgrad:* statisch, Compile, CI.
 
+### A814 · Seine Einschätzung: Prüfrunden ohne Ende sind kein sinnvolles Mittel – eine Runde je Konzept (14.11.2026)
+
+Seine Einschätzung (14.11.2026): „Die prüfenden scheinen kein sinnvolles Mittel zu sein, wenn sie so ewig weiterlaufen
+können." Einordnung: Hinweis zu meinem Hilfsmittel; die Regel war meine Entscheidung im Loop (A784), also entscheide ich
+sie selbst neu (`CLAUDE.md`, „Vorlagen an ihn": Hilfsmittel stehen nicht zur Abstimmung).
+- *Befund:* Die Prüfer sind LLM-Hilfsagenten, nicht deterministisch; jeder neue Leser findet Neues. Das Abbruchkriterium
+  „bis eine Runde ohne hohe und mittlere Befunde" war damit praktisch nie erreichbar: neun Runden an der Blickwache
+  (A786–A809, A812), ab der sechsten nur noch mittlere Befunde an jeweils neuer Stelle.
+- *Gegenargument, geprüft:* Die Runden fanden echte Prämissenfehler mit Wirkung im Kampf, die weder Skripte noch ich
+  fanden – jede Nahkampf-Waffenfertigkeit von der Blickwache ausgenommen (A789, H1), der zweite Treffer beim Wirken griff
+  nie (fünfte Runde), die Fehler in A778, A779, A781. Ganz weglassen verlöre das.
+- *Neu (`CLAUDE.md`, „Prüfgrad"):* eine Prüfrunde je Konzept vor der Auslieferung, gegen die schriftlichen Anforderungen
+  und tragenden Annahmen; hohe Befunde einarbeiten, mittlere nur bei verletzter Anforderung, den Rest mit Preis ins
+  Konzept; eine weitere Runde nur bei geänderten Anforderungen, nie zur Prüfung der eigenen Korrekturen; Wiederholbares
+  wird Prüfskript oder Vorhersage; ein hoher Befund ist ein Befund am Vorgehen (zurück zur Anforderung).
+- *Für die Blickwache:* keine weitere Runde. Stand a333fc2cf; ihre bekannten Grenzen stehen mit Preis in Konzept 13, ihre
+  Bestätigung kommt aus seinen Uploads (Vorhersagen A783, A786, A809).
+- *Prüfgrad:* CI (Regeldateien).
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
