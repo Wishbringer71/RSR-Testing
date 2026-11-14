@@ -62,13 +62,14 @@ public sealed class RPR_Reborn : ReaperRotation
     {
 	[Description("Opener")] FirstArcaneCircle,
 	[Description("2 Minutes")] FromSecondArcaneCircle,
+	[Description("Opener once the duty is cleared or the last pull passed 2 minutes, else 2 minutes")] Automatic,
     }
 
     [RotationConfig(CombatType.PvE, Name = "Use potion")]
     public bool UsePotion { get; set; } = true;
 
     [RotationConfig(CombatType.PvE, Name = "First Potion timing", Parent = nameof(UsePotion))]
-    public PotTiming PotionTiming { get; set; } = PotTiming.FirstArcaneCircle;
+    public PotTiming PotionTiming { get; set; } = PotTiming.Automatic;
 
 	public enum ArcaneCircleOpener
     {
@@ -305,6 +306,12 @@ public sealed class RPR_Reborn : ReaperRotation
     {
 	var prePot = Pooling == PoolingType.Invasive && RefreshDDBeforeArcaneCircle;
     var potDue = UsePotion && (PotionTiming == PotTiming.FirstArcaneCircle || CombatTime > 30f);
+
+    // A779 (concept 14, "Schnitter"): the opener pot pays in a duty already cleared, and while learning once the last
+    // pull here outlasted an Arcane Circle recast (wipes come late, the damage check counts); before that, wipes in the
+    // first two minutes would waste it.
+    potDue |= UsePotion && PotionTiming == PotTiming.Automatic
+        && (InClearedDuty || LastPullTime >= ArcaneCirclePvE.Cooldown.RecastTimeOneChargeRaw);
     var potWindow = HasArcaneCircle
 	    || (prePot && IsBurst && CurrentTarget != null && ArcaneCirclePvE.Cooldown.WillHaveOneCharge(3));
 

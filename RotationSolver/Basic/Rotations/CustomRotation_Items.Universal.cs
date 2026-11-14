@@ -17,6 +17,28 @@ public partial class CustomRotation
 		_ => false,
 	};
 
+	/// <summary>
+	/// Whether the player has cleared the duty they are in, as the game keeps it (A779): a cleared duty is farmed, one not
+	/// yet cleared is learned with wipes. A rotation may weigh a tincture in the opener by it; outside an instanced duty false.
+	/// </summary>
+	public static unsafe bool InClearedDuty
+	{
+		get
+		{
+			var finder = DataCenter.Territory?.ContentFinderConditionId ?? 0;
+			return finder != 0 && Service.GetSheet<ContentFinderCondition>().GetRowOrDefault(finder) is { ContentLinkType: 1 } row
+				&& FFXIVClientStructs.FFXIV.Client.Game.UI.UIState.IsInstanceContentCompleted(row.Content.RowId);
+		}
+	}
+
+	/// <summary>
+	/// Seconds the last combat in this territory lasted; 0 when the last combat was elsewhere or there was none (A779). A
+	/// pull that wiped early tells a rotation that the opener of the next one may wipe early too.
+	/// </summary>
+	public static float LastPullTime => DataCenter.LastPullTerritoryId != 0 && DataCenter.LastPullTerritoryId == DataCenter.Territory?.Id
+		? DataCenter.LastPullSeconds
+		: 0f;
+
 	/// <summary>Set once this rotation has asked for a tincture in a fight; a rotation that never does holds no potion.</summary>
 	private bool _asksForTinctureInCombat;
 

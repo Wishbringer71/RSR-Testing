@@ -23,6 +23,12 @@ are not reconstructed here.
 
 ## Unreleased
 
+### Addition to RotationSolver: whether the duty is cleared
+
+New public members of `CustomRotation`: `InClearedDuty`, whether the player has cleared the instanced duty they are in,
+as the game keeps it (`UIState.IsInstanceContentCompleted`), false outside an instanced duty; and `LastPullTime`, the
+seconds the last combat in this territory lasted, 0 when it was elsewhere. Nothing existing changes.
+
 ## 7.5.8.2+wsh1
 
 ### Addition to RotationSolver: what the Crucible windows read

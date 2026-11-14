@@ -22571,6 +22571,31 @@ Einordnung: Hinweis und Rüge.
 - *Prüfgrad:* Compile, Prüfskripte, Winkelmodell; im Spiel nicht beobachtet. Messmittel: die Zeile „gaze: turned … for
   an action, … off its target“.
 
+### A779 · Seine Frage: war die Änderung am Schnitter-Trank sinnvoll? Abwägung nachgeholt, Voreinstellung „Automatic“ (14.11.2026)
+
+Seine Frage (14.11.2026): „War denn die Änderung am trank Schnitter sinnvoll?“ Einordnung: Frage.
+- *Befund an A775:* Begründet war die Änderung mit The Balance und mit der Zahl der Tränke in einem Kampf, der zum Sieg
+  führt. Nicht gewogen war seine Regel A501, nach der Tinkturen Geld kosten. In der Lernphase verschwendet jeder Wipe vor
+  zwei Minuten den Opener-Trank. Upstreams Voreinstellung schützte genau davor. Der Fork schaltet Tinkturen ab Werk nur
+  in High-End-Kämpfen frei, also genau dort, wo gelernt wird.
+- *Abwägung:*
+  - Opener: mehr Schaden im ersten Burst, ein Trank mehr in Kämpfen von 6 bis 8 min, aber ein verlorener Trank je
+    frühem Wipe.
+  - Ab dem zweiten Burst: kein Verlust bei frühen Wipes, aber kein Trank im ersten Burst. In später Lernphase fehlt er
+    beim Schadenscheck.
+- *Lösung ohne Preis:* Voreinstellung „Automatic“. Der Trank kommt in den Opener, wenn der Kampf schon geschafft ist
+  (`UIState.IsInstanceContentCompleted`, neu `CustomRotation.InClearedDuty`). Ebenso, wenn der letzte Zug im selben Gebiet
+  länger als eine Abklingzeit von Arcane Circle lief (neu `CustomRotation.LastPullTime`, gesetzt am Kampfende). Sonst
+  kommt er ab dem zweiten Arcane Circle. Upstreams Zeile bleibt unverändert; die neue Bedingung steht daneben.
+  CHANGELOG nennt die beiden neuen öffentlichen Member.
+- *Im Kampf:*
+  - Erster Zug in einem neuen Savage: kein Opener-Trank; erst bei 2:00, wenn der Zug so lange hält.
+  - Nach einem Zug, der über 2:00 kam: Trank im Opener.
+  - Im Farm (geschafft): immer im Opener.
+- *Offen, als Klasse:* Andere Jobs trinken im Opener ohne diese Abwägung. Die Regel gehört auf die allgemeine Ebene
+  (TODO).
+- *Prüfgrad:* Compile, Prüfskripte; im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -22915,3 +22940,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C190 | Konzept 18, „Takt“ (Stand A748): „Countdown lead time“ und „Action ahead“ hingen an der Latenz; „eine Selbststeuerung aus gemessener Latenz wäre denkbar; kein Fehlverhalten im Kampf belegt“ | Sein Mitschnitt vom 11.11.2026 belegt es: Weben mit weniger als 0,7 s Rest verzögerte den nächsten GCD bis 0,46 s, die feste Grenze erlaubte es bis 0,61 s. Seit A753 rechnet die Webregel mit Sperre und gemessenem Rest. |
 | C191 | A506 und Konzept 22 (Stand A506–A647): `AOZContentBriefingBNpc` führe „Verwundbarkeiten“ je Gegner, Slow bis Tod/fest | Die zehn Felder bedeuten Immunität: Spucksardine-Stellen der Führer 17 zu 1, Auric's Guide 19 zu 0; die Sperren lesen sie so (A762). |
 | C192 | A777 und Konzept 13, „Richtig stehen und weiter treffen“ (Stand A777): Sofortaktionen „unverändert“; eine Sofortaktion auf den Wirkenden treffe nur mit Blick in den Blick, dort bleibe die Sperre | Das gilt nur, wenn das Auge beim Ziel liegt. Liegt es daneben, gibt es innerhalb des 45°-Kegels der Aktion eine sichere Richtung; RSR dreht dorthin und schaltet das Drehen des Spiels für den Druck ab (A778). |
+| C193 | A775 und Konzept 14, „Schnitter“ (Stand A775): Trank ab Werk im Opener, weil The Balance es so führt und ein Kampf von 7 min damit zwei Tränke trägt | Der Preis war nicht gewogen: In der Lernphase verschwendet jeder Wipe vor zwei Minuten den Opener-Trank (seine Regel A501). Voreinstellung jetzt „Automatic“ nach Abschluss des Kampfs und Dauer des letzten Zugs (A779). |

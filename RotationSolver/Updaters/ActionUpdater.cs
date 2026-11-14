@@ -147,6 +147,8 @@ internal static partial class ActionUpdater
 		else if (lastInCombat && !DataCenter.InCombat)
 		{
 			DefenseTrace.Line($"combat ended after {(now - _startCombatTime).TotalSeconds:F0} s");
+			DataCenter.LastPullSeconds = (float)(now - _startCombatTime).TotalSeconds;
+			DataCenter.LastPullTerritoryId = DataCenter.Territory?.Id ?? 0;
 			_startCombatTime = DateTime.MinValue;
 
 			if (DataCenter.AutoOffAfterCombatEnabled && !DataCenter.IsHenched && !DataCenter.IsAutoDuty)

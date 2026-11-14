@@ -25,6 +25,12 @@ namespace RotationSolver.Basic;
 
 internal static partial class DataCenter
 {
+	// A779: the length of the last combat and the territory it was fought in, so a rotation can tell whether the pull
+	// before this one here reached a later burst (set by ActionUpdater when combat ends).
+	internal static float LastPullSeconds { get; set; }
+
+	internal static uint LastPullTerritoryId { get; set; }
+
 	/// <summary>
 	/// The party's first living tank, or null if there is none.
 	/// </summary>

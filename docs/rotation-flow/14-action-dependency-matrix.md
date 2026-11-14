@@ -598,7 +598,7 @@ Sekundentakt") und löst die GCD-Abklingzeit aus; jede andere Aktion, Bewegung u
 | Punkt | The Balance | RSR | Stand |
 |---|---|---|---|
 | Opener | Reassemble vor dem Pull, Air Anchor zum Pull; Variante mit dem zweiten Drill nach dem Hypercharge-Fenster | Reassemble ab 4,75 s, Air Anchor bei 0,1 s, danach dieselbe Folge | deckt sich mit der Variante (Modell, A342) |
-| Trank im Opener | 2 s vor dem Pull | ab 1 s, nur mit „Use burst medicine in countdown (requires auto burst option on)" (Option der Rotation, ab Werk aus) | Ob 1 s Air Anchor verzögert, hängt an der Animationssperre des Tranks, die keine der Quellen nennt; nicht geändert |
+| Trank im Opener | „Potion (As late as possible without clipping)“ nach Shadow of Death im Opener; „Slice – Potion ends here“; keine eigene Angabe zu 2 Minuten (abgerufen 14.11.2026) | Upstream 6462f8a90: „First Potion timing“, ab Werk erst ab dem zweiten Arcane Circle (frühestens 30 s Kampfzeit); das spart in der Lernphase jeden Trank, den ein Wipe vor zwei Minuten verschwenden würde (seine Regel A501: Tinkturen kosten Geld). Der Opener-Trank bringt dagegen den ersten Burst und in Kämpfen von 6 bis 8 min einen Trank mehr. Der Fork setzt „Automatic“ (A779): Opener, wenn der Kampf schon geschafft ist (`InClearedDuty`, aus dem Spiel) oder der letzte Zug hier länger als eine Abklingzeit von Arcane Circle lief (`LastPullTime`): Dann kommen Wipes spät, und der Schadenscheck zählt. Sonst ab dem zweiten Arcane Circle. „Use potion“ ergänzt den allgemeinen Tinktur-Schalter je Job (A645). | Voreinstellung „Automatic“ |
 | Hypercharge vor einem Werkzeug | nicht, wenn Air Anchor, Drill oder Chain Saw in unter 8 s bereit wird (drei GCDs Überhitzung, 7,5 s) | `ToolChargeSoon`: dieselben 8 s; bei Drill erst, wenn beide Ladungen voll würden | deckt sich; Drill hat zwei Ladungen, verloren geht erst eine volle |
 | Scattergun | ab 3 Gegnern | AoE-Zahl 3 | deckt sich |
 | Scattergun mitten in der Heated-Kombination | – | Scattergun steht vor den Kombischritten und bricht die Kombination (Spielblatt: `PreservesCombo` falsch; Drill, Air Anchor, Chain Saw, Auto Crossbow und Blazing Shot halten sie). Steigt die Zahl mitten in der Kombination auf drei, fällt der Abschluss weg | Ob der Abschluss bei genau drei Gegnern mehr bringt (Heated Clean Shot 420 und 10 Batterie gegen 3 × 130 und 5 Heat mehr), hängt am Wert von Batterie und Heat, den kein Tooltip nennt – mit dem Batteriewert von The Balance gewinnt der Abschluss, ohne ihn und mit einem Wert für Heat Scattergun; dieselbe Lage wie bei Bioblaster. Nicht gebaut. Daedalus hält die Flächenreihe nach dem Erreichen 3 s fest (`DamageModule`, c4a788f, gegen Schwanken seiner Zählung im 12-Yalm-Kreis): Das hielte Scattergun auf zwei Gegnern (260) statt der Einzelzielreihe; RSR zählt je Aktion die Ziele in ihrer Gestalt. Nicht übernommen (A593) |
@@ -889,7 +889,7 @@ Ladung da ist, und an der vollen Ladung.
 
 ### Schnitter: Enshroud
 
-**Deckt sich** (26.10.2026, A383; Trank 14.11.2026, A775) mit The Balance, Reaper Basic Guide („Patch Applicable: 7.5"); nur die Trank-Voreinstellung aus Upstream 6462f8a90 ist angepasst.
+**Deckt sich** (26.10.2026, A383; Trank 14.11.2026, A775, A779) mit The Balance, Reaper Basic Guide („Patch Applicable: 7.5"); nur die Trank-Voreinstellung aus Upstream 6462f8a90 ist angepasst.
 
 | Punkt | The Balance | RSR (`RPR_Reborn`) | Stand |
 |---|---|---|---|
