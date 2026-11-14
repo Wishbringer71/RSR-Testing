@@ -225,13 +225,15 @@ public partial class BeastmasterRotation
 	/// first - below the highest rank, or above the board's sync where its true rank is unknown, and at least the rank the
 	/// game recommends - lowest rank first. The places left up to <paramref name="size"/> go to the other familiars that lag behind, lowest rank first.
 	/// Without any familiar that lags behind the team stays as chosen. <paramref name="learning"/> receives each familiar that
-	/// lags behind: true when it learns off the horns, false when it fights in reserve.
+	/// lags behind outside the core: true when it learns off the horns, false when it fights in reserve;
+	/// <paramref name="laggers"/> counts every one that lags behind, the core's included (A804).
 	/// </summary>
 	private static List<TeamCandidate> LevelingTeam(uint board, int size, List<TeamCandidate> chosen, List<TeamCandidate> all,
-		Dictionary<uint, int> weight, bool interrupting, List<BeastmasterPet> team, BeastmasterKinType kin,
-		Dictionary<BeastmasterPet, bool> learning, out string note)
+		Dictionary<uint, int> weight, bool interrupting, List<BeastmasterPet> team,
+		Dictionary<BeastmasterPet, bool> learning, out string note, out int laggers)
 	{
 		note = string.Empty;
+		laggers = 0;
 		var maxRank = CrucibleBoard.MaxRank;
 		var recommended = CrucibleBoard.RecommendedRank(board);
 		// A803: the game gives the true rank, above the board's sync too; the rank the last result window showed counts where
@@ -245,12 +247,13 @@ public partial class BeastmasterRotation
 			var rank = TrueRank(candidate, sync, out var isKnown);
 			known[candidate.Pet] = isKnown;
 			var behind = isKnown ? rank < maxRank : sync < maxRank;
-			if (rank > 0 && behind && (kin == BeastmasterKinType.None || KinOf(candidate.Pet) == kin))
+			if (rank > 0 && behind)
 			{
 				lagging.Add(candidate with { Rank = rank });
 			}
 		}
 
+		laggers = lagging.Count;
 		if (lagging.Count == 0)
 		{
 			note = "No familiar lags behind in rank: the team for the board's fights and the score.";
@@ -348,7 +351,7 @@ public partial class BeastmasterRotation
 
 		var squad = SquadPoints(fighters.Count);
 		note = $"{fighting} fight{(fighting < chosen.Count ? " (they carry the measured losses, one in reserve)" : string.Empty)}; "
-			+ $"{learning.Count} lag behind in rank and level with them, {learners} of them off the horns unless too few others live"
+			+ $"{lagging.Count} lag behind in rank and level with them, {learners} of them off the horns unless too few others live"
 			+ (fighters.Count < size && squad > 0 ? $"; {fighters.Count} familiars bring {squad} points for a small team." : ".");
 		return fighters;
 	}
@@ -516,35 +519,40 @@ public partial class BeastmasterRotation
 
 			var safe = profile.TrickHeals || profile.ReleaseHeals || profile.ReleaseProtects || profile.BorrowProtects;
 			var overRank = party != null && party->IsPetOverSyncedRank((uint)pet);
-			var rank = CrucibleBoard.PetRank(party, pet);
+			// A803: the higher of the game's rank and the last result window's (A799); the trace names which.
+			var game = CrucibleBoard.PetRank(party, pet);
 			var learned = CrucibleBoard.KnownRank(pet);
-			_rankSources[pet] = rank > 0 && rank >= learned ? "game" : learned > 0 ? "learned" : "unknown";
-			candidates.Add(new TeamCandidate(pet, ElementsOf(profile), safe, overRank, rank));
+			_rankSources[pet] = game > 0 && game >= learned ? "game" : learned > 0 ? "learned" : "unknown";
+			candidates.Add(new TeamCandidate(pet, ElementsOf(profile), safe, overRank, Math.Max(game, learned)));
 		}
 
 		var all = new List<TeamCandidate>(candidates);
 
-		// A804: under Safe win no familiar below the board's recommended rank takes a place while others fill the size - one
-		// there goes on a horn only when fewer others live than horns (K6), so its place is no reserve.
+		// A804: under Safe win a familiar below the board's recommended rank - or of no known rank - takes a place only where the
+		// others do not fill the size, the highest of them first: one there goes on a horn only when fewer others live than
+		// horns (K6), so its place is no reserve.
 		var safeWin = goal == CrucibleGoal.SafeWin;
 		if (safeWin)
 		{
 			var recommended = CrucibleBoard.RecommendedRank(board);
-			var weak = 0;
-			foreach (var candidate in candidates)
+			while (candidates.Count > size)
 			{
-				weak += !candidate.OverRank && candidate.Rank > 0 && candidate.Rank < recommended ? 1 : 0;
-			}
-
-			if (weak > 0 && candidates.Count - weak >= size)
-			{
-				for (var i = candidates.Count - 1; i >= 0; i--)
+				var weakest = -1;
+				for (var i = 0; i < candidates.Count; i++)
 				{
-					if (!candidates[i].OverRank && candidates[i].Rank > 0 && candidates[i].Rank < recommended)
+					if (!candidates[i].OverRank && candidates[i].Rank < recommended
+						&& (weakest < 0 || candidates[i].Rank < candidates[weakest].Rank))
 					{
-						candidates.RemoveAt(i);
+						weakest = i;
 					}
 				}
+
+				if (weakest < 0)
+				{
+					break;
+				}
+
+				candidates.RemoveAt(weakest);
 			}
 		}
 
@@ -569,13 +577,17 @@ public partial class BeastmasterRotation
 		var leveled = false;
 		if (goal == CrucibleGoal.Level && party != null)
 		{
-			var leveling = LevelingTeam(board, size, chosen, all, weight, interrupting, team, BeastmasterKinType.None, learning,
-				out var levelNote);
-			CrucibleTeamSizeNote = levelNote;
-			if (learning.Count > 0)
+			var leveling = LevelingTeam(board, size, chosen, all, weight, interrupting, team, learning, out var levelNote,
+				out var laggers);
+			leveled = laggers > 0;
+			if (leveled)
 			{
 				chosen = leveling;
-				leveled = true;
+				CrucibleTeamSizeNote = levelNote;
+			}
+			else
+			{
+				CrucibleTeamSizeNote = (CrucibleTeamSizeNote.Length > 0 ? CrucibleTeamSizeNote + " " : string.Empty) + levelNote;
 			}
 		}
 

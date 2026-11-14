@@ -2101,7 +2101,8 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
   abgedeckten Gegner trifft: Gewicht je Schwäche ist die Zahl der Gegner aller Kämpfe des Bretts mit ihr
   (`XBMContentBattle` → `XBMBattleDetail`), und jeder schon gewählte Begleiter mit derselben Schwäche teilt es
   (Gewicht durch eins plus die Zahl der schon Gewählten, die sie treffen). Bei Gleichstand zuerst, wer über dem Rang des
-  Bretts steht (`IsPetOverSyncedRank`), dann wer schon im Kader ist. Ein Seelen-Begleiter für Soul Crush (K4) wartet darauf, dass RSR weiß, welche Kämpfe unterbrechbar zaubern.
+  Bretts steht (`IsPetOverSyncedRank`), dann darunter der höhere Rang (der höhere aus Spiel und Abrechnung; über dem
+  Synchronrang kämpfen beide gleich stark, A804), dann wer schon im Kader ist. Ein Seelen-Begleiter für Soul Crush (K4) wartet darauf, dass RSR weiß, welche Kämpfe unterbrechbar zaubern.
 - *Leveln (seine Vorgabe, 05.11.2026, A579; seine Hinweise vom 14.11.2026, A796):* „zum leveln der begleiter sollten die
   begleiter bei der anfangsauswahl des brettes bevorzugt werden, die hinter den anderen hinterherleveln. ausnahme: sie
   sind kein adäquater ersatz für die kämpfe aufgrund falscher eigenschaften." Am 14.11.2026: „die begleiter werden nicht
@@ -2144,7 +2145,7 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
     der Unterbrecher) und die Reserve bis zu der Zahl, die die gemessenen Verluste dieses Bretts mit einem Begleiter in
     Reserve trägt (A703, je Größe gerechnet, nicht nur auf den Stufen von In Unterzahl); ohne Messung die volle Größe.
     Auf den Reserveplätzen gehen *Nachzügler* vor, die adäquat ersetzen – echter Rang unter 25, mindestens der
-    empfohlene Rang des Bretts, im Team einer Gattung von dieser Gattung –, der niedrigste zuerst; danach die gierige
+    empfohlene Rang des Bretts –, aus jeder Gattung, der niedrigste zuerst; danach die gierige
     Wahl (seine Vorgabe vom 14.11.2026: „am besten alle reihum bis zum höchstlevel aufsteigen lassen"). Unter gleichem
     Rang gehen die vor, die nicht im Kader des letzten Laufs standen – so kommen sie reihum. Eine Schwäche geht auf
     diesen Plätzen nicht verloren: Der Kern trifft jede, die ein Begleiter treffen kann.
@@ -2197,15 +2198,17 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
   | Ziel | Kader (K7) | Im Brett (K15 und was daran hängt) |
   |---|---|---|
   | Level | Kämpfer und Lernende aus allen Gattungen (oben); ohne Nachzügler wie „Score" (seine Vorgabe vom 14.11.2026, „Nach dem Höchstrang") | Boni gewogen wie unter „Score": Die Begleiter-EP folgen der Punktzahl |
-  | Safe win | volle Größe, gierig nach Schwächen, ohne Begleiter unter dem empfohlenen Rang, solange andere die Größe füllen; bei Gleichstand unter dem Synchronrang der höhere Rang; keine Verkleinerung, keine Gattung, keine Lernenden | kein Bonus hält zurück, was eine Sicherheitsregel verlangt: Gegenstände, Kauf, Schatz, Rast und Futter gehen wie ohne K15 (K8, K10, K13) |
+  | Safe win | volle Größe, gierig nach Schwächen; unter dem empfohlenen Rang (oder ohne bekannten Rang) nur so viele, wie zum Füllen fehlen, die ranghöchsten; keine Verkleinerung, keine Gattung, keine Lernenden | kein Bonus hält zurück, was eine Sicherheitsregel verlangt: Schutz- und Heilgegenstände, Kauf, Schatz, Rast und Futter gehen wie ohne K15 (K8, K10, K13); der Weg zieht unter sicheren Wegen nicht mehr den ohne Gegenstände vor, sondern den mit mehr Gegenstandsfeldern |
   | Score | Größe nach Punkten (A698) und Gattung (A699), keine Lernenden | K15 wie gebaut: ein Bonus bleibt, solange der Weg ohne die Handlung sicher ist |
-  Was nur Punkte gegen Punkte tauscht, wiegt unter jedem Ziel: die Heilung im letzten GCD des Endkampfs (A712) und die
-  für „Unversehrte Bestien" (A695) gehen nur, wo ihr Bonus die Gegenstandsboni übersteigt, die sie kosten – Sicherheit
-  bringt keine von beiden, der Kampf endet vor dem nächsten GCD (unabhängige Prüfung, A804). Die Wahl gilt ab dem Klick,
+  Was keine Sicherheitsregel verlangt, wiegt die Boni unter jedem Ziel (unabhängige Prüfung, zwei Runden, A804): die
+  Heilung im letzten GCD des Endkampfs (A712) und die für „Unversehrte Bestien" (A695) gehen nur, wo ihr Bonus die
+  Gegenstandsboni übersteigt, die sie kosten – der Kampf endet vor dem nächsten GCD; Schadens-, TP- und
+  Stärkungsgegenstände (K8, Schaden) gehen unter Safe win erst, wenn kein Gegenstandsbonus mehr steht – ein
+  Schutzgegenstand hat ihn dann schon gekostet, oder es gab keinen. Die Wahl gilt ab dem Klick,
   auch mitten im Lauf über die Einstellung, und für alle folgenden Läufe; ein schon verlorener Bonus bleibt verloren. Die
   Spur nennt das Ziel mit dem angeforderten Kader („crucible team: goal Level - requested …"). Unter Level gilt das Team
-  einer Gattung (A699) erst, wenn kein Begleiter mehr zurückliegt: Vorher schlösse es Nachzügler anderer Gattungen aus
-  (seine Vorgabe: „alle reihum").
+  einer Gattung (A699) erst, wenn kein Begleiter mehr zurückliegt – auch keiner im Kern: Vorher schlösse es Nachzügler
+  anderer Gattungen aus (seine Vorgabe: „alle reihum").
   *Warum eine Wahl und kein Optimum (Nachweis, dass jede Lösung einen Preis hat, den keine Konstruktion beseitigt):*
   (1) Level gegen Score: Die Plätze des Kaders sind dieselben. In Unterzahl bringt 1.250 bis 4.250 Punkte nur mit
   höchstens sieben Begleitern; jeder Begleiter mehr im Kader bekommt EP (sein Hinweis), höchstens 255 je Brett

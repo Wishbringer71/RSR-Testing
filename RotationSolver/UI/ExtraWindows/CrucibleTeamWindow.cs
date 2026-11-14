@@ -25,8 +25,8 @@ internal sealed class CrucibleTeamWindow : RecommendationWindow
 	private static readonly M3Segment[] Goals =
 	[
 		new("Level", Tooltip: "Familiars that lag behind in rank fill the team; once none does, as Score."),
-		new("Safe win", Tooltip: "The full team; no score bonus holds back what safety asks for - an item, a purchase, a rest or a feed."),
-		new("Score", Tooltip: "A smaller team where the measured losses allow it; bonuses kept while the way is safe without."),
+		new("Safe win", Tooltip: "The full team, below the recommended rank only to fill it; no score bonus holds back what safety asks for - an item, a purchase, a treasure's gear, a rest or a feed."),
+		new("Score", Tooltip: "A smaller team and a team of one kin where the measured losses allow it; bonuses kept while the way is safe without."),
 	];
 
 	protected override void DrawContent()

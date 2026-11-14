@@ -23320,6 +23320,15 @@ audit, codereview und fehlerbeseitigung".
   Inhaltsschalter an allen Stellen aus dem Agenten, war zu weit; korrigiert. *Folge von A803:* Die Laststufe des Kaders
   (A729) lief nie, weil der Rang 0 las; Vorhersage „team-rank-step-runs". Offen: ob Byte 0x46 von `XBMContent` der
   Spalte 36 (`SyncRank`) entspricht, und der Inhaltsschalter im Brett.
+- *Zweite Prüfrunde (frischer Hilfsagent, statisch):* kein Befund hoher Schwere, drei mittlere, eingearbeitet. (M1) Unter
+  Level galt das Team einer Gattung schon, wenn alle Nachzügler im Kern standen (`learning` zählt nur die außerhalb);
+  `LevelingTeam` gibt jetzt die Zahl aller Nachzügler zurück, die Gattung wartet, bis sie 0 ist; der Parameter `kin`
+  ist entfallen. (M2) Unter Safe win gaben Schadens-, TP- und Stärkungsgegenstände die Gegenstandsboni ohne
+  Sicherheitsgewinn auf (bis 1.750 Punkte im Endkampf); sie gehen dort jetzt erst, wenn kein Gegenstandsbonus mehr
+  steht. (M3) Der Filter unter Safe win wirkte ganz oder gar nicht; jetzt fällt der schwächste Begleiter unter dem
+  empfohlenen Rang (oder ohne bekannten Rang), bis der Kader die Größe hat. Niedrig: Der Kandidat trägt den höheren Rang
+  aus Spiel und Abrechnung (Spur, Gleichstand und Filter lesen dasselbe); unter Level ohne Nachzügler bleibt der
+  Größenhinweis stehen; Konzept, Optionstext und Fenstertexte nennen Weg, Schatz und Gattung.
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
