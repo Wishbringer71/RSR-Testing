@@ -186,6 +186,8 @@ public static partial class Watcher
 			ObserveSleep(set, playerObject.GameObjectId);
 			// A landing that lays a status damaging every action teaches its action, from any source (A439).
 			ActionPenaltyWatch.ObserveLanding(set);
+			// A783: whether a gaze RSR turned for still harmed the player.
+			GazeWatch.ObserveLanding(set);
 
 			// Concept 21, K12 (A675): the roulette needle's Death, for where its beat falls before the needle turns.
 			if (set.Action is { } observed)

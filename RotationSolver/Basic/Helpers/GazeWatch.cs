@@ -2,6 +2,8 @@ using Dalamud.Game;
 using ECommons.Logging;
 using ECommons.DalamudServices;
 using ECommons.GameHelpers;
+using ECommons.Hooks;
+using ECommons.Hooks.ActionEffectTypes;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using Framework = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
@@ -63,6 +65,9 @@ internal static partial class GazeWatch
 	// What the eye came from, kept as values so a frame builds no text; Describe writes it for the trace.
 	private readonly record struct Gazer(Vector3 Eye, ulong Key, bool Inverted, float Left, Origin From, uint Id, IGameObject? Who);
 
+	// A783: a gaze RSR turned for, until its landing and the answer to it are past.
+	private readonly record struct Pending(ulong Key, ulong Learn, string? Name, bool Cast, DateTime Until, string Text);
+
 	private sealed class Texts
 	{
 		public required HashSet<string> GazeNames { get; init; }
@@ -80,6 +85,10 @@ internal static partial class GazeWatch
 	private static readonly List<(DateTime Seen, bool Inverted, float Duration)> _markers = [];
 	private static readonly List<IBattleChara> _largest = [];
 	private static long _gazersTick = long.MinValue;
+	private static readonly List<Pending> _pending = [];
+	private static readonly HashSet<ulong> _distrusted = [];
+	private static readonly Dictionary<uint, string> _actionNames = [];
+	private static uint _distrustTerritory;
 	private static volatile Texts? _texts;
 	private static int _textsRequested;
 
@@ -251,6 +260,8 @@ internal static partial class GazeWatch
 					+ $"{Describe(gazer)}, {gazer.Left:F2} s before it lands");
 			}
 		}
+
+		Watch(gazers, lead);
 	}
 
 	/// <summary>
@@ -321,7 +332,116 @@ internal static partial class GazeWatch
 		}
 
 		option->Value.UInt = 0;
+		Watch(gazers, lead);
 		return original;
+	}
+
+	// A783 (concept 13, "Im Spiel auswerten und lernen"): every gaze RSR turned for or chose the facing against waits for
+	// its landing and the server's answer; ObserveLanding judges it.
+	private static void Watch(List<Gazer> gazers, float lead)
+	{
+		var answer = ActionManagerEx.CurrentLockTweak?.DelayMost ?? 0f;
+		var now = DateTime.Now;
+		foreach (var gazer in gazers)
+		{
+			if (gazer.Left > lead || float.IsInfinity(lead))
+			{
+				continue;
+			}
+
+			var known = false;
+			foreach (var pending in _pending)
+			{
+				known |= pending.Key == gazer.Key;
+			}
+
+			if (!known)
+			{
+				_pending.Add(new Pending(gazer.Key, LearnKey(gazer), gazer.From == Origin.Cast ? ActionName(gazer.Id) : null, gazer.From == Origin.Cast,
+					now.AddSeconds(gazer.Left + lead + answer), Describe(gazer)));
+			}
+		}
+	}
+
+	/// <summary>
+	/// A783: an effect landing on the player while a gaze RSR acted on is due. A harmful status or damage from the gaze -
+	/// by its name for a cast, from any enemy for a marker or status gaze, which hit only who looks the wrong way - is a
+	/// failure: RSR leaves that gaze alone in this zone, as before the rule.
+	/// </summary>
+	internal static void ObserveLanding(ActionEffectSet set)
+	{
+		var player = Player.Object;
+		if (_pending.Count == 0 || player == null || set.Source is not IBattleChara source || !source.IsEnemySideFigure())
+		{
+			return;
+		}
+
+		var harmed = false;
+		foreach (var effect in set.TargetEffects)
+		{
+			if (effect.TargetID != player.GameObjectId)
+			{
+				continue;
+			}
+
+			effect.ForEach(entry =>
+			{
+				harmed |= ActionEffectReading.DamageOnTarget(entry) > 0
+					|| (entry.type == ActionEffectType.ApplyStatusEffectTarget && entry.value != 0
+						&& Service.GetSheet<Lumina.Excel.Sheets.Status>().GetRowOrDefault(entry.value) is { StatusCategory: (byte)StatusCategory.Detrimental });
+			});
+		}
+
+		if (!harmed)
+		{
+			return;
+		}
+
+		var name = set.Action?.Name.ExtractText();
+		for (var i = _pending.Count - 1; i >= 0; i--)
+		{
+			var pending = _pending[i];
+			if (pending.Cast && !string.Equals(pending.Name, name, StringComparison.Ordinal))
+			{
+				continue;
+			}
+
+			_ = _distrusted.Add(pending.Learn);
+			DefenseTrace.Line($"gaze: hit despite RSR's facing by {pending.Text} ({name}) - RSR leaves this gaze to you in this zone");
+			_pending.RemoveAt(i);
+		}
+	}
+
+	// Gazes whose landing and answer passed without harm: the rule held there.
+	private static void CloseAvoided()
+	{
+		var now = DateTime.Now;
+		for (var i = _pending.Count - 1; i >= 0; i--)
+		{
+			if (now > _pending[i].Until)
+			{
+				DefenseTrace.Line($"gaze: avoided {_pending[i].Text}");
+				_pending.RemoveAt(i);
+			}
+		}
+	}
+
+	// What a failure is learned under: the cast's name (so a helper's twin counts too), else the source and its id.
+	private static ulong LearnKey(Gazer gazer) => gazer.From == Origin.Cast
+		? (ulong)(uint)StringComparer.Ordinal.GetHashCode(ActionName(gazer.Id))
+		: (ulong)(uint)HashCode.Combine(gazer.From, gazer.Id);
+
+	private static bool Distrusted(Gazer gazer) => _distrusted.Count > 0 && _distrusted.Contains(LearnKey(gazer));
+
+	private static string ActionName(uint actionId)
+	{
+		if (!_actionNames.TryGetValue(actionId, out var name))
+		{
+			name = Service.GetSheet<Lumina.Excel.Sheets.Action>().GetRowOrDefault(actionId)?.Name.ExtractText() ?? string.Empty;
+			_actionNames[actionId] = name;
+		}
+
+		return name;
 	}
 
 	/// <summary>Puts "Auto face target" back after <see cref="PrepareFacing"/>.</summary>
@@ -594,6 +714,28 @@ internal static partial class GazeWatch
 		}
 
 		AddMarkers(player);
+
+		// A783: a zone change starts trust anew, so a fixed build proves itself again.
+		var territory = DataCenter.Territory?.Id ?? 0;
+		if (territory != _distrustTerritory)
+		{
+			_distrustTerritory = territory;
+			_distrusted.Clear();
+			_pending.Clear();
+		}
+
+		CloseAvoided();
+		if (_distrusted.Count > 0)
+		{
+			for (var i = _gazers.Count - 1; i >= 0; i--)
+			{
+				if (Distrusted(_gazers[i]))
+				{
+					_gazers.RemoveAt(i);
+				}
+			}
+		}
+
 		return _gazers;
 	}
 
@@ -728,7 +870,7 @@ internal static partial class GazeWatch
 			foreach (var eye in _largest)
 			{
 				_gazers.Add(new Gazer(eye.Position, eye.GameObjectId ^ (ulong)marker.Seen.Ticks, marker.Inverted, Math.Max(0f, left),
-					Origin.Marker, 0, eye));
+					Origin.Marker, marker.Inverted ? 1u : 0u, eye));
 			}
 		}
 	}

@@ -22708,6 +22708,34 @@ wurden und was davon übernommen werden kann“. Zuletzt verglichen in A751.
       2-Minuten-Burst eines Zugs, der ihn erreicht.
 - *Prüfgrad:* Regeldateien geprüft (`check_rule_files.py`), alle CI-Schritte lokal.
 
+### A783 · Seine Vorgabe: im Spiel auswerten und lernen, kein Supergau; Blickwache erkennt ihren Fehlschlag (14.11.2026)
+
+Seine Angabe (14.11.2026): „windurst spiele ich wenigstens einmal pro woche. ziel ist es doch erst einmal ein
+tragfähiges theoretisches konzept zu haben. dass wird dann entweder durch interne tests untermauert, oder durch externe
+logs widerlegt oder auch untermauert. bei testumsetzung darf bloß nicht der supergau entstehen, dass durch die neue regel
+sofort und immer bis zum fix gestorben wird. daher kommt von mir auch immer die vorgabe: ingame auswertung und ingame
+daraus lernen.“ Einordnung: Antwort auf Frage 1 aus A782 und Vorgabe.
+- *Frage 1 aus A782 beantwortet:* keine harte Grenze für ungeprüfte Arbeit. Zuerst ein tragfähiges Konzept, dann
+  Bestätigung oder Widerlegung durch Tests oder Logs. Windurst kommt wöchentlich in seinen Logs vor.
+- *Frage 2 (unabhängige Prüfrunden durch Hilfsagenten):* nicht beantwortet, bleibt offen.
+- *Vorgabe eingetragen:* `code.md`, „Entscheidung zur Laufzeit“. Eine neue Regel, die ins Spielgeschehen eingreift,
+  erkennt im Spiel, ob ihr Eingriff gewirkt hat. Nach dem ersten Fehlschlag fällt sie für diesen Fall auf das Verhalten
+  ohne sie zurück, mit Protokollzeile; Erfolge schreibt sie ebenso.
+- *Angewandt auf die Blickwache (Konzept 13, „Im Spiel auswerten und lernen“):*
+  - Jeder Blick, für den RSR gedreht oder die Richtung gewählt hat, wartet bis Landung plus Vorlauf plus gemessener
+    Antwortzeit (`GazeWatch.Watch`).
+  - Trifft den Spieler bis dahin ein schädlicher Status oder Schaden aus diesem Blick, gilt das als Fehlschlag
+    (`GazeWatch.ObserveLanding`, aus `Watcher.ActionFromEnemy`). Aus dem Blick heißt: bei Wirken der gleiche Name, bei
+    Marker oder Status ein Gegner. Dann greift RSR bei diesem Blick im Gebiet nicht mehr ein, also weder Drehen noch
+    Richtung noch Sperre; die Zeile lautet „gaze: hit despite …“.
+  - Sonst schreibt RSR „gaze: avoided …“.
+  - Ein Gebietswechsel setzt das Gelernte zurück.
+- *Klasse:* Die Vorgabe gilt für neue eingreifende Regeln. Die Blickwache ist die einzige neue Regel dieses Branches,
+  die die Figur dreht. Die Tinkturregeln greifen nicht in Leben und Tod ein.
+- *Vorhersage, Ergänzung zu A782:* Wirkt: Nach jeder Zeile „gaze: turned …“ folgt „gaze: avoided …“ für denselben Blick.
+  Wirkt nicht: „gaze: hit despite …“. Danach stehen für diesen Blick im Gebiet keine Zeilen „gaze: turned“ mehr.
+- *Prüfgrad:* Compile, alle CI-Schritte lokal; im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

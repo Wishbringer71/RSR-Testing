@@ -342,6 +342,31 @@ drehen müsste.
     fremde Drücke nicht ab.
   - *Preis:* Während eines Vorlaufs schaut die Figur bis zu 45° neben das Ziel. Bei Angriffen von hinten oder der Seite
     zählt der Standort, nicht die Blickrichtung; Positionals ändern sich nicht.
+- *Im Spiel auswerten und lernen* (A783; seine Vorgabe vom 14.11.2026: „bei testumsetzung darf bloß nicht der supergau
+  entstehen, dass durch die neue regel sofort und immer bis zum fix gestorben wird … ingame auswertung und ingame daraus
+  lernen“; dazu: „ziel ist es doch erst einmal ein tragfähiges theoretisches konzept zu haben. dass wird dann entweder
+  durch interne tests untermauert, oder durch externe logs widerlegt oder auch untermauert“). Einordnung: Vorgabe.
+  - *Was zählt als Eingriff:* Im Vorlauf hat RSR gedreht (`TurnAway`, `PrepareFacing`) oder eine Richtung beim Auslösen
+    gewählt. Eine reine Sperre zählt nicht, denn sie dreht nicht; dort dreht der Spieler oder BossModReborn.
+  - *Fehlschlag:* Nach dem Ende des Blicks trifft den Spieler eine Wirkung mit schädlichem Status
+    (`StatusCategory` schädlich) oder Schaden. Sie muss vor dem Ende von Vorlauf plus gemessener Antwortzeit eintreffen,
+    die Antwort des Servers braucht so lange.
+    - Bei einem Wirken: aus einer Aktion mit dem Namen des Blicks. Das trifft auch die Helferfassung (#3499 zu #3281) und
+      die Strafaktion in Windurst, die wie das Wirken heißt.
+    - Bei Marker, Status oder Mitglied: von einem Gegner. Diese Blicke treffen nur, wer falsch schaut.
+  - *Folge:* Für diesen Blick greift RSR im Gebiet nicht mehr ein, also weder Drehen noch Richtung noch Sperre. Das ist
+    das Verhalten ohne die Regel. Der Schlüssel ist der Name des Wirkens, bei Markern die Marker-Art, bei Status die
+    Status-Id. Ein Gebietswechsel setzt das zurück: Ein neuer Stand nach einem Fix soll sich wieder beweisen. Die Zeile
+    „gaze: hit despite …“ steht im `DefenseTrace.log`.
+  - *Erfolg:* Bleibt der Spieler bis zum Fensterende ohne solche Wirkung, schreibt RSR „gaze: avoided …“. Das ist der
+    Beleg, den seine Uploads liefern (Vorhersage in A782).
+  - *Gegenthese 1 (falscher Fehlschlag):* Eine gleichzeitige andere Wirkung mit demselben Namen, oder bei Markern von
+    irgendeinem Gegner, kann als Fehlschlag zählen. *Preis:* RSR greift bei diesem Blick in diesem Gebiet nicht mehr ein,
+    wie vor A770. Das ist der sichere Zustand, kein Tod.
+  - *Gegenthese 2 (Fehlschlag ohne Eingriff):* Hat RSR nur gesperrt, lernt es nichts. Dort drehte RSR nicht, also kann
+    seine Regel den Tod nicht verursacht haben.
+  - *Gegenthese 3 (ausgeliefert, und nichts ändert sich):* Ein Blick, dessen Treffer erst später kommt (Verhängnis als
+    Status mit Ablauf), zeigt sich am Status, den die Treffer-Wirkung setzt. Das ist hier der Fall; der Tod folgt später.
 - *Im Kampf:* Während der 4,5 s von #3499 kämpft RSR bis L vor dem Blick weiter, auch auf Angra Mainyu. Ab dann drückt
   es nichts mehr auf ihn und nichts auf ein Ziel in seiner Richtung, und es dreht die Figur von ihm weg. Der Ausfall schrumpft so von zwei GCDs auf
   die gemessene Verzögerung plus ein Bild. Der Heiler heilt weiter, denn Heilungen
