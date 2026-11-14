@@ -897,7 +897,7 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 	private static readonly bool _showToastsAboutDoAction = false;
 
 	[ConditionBool, UI("Turn away from gaze attacks",
-		Description = "While an enemy casts a gaze that reaches you, RSR turns you away just before it lands and holds actions that would turn you back into it. It knows a gaze from the game data, from BossModReborn's fight modules and by name, without BossModReborn running.\nIn a fight: you keep attacking the caster until just before the gaze, then face away from it; an inverted gaze turns you to face it. Off: actions that turn you into the gaze are held for the whole cast, and you turn yourself.",
+		Description = "While an enemy casts a gaze that reaches you, RSR turns you away just before it lands and holds actions that would turn you back into it. It knows a gaze from the game data, from BossModReborn's fight modules, by name, and from markers and statuses that tell you to look at or away from someone, without BossModReborn running.\nIn a fight: you keep attacking the caster until just before the gaze, then face away from it; an inverted gaze turns you to face it. Off: actions that turn you into the gaze are held for the whole cast, and you turn yourself.",
 		Filter = AutoActionUsage, Section = 3)]
 	private static readonly bool _turnAwayFromGazes = true;
 

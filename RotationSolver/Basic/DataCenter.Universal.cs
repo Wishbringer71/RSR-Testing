@@ -642,7 +642,7 @@ internal static partial class DataCenter
 	}
 
 	// A766: the place of a ground-targeted cast as the game keeps it (CastInfo.TargetLocation); null while it gives none.
-	private static unsafe Vector3? CastLocation(IBattleChara h)
+	internal static unsafe Vector3? CastLocation(IBattleChara h)
 	{
 		if (h.Address == nint.Zero || !h.IsCasting)
 		{

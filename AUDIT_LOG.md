@@ -22474,6 +22474,42 @@ schützen. Analysiere deren Verhalten und Code und optimiere den eigenen“. Ein
 - *Fork-Version:* `Directory.Build.props` auf 7.5.8.3 (eigener Commit auf `main`).
 - *Prüfgrad:* Compile, Prüfskripte; im Spiel nicht beobachtet.
 
+### A776 · Seine Hinweise: Kefkas Fragezeichen, Windurst-Endboss; Umkehrung und Auge zur Laufzeit (14.11.2026)
+
+Seine Angaben (13. und 14.11.2026): „Bei kefka und anderen Gegnern gibt es eine Kombination mit Umkehrung. Bei kefka
+wird ein Fragezeichen beigepackt. Hinsehen ist da dann wegsehen und umgekehrt. Solche Sonderfälle gibt es auch woanders.
+Endboss allyraid …“; „beim endboss des letzten ally raids windurst scheint bmr einige Dinge falsch zu interpretieren“.
+Einordnung: Hinweise.
+- *Erhebung:* alle 24 selbst gebauten Blicke in BossModReborn 8ad17f97f, `Lockon` und `Status` (englisch) vollständig,
+  O8S an consolegameswiki. Ergebnis im Konzept 13, „Umkehrung und Auge zur Laufzeit“.
+- *Befunde an A770–A774:*
+  - O8S „Ave Maria“ (#10467, hinsehen) galt als kein Blick.
+  - In Windurst (`A35ShinryuParadox`) hielt RSR „Look“ und „No Look“ nicht. Ein Angriff auf den Boss drehte einen
+    Spieler mit „No Look“ zurück in den Blick.
+  - Bei Merciful Moon, P8S und CE34 legte RSR das Auge auf den Wirkenden oder erkannte einen Blick am Namen, dessen Auge
+    oder Richtung zur Laufzeit woanders entsteht. Bei CE34 zählte der Wirk des Bosses selbst als Blick.
+  - BossModReborns `CastGaze` setzt das Auge an den Ort des Wirkens, RSR an den Wirkenden.
+- *BossModReborn in Windurst:* Das Modul setzt das Auge in beiden Phasen auf Shinryu (`PrimaryActor`); in Phase 2
+  wirkt der Hollow King. *Schluss, unbelegt am Mitschnitt:* Das ist einer der Fehler, die er sieht.
+- *Umgesetzt:*
+  - `gaze_actions.py` führt die Liste `Unsure` (34 Ids) und nimmt Thordans Drachenblick und „Break IV“ als Blick mit
+    Auge am Ort auf (84 Blicke).
+  - `GazeWatch` führt jeden Blick als Auge mit Ort, Richtung und Restzeit, aus vier Quellen: Wirken mit dem Auge am Ort
+    und umgekehrten Namen, Status auf dem Spieler nach seinem Text, Kopfmarker „lk“/„no_lk“, und ein Mitglied als Auge
+    nach dem Text.
+  - Aus dem Review: Texte je Auge, ein Abschluss je Bild und Aufzählungen der Statuslisten entfernt, damit je Bild
+    nichts angelegt wird.
+- *Verworfen:* „Spell-in-Waiting: Shadoweye“ als Mitglied-Auge. Keine Quelle führt Shadoweye als Blick; der Zweig
+  hätte nichts getroffen.
+- *Nicht lesbar für RSR:* Animationen (Kefkas Statuen im Ultimate, Nier), Verbindungen (Owain), der Zusatzwert am Status
+  des Bosses (Cursed Shriek im Ultimate). Dort tut RSR nichts.
+- *Modell:* Regeln an allen Zeilen nachgerechnet.
+  - Die Statusregel trifft 3385/3386 (Nymeia), die Markerregel 680/681 (je 7 s), die Mitgliedsregel 3511.
+  - #10467 wird umgekehrt, #10468 bleibt Blick, #47795 ist unsicher.
+  - „Cat's Eye“ und „Avert Your Eyes“ tragen beide Arten und zählen als keines.
+- *Prüfgrad:* Compile, Prüfskripte samt Selbsttest des Generators, Modell an den Blättern; im Spiel nicht beobachtet.
+  Messmittel sind die Zeilen „gaze: …“ mit Herkunft des Auges im `DefenseTrace.log`.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

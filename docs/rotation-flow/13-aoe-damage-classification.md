@@ -237,9 +237,10 @@ drehen müsste.
   dieser beiden. Am Blatt gemessen (xivapi v2, 13.11.2026): 230 Aktionen tragen das
   Kennzeichen, keine davon eine Spieleraktion. 77 gegnerische Wirken heißen gleich und tragen es nicht, darunter die
   Helferfassungen von „Mortal Gaze“, „Hex Eye“, „Petrifaction“ und „Evil Eye“. Die Namen liest RSR einmal im
-  Hintergrund; bis dahin zählt das Kennzeichen.
-- *In den Blick drehen:* Liegt der Wirkende vom Spieler aus innerhalb von 45° zur Richtung des Ziels, blickt die
-  gedrehte Figur ihn an. Die 45° sind BossMods halbe Breite einer verbotenen Richtung (`AIHintsBuilder`,
+  Hintergrund; bis dahin zählt das Kennzeichen. Was BossModReborn nur in selbst gebauten Blicken führt, zählt nicht;
+  Status, Kopfmarker und umgekehrte Namen ergänzen die Quellen (A776, „Umkehrung und Auge zur Laufzeit“).
+- *In den Blick drehen:* Liegt das Auge vom Spieler aus innerhalb von 45° zur Richtung des Ziels, blickt die gedrehte
+  Figur es an. Das Auge eines Wirkens liegt an dessen Ort, ohne Ort beim Wirkenden (A776). Die 45° sind BossMods halbe Breite einer verbotenen Richtung (`AIHintsBuilder`,
   `ForbiddenDirections`; Werkzeugquelle). Das Spiel nennt keinen Winkel.
 - *Zeitraum und Wegdrehen* (A774, seine Frage vom 13.11.2026 nach anderen Plugins, die wegdrehen): RSR dreht die Figur
   selbst weg und hält Aktionen nur im letzten Stück zurück.
@@ -328,6 +329,72 @@ drehen müsste.
 - *Gegenthese 3 (ausgeliefert, und nichts ändert sich):* Steht er schon mit Blick zum Wirkenden still, dreht RSR ihn
   nicht weg; das kann nur er oder BossModReborn. Bodenzauber drehen zum Ort, nicht zum Ziel, und bleiben hier
   ungeprüft.
+
+- *Umkehrung und Auge zur Laufzeit* (A776; seine Hinweise vom 13. und 14.11.2026: „Bei kefka … wird ein Fragezeichen
+  beigepackt. Hinsehen ist da dann wegsehen und umgekehrt. Solche Sonderfälle gibt es auch woanders“; „beim endboss des
+  letzten ally raids windurst scheint bmr einige Dinge falsch zu interpretieren“). Einordnung: Hinweise.
+  - *Erhebung:* BossModReborn 8ad17f97f, alle 24 Klassen, die einen Blick selbst bauen (`GenericGaze`), dazu die Blätter
+    `Lockon` (726 Zeilen) und `Status` (5.851 Zeilen, englisch). Auslöser und Ort des Auges:
+    - *Eigene Aktion für die Täuschung:* Kefka in O8S wirkt „Indolent Will“ (#10468, lila Auge, wegsehen) oder „Ave
+      Maria“ (#10467, gelbes Auge mit Fragezeichen, hinsehen; consolegameswiki, O8S). Das Fragezeichen ist eine eigene
+      Aktion. Bisher galt #10467 als kein Blick: Sein Name war entfernt, weil O8Ns „Ave Maria“ (#10539) umgekehrt ist.
+    - *Kopfmarker:* Der Windurst-Endboss (BossModReborn `A35ShinryuParadox`) setzt je Spieler „Look“ (`Lockon` 681,
+      `z6r3_b4_lock_lk_7s_c0k2`) oder „No Look“ (680, `…_no_lk_7s…`). Aufgelöst wird beides mit einem Wirken von 7 s:
+      in Phase 1 von Shinryu (#49121), in Phase 2 vom Hollow King (#49161). BossModReborn setzt das Auge in beiden
+      Phasen auf Shinryu (`PrimaryActor`). In Phase 2 wirkt aber der Hollow King. *Unbelegt, Schluss:* Das ist der
+      Fehler, den er sieht. Im ganzen Blatt tragen nur diese zwei Marker „lk“ im Namen.
+    - *Status auf dem Spieler:* „Arcane Attraction“ (3385) und „Attraction Reversed“ (3386) bei Althyk und Nymeia
+      (Euphrosyne). Der Text sagt es selbst: „Seduced if gazing at Nymeia“ und „… if looking away from Nymeia when this
+      effect expires“. Sonst trägt kein Status diese Form.
+    - *Ein Mitglied wird zum Auge:* „Glassy-eyed“ (3511, Lapis Manalis: „unleash a petrifying attack in all
+      directions“). Wer den Status trägt, wird beim Ablauf zum Auge für alle anderen. „Spell-in-Waiting: Shadoweye“
+      (1812, 2456) sagt nur „Designated target of Shadoweye“; Shadoweye trägt weder das Kennzeichen noch den Namen
+      eines Blicks, und die Id im Ultimate führt BossModReborn nur im selbst gebauten Blick.
+    - *Auge woanders als beim Wirkenden:* BossModReborns `CastGaze` setzt das Auge an den Ort des Wirkens
+      (`spell.LocXZ`, aus `CastInfo.TargetLocation`). RSR nahm den Wirkenden. Bei Thordan (#5257, `VFX` 25) liegt das
+      Auge am Ort; bei Merciful Moon (#23212, `VFX` 25) an einer erzeugten Kugel; in P8S (#31019, gleichnamig) bei den
+      Gorgonen.
+    - *Umkehrung, die RSR nicht lesen kann:* Kefkas Statuen im Ultimate (Animation einer Figur), Nier „Distortion“
+      (Animation), Owain (Verbindung), „Cursed Shriek“ im Ultimate (echt oder falsch nach einem Status des Bosses mit
+      Zusatzwert), Bozja CE34 (das Wirken des Bosses kehrt die Augen um). Ebenso Lala (Ausrichtung aus mehreren Status)
+      und das Erosive Eye (Reihenfolge der Wirken). Shadoweye (siehe oben) und „petrifying light upon those nearby“
+      („Crown of the Gorgon“, „Authority's Gaze“): Der Text sagt Nähe, nicht Blick, und trennt beides nicht.
+  - *Regel:* RSR führt jeden Blick als Auge mit Ort, Richtung (normal oder umgekehrt) und Restzeit. Geprüft an allen
+    Zeilen (14.11.2026): Die Statusregel trifft genau 3385 und 3386, die Markerregel genau 680 und 681, die Regel für
+    ein Mitglied genau 3511. Die Quellen:
+    - Wirken: wie bisher; dazu gilt ein Name, den nur umgekehrte Blicke tragen, als umgekehrt (#10467). Ein Name, den
+      beide Arten tragen, zählt nicht. Das Auge liegt am Ort des Wirkens, ohne Ort am Wirkenden.
+    - Status auf dem Spieler nach seinem Text: „if gazing at / looking at <Name> when this effect expires“ ist ein Blick,
+      „if looking away from <Name> …“ ein umgekehrter. Das Auge ist der nächste Gegner mit diesem englischen Namen,
+      die Restzeit die des Status.
+    - Kopfmarker auf dem Spieler, deren Effektpfad „_no_lk_“ (wegsehen) oder „_lk_“ (hinsehen) trägt, mit der Dauer
+      aus dem Pfad („7s“). Augen sind die wirkenden Gegner mit dem größten Trefferkreis: in Phase 1 Shinryu und sein
+      Teil „ShinryuGroin“ (beide 25 y, beide wirken #49121/#49122), in Phase 2 der Hollow King (25 y). Liegen zwei
+      Augen in verschiedenen Richtungen, gilt jedes; bei „Look“ bleibt nur eine Richtung, die beide ansieht.
+      *Schluss, unbelegt am Mitschnitt:* Die Zeile „gaze: marker …“ nennt die gewählten Augen.
+    - Mitglied als Auge nach dem Statustext („petrifying attack in all directions“), ein normaler Blick vom Träger aus,
+      solange der Träger nicht der Spieler ist und lebt.
+    - *Unsicher:* Ids, die BossModReborn nur in selbst gebauten Blicken führt, zählen nicht als Blick, auch mit
+      Kennzeichen oder Namen. Ausgenommen sind Klassen ohne Umkehrung, die das Auge beim Wirken an dessen Ort setzen,
+      ohne Einstellung des Moduls (Thordan, Cloud of Darkness „Break IV“). Diese Ids führt `gaze_actions.py` als Blick.
+  - *Optionen:* (0) nichts: RSR dreht bei Ave Maria in O8S und bei „Look“ in Windurst in den Tod, wo es angreift, und
+    bei Merciful Moon und P8S vom falschen Punkt weg. (1) Nur die unsicheren Ids herausnehmen: Das beseitigt die falsche
+    Richtung, schützt aber bei Kefka, Nymeia und Windurst nicht. (2) Die Regel oben. *Gewählt:* (2).
+  - *Gegenthese 1 (kein Defekt, BossModReborn regelt es):* Er will Schutz ohne BossModReborn (A773). Und in Windurst,
+    Phase 2, irrt BossModReborn nach seinem Modul.
+  - *Gegenthese 2 (Option falsch, der größte Wirkende ist nicht das Auge):* Wirkt beim Marker ein größerer Gegner etwas
+    anderes, dreht RSR vom falschen Punkt. In Windurst haben neben Shinryu, seinem Teil und dem Hollow King nur Helfer
+    (0,5 y), Sphären (1 y), Gulool Ja Ja (5 y) und eine unbenannte Figur (2 y) einen Kreis. *Preis:* in einem anderen Kampf mit Marker eine falsche Richtung für höchstens die Markerdauer. Bisher gibt es nur
+    diesen einen Kampf.
+  - *Gegenthese 3 (ausgeliefert, und nichts ändert sich):* Kefkas Statuen, Distortion und Owain sieht RSR nicht. Dort
+    tut RSR nichts, wie ohne die Regel, und der Spieler oder BossModReborn dreht.
+  - *Gegenthese 4 (falsche Zuordnung des Namens):* Ein Gegner mit dem Namen aus dem Statustext muss nicht das Auge
+    sein, wenn mehrere so heißen. Gewählt wird der nächste. Bei Nymeia gibt es eine.
+  - *Im Kampf:*
+    - O8S, Ave Maria: RSR dreht im Vorlauf zur Statue hin und nimmt kein Ziel mehr, das ihn wegdreht.
+    - Windurst mit „Look“: Er schaut den Boss an. RSR greift weiter an, denn der Angriff dreht zum Boss.
+    - Windurst mit „No Look“: RSR dreht ihn im Vorlauf weg.
+    - Euphrosyne: Mit „Attraction Reversed“ hält RSR Ziele, die von Nymeia wegdrehen, und dreht zu ihr.
 
 **Warum die Form so gemessen wird (A731).** Welche Form um den Trefferkreis des Wirkenden weiter reicht, sagt die Art:
 BossModReborns Analysewerkzeug beschreibt Art 3, 4 und 5 als „range X+R", Art 2, 12 und 13 als „range X"

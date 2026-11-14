@@ -1,4 +1,6 @@
+using Dalamud.Game;
 using ECommons.Logging;
+using ECommons.DalamudServices;
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using Framework = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework;
@@ -6,19 +8,27 @@ using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using RotationSolver.Basic.Resources;
 using RotationSolver.Basic.Tweaks;
 using System.Collections.Concurrent;
+using System.Text.RegularExpressions;
 
 namespace RotationSolver.Basic.Helpers;
 
 /// <summary>
-/// Gaze casts that reach the player, whether an action would look into one, and turning away before one lands (concept 13,
-/// "Nicht in einen Blick drehen" and "Zeitraum und Wegdrehen", A770, A772, A774). An action that needs to face its target
-/// turns the player towards it when pressed, and the player keeps that heading; a gaze hits whoever looks at its caster as
-/// it lands, an inverted gaze whoever looks away. In the World of Darkness Angra Mainyu casts Mortal Gaze twice at once,
-/// #3281 with the gaze mark of the sheet and #3499 from a helper without it; the Doom came after #3499 (the owner's
-/// recording of 13.11.2026). Beatrice's Death Foreseen carries no mark at all, which BossModReborn's fight modules name
-/// (GazeActions). It works without BossModReborn running (his rule of 13.11.2026).
+/// Gazes that reach the player, whether an action would look into one, and turning away before one lands (concept 13,
+/// "Nicht in einen Blick drehen", "Zeitraum und Wegdrehen" and "Umkehrung und Auge zur Laufzeit", A770, A772, A774, A776).
+/// An action that needs to face its target turns the player towards it when pressed, and the player keeps that heading; a
+/// gaze hits whoever looks at its eye as it lands, an inverted gaze whoever looks away. Every gaze is an eye with a place,
+/// a sense and the seconds left, from four sources:
+/// <list type="bullet">
+/// <item>casts: the sheet's gaze mark, BossModReborn's lists (GazeActions) and the names of either, the eye at the cast's
+/// location as BossModReborn places it, else at the caster;</item>
+/// <item>statuses on the player whose text names the enemy to look at or away from (Nymeia's Arcane Attraction);</item>
+/// <item>"look" and "no look" markers on the player (the Windurst alliance raid's last boss), the eye at the largest
+/// enemies casting;</item>
+/// <item>a party member whose status makes them the eye when it expires (Glassy-eyed).</item>
+/// </list>
+/// It works without BossModReborn running (his rule of 13.11.2026).
 /// </summary>
-internal static class GazeWatch
+internal static partial class GazeWatch
 {
 	// BossMod's half width of a forbidden direction for a gaze (AIHintsBuilder, ForbiddenDirections); the game names no
 	// angle (A770).
@@ -34,21 +44,55 @@ internal static class GazeWatch
 		Inverted,
 	}
 
-	private readonly record struct Gazer(IBattleChara Caster, bool Inverted, float Left);
+	private enum Origin : byte
+	{
+		Cast,
+		PlayerStatus,
+		MemberStatus,
+		Marker,
+	}
+
+	// What the eye came from, kept as values so a frame builds no text; Describe writes it for the trace.
+	private readonly record struct Gazer(Vector3 Eye, ulong Key, bool Inverted, float Left, Origin From, uint Id, IGameObject? Who);
+
+	private sealed class Texts
+	{
+		public required HashSet<string> GazeNames { get; init; }
+		public required HashSet<string> InvertedNames { get; init; }
+		public required Dictionary<uint, (string Enemy, bool Inverted)> PlayerStatuses { get; init; }
+		public required HashSet<uint> MemberEyes { get; init; }
+	}
 
 	private static readonly List<Gazer> _gazers = [];
 	private static readonly ConcurrentDictionary<uint, Kind> _kinds = new();
+	private static readonly Dictionary<uint, string> _englishNames = [];
 	private static readonly HashSet<ulong> _traced = [];
 	private static readonly HashSet<ulong> _turnTraced = [];
 	private static readonly List<(float Start, float End)> _forbidden = [];
+	private static readonly List<(DateTime Seen, bool Inverted, float Duration)> _markers = [];
+	private static readonly List<IBattleChara> _largest = [];
 	private static long _gazersTick = long.MinValue;
-	private static volatile HashSet<string>? _gazeNames;
-	private static int _namesRequested;
+	private static volatile Texts? _texts;
+	private static int _textsRequested;
+
+	[GeneratedRegex(@"if (?:gazing at|looking at|facing) (?<name>.+?) when this effect expires", RegexOptions.IgnoreCase)]
+	private static partial Regex LookAtText();
+
+	[GeneratedRegex(@"if (?:looking|turning|facing) away from (?<name>.+?) when this effect expires", RegexOptions.IgnoreCase)]
+	private static partial Regex LookAwayText();
+
+	[GeneratedRegex(@"petrifying attack in all directions", RegexOptions.IgnoreCase)]
+	private static partial Regex MemberEyeText();
+
+	// A head marker's effect: vfx/lockon/eff/<name>.avfx; "_no_lk_" is the marker to look away, "_lk_" to look at, and
+	// "_<n>s_" its seconds (Lockon 680 and 681, the only two the sheet names so).
+	[GeneratedRegex(@"^vfx/lockon/eff/.*?_(?<no>no_)?lk_(?<seconds>\d+)s_", RegexOptions.IgnoreCase)]
+	private static partial Regex LookMarker();
 
 	/// <summary>
 	/// The lead before a gaze lands from which RSR holds actions turning into it and turns the player away: the longest
 	/// delay to the server's answer measured in this zone plus a frame. Without a measure, or with turning off, the whole
-	/// cast - an action pressed early would then keep the player looking at the caster when it lands.
+	/// cast - an action pressed early would then keep the player looking at the eye when it lands.
 	/// </summary>
 	private static float Lead()
 	{
@@ -58,7 +102,7 @@ internal static class GazeWatch
 
 	/// <summary>
 	/// Whether an action of <paramref name="castTime"/> seconds that faces <paramref name="towards"/> would still face into a
-	/// gaze within the lead before it lands: looking at the caster of a gaze, or away from the caster of an inverted one.
+	/// gaze within the lead before it lands: looking at the eye of a gaze, or away from the eye of an inverted one.
 	/// </summary>
 	internal static bool TurnsIntoGaze(Vector3 towards, float castTime)
 	{
@@ -91,10 +135,10 @@ internal static class GazeWatch
 				continue;
 			}
 
-			if (_traced.Add(gazer.Caster.GameObjectId ^ gazer.Caster.CastActionId))
+			if (_traced.Add(gazer.Key))
 			{
-				DefenseTrace.Line($"gaze: holding actions that turn {(gazer.Inverted ? "away from" : "towards")} "
-					+ $"#{gazer.Caster.CastActionId} of {gazer.Caster.Name}, {gazer.Left:F1} s left, lead {(float.IsInfinity(lead) ? "the whole cast" : $"{lead:F2} s")}");
+				DefenseTrace.Line($"gaze: holding actions that turn {(gazer.Inverted ? "away from" : "towards")} {Describe(gazer)}, "
+					+ $"{gazer.Left:F1} s left, lead {(float.IsInfinity(lead) ? "the whole cast" : $"{lead:F2} s")}");
 			}
 
 			return true;
@@ -166,25 +210,33 @@ internal static class GazeWatch
 
 		foreach (var gazer in gazers)
 		{
-			if (gazer.Left <= lead && _turnTraced.Add(gazer.Caster.GameObjectId ^ gazer.Caster.CastActionId))
+			if (gazer.Left <= lead && _turnTraced.Add(gazer.Key))
 			{
-				DefenseTrace.Line($"gaze: turned {float.RadiansToDegrees(target - current):F0}° {(gazer.Inverted ? "towards" : "away from")} "
-					+ $"#{gazer.Caster.CastActionId} of {gazer.Caster.Name}, {gazer.Left:F2} s before it lands");
+				DefenseTrace.Line($"gaze: turned {float.RadiansToDegrees(Difference(target, current)):F0}° {(gazer.Inverted ? "towards" : "away from")} "
+					+ $"{Describe(gazer)}, {gazer.Left:F2} s before it lands");
 			}
 		}
 	}
 
-	// Whether facing <rotation> looks into <gazer>: at its caster for a gaze, away from it for an inverted one.
+	private static string Describe(Gazer gazer) => gazer.From switch
+	{
+		Origin.Cast => $"#{gazer.Id} of {gazer.Who?.Name}",
+		Origin.PlayerStatus => $"{gazer.Who?.Name} by status {gazer.Id} on the player",
+		Origin.MemberStatus => $"a party member with status {gazer.Id}",
+		_ => $"{gazer.Who?.Name} by a marker to look {(gazer.Inverted ? "at" : "away from")}",
+	};
+
+	// Whether facing <rotation> looks into <gazer>: at its eye for a gaze, away from it for an inverted one.
 	private static bool Unsafe(float rotation, IBattleChara player, Gazer gazer)
 	{
-		var toGazer = gazer.Caster.Position - player.Position;
-		toGazer.Y = 0;
-		if (toGazer.LengthSquared() <= 0f)
+		var toEye = gazer.Eye - player.Position;
+		toEye.Y = 0;
+		if (toEye.LengthSquared() <= 0f)
 		{
 			return !gazer.Inverted;
 		}
 
-		var looksAt = MathF.Abs(Difference(rotation, MathF.Atan2(toGazer.X, toGazer.Z))) <= float.DegreesToRadians(DangerHalfAngleDegrees);
+		var looksAt = MathF.Abs(Difference(rotation, MathF.Atan2(toEye.X, toEye.Z))) <= float.DegreesToRadians(DangerHalfAngleDegrees);
 		return looksAt != gazer.Inverted;
 	}
 
@@ -200,9 +252,9 @@ internal static class GazeWatch
 				continue;
 			}
 
-			var toGazer = gazer.Caster.Position - player.Position;
-			toGazer.Y = 0;
-			var at = MathF.Atan2(toGazer.X, toGazer.Z);
+			var toEye = gazer.Eye - player.Position;
+			toEye.Y = 0;
+			var at = MathF.Atan2(toEye.X, toEye.Z);
 			if (gazer.Inverted)
 			{
 				AddArc(at + half, at + MathF.Tau - half);
@@ -279,7 +331,7 @@ internal static class GazeWatch
 		return d > MathF.PI ? d - full : d;
 	}
 
-	// The casters of a gaze that reaches the player, with the seconds left, once per frame.
+	// Every gaze on the player with its eye and the seconds left, once per frame.
 	private static List<Gazer> Gazers()
 	{
 		var now = Environment.TickCount64;
@@ -290,13 +342,29 @@ internal static class GazeWatch
 
 		_gazersTick = now;
 		_gazers.Clear();
-		if (!DataCenter.InCombat)
+		var player = Player.Object;
+		if (!DataCenter.InCombat || player == null)
 		{
 			_traced.Clear();
 			_turnTraced.Clear();
+			_markers.Clear();
 			return _gazers;
 		}
 
+		AddCasts();
+		var texts = Texts_();
+		if (texts != null)
+		{
+			AddPlayerStatuses(player, texts);
+			AddMemberEyes(player, texts);
+		}
+
+		AddMarkers(player);
+		return _gazers;
+	}
+
+	private static void AddCasts()
+	{
 		foreach (var caster in DataCenter.CastingEnemies)
 		{
 			if (caster == null || !caster.IsCasting)
@@ -307,24 +375,179 @@ internal static class GazeWatch
 			var kind = KindOf(caster.CastActionId);
 			if (kind != Kind.None && DataCenter.CastReachesPlayer(caster))
 			{
-				_gazers.Add(new Gazer(caster, kind == Kind.Inverted, Math.Max(0f, caster.TotalCastTime - caster.CurrentCastTime)));
+				var eye = DataCenter.CastLocation(caster) ?? caster.Position;
+				_gazers.Add(new Gazer(eye, caster.GameObjectId ^ caster.CastActionId, kind == Kind.Inverted,
+					Math.Max(0f, caster.TotalCastTime - caster.CurrentCastTime), Origin.Cast, caster.CastActionId, caster));
+			}
+		}
+	}
+
+	// A status on the player whose text names the enemy to look at or away from when it expires (A776).
+	private static void AddPlayerStatuses(IBattleChara player, Texts texts)
+	{
+		var statuses = player.StatusList;
+		for (var i = 0; i < statuses.Length; i++)
+		{
+			var status = statuses[i];
+			if (status == null || status.StatusId == 0 || !texts.PlayerStatuses.TryGetValue(status.StatusId, out var gaze))
+			{
+				continue;
+			}
+
+			if (NearestNamed(player, gaze.Enemy) is { } enemy)
+			{
+				// The text says what petrifies: looking at the enemy, so the gaze is normal; looking away, so it is inverted.
+				_gazers.Add(new Gazer(enemy.Position, (ulong)(uint)HashCode.Combine(status.StatusId, status.SourceId), gaze.Inverted, status.RemainingTime,
+					Origin.PlayerStatus, status.StatusId, enemy));
+			}
+		}
+	}
+
+	// A party member whose status makes them the eye for everyone else when it expires (A776).
+	private static void AddMemberEyes(IBattleChara player, Texts texts)
+	{
+		foreach (var member in DataCenter.PartyMembers)
+		{
+			if (member == null || member.GameObjectId == player.GameObjectId || member.IsDead)
+			{
+				continue;
+			}
+
+			var statuses = member.StatusList;
+			for (var i = 0; i < statuses.Length; i++)
+			{
+				var status = statuses[i];
+				if (status != null && status.StatusId != 0 && texts.MemberEyes.Contains(status.StatusId))
+				{
+					_gazers.Add(new Gazer(member.Position, member.GameObjectId ^ status.StatusId, false, status.RemainingTime,
+						Origin.MemberStatus, status.StatusId, member));
+				}
+			}
+		}
+	}
+
+	// "Look" and "no look" markers on the player; the eyes are the largest enemies casting (A776).
+	private static void AddMarkers(IBattleChara player)
+	{
+		// The queue keeps a marker 5 s (MajorUpdater) and these last 7 s, so each is remembered when first seen.
+		if (!DataCenter.VfxDataQueue.IsEmpty)
+		{
+			foreach (var vfx in DataCenter.VfxDataQueue)
+			{
+				if (vfx.ObjectId != player.GameObjectId || string.IsNullOrEmpty(vfx.Path) || LookMarker().Match(vfx.Path) is not { Success: true } match
+					|| !float.TryParse(match.Groups["seconds"].Value, System.Globalization.CultureInfo.InvariantCulture, out var seconds))
+				{
+					continue;
+				}
+
+				var known = false;
+				foreach (var marker in _markers)
+				{
+					known |= marker.Seen == vfx.Time;
+				}
+
+				if (!known)
+				{
+					_markers.Add((vfx.Time, !match.Groups["no"].Success, seconds));
+				}
 			}
 		}
 
-		return _gazers;
+		var now = DateTime.Now;
+		for (var i = _markers.Count - 1; i >= 0; i--)
+		{
+			if ((now - _markers[i].Seen).TotalSeconds > _markers[i].Duration)
+			{
+				_markers.RemoveAt(i);
+			}
+		}
+
+		if (_markers.Count == 0)
+		{
+			return;
+		}
+
+		_largest.Clear();
+		var radius = 0f;
+		foreach (var caster in DataCenter.CastingEnemies)
+		{
+			if (caster == null || !caster.IsCasting)
+			{
+				continue;
+			}
+
+			if (caster.HitboxRadius > radius)
+			{
+				radius = caster.HitboxRadius;
+				_largest.Clear();
+			}
+
+			if (caster.HitboxRadius == radius)
+			{
+				_largest.Add(caster);
+			}
+		}
+
+		foreach (var marker in _markers)
+		{
+			var left = marker.Duration - (float)(now - marker.Seen).TotalSeconds;
+			foreach (var eye in _largest)
+			{
+				_gazers.Add(new Gazer(eye.Position, eye.GameObjectId ^ (ulong)marker.Seen.Ticks, marker.Inverted, Math.Max(0f, left),
+					Origin.Marker, 0, eye));
+			}
+		}
+	}
+
+	private static IBattleChara? NearestNamed(IBattleChara player, string englishName)
+	{
+		IBattleChara? nearest = null;
+		var best = float.MaxValue;
+		foreach (var obj in Svc.Objects)
+		{
+			if (obj is not IBattleChara chara || chara.IsDead || !chara.IsEnemySideFigure()
+				|| !string.Equals(EnglishName(chara.NameId), englishName, StringComparison.OrdinalIgnoreCase))
+			{
+				continue;
+			}
+
+			var distance = Vector3.DistanceSquared(chara.Position, player.Position);
+			if (distance < best)
+			{
+				best = distance;
+				nearest = chara;
+			}
+		}
+
+		return nearest;
+	}
+
+	private static string EnglishName(uint nameId)
+	{
+		if (!_englishNames.TryGetValue(nameId, out var name))
+		{
+			name = Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.BNpcName>(ClientLanguage.English)?.GetRowOrDefault(nameId)?.Singular.ExtractText() ?? string.Empty;
+			_englishNames[nameId] = name;
+		}
+
+		return name;
 	}
 
 	/// <summary>
-	/// What the action is: an inverted gaze that BossModReborn's modules name; a gaze they name, one with the sheet's gaze
-	/// mark, or an enemy action with the name of either (#3499, the helper's Mortal Gaze); else none. The names are read once
-	/// in the background - until then the lists and the mark count alone - and leave out the names of inverted gazes, which
-	/// a normal gaze shares ("Cat's Eye").
+	/// What the action is. BossModReborn's runtime-built gazes first (no gaze: the eye or the sense is decided elsewhere),
+	/// then its inverted and normal lists, the sheet's gaze mark, and the name of a gaze or of an inverted gaze; a name
+	/// both carry counts as neither. The names are read once in the background; until then the lists and the mark count.
 	/// </summary>
 	private static Kind KindOf(uint actionId)
 	{
 		if (_kinds.TryGetValue(actionId, out var known))
 		{
 			return known;
+		}
+
+		if (GazeActions.Unsure.Contains(actionId))
+		{
+			return _kinds[actionId] = Kind.None;
 		}
 
 		if (GazeActions.Inverted.Contains(actionId))
@@ -337,12 +560,18 @@ internal static class GazeWatch
 			return _kinds[actionId] = Kind.Gaze;
 		}
 
-		var names = GazeNames();
+		var texts = Texts_();
 		var row = Service.GetSheet<Lumina.Excel.Sheets.Action>().GetRowOrDefault(actionId);
-		var gaze = row is { } action && !action.IsPlayerAction
-			&& (action.VFX.RowId == GazeCastVfx || (names != null && names.Contains(action.Name.ExtractText())));
-		var kind = gaze ? Kind.Gaze : Kind.None;
-		if (names != null || gaze)
+		var kind = Kind.None;
+		if (row is { } action && !action.IsPlayerAction)
+		{
+			var name = action.Name.ExtractText();
+			kind = action.VFX.RowId == GazeCastVfx || (texts != null && texts.GazeNames.Contains(name)) ? Kind.Gaze
+				: texts != null && texts.InvertedNames.Contains(name) ? Kind.Inverted
+				: Kind.None;
+		}
+
+		if (texts != null || kind != Kind.None)
 		{
 			_kinds[actionId] = kind;
 		}
@@ -350,42 +579,95 @@ internal static class GazeWatch
 		return kind;
 	}
 
-	private static HashSet<string>? GazeNames()
+	private static Texts? Texts_()
 	{
-		if (_gazeNames == null && Interlocked.Exchange(ref _namesRequested, 1) == 0)
+		if (_texts == null && Interlocked.Exchange(ref _textsRequested, 1) == 0)
 		{
 			_ = System.Threading.Tasks.Task.Run(static () =>
 			{
 				try
 				{
-					var sheet = Service.GetSheet<Lumina.Excel.Sheets.Action>();
-					var names = new HashSet<string>(StringComparer.Ordinal);
-					foreach (var action in sheet)
-					{
-						if (!action.IsPlayerAction && (action.VFX.RowId == GazeCastVfx || GazeActions.Gazes.Contains(action.RowId))
-							&& action.Name.ExtractText() is { Length: > 0 } name)
-						{
-							_ = names.Add(name);
-						}
-					}
-
-					foreach (var id in GazeActions.Inverted)
-					{
-						if (sheet.GetRowOrDefault(id)?.Name.ExtractText() is { Length: > 0 } name)
-						{
-							_ = names.Remove(name);
-						}
-					}
-
-					_gazeNames = names;
+					_texts = ReadTexts();
 				}
 				catch (Exception ex)
 				{
-					PluginLog.Warning($"Could not read the gaze names: {ex.Message}");
+					PluginLog.Warning($"Could not read the gaze texts: {ex.Message}");
 				}
 			});
 		}
 
-		return _gazeNames;
+		return _texts;
+	}
+
+	private static Texts ReadTexts()
+	{
+		var actions = Service.GetSheet<Lumina.Excel.Sheets.Action>();
+		var gazeNames = new HashSet<string>(StringComparer.Ordinal);
+		var invertedNames = new HashSet<string>(StringComparer.Ordinal);
+		foreach (var action in actions)
+		{
+			if (action.IsPlayerAction || GazeActions.Unsure.Contains(action.RowId) || action.Name.ExtractText() is not { Length: > 0 } name)
+			{
+				continue;
+			}
+
+			if (GazeActions.Inverted.Contains(action.RowId))
+			{
+				_ = invertedNames.Add(name);
+			}
+			else if (action.VFX.RowId == GazeCastVfx || GazeActions.Gazes.Contains(action.RowId))
+			{
+				_ = gazeNames.Add(name);
+			}
+		}
+
+		// A name both kinds carry ("Cat's Eye") tells neither.
+		foreach (var name in invertedNames)
+		{
+			_ = gazeNames.Remove(name);
+		}
+
+		invertedNames.ExceptWith(GazeNamesOfBoth(actions, invertedNames));
+
+		// Statuses read in English: the text names the enemy, the language of the client does not matter.
+		var playerStatuses = new Dictionary<uint, (string Enemy, bool Inverted)>();
+		var memberEyes = new HashSet<uint>();
+
+		foreach (var status in Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.Status>(ClientLanguage.English)!)
+		{
+			var text = status.Description.ExtractText().Replace('\n', ' ');
+			if (LookAwayText().Match(text) is { Success: true } away)
+			{
+				playerStatuses[status.RowId] = (away.Groups["name"].Value.Trim(), true);
+			}
+			else if (LookAtText().Match(text) is { Success: true } at)
+			{
+				playerStatuses[status.RowId] = (at.Groups["name"].Value.Trim(), false);
+			}
+
+			if (MemberEyeText().IsMatch(text))
+			{
+				_ = memberEyes.Add(status.RowId);
+			}
+		}
+
+		return new Texts { GazeNames = gazeNames, InvertedNames = invertedNames, PlayerStatuses = playerStatuses, MemberEyes = memberEyes };
+	}
+
+	// Inverted names that a normal gaze also carries.
+	private static HashSet<string> GazeNamesOfBoth(Lumina.Excel.ExcelSheet<Lumina.Excel.Sheets.Action> actions, HashSet<string> invertedNames)
+	{
+		var both = new HashSet<string>(StringComparer.Ordinal);
+		foreach (var action in actions)
+		{
+			if (!action.IsPlayerAction && !GazeActions.Inverted.Contains(action.RowId) && !GazeActions.Unsure.Contains(action.RowId)
+				&& (action.VFX.RowId == GazeCastVfx || GazeActions.Gazes.Contains(action.RowId))
+				&& action.Name.ExtractText() is { Length: > 0 } name && invertedNames.Contains(name))
+			{
+				_ = both.Add(name);
+			}
+		}
+
+		return both;
 	}
 }

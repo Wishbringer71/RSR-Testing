@@ -5,26 +5,36 @@ namespace RotationSolver.Basic.Resources;
 
 /// <summary>
 /// The actions BossModReborn's fight modules treat as gazes (concept 13, "Blicke ohne Kennzeichen, aus BossModReborns
-/// Modulen", A772): ids only, from its CastGaze and CastGazes components.
+/// Modulen", A772, A776): ids only, from its CastGaze and CastGazes components and its own gaze classes.
 /// </summary>
 internal static class GazeActions
 {
 	/// <summary>Gazes that hit whoever looks at the caster.</summary>
 	internal static readonly HashSet<uint> Gazes =
 	[
-		3281, 4331, 5154, 5216, 5374, 6202, 6403, 7182, 7197, 7200,
-		7364, 7779, 7940, 7949, 8066, 9557, 9613, 9829, 10540, 11900,
-		11922, 13263, 13552, 13784, 14691, 14875, 14951, 15030, 15078, 15469,
-		15475, 16025, 17198, 17360, 17856, 17955, 18041, 20810, 20846, 21090,
-		21508, 21674, 21761, 23573, 26968, 26999, 27363, 27640, 27647, 27654,
-		28648, 29821, 29828, 32176, 32207, 32332, 33693, 33694, 34159, 36297,
-		37523, 37537, 38510, 40743, 40757, 41082, 41667, 42003, 43043, 43701,
-		43702, 47148, 47152, 47191, 48153, 49214, 50022, 50102,
+		3281, 4331, 5154, 5216, 5257, 5258, 5374, 6202, 6403, 7182,
+		7197, 7200, 7364, 7779, 7940, 7949, 8066, 9557, 9613, 9829,
+		10540, 11900, 11922, 13263, 13552, 13784, 14691, 14875, 14951, 15030,
+		15078, 15469, 15475, 16025, 17198, 17360, 17856, 17955, 18041, 20810,
+		20846, 21090, 21508, 21674, 21761, 23573, 26968, 26999, 27363, 27640,
+		27647, 27654, 28648, 29821, 29828, 32176, 32207, 32332, 33693, 33694,
+		34159, 36297, 37523, 37537, 38510, 40527, 40528, 40529, 40530, 40743,
+		40757, 41082, 41667, 42003, 43043, 43701, 43702, 47148, 47152, 47191,
+		48153, 49214, 50022, 50102,
 	];
 
 	/// <summary>Inverted gazes, which hit whoever looks away from the caster.</summary>
 	internal static readonly HashSet<uint> Inverted =
 	[
 		10539, 27369, 38511,
+	];
+
+	/// <summary>Ids the modules use only in gazes they build at runtime (eye elsewhere, inversion by icon, status or animation): no gaze for RSR.</summary>
+	internal static readonly HashSet<uint> Unsure =
+	[
+		5559, 20961, 20962, 21760, 21762, 23212, 23241, 23531, 23532, 25553,
+		26404, 31019, 31021, 31022, 31023, 31024, 34964, 35819, 36063, 36065,
+		40185, 40278, 41792, 41793, 41794, 41795, 47795, 47796, 47894, 47895,
+		48508, 48510, 49121, 49161,
 	];
 }
