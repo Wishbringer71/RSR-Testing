@@ -10,5 +10,7 @@
   {"id": "hook-no-fault", "archive": "A794",
    "kind": "absent", "situation": "combat started", "match": "hook fault: "},
   {"id": "team-levels", "archive": "A796",
-   "kind": "present", "situation": "crucible team: requested ", "match": "crucible team: requested .* levels"}
+   "kind": "present", "situation": "crucible team: requested ", "match": "crucible team: requested .* levels"},
+  {"id": "exception-none", "archive": "A798",
+   "kind": "absent", "situation": "combat started", "match": " exception: "}
 ]

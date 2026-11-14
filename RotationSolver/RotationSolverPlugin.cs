@@ -171,6 +171,7 @@ public sealed partial class RotationSolverPlugin : IAsyncDalamudPlugin
 
 		await Svc.Framework.Run(() =>
 		{
+			ExceptionTrace.Enable(); // A798: every exception in RSR's code reported once per place, caught or not
 
 			MajorUpdater.Enable();
 			AutoAttackUpdater.Enable();
@@ -437,6 +438,7 @@ public sealed partial class RotationSolverPlugin : IAsyncDalamudPlugin
 
 	public async ValueTask DisposeAsync()
 	{
+		ExceptionTrace.Disable();
 		MajorUpdater.Dispose();
 		WarmUp.Dispose();
 

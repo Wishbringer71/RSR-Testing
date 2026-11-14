@@ -23134,6 +23134,24 @@ begleiterauswahlfenster beachten, dass es nicht zu hoch wird und die bildschirma
   Schwelle steht.
 - *Prüfgrad:* Laufzeitbeobachtung (Upload), Compile, CI, Fenstermodell; die Änderungen nicht im Spiel beobachtet.
 
+### A798 · Ausnahmen als Ursachen sichtbar: jede in RSRs Code einmal je Stelle gemeldet (14.11.2026)
+
+Seine Frage und Vorgabe (14.11.2026): „gab es übrigens ausnahmen im log, die ansonsten crashes verursacht hätten. die
+ausnahme verhindert ja nur das ergebnis crash. es ist also nur symptombehandlung. ursachenforschung muss dennoch sein,
+damit ursachen beseitigt werden können."
+- *Antwort am Upload von 15:02:* keine. `DefenseTrace.log`: keine Zeile „hook fault:" (der Fang in den Hooks schreibt dort
+  und als Fehler ins Dalamud-Protokoll), keine Fehlerzeile von RSR. Dalamud-Protokoll: 169 Zeilen, keine von RSR; die
+  vier „Hook verification failed" gehören ReAction, ItemVendorLocation und SimpleTweaks, die zwei „Unobserved exception in
+  Task" SomethingNeedDoing und Faloop. *Grenze der Antwort:* Sein Protokoll führt keine einzige Warnung (Protokollstufe);
+  60 von 154 Fangstellen in RSR schreiben nur eine Warnung. Was dort abgefangen wurde, war unsichtbar.
+- *Gebaut:* `ExceptionTrace` (über `AppDomain.FirstChanceException`) meldet jede Ausnahme, die in RSRs Code entsteht, auch
+  eine später abgefangene, beim ersten Mal je Stelle und Sitzung: „exception: <Typ> in <Methode> …" im `DefenseTrace.log`
+  und mit Stapel als Fehler im Dalamud-Protokoll. Ob sie RSR betrifft, sagt der erste Rahmen aus RSRs Assembly im Stapel des
+  werfenden Threads. Anforderung und Optionen: Konzept 24, „Ursachen, nicht nur Symptome".
+- *Vorhersage:* `predictions/2026-11-14.json`, „exception-none": In einer Sitzung mit Kampf steht keine Zeile
+  „exception:"; jede, die steht, ist eine Ursache zum Beseitigen.
+- *Prüfgrad:* Compile, CI; Laufzeit nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

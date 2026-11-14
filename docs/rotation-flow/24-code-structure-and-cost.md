@@ -294,6 +294,21 @@ Messungen. Ausgeliefert, und nichts ändert sich? Möglich, wenn der nächste Ab
 Prüfung der Zeiger und Schleifen unten. *Vorhersage* (`predictions/2026-11-14.json`, „hook-no-fault"): In keiner
 Sitzung mit Kampf steht „hook fault:"; steht eine, nennt sie Stelle und Ausnahme, und das Spiel lief weiter.
 
+*Ursachen, nicht nur Symptome (A798, seine Vorgabe vom 14.11.2026):* „die ausnahme verhindert ja nur das ergebnis crash.
+es ist also nur symptombehandlung. ursachenforschung muss dennoch sein, damit ursachen beseitigt werden können." Ein
+`catch` hält das Spiel am Leben; die Ursache bleibt. Von 154 Fangstellen in RSR schrieben 60 nur eine Warnung ins
+Dalamud-Protokoll, und sein Protokoll vom 14.11.2026 führt keine einzige Warnung (Protokollstufe): Was RSR dort abfing,
+war für ihn und mich unsichtbar. *Gewählt:* `ExceptionTrace` meldet jede .NET-Ausnahme, die in RSRs Code entsteht – auch
+eine, die später abgefangen wird –, beim ersten Mal je Stelle und Sitzung: im `DefenseTrace.log` („exception: <Typ> in
+<Methode> …"), das er hochlädt, und mit Stapel als Fehler im Dalamud-Protokoll, das jede Stufe zeigt. Mittel ist .NETs
+`AppDomain.FirstChanceException`; ob die Ausnahme RSR betrifft, sagt der Stapel des werfenden Threads (der erste Rahmen
+aus RSRs Assembly). *Optionen:* (0) Nullvariante – Ursachen bleiben unsichtbar. (1) Jede der 154 Fangstellen umbauen –
+Merge-Logistik in Upstreams Dateien, und eine neue Fangstelle fällt wieder heraus. (2) Gewählt: eine Stelle für alle,
+auch künftige. *Kosten:* ein Stapel je geworfener Ausnahme im Prozess (alle Plugins teilen ihn); Ausnahmen sind selten,
+eine je Bild wäre selbst ein Befund. *Sicherheit:* Der Melder fängt alles selbst ab und ruft sich nicht erneut auf (eine
+Ausnahme im Melder würde sonst wieder gemeldet). *Vorhersage* („exception-none", `predictions/2026-11-14.json`): In einer
+Sitzung mit Kampf steht keine Zeile „exception:"; steht eine, ist sie eine Ursache zum Beseitigen.
+
 *Klassen 2 bis 4 über alle Änderungen seit 03af7190f* (unabhängige Prüfung am Code, A795; Fremdquellen: ECommons
 3.2.1.26, Dalamud 15.0.3.9, FFXIVClientStructs 80cb4a7b, Werkzeugquellen):
 - *Ereignisquellen fangen ab:* ECommons' `ProcessActionEffectDetour` je Abonnent, Dalamuds `AddonLifecycle` je Listener
