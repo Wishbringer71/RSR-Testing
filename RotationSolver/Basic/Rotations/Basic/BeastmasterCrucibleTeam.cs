@@ -568,33 +568,22 @@ public partial class BeastmasterRotation
 		}
 
 		// A805: under Level, while a familiar lags behind, the core too comes from the lowest ranks at least at the board's
-		// recommended rank; those below it join as learners (LevelingTeam), not as fighters.
+		// recommended rank; one below it only where none at it carries the role or the weakness.
 		var lowFirst = false;
 		if (goal == CrucibleGoal.Level)
 		{
 			var maxRank = CrucibleBoard.MaxRank;
+			var sync = CrucibleBoard.SyncRank(board);
 			foreach (var candidate in candidates)
 			{
-				lowFirst |= candidate.Rank is > 0 and var known && known < maxRank;
+				// As LevelingTeam counts one: a known rank below the highest, or above the sync with none known beyond it.
+				lowFirst |= (candidate.Rank is > 0 and var known && known < maxRank) || (candidate.OverRank && candidate.Rank <= sync);
 			}
 
-			if (lowFirst)
-			{
-				var recommended = CrucibleBoard.RecommendedRank(board);
-				var adequate = new List<TeamCandidate>(candidates.Count);
-				foreach (var candidate in candidates)
-				{
-					if (candidate.OverRank || candidate.Rank >= recommended)
-					{
-						adequate.Add(candidate);
-					}
-				}
-
-				candidates = adequate;
-			}
 		}
 
-		var chosen = ChooseTeam(candidates, size, weight, interrupting, team, out var core, lowFirst);
+		var chosen = ChooseTeam(candidates, size, weight, interrupting, team, out var core,
+			lowFirst ? CrucibleBoard.RecommendedRank(board) : 0);
 
 		// A698: as few as the score's bonus for a smaller team allows with the core and the familiars' measured loss - not
 		// under the goal Safe win (A804).
@@ -682,8 +671,9 @@ public partial class BeastmasterRotation
 	// at equal worth one above the board's rank first, then below it the higher rank, then one in the team already. `core`
 	// counts up to the last pick that covers a weakness anew or is needed as a healer or interrupter (A698).
 	private static List<TeamCandidate> ChooseTeam(List<TeamCandidate> candidates, int size, Dictionary<uint, int> weight,
-		bool interrupting, List<BeastmasterPet> team, out int core, bool lowFirst = false)
+		bool interrupting, List<BeastmasterPet> team, out int core, int lowFirstFrom = 0)
 	{
+		var lowFirst = lowFirstFrom > 0;
 		var chosen = new List<TeamCandidate>();
 		var covered = new Dictionary<uint, int>();
 		var safeTaken = 0;
@@ -712,13 +702,18 @@ public partial class BeastmasterRotation
 					covers |= weight.ContainsKey(element) && covered.GetValueOrDefault(element) == 0;
 				}
 
-				// A805 (his rule of 14.11.2026): while familiars lag behind, of those that cover a weakness anew the lowest in
-				// rank, then the higher worth - one above the sync only where none below carries the weakness, and to fill.
-				var better = lowFirst
-					? best < 0 || covers != bestCovers ? best < 0 || covers
+				// A805 (his rule of 14.11.2026): while familiars lag behind, of those that cover a weakness anew (not asked
+				// while a healer or the interrupter is wanted - any of those is needed) one at least at the recommended rank,
+				// then the lowest in rank, then the higher worth - one above the sync only where none below carries the
+				// weakness, one below the recommended rank only where none at it does, and to fill.
+				covers &= !needSafe && !needSoul;
+				var adequate = Adequate(candidate);
+				var better = !lowFirst
+					? best < 0 || worth > bestWorth || (worth == bestWorth && Before(candidate, candidates[best]))
+					: best < 0 || (covers != bestCovers ? covers
+						: adequate != Adequate(candidates[best]) ? adequate
 						: LevelRank(candidate) != LevelRank(candidates[best]) ? LevelRank(candidate) < LevelRank(candidates[best])
-						: worth > bestWorth || (worth == bestWorth && Before(candidate, candidates[best]))
-					: best < 0 || worth > bestWorth || (worth == bestWorth && Before(candidate, candidates[best]));
+						: worth > bestWorth || (worth == bestWorth && Before(candidate, candidates[best])));
 				if (better)
 				{
 					best = i;
@@ -777,8 +772,10 @@ public partial class BeastmasterRotation
 		}
 
 		// At equal worth: above the board's rank first, then below it the higher rank (A804), then one in the team already.
-		// A805: a rank to level by - unknown counts as the highest.
+		// A805: a rank to level by - unknown counts as the highest; adequate - over the sync or at least the recommended rank.
 		static int LevelRank(TeamCandidate candidate) => candidate.Rank > 0 ? candidate.Rank : int.MaxValue;
+
+		bool Adequate(TeamCandidate candidate) => candidate.OverRank || candidate.Rank >= lowFirstFrom;
 
 		// Two above the sync fight at the sync - equally strong.
 		bool Before(TeamCandidate a, TeamCandidate b)

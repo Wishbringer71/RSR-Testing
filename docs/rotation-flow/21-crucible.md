@@ -629,8 +629,8 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     zum ganzen Bedarf des Wegs). Rauchbomben setzt der Weg ein: unter Safe win zwischen sicheren Wegen für LP (sie zählen
     voll), unter Level und Score nur, wo der Kampfweg unsicher ist – sie zählen den Teil des Netto-Bedarfs des Wegs
     (`CarriesToFinal`, A709), der über deine LP, die gehaltene und schon gewählte Heilung und die Kämpfe hinausgeht, die
-    gehaltene Bomben schon ersparen; ist ein Kampf ungemessen, nichts – vor einem unbekannten Kampf flieht der Weg nicht
-    (achte Prüfrunde). *Preis:* Die Rast am Lager und die Wahl des besseren Wegs an einer Gabelung rechnet der
+    gehaltene Bomben schon ersparen; ist ein Kampf ungemessen, nach dem rohen Bedarf, auf den auch der Weg dann
+    zurückfällt (gelernte Last, sonst die schwerste; Prüfung A805). *Preis:* Die Rast am Lager und die Wahl des besseren Wegs an einer Gabelung rechnet der
     Wegtest des Ladens nicht ein (er nimmt den schwersten Weg ohne Rast), der Weg selbst schon – vor einem Lager oder
     einer Gabelung zählt eine Bombe unter Level und Score höchstens zu viel. Was du über der Schwelle hast, zieht RSR vom Bedarf ab: max(0, Bedarf − (deine LP jetzt − Schwelle) − gehaltene
     Heilung). Ausrüstung wirkt ohne Zutun und bleibt auf der Skala wie bisher; damit geht bleibende Ausrüstung vor
@@ -2157,15 +2157,19 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
     der Unterbrecher) und die Reserve. *Der Kern aus Nachzüglern (A805; sein Hinweis und seine Vorgabe vom 14.11.2026:
     „ich habe das brett auch mit lvl6er begleitern am anfang geschafft. also sind zum leveln keine level 10er mehr
     notwendig, ausser zum auffüllen, falls reserve benötigt wird"):* Solange ein Begleiter zurückliegt, wählt RSR auch
-    den Kern unter den Begleitern ab dem empfohlenen Rang des Bretts: wer eine Schwäche neu abdeckt (oder als Heiler,
-    Schützer, Unterbrecher gebraucht wird) und darunter der rangniedrigste, erst bei gleichem Rang der mit dem höheren
-    Schwächenwert. Begleiter über dem Synchronrang kommen so nur, wo kein Nachzügler darunter eine Schwäche trägt, und
-    zum Auffüllen. *Im Kampf (sein Bild vom 14.11.2026, Brett 2):* Der Kern waren zehn Begleiter ab Rang 10 – die
+    den Kern nach Rang: zuerst die Heiler und Schützer, die B5 verlangt, und der Unterbrecher, dann je Schritt wer eine
+    Schwäche neu abdeckt; darunter jeweils einer ab dem empfohlenen Rang des Bretts vor einem darunter, dann der
+    rangniedrigste, erst bei gleichem Rang der mit dem höheren Schwächenwert. Begleiter über dem Synchronrang kommen so
+    nur, wo kein Nachzügler darunter eine Schwäche trägt, und zum Auffüllen; einer unter dem empfohlenen Rang trägt eine
+    Rolle oder Schwäche nur, wo keiner ab ihm sie trägt (unabhängige Prüfung A805: ein Filter hätte bei zu wenigen ab dem
+    empfohlenen Rang den Kern ohne Heiler gelassen). *Im Kampf (sein Bild vom 14.11.2026, Brett 2):* Der Kern waren zehn Begleiter ab Rang 10 – die
     gierige Wahl nahm bei gleichem Wert die über dem Synchronrang zuerst –, und nur Salamander und Worm (Rang 6) kamen
     auf die zwei Reserveplätze, obwohl 42 Begleiter zurücklagen. *Gegenthese (schwächer):* Rang 6 auf Brett 2 ist die
     Empfehlung des Spiels, und er hat das Brett damit geschafft (Hinweis); die Hornwahl (K6) setzt je Kampf die
     stärksten ein, die gemessenen Verluste bestimmen die Reserve. *Preis:* längere Kämpfe mit schwächeren Begleitern,
-    solange die Messung der Verluste nach Rangstufe (A729) noch nichts kennt. Die Reserve reicht bis zu der Zahl, die die gemessenen Verluste dieses Bretts mit einem Begleiter in
+    solange die Messung der Verluste nach Rangstufe (A729) noch nichts kennt; bis dahin fallen auch die Lasten des
+    Spielers je Kampf auf die schwersten aller Läufe zurück, gemessen mit stärkeren Kadern – Bonuswahl (K15) und Wegtest
+    rechnen in den ersten Läufen auf der neuen Stufe zu günstig; die Heilung unter der Trankschwelle (K8) bleibt. Die Reserve reicht bis zu der Zahl, die die gemessenen Verluste dieses Bretts mit einem Begleiter in
     Reserve trägt (A703, je Größe gerechnet, nicht nur auf den Stufen von In Unterzahl); ohne Messung die volle Größe.
     Auf den Reserveplätzen gehen *Nachzügler* vor, die adäquat ersetzen – echter Rang unter 25, mindestens der
     empfohlene Rang des Bretts –, aus jeder Gattung, der niedrigste zuerst; danach die gierige

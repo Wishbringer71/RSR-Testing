@@ -944,8 +944,9 @@ public partial class BeastmasterRotation
 				{
 					held.Add(id);
 					itemsLeft--;
-					// A670: what an Auto-potion restores counts against the healing still needed, as a potion's does.
-					if (items.TryGetValue(id, out var item) && (HealShareOf(item, set) > 0f || item.Kind == CrucibleItemKind.AutoPotion))
+					// A670: what an Auto-potion restores counts against the healing still needed, as a potion's does. A healing
+					// item is in `held` already and counts there (A805 review: it was taken off twice).
+					if (items.TryGetValue(id, out var item) && HealShareOf(item, set) <= 0f && item.Kind == CrucibleItemKind.AutoPotion)
 					{
 						healed += value;
 					}
@@ -1222,8 +1223,8 @@ public partial class BeastmasterRotation
 		var healLine = k8Holds ? belowLine : healable;
 		// Smoke bombs: under Safe win the route flees between safe ways for HP; elsewhere only where the way with the fight is
 		// not safe (eighth review, A804) - the net demand (A709, CarriesToFinal without the potion line) beyond your HP, the
-		// healing held and chosen, and the fights the bombs held already spare; with a fight on the way unmeasured, nothing:
-		// the route does not flee from an unknown fight.
+		// healing held and chosen, and the fights the bombs held already spare; with a fight on the way unmeasured, by the
+		// raw demand the route falls back on.
 		var spareLine = float.MaxValue;
 		if (WeighsScore)
 		{
@@ -1234,9 +1235,13 @@ public partial class BeastmasterRotation
 				spared += enemyLoads[i];
 			}
 
+			// The healing chosen in this shop beside what the inventory holds (HealingHeldShare reads only the inventory).
+			var chosenHealing = Math.Max(0f, holding - held) + healedChosen;
+			// With a fight on the way unmeasured the route weighs it as the shop does here - its learned load, else the
+			// heaviest (A805 review) - so the raw demand stands in for the net one.
 			spareLine = wayLoad is { } wayNeed
-				? Math.Max(0f, wayNeed - Service.Config.UseHpPotionsPercent - heldShare - healedChosen - spared)
-				: 0f;
+				? Math.Max(0f, wayNeed - Service.Config.UseHpPotionsPercent - heldShare - chosenHealing - spared)
+				: Math.Max(0f, healable - 1f - spared);
 		}
 		foreach (var (row, id, _) in offers)
 		{

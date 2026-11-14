@@ -23395,6 +23395,15 @@ Vorgabe (zum Leveln keine Begleiter ab Rang 10, außer zum Auffüllen der Reserv
   Rang steht, kommt nur als Lernender.
 - *Gegenthese:* schwächer im Kampf – widerlegt durch seinen Hinweis (Brett 2 mit Rang 6 geschafft) und die Hornwahl je
   Kampf (K6); Preis: längere Kämpfe, bis die Verluste je Rangstufe gemessen sind (A729).
+- *Unabhängige Prüfung (frischer Hilfsagent, statisch):* kein Befund hoher Schwere, zwei mittlere und ein mittlerer
+  Nebenbefund, eingearbeitet. (M2) Der Filter auf „ab dem empfohlenen Rang" hätte bei zu wenigen solchen Begleitern
+  (etwa Brett 3 direkt nach Brett 2) den Kern ohne Heiler und Schwächen gelassen; jetzt wird geordnet statt gefiltert:
+  einer darunter trägt eine Rolle oder Schwäche nur, wo keiner ab ihm es tut. (N1) In der Heiler- und
+  Unterbrecherphase entscheidet der Rang, nicht eine nebenbei abgedeckte Schwäche. (M1) Die Rauchbombe zählte bei
+  ungemessenem Kampf nichts, obwohl der Weg mit der gelernten oder schwersten Last weiter wägt und flieht; jetzt nach
+  dem rohen Bedarf. (Nebenbefund, fc69357e6) Im Laden zählten gewählte Heilgegenstände zweimal gegen den Bedarf (in
+  `held` und in `healed`); `healed` nimmt jetzt nur noch Auto-Tränke. Preis ergänzt: Die Lasten je Kampf fallen bis zur
+  ersten Messung auf der neuen Rangstufe auf die schwersten aller Läufe zurück.
 - *Prüfgrad:* Bildbefund, Compile, CI; Laufzeit nicht beobachtet.
 - *Vorhersage:* `predictions/2026-11-14.json`, „level-core-low": Fordert er unter Level auf Brett 2 den Kader an, nennt
   „crucible team: goal Level - requested …" mindestens drei Begleiter auf Rang 6 bis 9 aus dem Spiel.
