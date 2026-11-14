@@ -23306,6 +23306,20 @@ audit, codereview und fehlerbeseitigung".
 - *Prüfgrad:* Compile, CI, Layoutmodell; Laufzeit nicht beobachtet.
 - *Vorhersage:* Die Spur nennt bei jeder Anforderung das Ziel („crucible team: goal Level - requested …"); unter Safe
   win fehlt jede Zeile „crucible score: … kept for …".
+- *Unabhängige Prüfung (frischer Hilfsagent, Disassemblierung, statischer Code; 14.11.2026):* Kein Befund hoher Schwere;
+  A803 bestätigt – vier Argumente an allen 15 Aufrufstellen, kein Null-Zugriff (die Funktion rechnet nur eine Adresse;
+  dieselbe Folge läuft in `IsPetOverSyncedRank` jeden Frame), und das „+" je Begleiter verschieden bei Rang 0 für alle
+  zeigt, dass der Schalter des Agenten am Kaderfenster 0 war. Eingearbeitet: (M1, M2) Unter Safe win ging die Heilung im
+  letzten GCD des Endkampfs ohne Punktevergleich (bis rund 1.500 Punkte Verlust ohne Sicherheitsgewinn), die für
+  Unversehrte Bestien mit – beide wiegen jetzt unter jedem Ziel Punkte gegen Punkte (`ItemBonusStands`), der Optionstext
+  sagt es. (M3) Unter Level schloss das Team einer Gattung Nachzügler anderer Gattungen aus; es gilt jetzt erst ohne
+  Nachzügler. (M4) Die Kopplung zweier Achsen steht als Option (4) mit Preis im Konzept. (N2) Gleichstand nach Rang nur
+  unter dem Synchronrang; (N3) Quelle in der Spur nach dem höheren Rang; (N4) unter Safe win kein Begleiter unter dem
+  empfohlenen Rang, solange andere die Größe füllen; (N5) Titel „Goal of the runs"; (N6) die Übernahme speichert; (N1)
+  Doc-Kommentar. Toter Code der Größenkürzung (`CoverageOf`) entfernt. Die Aussage im Konzept, das Spiel nehme den
+  Inhaltsschalter an allen Stellen aus dem Agenten, war zu weit; korrigiert. *Folge von A803:* Die Laststufe des Kaders
+  (A729) lief nie, weil der Rang 0 las; Vorhersage „team-rank-step-runs". Offen: ob Byte 0x46 von `XBMContent` der
+  Spalte 36 (`SyncRank`) entspricht, und der Inhaltsschalter im Brett.
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

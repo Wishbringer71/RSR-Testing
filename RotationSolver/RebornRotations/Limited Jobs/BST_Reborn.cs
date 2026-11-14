@@ -160,11 +160,13 @@ public sealed class BST_Reborn : BeastmasterRotation
 	[RotationConfig(CombatType.PvE, Name = "Goal of a Crucible run (also the three buttons of the team window)",
 		Tooltip = "Level: every familiar in the team earns experience, on a horn or not. The team keeps the familiars the board's "
 			+ "fights need - each weakness, healing and protection for the boss, the reserve the measured losses ask for - and "
-			+ "fills every other place with the familiars lowest in true rank, in turns, up to the board's size; on a reserve "
-			+ "place only one at least at the rank the game recommends. Once none lags behind, as Score. On the board the "
+			+ "fills every other place with the familiars lowest in true rank, of every kin, in turns, up to the board's size; on "
+			+ "a reserve place only one at least at the rank the game recommends. Once none lags behind, as Score. On the board the "
 			+ "score bonuses are weighed as under Score - the experience follows the score.\n"
-			+ "Safe win: the full team for the board's fights, at equal worth the higher rank; on the board no score bonus "
-			+ "holds back an item, a purchase, a treasure's gear, a rest or a feed - each goes where its safety rule asks.\n"
+			+ "Safe win: the full team for the board's fights, none below the recommended rank while others fill it, at equal "
+			+ "worth the higher rank; on the board no score bonus holds back what a safety rule asks for - an item, a purchase, "
+			+ "a treasure's gear, a rest or a feed. A use that only trades points for points, a heal in the final fight's last "
+			+ "moment, still weighs them.\n"
 			+ "Score: a smaller team and a team of one kin where the measured losses allow it; on the board a bonus stays while "
 			+ "the way to the final fight is safe without the action that would cost it.\n"
 			+ "In a fight: a familiar below the recommended rank goes on a horn only when fewer others live than horns.")]
@@ -1719,6 +1721,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 			&& string.Equals(lagging, bool.FalseString, StringComparison.OrdinalIgnoreCase))
 		{
 			_ = ChooseCrucibleGoal(this, CrucibleGoal.Score);
+			Service.Config.Save();
 		}
 
 		CrucibleGoalNow = CrucibleGoal;

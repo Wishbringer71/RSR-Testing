@@ -399,7 +399,7 @@ PICKS = [
 def team_content(picks, status="Team set: 3 familiars. Confirm it on the screen."):
     """The status line is empty until the player presses Apply - the state in which the window first appears."""
     def content(w):
-        with w.section("Goal of this run", "The team and the board's play follow it"):
+        with w.section("Goal of the runs", "Kept until you change it; the team and the board's play follow it"):
             w.choice(["Level", "Safe win", "Score"])
             w.note("Familiars that lag behind in rank fill the team; once none does, as Score.")
         with w.section("Team for this board", f"{len(picks)} familiars"):

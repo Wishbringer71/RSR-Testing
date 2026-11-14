@@ -2117,12 +2117,17 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
   darunter steht, mit dem eigenen. *Woher der echte Rang kommt (A803):* aus der Spielfunktion, die ClientStructs als
   `GetSyncedRank(petId)` führt (Disassemblierung seiner Spielbinärdatei vom 13.11.2026; Adresse 0x140AA52B0 wie in
   ClientStructs' `data.yml`). Sie nimmt vier Argumente – Agent, Begleiter, *angleichen* und *Daten des Inhalts* –,
-  ClientStructs deklariert nur die ersten zwei. Das Spiel ruft sie an 15 Stellen mit beiden Schaltern (*angleichen* 1
-  für den Rang im Brett, 0 für den echten; *Daten des Inhalts* aus dem Agenten, `UsesContentPetData`), und
-  `IsPetOverSyncedRank` liest intern genau den echten Rang und vergleicht ihn mit der Grenze des Bretts (`XBMContent`
-  der Agentenzeile, Byte 0x46). Ohne die beiden Argumente stehen Zufallswerte aus den Registern darin. RSR ruft die
-  Funktion deshalb selbst mit allen vier (`CrucibleBoard.PetRank`): für den Kader echt, für Hornwahl und Laststufe
-  angeglichen. Auch das Bestiarium zeigt den echten Rang (sein Hinweis vom 14.11.2026, sein Bild: Cu Sith „RANG 11",
+  ClientStructs deklariert nur die ersten zwei. Das Spiel ruft sie an 15 Stellen mit beiden Schaltern, *angleichen*
+  1 für den Rang im Brett und 0 für den echten (zwei Stellen fragen nacheinander beide ab); *Daten des Inhalts* nimmt
+  es je Stelle aus ihrem Zusammenhang – aus dem Agenten (+0x6C, `UsesContentPetData`) liest ihn `IsPetOverSyncedRank`,
+  das intern genau den ungekappten Rang mit der Grenze des Bretts vergleicht (`XBMContent` der Agentenzeile, Byte
+  0x46). Ohne die beiden Argumente stehen Zufallswerte aus den Registern darin. RSR ruft die Funktion deshalb selbst
+  mit allen vier (`CrucibleBoard.PetRank`), mit dem Schalter des Agenten wie `IsPetOverSyncedRank`: so liest es
+  denselben Rang, den das „+" vergleicht; Hornwahl und Laststufe rechnen daraus den angeglichenen (`FightingRank`).
+  Am 14.11.2026 stand das „+" je Begleiter verschieden (elf mit, einer ohne), bei Rang 0 für alle: Der Schalter des
+  Agenten stand dort auf 0, und `PetRank` liest das Feld der echten Ränge (Schluss aus der Spur, unabhängige Prüfung
+  A804). *Folge:* Die Laststufe des Kaders (A729, „crucible team rank …") brach bis A803 an Rang 0 ab und lief nie; sie
+  lernt jetzt zum ersten Mal je Rangstufe. Auch das Bestiarium zeigt den echten Rang (sein Hinweis vom 14.11.2026, sein Bild: Cu Sith „RANG 11",
   Schaudermilbe „RANG 6"); die Feldnotiz von Daedalus vom 31.10.2026, es zeige ihn nicht, ist damit widerlegt. Das
   Teamfenster zeigt auf Brett 2 je Begleiter nur den angeglichenen Rang („ 10", Wert 6 + 77 je Begleiter in seiner
   Fensterspur vom 14.11.2026). Das Brett nennt
@@ -2191,11 +2196,16 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
   bleibt gespeichert (Einstellung „Goal of a Crucible run (also the three buttons of the team window)", ab Werk „Level"). Kader und Verhalten im Brett folgen ihm:
   | Ziel | Kader (K7) | Im Brett (K15 und was daran hängt) |
   |---|---|---|
-  | Level | Kämpfer und Lernende (oben); ohne Nachzügler wie „Score" (seine Vorgabe vom 14.11.2026, „Nach dem Höchstrang") | Boni gewogen wie unter „Score": Die Begleiter-EP folgen der Punktzahl |
-  | Safe win | volle Größe, gierig nach Schwächen, bei Gleichstand der höhere echte Rang; keine Verkleinerung, keine Gattung, keine Lernenden | kein Bonus wiegt: Gegenstände, Kauf, Schatz, Rast und Futter gehen, wo ihre Sicherheitsregel sie verlangt (K8, K10, K13 ohne K15) |
+  | Level | Kämpfer und Lernende aus allen Gattungen (oben); ohne Nachzügler wie „Score" (seine Vorgabe vom 14.11.2026, „Nach dem Höchstrang") | Boni gewogen wie unter „Score": Die Begleiter-EP folgen der Punktzahl |
+  | Safe win | volle Größe, gierig nach Schwächen, ohne Begleiter unter dem empfohlenen Rang, solange andere die Größe füllen; bei Gleichstand unter dem Synchronrang der höhere Rang; keine Verkleinerung, keine Gattung, keine Lernenden | kein Bonus hält zurück, was eine Sicherheitsregel verlangt: Gegenstände, Kauf, Schatz, Rast und Futter gehen wie ohne K15 (K8, K10, K13) |
   | Score | Größe nach Punkten (A698) und Gattung (A699), keine Lernenden | K15 wie gebaut: ein Bonus bleibt, solange der Weg ohne die Handlung sicher ist |
-  Die Wahl gilt ab dem Klick, auch mitten im Lauf über die Einstellung; ein schon verlorener Bonus bleibt verloren. Die
-  Spur nennt das Ziel mit dem angeforderten Kader („crucible team: goal Level - requested …").
+  Was nur Punkte gegen Punkte tauscht, wiegt unter jedem Ziel: die Heilung im letzten GCD des Endkampfs (A712) und die
+  für „Unversehrte Bestien" (A695) gehen nur, wo ihr Bonus die Gegenstandsboni übersteigt, die sie kosten – Sicherheit
+  bringt keine von beiden, der Kampf endet vor dem nächsten GCD (unabhängige Prüfung, A804). Die Wahl gilt ab dem Klick,
+  auch mitten im Lauf über die Einstellung, und für alle folgenden Läufe; ein schon verlorener Bonus bleibt verloren. Die
+  Spur nennt das Ziel mit dem angeforderten Kader („crucible team: goal Level - requested …"). Unter Level gilt das Team
+  einer Gattung (A699) erst, wenn kein Begleiter mehr zurückliegt: Vorher schlösse es Nachzügler anderer Gattungen aus
+  (seine Vorgabe: „alle reihum").
   *Warum eine Wahl und kein Optimum (Nachweis, dass jede Lösung einen Preis hat, den keine Konstruktion beseitigt):*
   (1) Level gegen Score: Die Plätze des Kaders sind dieselben. In Unterzahl bringt 1.250 bis 4.250 Punkte nur mit
   höchstens sieben Begleitern; jeder Begleiter mehr im Kader bekommt EP (sein Hinweis), höchstens 255 je Brett
@@ -2212,6 +2222,12 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
   Je Teilregel ein Schalter (Leveln, Größe, Gattung, je Bonus) – Stellungen, die einander widersprechen können
   (Lernende auffüllen und zugleich auf In Unterzahl verkleinern). (3) Das Ziel aus der Messlage ableiten (unbekannte
   Last → Safe win) – das tut K15 schon je Entscheidung (unbekannt ist die sichere Seite) und ersetzt die Vorliebe nicht.
+  (4) Zwei Achsen getrennt – Kader (Leveln, Punkte, Stärke) und Gewichtung der Boni (ja, nein): sechs Stellungen statt
+  drei. *Nicht angeboten,* mit Preis: Wer levelt und die Boni nicht gewichten will, hat keine Stellung; er wählt Level
+  (gewichtet) oder Safe win (ohne Nachzügler). Unter Level dient die Gewichtung dem Ziel selbst, solange die EP unter
+  ihrer Grenze liegen (Brett 2: 121 von 255 je Begleiter, A799) – mehr Punkte heißen dort mehr EP; darüber ist das
+  unbelegt. Die Gewichtung hält Boni nur, solange der Weg mit der schwersten gelernten Last sicher ist (K15); die Lücke
+  ist die Restgefahr einer ungesehenen Last in einem Lauf zum Leveln. Wünscht er die Stellung, ist sie ein Schalter mehr.
   *SWOT (1):* Stärke – eine Entscheidung an der Stelle, an der der Kader entsteht, und alle Teilregeln folgen ihr
   widerspruchsfrei. Schwäche – ein vergessener Knopf gilt im nächsten Lauf weiter; das Fenster zeigt das Ziel bei jedem
   Öffnen. Chance – ein neuer Grad oder ein ungemessenes Brett: Safe win spart die Rast nicht und verliert den Lauf

@@ -1484,9 +1484,10 @@ public partial class BeastmasterRotation
 		// any more; earlier the order of the items does not change the HP at the end, only the last one decides the full HP.
 		if (finalFight && FinalFightEndsNow)
 		{
-			// A712: with an item bonus still at stake nothing goes in this last GCD - the fight ends, and the bonus
-			// outweighs the points of full HP, whatever the way test said before.
-			if (ItemBonusAtStake || missing <= 0f)
+			// A712: with an item bonus still standing nothing goes in this last GCD - the fight ends, and the bonus
+			// outweighs the points of full HP, whatever the way test said before. Under every goal (A804): points for
+			// points, no safety in it.
+			if (ItemBonusStands || missing <= 0f)
 			{
 				return -1;
 			}

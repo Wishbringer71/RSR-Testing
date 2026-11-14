@@ -44,7 +44,13 @@ public partial class BeastmasterRotation
 	/// K15 (A695): whether a use of an item now would cost a bonus of the score - "Sparsamkeit" or "Sammelleidenschaft" - that
 	/// the goal of the run weighs (A804: not under Safe win).
 	/// </summary>
-	internal static bool ItemBonusAtStake => WeighsScore && (NoItemBonusStands || HoarderBonusAtStake);
+	internal static bool ItemBonusAtStake => WeighsScore && ItemBonusStands;
+
+	/// <summary>
+	/// K15 (A695, A804): whether an item bonus still stands, whatever the goal - for a use that only trades points for points
+	/// (the last GCD of the final fight), which no goal frees from weighing them.
+	/// </summary>
+	private static bool ItemBonusStands => NoItemBonusStands || HoarderBonusAtStake;
 
 	/// <summary>K15 (A695): the points a use of an item now costs - "Sparsamkeit" while it stands, "Sammelleidenschaft" while ten are held.</summary>
 	private static int ItemBonusPointsAtStake => (NoItemBonusStands ? CrucibleBoard.BonusPoints(CrucibleBoard.ScoreBonus.EconomicEthos) : 0)

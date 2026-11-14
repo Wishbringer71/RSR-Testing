@@ -517,64 +517,77 @@ public partial class BeastmasterRotation
 			var safe = profile.TrickHeals || profile.ReleaseHeals || profile.ReleaseProtects || profile.BorrowProtects;
 			var overRank = party != null && party->IsPetOverSyncedRank((uint)pet);
 			var rank = CrucibleBoard.PetRank(party, pet);
-			_rankSources[pet] = rank > 0 ? "game" : CrucibleBoard.KnownRank(pet) > 0 ? "learned" : "unknown";
+			var learned = CrucibleBoard.KnownRank(pet);
+			_rankSources[pet] = rank > 0 && rank >= learned ? "game" : learned > 0 ? "learned" : "unknown";
 			candidates.Add(new TeamCandidate(pet, ElementsOf(profile), safe, overRank, rank));
 		}
 
 		var all = new List<TeamCandidate>(candidates);
-		var chosen = ChooseTeam(candidates, size, weight, interrupting, team, out var core);
-		var covered = CoverageOf(chosen);
 
-		// A698: as few as the score's bonus for a smaller team allows with the core and the familiars' measured loss - not
-		// under the goal Safe win (A804).
+		// A804: under Safe win no familiar below the board's recommended rank takes a place while others fill the size - one
+		// there goes on a horn only when fewer others live than horns (K6), so its place is no reserve.
 		var safeWin = goal == CrucibleGoal.SafeWin;
-		var sizeNote = "Safe win: the full team for the board's fights, the stronger at equal worth; no score bonus holds back "
-			+ "an item, a purchase, a rest or a feed.";
-		var keep = safeWin ? size : TeamSizeForScore(board, size, core, chosen, out sizeNote);
-		CrucibleTeamSizeNote = sizeNote;
-		for (var i = chosen.Count - 1; i >= keep; i--)
+		if (safeWin)
 		{
-			var dropped = chosen[i];
-			chosen.RemoveAt(i);
-			candidates.Add(dropped);
-			foreach (var element in dropped.Hits)
+			var recommended = CrucibleBoard.RecommendedRank(board);
+			var weak = 0;
+			foreach (var candidate in candidates)
 			{
-				covered[element] = covered.GetValueOrDefault(element) - 1;
+				weak += !candidate.OverRank && candidate.Rank > 0 && candidate.Rank < recommended ? 1 : 0;
+			}
+
+			if (weak > 0 && candidates.Count - weak >= size)
+			{
+				for (var i = candidates.Count - 1; i >= 0; i--)
+				{
+					if (!candidates[i].OverRank && candidates[i].Rank > 0 && candidates[i].Rank < recommended)
+					{
+						candidates.RemoveAt(i);
+					}
+				}
 			}
 		}
 
-		// A699: a team of one kin where one holds what the mixed one holds - its bonus on top.
-		var gambitKin = BeastmasterKinType.None;
-		if (!safeWin && GambitTeam(all, size, weight, interrupting, team, board, chosen, keep) is { } gambit)
-		{
-			gambitKin = gambit.Kin;
-			chosen = gambit.Team;
-			covered = CoverageOf(chosen);
-			candidates = [];
-			foreach (var candidate in all)
-			{
-				if (!chosen.Contains(candidate))
-				{
-					candidates.Add(candidate);
-				}
-			}
+		var chosen = ChooseTeam(candidates, size, weight, interrupting, team, out var core);
 
-			CrucibleTeamSizeNote = gambit.Note;
+		// A698: as few as the score's bonus for a smaller team allows with the core and the familiars' measured loss - not
+		// under the goal Safe win (A804).
+		var sizeNote = "Safe win: the full team for the board's fights, the stronger at equal worth; no score bonus holds back "
+			+ "what safety asks for - an item, a purchase, a rest or a feed.";
+		var keep = safeWin ? size : TeamSizeForScore(board, size, core, chosen, out sizeNote);
+		CrucibleTeamSizeNote = sizeNote;
+		if (chosen.Count > keep)
+		{
+			chosen.RemoveRange(keep, chosen.Count - keep);
 		}
 
 		// A579, A796 (concept 21, K7 "Leveln"): every familiar in the team earns experience, on a horn or not. The fighters - the
 		// core and the reserve the measured losses ask for - take familiars that lag behind first where they replace adequately;
-		// the places left up to the board's size go to the other familiars that lag behind, lowest rank first.
+		// the places left up to the board's size go to the other familiars that lag behind, lowest rank first. A804: of every
+		// kin - a team of one kin waits until none lags behind (his order of 14.11.2026: all in turns).
 		var learning = new Dictionary<BeastmasterPet, bool>();
+		var leveled = false;
 		if (goal == CrucibleGoal.Level && party != null)
 		{
-			chosen = LevelingTeam(board, size, chosen, all, weight, interrupting, team, gambitKin, learning, out var levelNote);
-			if (levelNote.Length > 0)
+			var leveling = LevelingTeam(board, size, chosen, all, weight, interrupting, team, BeastmasterKinType.None, learning,
+				out var levelNote);
+			CrucibleTeamSizeNote = levelNote;
+			if (learning.Count > 0)
 			{
-				CrucibleTeamSizeNote = levelNote;
+				chosen = leveling;
+				leveled = true;
 			}
 		}
-		else if (goal == CrucibleGoal.Score)
+
+		// A699: a team of one kin where one holds what the mixed one holds - its bonus on top; not under Safe win, and under
+		// Level only once none lags behind.
+		if (!safeWin && !leveled && GambitTeam(all, size, weight, interrupting, team, board, chosen, keep) is { } gambit)
+		{
+			chosen = gambit.Team;
+			CrucibleTeamSizeNote = gambit.Note;
+		}
+
+		if (goal == CrucibleGoal.Score)
 		{
 			// A802: the state shows in the window, so a team without leveling is not read as a fault of the rule.
 			CrucibleTeamSizeNote = (CrucibleTeamSizeNote.Length > 0 ? CrucibleTeamSizeNote + " " : string.Empty)
@@ -695,26 +708,12 @@ public partial class BeastmasterRotation
 			return false;
 		}
 
-		// At equal worth: above the board's rank first, then the higher true rank (A804), then one in the team already.
+		// At equal worth: above the board's rank first, then below it the higher rank (A804), then one in the team already.
+		// Two above the sync fight at the sync - equally strong.
 		bool Before(TeamCandidate a, TeamCandidate b)
 			=> a.OverRank != b.OverRank ? a.OverRank
-				: a.Rank != b.Rank ? a.Rank > b.Rank
+				: !a.OverRank && a.Rank != b.Rank ? a.Rank > b.Rank
 				: team.Contains(a.Pet) && !team.Contains(b.Pet);
-	}
-
-	// K7: how many of `chosen` hit each element.
-	private static Dictionary<uint, int> CoverageOf(List<TeamCandidate> chosen)
-	{
-		var covered = new Dictionary<uint, int>();
-		foreach (var pick in chosen)
-		{
-			foreach (var element in pick.Hits)
-			{
-				covered[element] = covered.GetValueOrDefault(element) + 1;
-			}
-		}
-
-		return covered;
 	}
 
 	// K7 (A699): the kin of each "team of only ..." bonus and its XBMScoreBonus row and name, read from their conditions once.

@@ -207,7 +207,6 @@ internal abstract class RecommendationWindow : Window
 		_lastWasLine = false;
 	}
 
-	/// <summary>The window's action: a filled Material button.</summary>
 	/// <summary>
 	/// One of a few choices as Material segmented buttons, the chosen one marked (A804); the index picked this frame, else
 	/// -1. As wide as its labels need, at most the room left; the window keeps room for all of it.
@@ -221,6 +220,7 @@ internal abstract class RecommendationWindow : Window
 		return picked;
 	}
 
+	/// <summary>The window's action: a filled Material button.</summary>
 	protected bool Action(string id, string label, FontAwesomeIcon icon, bool enabled = true)
 	{
 		var pressed = M3Widgets.Button(id, label, M3ButtonStyle.Filled, icon, enabled: enabled);

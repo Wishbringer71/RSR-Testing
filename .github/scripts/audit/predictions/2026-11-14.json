@@ -20,5 +20,7 @@
   {"id": "team-true-ranks", "archive": "A803",
    "kind": "present", "situation": "crucible team: goal ", "match": "crucible team: goal \\w+ - requested .*\\b([1-9]|1[0-9]|2[0-5])\\+? game"},
   {"id": "team-ranks-not-zero", "archive": "A803",
-   "kind": "absent", "situation": "crucible team: goal ", "match": "crucible team: goal \\w+ - requested .* 0\\+? unknown"}
+   "kind": "absent", "situation": "crucible team: goal ", "match": "crucible team: goal \\w+ - requested .* 0\\+? unknown"},
+  {"id": "team-rank-step-runs", "archive": "A803",
+   "kind": "present", "situation": "crucible team: goal ", "match": "crucible team rank [1-9][0-9]? on board "}
 ]
