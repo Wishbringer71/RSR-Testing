@@ -76,6 +76,7 @@ internal class Service : IDisposable
 			var duration = battleChara.IsEnemySideFigure() ? battleChara.RemainingCastTime : 0f;
 			VfxNewData newVfx = new(battleChara.GameObjectId, path, duration);
 			DataCenter.VfxDataQueue.Enqueue(newVfx);
+			GazeWatch.NoteVfx(newVfx); // A789: a look marker, without walking the queue each frame
 		}
 		catch (Exception ex)
 		{

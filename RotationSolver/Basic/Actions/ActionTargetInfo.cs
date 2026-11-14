@@ -173,16 +173,19 @@ public struct ActionTargetInfo(IBaseAction action)
 
 		// A770: an action that turns the player to its target takes no target that would turn him into a gaze reaching him
 		// (concept 13, "Nicht in einen Blick drehen").
-		if (action.Info.NeedToFaceTarget && action.Action.Range > 0 && validTargets.Count > 0)
+		// A789: melee actions carry range -1 in the sheet, 0 is around oneself; an action that moves the player to its target
+		// faces it until it lands, with or without NeedToFaceTarget (Thunderclap, Slither).
+		var moves = action.Action.AffectsPosition;
+		if (((action.Info.NeedToFaceTarget && action.Action.Range != 0) || moves) && validTargets.Count > 0)
 		{
 			// A786: counted from when the game runs it; an action that moves the player keeps its facing until it lands.
-			var castTime = action.Action.AffectsPosition
+			var castTime = moves
 				? Math.Max(action.Info.CastTime, ActionManagerEx.CurrentLockTweak?.AbilityWindow(action.ID) ?? 0f)
 				: action.Info.CastTime;
 			var startsIn = GazeWatch.StartsIn(action.Info.IsRealGCD);
 			for (var i = validTargets.Count - 1; i >= 0; i--)
 			{
-				if (GazeWatch.TurnsIntoGaze(validTargets[i].Position, castTime, startsIn))
+				if (GazeWatch.TurnsIntoGaze(validTargets[i].Position, castTime, startsIn, moves))
 				{
 					validTargets.RemoveAt(i);
 				}

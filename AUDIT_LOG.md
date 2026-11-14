@@ -22867,6 +22867,42 @@ Upload vom 14.11.2026 (zwei Absturzberichte, `DefenseTrace.log` auf 57f3f5455).
 - *Vorhersage:* In seinem nächsten Protokoll steht bei Toten der eigenen Gruppe oder Allianz kein „an enemy“ mehr;
   wo ein Körper gleitet, steht „moving“, und es wechselt nicht Bild für Bild mit „a candidate“.
 
+### A789 · Blickwache: zweite unabhängige Prüfrunde, Befunde eingearbeitet (14.11.2026)
+
+Frischer Prüfer ohne Zwischenstand (A784), Stand 57f3f5455, BossModReborn 35a908ad7, xivapi und Mitschnitte vom 11. bis
+13.11.2026. Drei Befunde hoher, vier mittlerer, sieben niedriger Schwere; jeden am Artefakt geprüft. Konzept 13.
+- *H1, bestätigt (xivapi, 14.11.2026):* Nahkampfaktionen tragen die Reichweite −1. „Reichweite über 0“ nahm seit A770
+  jede Nahkampf-Waffenfertigkeit aus der Regel: keine Sperre, kein Ersatz der Drehung, auch nicht aus der Warteschlange.
+  Ein Nahkämpfer auf Angra Mainyu wurde von jedem GCD zurück ins Auge gedreht. Behoben: „nicht 0“ an allen drei
+  Stellen, wie BossModReborn. Der Prüfer fand im Mitschnitt vom 11.11. einen Spieler, der 0,19 s vor dem Balkenende ins
+  Auge drückte und trotz späterem Wegdrehen Verhängnis bekam.
+- *H2, bestätigt:* Das Misstrauen endete mit jedem Gebietswechsel, also mit jeder Runde desselben Dungeons, und der
+  Rückfall hielt die Sperre auch dort, wo RSRs Auge oder Richtung falsch war. Behoben: Misstrauen je Gebiet und Blick bis
+  zum nächsten Laden (neuer Build); das Paket des Fehlschlags entscheidet: Bestätigt es Auge und Richtung an anderen
+  Getroffenen, bleibt die Sperre, sonst greift RSR bei diesem Blick nicht mehr ein (`code.md`, „Entscheidung zur
+  Laufzeit“).
+- *H3, bestätigt:* Sprung und Ansturm prüften den 75°-Kegel eines Zaubers, obwohl RSR bis zur Landung nicht dreht.
+  Behoben: genaue Richtung zum Ziel vom Druck bis zur Landung plus Vorlauf, auch ohne `NeedToFaceTarget`.
+- *M1, bestätigt im Kern:* Der Abgleich von Marker und Wirken mit dem Vorlauf allein verfehlte das 0,3 s kürzere
+  Balkenende, und der Marker verschwand vor seiner Auflösung. Behoben: Abgleich mit Vorlauf plus gemessener Verzögerung
+  bis zum Paket; der Marker bleibt bis Dauer plus Verzögerung fällig, mit den Augen, denen er zugeordnet war. Der Versatz
+  zwischen Marker und Wirken in Windurst ist unbelegt (kein Mitschnitt).
+- *M2, teilweise:* Der Prüfer maß die Grenze an #3499 und #44355: getroffen bis 44°, verschont ab 45°. Die 45° stimmen.
+  Behoben: Jeder Bogen wird um den Winkel verbreitert, den die gemessene Bewegung von Spieler und Auge bis zur Auflösung
+  erzeugt; im Stand 0.
+- *M3/M4, übernommen:* Eine zurückgenommene Drehung, durch das Spiel oder ein anderes Werkzeug, hält jetzt für diesen
+  Blick bis zu seinem Paket jede Aktion mit Richtung zurück. Eigene Drehungen beim Auslösen zählen nicht mehr als
+  zurückgenommen.
+- *Niedrig:* N1 behoben (Konzept: der Helfer steht ab Zeile 271 am Boss; die 4,7 Yalm waren ein veraltetes Feld). N6
+  behoben: Marker meldet der VFX-Hook (`Service.ActorVfxCreateDetour`), kein Bild zählt die Warteschlange mehr auf.
+  Ohne Änderung, mit Grund: N2 (Vorlauf gedeckelt durch die Messart der Sperre, nur bei sehr schlechter Verbindung),
+  N3 (Sperre für schon aufgelöste Blicke, nur Schaden), N4 (Blind beim Blaumagier, nur Schaden), N5 (Kanal mit Richtung,
+  Schluss ohne Beleg), N7 (4 von 4766 Wirken). Die Thread-Sicherheit des Blattlesens im Hintergrund (N6) ist unbelegt.
+- *Vorhersage, Ergänzung:* Bei einem Nahkämpfer in Welt der Dunkelheit stehen „gaze: holding …“ oder „gaze: turned … for
+  an action“ auch für Waffenfertigkeiten. Eine Zeile „gaze: hit despite …“ nennt die Folge, „… bears out …“ oder „… does
+  not bear out …“. Nach einem Fehlschlag fehlt für diesen Blick im selben Gebiet jede weitere „turned …“-Zeile, auch in
+  einer neuen Runde, bis zum nächsten Build.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
