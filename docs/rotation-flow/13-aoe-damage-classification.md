@@ -656,19 +656,26 @@ und an seinen Mitschnitten; im Spiel ist kein Teil der Blickwache beobachtet.
   Richtung auf 0,57° genau; die Grenze liegt also bis zu 45,4°. Die Auswertung, wer getroffen wurde, rechnet ohne ihn.
   Preis: jede sichere Lücke 2° schmaler.
 - *Nachlauf bis zum Paket* (B4): gemessen 0,26 bis 0,30 s. Preis: Sperre bis 0,3 s länger. Das Lernen wartet bei einem
-  gewirkten Blick bis zum Paket, nicht bis zu einer Frist (B3, A801).
+  gewirkten Blick bis zum Paket, nicht bis zu einer Frist (B3, A801). Gemessen wird nur an einem Balken, den RSR bis in
+  sein letztes Stück gesehen hat (achte Prüfung): Ein abgebrochenes Wirken, das derselbe Gegner Minuten später wiederholt,
+  maß sonst Minuten, und jeder Zeitraum des Gebiets – „dieselbe Mechanik“, Abschluss, Markerzuordnung, Abstand aus
+  Bewegung – wäre so weit geworden. Ebenso zählt der Abstand zwischen zwei Aktualisierungen, der den Vorlauf verlängert,
+  nur, solange RSR läuft; nach einer Pause im Kampf hätte er sonst einen Vorlauf von der Länge der Pause ergeben.
 - *Lernen und gestufter Rückfall* (B3; A809, sechste unabhängige Prüfung): eine Regel an einer Stelle. Preis: nach
   einem falschen Fehlschlag Schaden durch Sperre.
   - *Anmelden:* Ein Blick wird zum Lernen angemeldet, sobald RSR seinetwegen handelt: dreht, beim Auslösen eine Richtung
-    wählt, behält oder die Aktion abweist, oder ein Ziel aus der Wahl nimmt. Das gilt für jede Herkunft (Wirken, Marker,
+    wählt, behält oder die Aktion abweist, oder ein Ziel aus der Wahl nimmt – dann jeder Blick, der dieses Ziel hält,
+    nicht nur der erste. Sonst blieb ein zweiter Blick mit falschem Sinn, für den RSR jedes Ziel zurückhielt, ungelernt,
+    weil eine zurückgehaltene Aktion nie gedrückt wird (achte Prüfung). Das gilt für jede Herkunft (Wirken, Marker,
     Status, Mitglied), für einen vertrauten wie für einen, der nur noch sperrt, und auch ohne gemessenen Vorlauf oder mit
     „Turn away from gaze attacks“ aus, denn auch dann nimmt die Sperre Ziele aus der Wahl. Jeder Blick ist einmal
     angemeldet, auch wenn er im selben Kampf wiederkommt (der Status von Euphrosyne): Das Doppel erkennt RSR an der
     Anmeldung, nicht an einer Liste für den Kampf.
   - *Urteil:* Ein Paket eines Gegners schadet dem Spieler (ein schädlicher Status) und gehört zu einem angemeldeten Blick:
     sein eigenes Wirken, ein Wirken gleichen Namens (ein Helfer, der es auflöst), oder bei Marker, Status und Mitglied
-    jedes Paket ab der Frist des Blicks, ein Bild früher. Vor der Frist zählt dort kein Paket – sonst hätte ein fremder
-    Flächenangriff mit „Vulnerability Up“ den Blick als Fehlschlag gelesen.
+    jedes Paket ab der Frist des Blicks, ein Bild früher, bis zur größten gemessenen Verzögerung plus Vorlauf danach. Vor
+    der Frist zählt dort kein Paket – sonst hätte ein fremder Flächenangriff mit „Vulnerability Up“ den Blick als
+    Fehlschlag gelesen –, und danach auch nicht, selbst wenn die Anmeldung offen blieb, weil RSR im Kampf aus war.
   - *Gelernt wird je Blick in drei Stufen:* noch nichts gelernt → nach dem Fehlschlag sperrt RSR nur noch, oder lässt den
     Blick ganz, wenn das Paket Modell und Sinn widerlegt. Sperrt RSR nur noch, lässt es ihn nach einem zweiten Treffer
     ganz. Ein gelassener Blick bleibt gelassen. Dieselbe Mechanik zählt nicht doppelt: Pakete innerhalb der größten
@@ -676,12 +683,15 @@ und an seinen Mitschnitten; im Spiel ist kein Teil der Blickwache beobachtet.
     Markers) gehören zu ihm. Die Stufe liest RSR aus dem Gelernten, nicht aus der Anmeldung und nicht aus dem Blick, wie
     das Spiel ihn beim Balkenende weitergab; so überschreibt ein zweiter Blick, der noch als vertraut angemeldet war,
     nichts Gelerntes (vorher drei Treffer statt zwei, sechste Prüfung M1).
-  - *Widerlegt* ist das Modell, wenn unter den anderen Getroffenen des Pakets mehr sicher standen als ins Auge sahen, so
-    wie RSR das Auge setzt. Gemessen wird gegen den Blick, dessen Paket es ist, einmal je Paket; nicht gegen jeden
-    angemeldeten Blick gleichen Namens. Sonst las ein zweites Auge gleichen Namens auf der anderen Seite die Getroffenen
-    als „weggesehen“ und ließ einen richtigen Blick fallen (sechste Prüfung M2). Ein Paket ohne eigenes Wirken (Status,
-    Marker) widerlegt nur, wenn es gegen jeden zugehörigen Blick widerlegt, der noch zu sehen ist. Ein Status ist beim
-    Paket meist schon abgelaufen; dann widerlegt nichts, und RSR sperrt nur noch – die sichere Seite.
+  - *Widerlegt* ist das Modell eines gewirkten Blicks, wenn unter den anderen Getroffenen des Pakets mehr sicher standen
+    als ins Auge sahen, so wie RSR das Auge setzt. Gemessen wird gegen den Blick, dessen Paket es ist, einmal je Paket;
+    nicht gegen jeden angemeldeten Blick gleichen Namens. Sonst las ein zweites Auge gleichen Namens auf der anderen Seite
+    die Getroffenen als „weggesehen“ und ließ einen richtigen Blick fallen (sechste Prüfung M2). Marker, Status und
+    Mitglied widerlegt kein Paket: Es ist nicht ihres, und wer darin getroffen wurde, sagt nichts über ihr Auge. Ein
+    Flächenangriff kurz nach einem „No Look“-Marker traf sonst Mitglieder, die eben vom Auge wegsahen, galt als
+    Widerlegung und ließ den Marker für den Build los (achte Prüfung). Ihr erster Fehlschlag führt immer zur Sperre.
+    Preis: Trifft ein fremder schädlicher Status im Zeitraum nach der Frist, sperrt RSR für diesen Blick nur noch,
+    statt zu drehen.
   - *Abschluss ohne Treffer:* Ein gewirkter Blick wartet auf sein eigenes Paket bis zum Kampfende (A801). Marker, Status
     und Mitglied gelten als überstanden, wenn der Blick verschwunden ist und danach die größte gemessene Verzögerung plus
     Vorlauf ohne Schaden vergangen ist; bis dahin rückt die Frist mit dem Blick nach. Ein Marker, dessen Auge erst nach
@@ -707,13 +717,16 @@ und an seinen Mitschnitten; im Spiel ist kein Teil der Blickwache beobachtet.
   - *Ein Blick, der nur noch sperrt,* bekommt keine eigene Drehung. Dreht RSR für einen anderen Blick, meidet die gewählte
     Richtung auch ihn: Stimmt sein Modell, schützt das; stimmt es nicht, kostet es den zweiten Treffer, nach dem RSR ihn
     ganz lässt.
-  - *Bekannte Grenzen (siebte Prüfung, niedrig):* Der Zeitraum „dieselbe Mechanik“ ist die größte Verzögerung im Gebiet;
-    löst eine Aktion spät auf, wird er weit, und ein echter zweiter Treffer darin zählt nicht (Preis: ein weiterer Treffer
-    über die Grenze von zwei). Ein Treffer bei Verfolgung des Modells – der Spieler sieht selbst ins Auge, während RSR nur
-    sperrt – lässt den Blick los, wie die Regel es für jeden zweiten Fehlschlag vorsieht (`code.md`, „Entscheidung zur
-    Laufzeit“). Ein über einen Helfer gleichen Namens aufgelöstes Wirken schließt nicht als „avoided“ und bleibt bis zum
-    Kampfende angemeldet. Wie viele Getroffene als „weggesehen“ zählen, liest RSR an der Richtung im Client; eine vom
-    Server gehaltene Richtung kann dort anders stehen (A809, N3). Jede davon wäre eine neue Mechanik ohne Anforderung.
+  - *Bekannte Grenzen (siebte Prüfung, niedrig):* Der Zeitraum „dieselbe Mechanik“ ist die größte Verzögerung im
+    Gebiet; löst eine Aktion spät auf, wird er weit, und ein echter zweiter Treffer darin zählt nicht (Preis: ein
+    weiterer Treffer über die Grenze von zwei). Ein Treffer bei Verfolgung des Modells – der Spieler sieht selbst
+    ins Auge, während RSR nur sperrt – lässt den Blick los, wie die Regel es für jeden zweiten Fehlschlag vorsieht
+    (`code.md`, „Entscheidung zur Laufzeit“). Ein über einen Helfer gleichen Namens aufgelöstes Wirken schließt mit
+    dessen Paket ohne Schaden, sobald es selbst nicht mehr zu sehen ist (achte Prüfung). Wie viele Getroffene als
+    „weggesehen“ zählen, liest RSR an der Richtung im Client; eine vom Server gehaltene Richtung kann dort anders
+    stehen (A809, N3). Gibt ein Blick mit seinem Paket jedem Ziel einen schädlichen Status, gleich wohin es sieht,
+    zählt jeder Erfolg als Fehlschlag; T9 ist nur an #3499 gemessen (achte Prüfung, Schluss, unbelegt an weiteren
+    Blicken). Jede davon wäre eine neue Mechanik ohne Anforderung.
   - *Gegenthese (die Anmeldung beim Zurückhalten lernt aus Fehlern des Spielers):* Steht er selbst falsch, während RSR
     nur ein Ziel zurückhält, lernt RSR einen Fehlschlag, den es nicht verursacht hat. Preis: Sperre statt Drehung für
     diesen Blick, nach einem weiteren Treffer gar nichts. Ohne die Anmeldung beim Zurückhalten hielte ein Blick mit

@@ -170,6 +170,8 @@ internal static class MajorUpdater
 		if (!isActivated)
 		{
 			ResetBmrDataIfLive();
+			// A809 (concept 13, "Nachlauf bis zum Paket"): the gap between updates counts only while RSR runs.
+			GazeWatch.Idle();
 			return;
 		}
 

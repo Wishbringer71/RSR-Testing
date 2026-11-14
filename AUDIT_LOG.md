@@ -23653,6 +23653,20 @@ Anforderungen B1 bis B6 in Konzept 13 geprüft, keine Flickrunde.
   Berichtigt: Konzepttext und Kommentare (L5, L8; der Schlüssel „Gebiet mit Namen" in „Dauer" war seit A809 veraltet).
   Unverändert: die Anlagen in `Harmed` (je Paket) und im Statuszugriff (je Bild, gleiches Muster überall in RSR,
   unbelegt). Prüfgrad: statisch, Compile, CI.
+- *Achte unabhängige Prüfung (auf cd8505819):* kein Befund hoher, zwei mittlerer Schwere; die Änderungen der siebten
+  Runde bestätigt. Eingearbeitet, Konzept 13 zuerst, beide durch Vereinfachen: (M-A) Marker, Status und Mitglied wurden
+  am Paket eines anderen gemessen; ein Flächenangriff kurz nach einem „No Look“-Marker traf Mitglieder, die eben
+  wegsahen, galt als Widerlegung und ließ den Marker für den Build los. Jetzt widerlegt sie kein Paket; ihr erster
+  Fehlschlag führt zur Sperre (Preis im Konzept). (M-B) Bei der Zielwahl wurde nur der erste haltende Blick angemeldet;
+  ein zweiter mit falschem Sinn blieb ungelernt, weil eine zurückgehaltene Aktion nie gedrückt wird. Jetzt jeder.
+  Niedrig, eingearbeitet: Pakete zählen für Marker, Status und Mitglied nur im Zeitraum nach der Frist, auch wenn RSR im
+  Kampf aus war; `EndFight` setzt auch die Blickliste, das Bild der Liste, die Drehprüfung und die Balkenenden zurück; die
+  Verzögerung zählt nur an einem Balken, den RSR bis in sein letztes Stück sah (ein abgebrochenes, Minuten später
+  wiederholtes Wirken maß sonst Minuten); der Abstand zwischen zwei Aktualisierungen beginnt neu, solange RSR nicht läuft
+  (`GazeWatch.Idle` im `MajorUpdater`); ein über einen Helfer gleichen Namens aufgelöstes Wirken schließt mit dessen
+  Paket ohne Schaden; ein verrutschter Kommentar. Im Konzept als Schluss, unbelegt: Gibt ein Blick mit seinem Paket
+  jedem Ziel einen schädlichen Status, zählt jeder Erfolg als Fehlschlag (T9 nur an #3499). Prüfgrad: statisch, Compile,
+  CI.
 
 ### A810 · Seine Angabe: LLM-Framework als allgemeines Regelwerk (14.11.2026)
 

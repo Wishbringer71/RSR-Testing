@@ -126,7 +126,7 @@ internal static partial class GazeWatch
 	private static readonly List<Gazer> _casts = [];
 	private static readonly List<Gazer> _castsBefore = [];
 	private static readonly List<Landing> _landing = [];
-	private static readonly Dictionary<ulong, (uint Action, DateTime BarEnd)> _barEnds = [];
+	private static readonly Dictionary<ulong, (uint Action, DateTime BarEnd, float Left)> _barEnds = [];
 	private static readonly Dictionary<uint, bool> _areaTargeted = [];
 	private static float _landingMost;
 	private static (float Rotation, Vector3 Position, ulong Key)? _turnCheck;
@@ -203,11 +203,12 @@ internal static partial class GazeWatch
 		var held = turning && (SafeNear(player, rotation, float.DegreesToRadians(ActionHalfAngleDegrees), Math.Max(0f, startsIn) + reach) == null
 			|| (castTime > 0f && SafeNear(player, rotation, float.DegreesToRadians(CastHalfAngleDegrees), span + reach) == null));
 
+		var holdsAny = false;
 		foreach (var gazer in gazers)
 		{
 			// Without turning, and for a gaze that hit despite RSR's facing (A786): the game turns the player straight at the
-			// target, and a cast holds that heading to its end, so the whole cast counts. With turning, the hold names the
-			// first gaze that lands while the action needs its facing. A789: an action that moves the player keeps facing the
+			// target, and a cast holds that heading to its end, so the whole cast counts. With turning, the hold counts every
+			// gaze that lands while the action needs its facing. A789: an action that moves the player keeps facing the
 			// target until it lands, so the exact direction counts until then; and after the game undid RSR's turn for a gaze,
 			// every action that faces waits until its packet, so no further turn of the game starts.
 			var due = gazer.Left - span <= (turning ? reach : float.PositiveInfinity);
@@ -228,11 +229,12 @@ internal static partial class GazeWatch
 
 			// A809 (sixth review, M6): a gaze RSR keeps a target out of the choice for is learned too - also without a measured
 			// lead or with turning off, where a wrong sense would otherwise keep the target towards the real eye out each cast.
+			// Eighth review: every such gaze, not the first - a held action is never pressed, so nothing else registers it.
 			Watch(gazer);
-			return true;
+			holdsAny = true;
 		}
 
-		return false;
+		return holdsAny;
 	}
 
 	/// <summary>
@@ -547,9 +549,12 @@ internal static partial class GazeWatch
 		{
 			for (var i = _pending.Count - 1; i >= 0; i--)
 			{
-				if (_pending[i].Action != 0 && _pending[i].Source == sourceId && _pending[i].Action == actionId)
+				// Eighth review: a cast resolved by a same-named helper closes with the helper's packet once its own gaze is gone.
+				var pending = _pending[i];
+				if (pending.Action != 0 && ((pending.Source == sourceId && pending.Action == actionId)
+					|| (!string.IsNullOrEmpty(name) && string.Equals(pending.Name, name, StringComparison.Ordinal) && Find(pending.Key) == null)))
 				{
-					Survived(_pending[i], string.Empty);
+					Survived(pending, string.Empty);
 					_pending.RemoveAt(i);
 				}
 			}
@@ -576,24 +581,31 @@ internal static partial class GazeWatch
 
 	// A809: a packet belongs to a pending gaze when it is the gaze's own cast, a cast of the same name (a helper resolving
 	// it), or - for a marker, status or member gaze - any enemy packet from its deadline on, a frame early (sixth review,
-	// M4: before it an unrelated "Vulnerability Up" read as the gaze failing).
+	// M4: before it an unrelated "Vulnerability Up" read as the gaze failing), until the close window after it (eighth
+	// review: also where RSR was off and CloseAvoided did not run).
 	private static bool Related(Pending pending, ulong sourceId, uint actionId, string name, DateTime now)
 	{
 		return pending.Action != 0
 			? (pending.Source == sourceId && pending.Action == actionId)
 				|| (!string.IsNullOrEmpty(name) && string.Equals(pending.Name, name, StringComparison.Ordinal))
-			: now.AddSeconds(AnimationLockTweak.MeanFrameTime) >= pending.Due;
+			: now.AddSeconds(AnimationLockTweak.MeanFrameTime) >= pending.Due && (now - pending.Due).TotalSeconds <= CloseWindow(Lead());
 	}
 
-	// A809: for the related gazes the packet is not the own packet of, it refutes only where it refutes every one of them
-	// that is still seen - the marker's eyes may stand apart.
+	// The seconds after a marker, status or member gaze is gone within which its packet may still come: the longest delay
+	// measured in this zone plus the lead, else a frame (A809).
+	private static float CloseWindow(float lead) => _landingMost + (float.IsInfinity(lead) ? AnimationLockTweak.MeanFrameTime : lead);
+
+	// A809: for the related cast gazes the packet is not the own packet of, it refutes only where it refutes every one of
+	// them that is still seen. A marker, status or member gaze is never refuted (eighth review): the packet is not its own,
+	// and members who just looked away from a "No Look" eye read as refuting it.
 	private static bool OthersRefuted(ActionEffectSet set, ulong playerId, ulong sourceId, uint actionId, string name, DateTime now,
 		bool hasLanded, ulong landedLearn)
 	{
 		var any = false;
 		foreach (var pending in _pending)
 		{
-			if ((hasLanded && pending.Learn == landedLearn) || !Related(pending, sourceId, actionId, name, now) || Find(pending.Key) is not { } gazer)
+			if (pending.Action == 0 || (hasLanded && pending.Learn == landedLearn) || !Related(pending, sourceId, actionId, name, now)
+				|| Find(pending.Key) is not { } gazer)
 			{
 				continue;
 			}
@@ -661,10 +673,14 @@ internal static partial class GazeWatch
 		return harmed;
 	}
 
-	// A786: the seconds from a cast's bar end to its packet, the longest in this zone.
+	// A786: the seconds from a cast's bar end to its packet, the longest in this zone. Eighth review: only for a bar RSR saw
+	// into its last stretch, as AddLandings judges a bar finished - a cut-off bar the caster repeats minutes later measured
+	// minutes and widened every window of the zone.
 	private static void NoteLandingDelay(ulong sourceId, uint actionId)
 	{
-		if (_barEnds.Remove(sourceId, out var cast) && cast.Action == actionId)
+		var lead = Lead();
+		var finished = (float.IsInfinity(lead) ? AnimationLockTweak.MeanFrameTime : lead) + _updateGap;
+		if (_barEnds.Remove(sourceId, out var cast) && cast.Action == actionId && cast.Left <= finished)
 		{
 			var delay = (float)(DateTime.Now - cast.BarEnd).TotalSeconds;
 			if (delay >= 0f && delay > _landingMost)
@@ -781,7 +797,7 @@ internal static partial class GazeWatch
 		// A809 (seventh review, M3): without a delay measured in this zone yet, the lead alone, else a frame - left open, any
 		// later harmful packet in the fight read as the gaze failing.
 		var now = DateTime.Now;
-		var window = _landingMost + (float.IsInfinity(lead) ? AnimationLockTweak.MeanFrameTime : lead);
+		var window = CloseWindow(lead);
 		for (var i = _pending.Count - 1; i >= 0; i--)
 		{
 			var pending = _pending[i];
@@ -1076,7 +1092,6 @@ internal static partial class GazeWatch
 		return d > MathF.PI ? d - full : d;
 	}
 
-	// Every gaze on the player with its eye and the seconds left, once per frame.
 	/// <summary>
 	/// What a fight registered ends with it (A809, seventh review, M2): called where RSR measures the fight's end every
 	/// frame (ActionUpdater), whether RSR is on or not - after a wipe RSR switches itself off, and an open registration was
@@ -1099,9 +1114,20 @@ internal static partial class GazeWatch
 		_heldFacing.Clear();
 		_markers.Clear();
 		_eyesBefore.Clear();
+		_barEnds.Clear();
+		_gazers.Clear();
+		_gazersTick = long.MinValue;
+		_turnCheck = null;
 		_movedTick = long.MinValue;
 	}
 
+	/// <summary>
+	/// Each update RSR does not run (A809, eighth review): the gap between two updates, which lengthens the lead, starts
+	/// anew - after a pause in the fight it was the pause's length.
+	/// </summary>
+	internal static void Idle() => _movedTick = long.MinValue;
+
+	// Every gaze on the player with its eye and the seconds left, once per frame.
 	private static List<Gazer> Gazers()
 	{
 		var now = Environment.TickCount64;
@@ -1221,7 +1247,7 @@ internal static partial class GazeWatch
 			}
 
 			var left = Math.Max(0f, caster.TotalCastTime - caster.CurrentCastTime);
-			_barEnds[caster.GameObjectId] = (caster.CastActionId, at.AddSeconds(left));
+			_barEnds[caster.GameObjectId] = (caster.CastActionId, at.AddSeconds(left), left);
 			var kind = KindOf(caster.CastActionId);
 			if (kind != Kind.None && DataCenter.CastReachesPlayer(caster))
 			{
