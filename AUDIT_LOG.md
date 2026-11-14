@@ -22459,6 +22459,21 @@ schützen. Analysiere deren Verhalten und Code und optimiere den eigenen“. Ein
 - *Prüfgrad:* Compile, Prüfskripte, Winkelmodell; im Spiel nicht beobachtet. Messmittel sind die Zeilen „gaze: turned …“
   und „gaze: holding …“ im `DefenseTrace.log`.
 
+### A775 · Upstream-Sync 6462f8a90: Schnitter-Trank, Fork-Version 7.5.8.3 (14.11.2026)
+
+- *Upstream:* aa03eb9e2 (PR #1422) formatiert `RPR_Reborn` neu und führt „Use potion“ und „First Potion timing“ ein.
+  Ab Werk trinkt der Schnitter erst ab dem zweiten Arcane Circle (`CombatTime > 30`). Dazu kommt das Upstream-Tag
+  7.5.8.3.
+- *Konflikt:* nur am Harvest-Moon-Block, den der Fork in A743 erweitert hat; Upstream hat ihn nur umformatiert. Die
+  Fork-Fassung bleibt.
+- *Auswertung im Kampf:* The Balance führt den Trank im Opener, nach Shadow of Death (Reaper Basic Guide, abgerufen
+  14.11.2026). Mit Upstreams Voreinstellung fehlt er im ersten Burst. In einem Kampf von 7 min trinkt der Schnitter
+  dann einmal (2 min) statt zweimal (0 und 6 min). Die Voreinstellung steht deshalb auf „Opener“ (Konzept 14,
+  „Schnitter“). Der neue Schalter „Use potion“ wirkt neben dem allgemeinen Tinktur-Schalter je Job (A645); beide
+  müssen zulassen. Eine Doppelung, die nur einen Schalter mehr zeigt; sie ändert kein Verhalten.
+- *Fork-Version:* `Directory.Build.props` auf 7.5.8.3 (eigener Commit auf `main`).
+- *Prüfgrad:* Compile, Prüfskripte; im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

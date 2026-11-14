@@ -889,7 +889,7 @@ Ladung da ist, und an der vollen Ladung.
 
 ### Schnitter: Enshroud
 
-**Deckt sich, keine Änderung** (26.10.2026, A383) mit The Balance, Reaper Basic Guide („Patch Applicable: 7.5").
+**Deckt sich** (26.10.2026, A383; Trank 14.11.2026, A775) mit The Balance, Reaper Basic Guide („Patch Applicable: 7.5"); nur die Trank-Voreinstellung aus Upstream 6462f8a90 ist angepasst.
 
 | Punkt | The Balance | RSR (`RPR_Reborn`) | Stand |
 |---|---|---|---|
@@ -897,6 +897,7 @@ Ladung da ist, und an der vollen Ladung.
 | Folge im Enshroud | Void und Cross Reaping viermal im Wechsel; Lemure's Slice nach jedem zweiten; Communio bei einem Lemure-Stapel; Sacrificium einmal | Wechsel nach Enhanced Cross/Void Reaping; Lemure's Slice außerhalb von Arcane Circle erst unter drei Lemure-Stapeln, also nach dem dritten statt dem zweiten Reaping; Communio bei einem Stapel, im Laufen Shadow of Death statt Communio; Sacrificium einmal | deckt sich: beide Lemure's Slice fallen vor Communio, der erste nur einen GCD später; bis dahin liegen höchstens drei Void Shroud |
 | Death's Design | Laufzeit halten, bis 60 s stapelbar; keine Sekundenzahl | zentrale DoT-Planung (`ShadowOfDeathPvE`, 30 s, höchstens 60 s); vor Arcane Circle im Enshroud aufgefüllt, damit es den Burst deckt; „Refresh Death's Design with this many seconds remaining" (10 s) nur mit der eigenen Zeitwahl, ab Werk aus | deckt sich |
 | Gluttony, Arcane Circle, Plentiful Harvest | Gluttony auf Abklingzeit, wenn beide Executioner ausgegeben werden können; Arcane Circle auf Abklingzeit; Plentiful Harvest, sobald verfügbar | Gluttony ohne Perfectio Parata und Immortal Sacrifice; Arcane Circle ab 3,5 s Kampfzeit mit Death's Design am Ziel; Plentiful Harvest nach zwei GCDs | deckt sich |
+| Trank im Opener | „Potion (As late as possible without clipping)“ nach Shadow of Death im Opener; „Slice – Potion ends here“; keine eigene Angabe zu 2 Minuten (abgerufen 14.11.2026) | Upstream 6462f8a90 führt „First Potion timing“ ein, ab Werk erst ab dem zweiten Arcane Circle (frühestens 30 s Kampfzeit). Der Fork stellt die Voreinstellung auf „Opener“ (A775): Der Trank fällt in den ersten Burst, wie bei The Balance. Mit der Abklingzeit von 4,5 min trägt der Opener-Trank in einem Kampf von 7 min zwei Tränke (0 und 6 min), der spätere einen (2 min). „Use potion“ ergänzt den allgemeinen Tinktur-Schalter je Job (A645); beide müssen zulassen. | Voreinstellung angepasst |
 
 ### Ninja: das Fenster um Kunai's Bane
 

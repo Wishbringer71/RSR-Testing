@@ -68,7 +68,7 @@ public sealed class RPR_Reborn : ReaperRotation
     public bool UsePotion { get; set; } = true;
 
     [RotationConfig(CombatType.PvE, Name = "First Potion timing", Parent = nameof(UsePotion))]
-    public PotTiming PotionTiming { get; set; } = PotTiming.FromSecondArcaneCircle;
+    public PotTiming PotionTiming { get; set; } = PotTiming.FirstArcaneCircle;
 
 	public enum ArcaneCircleOpener
     {
