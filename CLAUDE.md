@@ -108,7 +108,7 @@ Pflicht für jede nicht-triviale Aufgabe; die REGEL steht darüber.
 
 | # | Stufe | Was ich tue |
 |---|---|---|
-| 1 | Research | Fehlerbild vom Fehler trennen; Ursache am Artefakt belegen (Code, Versionsgeschichte, Laufzeitdaten, Fremddokumentation). Erinnerung ist keine Quelle. |
+| 1 | Research | Bei einem Defekt: Fehlerbild vom Fehler trennen; Ursache am Artefakt belegen (Code, Versionsgeschichte, Laufzeitdaten, Fremddokumentation). Bei einem Konzept zuerst Grundlagenforschung (seine Vorgabe, 13.11.2026, in KSP-MyContracts: „Grundlagenforschung ist der Anfang in einem Konzept"): Fragen zu Spielern, Spielmechanik, Plattform (Client, Dalamud, RSR selbst), Vorbildern (andere Werkzeuge), Vorgehen und Prüfmitteln an Quellen beantworten, bevor Optionen entstehen; eine offene Frage nennt, bis wann sie beantwortet sein muss und was je Antwort folgt. Erinnerung ist keine Quelle. |
 | 2 | Optionen | Lösungsraum vollständig, mit Nullvariante und Rückbau. Noch nicht bewerten. |
 | 3 | Abwägung | Je Option als SWOT im Spielgeschehen: Stärken und Schwächen (was sie selbst im Kampf bewirkt), Chancen und Bedrohungen (Lagen und fremde Einflüsse, unter denen sie nützt oder schadet – Inhalt, andere Spieler, BossMod, Patch); dazu Schweregrad, Dringlichkeit, Aufwand (nachrangig), Blast Radius, Folgekosten; Bilanz, was überwiegt (→ „Maßstab: das Spielgeschehen"). |
 | 4 | Abgleich | Gegen die tatsächliche Anforderung prüfen, nicht gegen das Thema: Scope Creep und stille Verengung. |
@@ -117,7 +117,7 @@ Pflicht für jede nicht-triviale Aufgabe; die REGEL steht darüber.
 | 7 | Umsetzung | Nur was die Falsifikation überstanden hat; kleinster wirksamer Eingriff. |
 | 8 | Nachweis | Verifikation (Spezifikation erfüllt) und Validierung (gemeldetes Verhalten behoben); Prüfgrad benennen. |
 | 9 | Dokumentation | Kontext, verworfene Optionen, Entscheidung, Konsequenzen; Fehlerursachen sachlich am System. |
-| 10 | Wirksamkeit | Ergebnis bewerten, erneut ab 1; Abbruch bei Plateau. |
+| 10 | Wirksamkeit | Ergebnis bewerten, erneut ab 1; Abbruch bei Plateau: eine Runde ohne Befund hoher oder mittlerer Schwere und ohne offene Entscheidung, deren Preis eine Konstruktion beseitigen könnte (aus KSP-MyContracts, A782). |
 
 # Universell zuerst
 
@@ -133,7 +133,7 @@ Gilt für jede Regel, im Code wie im Konzept (seine Vorgabe, 26.09.2026; für di
 - „Die Wirkkette ist am Code belegt" heißt nur, dass etwas wirkt. Ob es im Spiel richtig ist, beantworte ich gesondert.
 - Eine Spielgröße kläre ich in ihrer Bedeutung, bevor ich sie verrechne: Ein Schild verhindert Schaden und heilt nicht; Unverwundbarkeit verhindert den Tod und heilt nicht; ein Debuff drosselt den Schadensstrom und beendet ihn nicht.
 - Befunde formuliere ich als Wirkung: „die Beschwörung kommt einen GCD später und mit ihr jede weitere Demi", nicht „`searingSettled` liest die Bedingung nicht".
-- Das Verhalten anderer Spieler ist eine Annahme, nie ein tragender Grund. Ein einzelner Beschwörer setzt seinen Burst selbst.
+- Das Verhalten anderer Spieler ist eine Annahme, nie ein tragender Grund. Ein einzelner Beschwörer setzt seinen Burst selbst. Das gilt auch für das Verhalten der Besten: Wann sie trinken, belegt nicht, wo der Trank am meisten bringt; das belegt erst ihr gemessener Schaden (seine Rüge, 14.11.2026, A781: „wenn alle von der Brücke springen, springst du dann hinterher?“).
 - Eine Begründung muss zwischen den Möglichkeiten unterscheiden: Was in jedem Fall gilt, belegt nichts (seine Rüge, 12.11.2026, in Retainer-Repricer). Beispiel A750: „Jedes Mitglied getroffen“ gilt für Raidwide und Stack gleich und trennt sie nicht.
 - Das Spielerlebnis im Spiel in seiner Gesamtheit hat Vorrang vor der Schwierigkeit der Umsetzung, sofern die Aufgabe überhaupt lösbar ist (seine Vorgabe, 05.11.2026). Aufwand entscheidet nur zwischen Lösungen, die im Kampf gleich gut sind; „zu aufwendig“ verwirft oder vertagt keine bessere.
 - Seine Mitschnitte belegen Einzelfälle aus wenigen Instanzen, nicht das Spiel (seine Vorgabe, 27.10.2026). Eine Regel beurteile ich über alle Inhalte, in denen sie greift – Spielblätter, BossMod-Module, Guides –; die Mitschnitte eichen und widerlegen, sie begrenzen nicht. Grund: „Kommt in seinen Logs nicht vor" sagt nichts über Savage, Extreme oder einen Inhalt, den er noch nicht hochgeladen hat.

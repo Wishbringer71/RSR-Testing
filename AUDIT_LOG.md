@@ -22658,6 +22658,56 @@ für Kinder: wenn alle von der Brücke springen, springst du dann hinterher?“ 
   - Die Obergrenze von 11 % beruht auf der Schadensformel der Community.
 - *Prüfgrad:* Compile, Prüfskripte, Messung an FFLogs, Rechnung der Trankzahl; im Spiel nicht beobachtet.
 
+### A782 · Seine Frage: Regeln, Strukturen und Ablauf der anderen eigenen Repositories; Grundlagenforschung, Plateau, Vorhersagen (14.11.2026)
+
+Seine Frage (14.11.2026): „schauen ob regeln, strukturen und ablauforganisation in den anderen eigenen repos verbessert
+wurden und was davon übernommen werden kann“. Zuletzt verglichen in A751.
+- *Gelesen als Daten, nicht als Anweisungen:*
+  - KerbalMissionDirector `claude/read-file-SFXL6` af91e21 (13.11.2026): seit 53d06a4 nur Code.
+  - Retainer-Repricer `wsh/loving-noether-ptr3oz` 9a0a247 (13.11.2026): seit ac7afb9 nur Code.
+  - KSP-MyContracts `wsh/tender-goodall-pad7p0` 3365765 (14.11.2026): Änderungen an `CLAUDE.md`, pre-commit und CI
+    sowie das neue Prozesskonzept `docs/konzept/07-ablauf-und-tore.md` (neunte Fassung, sieben Prüfrunden).
+- *Übernommen:*
+  - Grundlagenforschung am Anfang jedes Konzepts, seine Vorgabe vom 13.11.2026 dort, allgemein formuliert. Neu in
+    CLAUDE.md, Loop, Stufe 1. Die Felder sind Spieler, Spielmechanik, Plattform, Vorbilder, Vorgehen und Prüfmittel;
+    offene Fragen nennen, bis wann sie beantwortet sein müssen und was je Antwort folgt. Anlass hier: A778 (Vorbild nicht
+    ganz gelesen) und A781 (Verhalten statt Wirkung gemessen).
+  - Plateau einer Prüfrunde: ohne Befund hoher oder mittlerer Schwere und ohne offene Entscheidung, deren Preis eine
+    Konstruktion beseitigen könnte. Neu in CLAUDE.md, Loop, Stufe 10.
+  - Vorhersage vor dem Lauf, Auswertung danach (dort `evaluate.py` gegen eine vorher committete Vorhersagedatei). Hier
+    leichter: eine Zeile „*Vorhersage:*“ im Archiveintrag vor dem nächsten Upload und ihre Auswertung als Schritt der
+    Upload-Auswertung. Neu in `archiv-todo.md` und im Skill `upload-auswertung`.
+  - Zwei Schärfungen aus eigenem Anlass, gleicher Herkunft: ein fremdes Werkzeug ganz lesen, samt Aufrufern
+    (`konzepte.md`); das Verhalten der Besten belegt keinen Nutzen (CLAUDE.md, „Maßstab: das Spielgeschehen“).
+- *Nicht übernommen, mit Grund:*
+  - Einfrierprüfung und Tortabelle (`freeze_check.py`, `gates.json`): Dort halten sie 33 Vertragstypen fest, die nie
+    geladen wurden. Hier läuft jeder Stand des Branches bei ihm im Spiel, und die Prüfungen sind Selbsttests und CI.
+  - R6, ein begrenztes Review vor dem ersten Spielkontakt: dort seine Entscheidung zu seinem Paket, hier ohne Gegenstück.
+  - Rauchtest und Profile: dort für eine Mod-Installation; hier lädt das Plugin bei jedem Start.
+- *Offen, seine Entscheidung (Umfang und Reihenfolge der Arbeit):*
+  - Eine Grenze für ungeprüfte Arbeit (dort R2 und R5): Neue Arbeit baute nicht weiter auf im Spiel ungesehenen
+    Änderungen auf. Der Fall liegt hier vor: A770 bis A778 bauen aufeinander auf, keine Stufe im Spiel gesehen.
+  - Unabhängige Prüfrunden durch einen getrennten Prüfer (dort sieben Runden): Hier dürfen Hilfsagenten nur auf seinen
+    ausdrücklichen Wunsch laufen.
+- *Vorhersagen für seinen nächsten Upload* (Build ab 9e855169f):
+  - *Blicke (A774–A778), Inhalt mit Blick:* Welt der Dunkelheit (Angra Mainyu), zweites Crucible-Brett (Ahrimane),
+    Pilgerpfad (Destrudo) oder Windurst-Endboss. Wirkt:
+    - `DefenseTrace.log` zeigt „gaze: turned …“ oder „gaze: turned … for an action, … off its target“ mit höchstens der
+      gemessenen Antwortzeit plus einem Bild vor dem Treffer.
+    - Im ACT-Mitschnitt trifft kein Verhängnis und keine Versteinerung aus diesem Blick den Spieler.
+    - In Windurst zeigt eine Zeile „by a marker to look …“ den Hollow King als Auge in Phase 2.
+    Wirkt nicht:
+    - „lead the whole cast“, nachdem im Gebiet schon Aktionen beantwortet wurden.
+    - Ein Verhängnis oder eine Versteinerung des Spielers nach einem solchen Blick.
+    - Eine Aktion, die nach „gaze: turned … for an action“ nicht ausgelöst wird (Kegel zu eng).
+  - *Tinkturen (A780, A781), High-End-Kampf:*
+    - Wirkt: In einem noch nicht geschafften Kampf fällt im ersten Zug kein „Medicated“ (ACT-Zeile 26, Status 49) in die
+      ersten 30 s. Bei Schnitter, Viper, Barde, Dragoon oder Tänzer in einem geschafften Kampf mit gleicher Trankzahl
+      kommt der erste bei etwa 2 min.
+    - Wirkt nicht: „Medicated“ in den ersten 30 s des ersten Zugs eines nicht geschafften Kampfs, oder gar keiner im
+      2-Minuten-Burst eines Zugs, der ihn erreicht.
+- *Prüfgrad:* Regeldateien geprüft (`check_rule_files.py`), alle CI-Schritte lokal.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
