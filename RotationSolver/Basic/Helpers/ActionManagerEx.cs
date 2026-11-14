@@ -91,7 +91,19 @@ public sealed unsafe partial class ActionManagerEx : IDisposable
 	private bool UseActionLocationDetour(ActionManager* self, ActionType actionType, uint actionId, ulong targetId, Vector3* location, uint extraParam, byte comboRouteId)
 	{
 		var prevSequence = self->LastUsedActionSequence;
-		var result = _useActionLocationHook!.Original(self, actionType, actionId, targetId, location, extraParam, comboRouteId);
+
+		// A786 (concept 13, "Richtig stehen und weiter treffen"): every action the game runs passes here - RSR's press, the
+		// game's queue and the player's own press - so a gaze due gets a safe facing instead of the game's turn at the target.
+		var facing = actionType == ActionType.Action && DataCenter.IsActivated() ? GazeWatch.PrepareFacingFor(actionId, targetId, location) : null;
+		bool result;
+		try
+		{
+			result = _useActionLocationHook!.Original(self, actionType, actionId, targetId, location, extraParam, comboRouteId);
+		}
+		finally
+		{
+			GazeWatch.RestoreFacing(facing);
+		}
 
 		if (self->LastUsedActionSequence == prevSequence)
 		{

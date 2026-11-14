@@ -175,10 +175,14 @@ public struct ActionTargetInfo(IBaseAction action)
 		// (concept 13, "Nicht in einen Blick drehen").
 		if (action.Info.NeedToFaceTarget && action.Action.Range > 0 && validTargets.Count > 0)
 		{
-			var castTime = action.Info.CastTime;
+			// A786: counted from when the game runs it; an action that moves the player keeps its facing until it lands.
+			var castTime = action.Action.AffectsPosition
+				? Math.Max(action.Info.CastTime, ActionManagerEx.CurrentLockTweak?.AbilityWindow(action.ID) ?? 0f)
+				: action.Info.CastTime;
+			var startsIn = GazeWatch.StartsIn(action.Info.IsRealGCD);
 			for (var i = validTargets.Count - 1; i >= 0; i--)
 			{
-				if (GazeWatch.TurnsIntoGaze(validTargets[i].Position, castTime))
+				if (GazeWatch.TurnsIntoGaze(validTargets[i].Position, castTime, startsIn))
 				{
 					validTargets.RemoveAt(i);
 				}

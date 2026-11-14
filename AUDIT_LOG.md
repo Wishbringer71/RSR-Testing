@@ -22782,6 +22782,56 @@ seinen Abruf ohne Anmeldung nicht lesbar.
   4. Die Bindung einer Vorhersage an die Commit-Zeit: Hier gibt es kein Auswertungsskript für Vorhersagen; die Zeile
      „*Vorhersage:*“ (archiv-todo.md) wird von Hand ausgewertet. Nicht anwendbar, solange kein solches Skript besteht.
 
+### A786 · Blickwache: erste unabhängige Prüfrunde (A784), Befunde eingearbeitet (14.11.2026)
+
+Ein frischer Hilfsagent ohne meinen Zwischenstand griff Konzept 13 und `GazeWatch` an (Werkzeugquelle BossModReborn
+35a908ad7, Blätter über xivapi, 14.11.2026). Fünf Befunde hoher, sechs mittlerer, neun niedriger Schwere. Jeden habe
+ich am Artefakt geprüft, bevor ich ihn übernahm. Das Konzept steht in 13, „Nicht in einen Blick drehen“ bis „Umkehrung
+und Auge zur Laufzeit“.
+- *H1, bestätigt:* RSR drückt einen GCD, solange der Recast läuft. Das Spiel legt ihn in seine Warteschlange und führt
+  ihn in `ActionManager.Update` aus. `PrepareFacing` wirkte nur um RSRs Druck, die Option war da schon zurück, und das
+  Spiel drehte genau aufs Ziel. BossModReborn hat dieselbe Lücke: Es schaltet die Option nur für seine eigene
+  Warteschlange ab (`UpdateDetour`). Behoben im Aufruf, durch den jede Aktion läuft (`UseActionLocationDetour`). Die
+  Sperre zählt ab der Ausführung (Rest von Sperre und GCD).
+- *H2, bestätigt am Mitschnitt vom 13.11.2026:* Verhängnis steht im Effekt-Paket von #3499 selbst (0x0E, Status 210).
+  Auch wer nicht getroffen wird, steht darin („verfehlt“). Das Paket kam bei 6863 gegnerischen Wirken in 99 % der
+  Fälle 0,26 bis 0,30 s nach dem Balkenende, in Ausreißern bis 1,6 s. Das Lernfenster endete 0,2 bis 0,4 s danach und
+  schrieb „avoided“, bevor der Treffer kam. Behoben: Das eigene Paket des Blicks entscheidet. Ohne Paket gilt die im
+  Gebiet gemessene größte Verzögerung als Frist, danach „unknown“.
+- *M6, bestätigt mit H2:* Der Blick verschwand für RSR mit dem Balken, 0,3 s vor seiner Auflösung. Behoben: Er bleibt
+  fällig bis zu seinem Paket.
+- *H3, bestätigt:* Ein Fehlschlag strich den Blick ganz, auch die Sperre aus A770, und stellte das ursprüngliche
+  Fehlerbild wieder her. Behoben: Danach gilt die Sperre über das ganze Wirken, ohne Drehen.
+- *H4, teilweise:* Das Kennzeichen `VFX` 25 sagt die Richtung nicht (#27363/#27369). Behoben für Namen, die ein
+  umgekehrter Blick trägt. Für die 170 Zeilen ohne Liste bleibt der Preis ein Treffer je Gebiet (Konzept 13,
+  Gegenthese 5). Nur zu sperren nähme den Schutz bei Destrudo (#44355), für den die Regel gebaut ist.
+- *H5, bestätigt im Kern:* Den Ort hält der Client nur bei Bodenzielen (BossModReborns Kommentar); am Mitschnitt stand
+  der Helfer von #3499 zu Beginn 4,7 Yalm daneben, der Ort im Paket war der Boss. Behoben: Ort nur bei `TargetArea`,
+  sonst der Wirkende. Das Konzept zitierte BossModReborn falsch („aus `CastInfo.TargetLocation`“); korrigiert.
+- *M1, nicht übernommen, Messmittel statt dessen:* `DesiredRotation` führt FFXIVClientStructs nicht; BossModReborn
+  schreibt es über eigene Offsets. Nach einem Patch schriebe RSR in fremden Speicher. RSR misst, ob das Spiel die
+  Drehung im nächsten Bild zurücknimmt („gaze: turn undone …“), und dreht je Bild neu.
+- *M2, teilweise:* Ohne Ziel jetzt die breiteste Lücke statt der nächsten. Einen Mindestabstand wie BossModReborns 5°
+  setze ich nicht: ohne Beleg eine feste Zahl. Der Preis eines zu schmalen Stücks ist ein Treffer, den das Paket zeigt.
+- *M3, bestätigt:* Ohne Messung drehte RSR das ganze Wirken und lernte nichts, entgegen dem Konzept. Behoben.
+- *M4, bestätigt:* Bei Markern zählte jeder Schaden jedes Gegners, auch ein automatischer Angriff, und das Auge war der
+  größte Wirkende, gleich was er wirkte. Behoben: Auge ist ein Wirkender, dessen Wirken mit dem Marker endet;
+  automatische Angriffe zählen nie.
+- *M5, bestätigt:* Sprung und Ansturm halten die Richtung bis zur Landung. Behoben: ihre gemessene Sperre gilt als
+  Wirkzeit der Sperre.
+- *Niedrig:* L1 (Bedeutung von `ResponseSourceSequence`) als unbelegt markiert. L2 behoben: Ohne sichere Richtung bleibt
+  die Option trotzdem aus, das Spiel lehnt ein Ziel außerhalb des Kegels ab. L3: Widersprüche im Konzept beseitigt. L4:
+  Namen am englischen Blatt. L5: Lesefehler wird nach dem nächsten Gebietswechsel wiederholt. L7: Optionstext nennt
+  Rückfall und eigene Drücke. L6 (Masked Carnivale, Blind) und L8 (Kosten) ohne Änderung: L6 kostet nur Schaden, L8
+  legt nichts je Bild an. L9 (BossModReborns Warteschlange) wirkt jetzt mit, denn auch seine Ausführung läuft durch
+  den Aufruf.
+- *Messmittel:* „gaze: landed …“ zählt je Paket eines Blicks die Getroffenen und Verschonten und wie viele davon nach
+  RSRs Auge in die falsche Richtung sahen.
+- *Vorhersage:* In seinem nächsten `DefenseTrace.log` aus Welt der Dunkelheit (Angra Mainyu) zeigt die Zeile „gaze:
+  landed #3499 …“ Getroffene, die nach RSRs Auge falsch sahen, und keine Getroffenen, die richtig sahen; „gaze: hit
+  despite …“ fehlt, „gaze: avoided #3499 …“ steht da. Eine Zeile „gaze: turn undone …“ belegt M1, ihr Fehlen bei
+  „turned …“-Zeilen widerlegt es. Getroffene, die richtig sahen, widerlegen den Ort oder den Winkel.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
