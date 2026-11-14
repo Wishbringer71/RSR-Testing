@@ -22990,6 +22990,31 @@ Arbeitszweige nicht; erst ein Fetch mit ausdrücklicher Refspec. Die Stände in 
   Verbot, in anderen Repositories zu arbeiten (steht hier schon, „Grenzen und Löschungen“).
 - *Vorhersage:* `.github/scripts/audit/predictions/2026-11-14.json`, vier Einträge zu A783, A786, A788.
 
+### A793 · Spielabsturz bei der ersten Aktion jedes Kampfes seit 419184304; Fork-Code in den Hooks abgesichert (14.11.2026)
+
+Seine Rüge (14.11.2026): „du arbeitest äußerst schlampig. kritischer loop“, mit Upload (Absturzbericht 13:58:06,
+`DefenseTrace.log` auf 0bfe2eb25, ACT-Mitschnitt). Dazu: „alles mit den änderungen crucible seit dem letzten erfolgreichen
+crucible ingame lauf kritisch prüfen. es darf nicht sein, dass der part nun jedes mal crashed und du immer nur einen
+kleinen teil anpasst“ (Vorgabe; die Prüfung folgt in A794).
+- *Fehlerbild:* Kampfbeginn im Crucible 13:58:05.694; 13:58:06 schließt das Spiel (E0434352, nicht abgefangene .NET-
+  Ausnahme in `GameMain.Update`). Dalamud-Log 13:58:05.703: `ArgumentOutOfRangeException` „TimeSpan overflowed“ in
+  `GazeWatch.AddMargins`, aus `TurnAway` (dort abgefangen).
+- *Ursache:* `AddMargins` rechnete `now - _movedTick`, bevor es prüfte, ob `_movedTick` noch auf `long.MinValue` stand.
+  Das läuft über, `TimeSpan.FromMilliseconds` wirft. Der Startwert gilt nach jedem Kampfende, also zu Beginn jedes
+  Kampfes. Aus `UseActionLocationDetour`, das das Spiel selbst ruft, erreichte die Ausnahme das Spiel: Die erste Aktion
+  jedes Kampfes beendete es, seit 419184304 (A789), in jedem Inhalt mit RSR an und „Turn away from gaze attacks“ an.
+- *Wie es entstand:* In A789 ersetzte ich `/ 1000f` durch `TimeSpan`, nur damit die Zahlprüfung schweigt, und prüfte die
+  Bedeutung des Ausdrucks nicht neu. Keine Prüfung führt `GazeWatch` je aus; die vierte Prüfrunde las den Stand und
+  nannte die Stelle nur als „riesiger Abstand nach einer Pause“ (N7), nicht als Überlauf.
+- *Behoben:* Startwert vor dem Rechnen geprüft. Klasse 1, Rechnen mit einem Startwert vor seiner Prüfung: im Fork erhoben,
+  alle übrigen Stellen prüfen zuerst. Klasse 2, Fork-Code in einem Hook des Spiels ohne `catch`: `UpdateDetour`
+  (`AnimationLockTweak.Frame`), `UseActionLocationDetour` (`GazeWatch.PrepareFacingFor`,
+  `TankbusterForecast.RecordRequest`), `ReceiveActionEffectDetour` (`TankbusterForecast.RecordRequestAnswered`); jetzt
+  je in `try`/`catch`. Die übrigen Hooks (Vfx, ActorControl, ExecuteCommand) hatten es schon; die von Upstream
+  (AutoAttack, UseAction) berührt der Fork nicht.
+- *Zurückgestellt:* Der Umbau der Blickwache nach der vierten Prüfrunde (ein Zeitfenster, Abweisen ohne sichere
+  Richtung) liegt ungeprüft im Stash; er kommt erst nach der Prüfung A794.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

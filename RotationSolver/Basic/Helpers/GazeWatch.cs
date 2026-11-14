@@ -1040,8 +1040,10 @@ internal static partial class GazeWatch
 	private static void AddMargins(IBattleChara player, float lead)
 	{
 		var now = Environment.TickCount64;
-		var seconds = (float)TimeSpan.FromMilliseconds(now - _movedTick).TotalSeconds;
-		var known = _movedTick != long.MinValue && seconds > 0f;
+		// A793: the start value is checked before it is subtracted. now - long.MinValue overflowed, TimeSpan threw, and from
+		// the game's action hook that closed the game at the first action of every fight (14.11.2026, 13:58).
+		var known = _movedTick != long.MinValue && now > _movedTick;
+		var seconds = known ? (float)TimeSpan.FromMilliseconds(now - _movedTick).TotalSeconds : 0f;
 		_updateGap = known ? seconds : 0f;
 		var ahead = (float.IsInfinity(lead) ? 0f : lead) + _landingMost;
 		var playerSpeed = known ? Vector3.Distance(player.Position, _playerBefore) / seconds : 0f;

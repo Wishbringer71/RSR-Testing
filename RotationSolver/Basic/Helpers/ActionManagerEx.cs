@@ -79,8 +79,20 @@ public sealed unsafe partial class ActionManagerEx : IDisposable
 		try
 		{
 			_updateHook!.Original(self);
-			// Clipping, GCD time with nothing queued and the fight's line (concept 03, A753).
-			AnimationLockTweak.Frame(self, Framework.Instance()->FrameDeltaTime);
+			// Clipping, GCD time with nothing queued and the fight's line (concept 03, A753). A793: a fault in the fork's
+			// code must not reach the game, which closes on an exception thrown into its own update.
+			try
+			{
+				AnimationLockTweak.Frame(self, Framework.Instance()->FrameDeltaTime);
+			}
+			catch (Exception ex)
+			{
+				if (!_frameFaultLogged)
+				{
+					_frameFaultLogged = true;
+					PluginLog.Warning($"[ActionManagerEx] Action timing failed (once per session): {ex}");
+				}
+			}
 		}
 		finally
 		{
@@ -94,7 +106,17 @@ public sealed unsafe partial class ActionManagerEx : IDisposable
 
 		// A786 (concept 13, "Richtig stehen und weiter treffen"): every action the game runs passes here - RSR's press, the
 		// game's queue and the player's own press - so a gaze due gets a safe facing instead of the game's turn at the target.
-		var facing = actionType == ActionType.Action && DataCenter.IsActivated() ? GazeWatch.PrepareFacingFor(actionId, targetId, location) : null;
+		// A793: guarded - an exception from here closed the game at the first action of a fight (14.11.2026, 13:58).
+		uint? facing = null;
+		try
+		{
+			facing = actionType == ActionType.Action && DataCenter.IsActivated() ? GazeWatch.PrepareFacingFor(actionId, targetId, location) : null;
+		}
+		catch (Exception ex)
+		{
+			PluginLog.Warning($"[ActionManagerEx] Gaze facing failed: {ex}");
+		}
+
 		bool result;
 		try
 		{
@@ -110,14 +132,14 @@ public sealed unsafe partial class ActionManagerEx : IDisposable
 			return result;
 		}
 
-		// The moment a request without a cast leaves, for the tankbuster plan's round trip (concept 09, A340).
-		if (self->CastSpellId == 0)
-		{
-			TankbusterForecast.RecordRequest(self->LastUsedActionSequence);
-		}
-
 		try
 		{
+			// The moment a request without a cast leaves, for the tankbuster plan's round trip (concept 09, A340).
+			if (self->CastSpellId == 0)
+			{
+				TankbusterForecast.RecordRequest(self->LastUsedActionSequence);
+			}
+
 			var adjustment = CooldownDelayTweak.Adjustment;
 			if (adjustment > 0)
 			{
@@ -156,9 +178,16 @@ public sealed unsafe partial class ActionManagerEx : IDisposable
 
 		_receiveActionEffectHook!.Original(casterEntityId, casterPtr, targetPos, header, effects, targetEntityIds);
 
-		if (header->SourceSequence != 0 && casterEntityId == Player.Object?.EntityId)
+		try
 		{
-			TankbusterForecast.RecordRequestAnswered(header->SourceSequence);
+			if (header->SourceSequence != 0 && casterEntityId == Player.Object?.EntityId)
+			{
+				TankbusterForecast.RecordRequestAnswered(header->SourceSequence);
+			}
+		}
+		catch (Exception ex)
+		{
+			PluginLog.Warning($"[ActionManagerEx] Tankbuster answer failed: {ex.Message}");
 		}
 
 		// Measured with the setting off too; only the reduction asks it (A753).
