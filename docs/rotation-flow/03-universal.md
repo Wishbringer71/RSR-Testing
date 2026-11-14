@@ -561,19 +561,37 @@ merklich schneller zu beenden; sie kostet Geld, und sie für einen gewöhnlichen
   Dunkelritter und Barde tranken dort nur die im Countdown, die zweite nie; Maschinist und Viper tranken gar keine, weil
   ihr eigener Schalter ab Werk aus stand. Gerade dort, wo die Tinktur ihr Geld wert ist, fehlte sie also.
 - *Opener oder später, alle Jobs* (seine Präzisierung vom 14.11.2026: „Generalisierung vor Spezialisierung solange keine
-  Nachteile. Der trinkzeitpunkt richtet sich nach Schaden, da prozentuale Erhöhung“; A780). Eine Tinktur hebt den
-  Hauptwert für 30 s (`ItemAction.Data`: Status 49, Wert, 30 s), also gehört sie in das 30-s-Fenster mit dem meisten
-  eigenen Schaden.
-  - *Gemessen an FFLogs (14.11.2026):* die je 8 besten Kämpfe aller 21 Jobs an drei Savage-Bossen der laufenden Stufe
-    (AAC Heavyweight, Begegnungen 101, 103, 104, je 8 bis 9,5 min). Der erste Trank fällt bei 441 der 504 Kämpfe in
-    die ersten 15 s, bei jedem Job in mindestens zwei Dritteln (am wenigsten Maschinist und Weise mit 16 von 24); in 8
-    Kämpfen gab es keinen.
-  - Abweichungen hängen am Kampf, nicht am Job: Die Viper trinkt beim ersten Boss in 5 von 8 Kämpfen erst bei 2 min,
-    beim dritten und vierten nie. Der Maschinist trinkt beim vierten Boss in 4 von 8 erst bei 6 min. The Balance nennt
-    beim Maschinisten den Trank bei 2 min als lieber, wo der Kampf es erlaubt.
-  - *Schluss:* Der Höhepunkt über 30 s liegt bei allen Jobs im Opener: aufgesparte Ressourcen und alle Gruppenbuffs
-    zugleich. Die Rotationen lösen die Tinktur deshalb im Countdown oder im ersten Burst aus, danach in jedem Burst.
-    Die Kampfabweichungen hängen an Phasen und Pausen. Ohne Kampfmodul kennt RSR sie nicht; benannt, nicht gebaut.
+  Nachteile. Der trinkzeitpunkt richtet sich nach Schaden, da prozentuale Erhöhung“; seine Rüge dazu: „Es geht nicht
+  darum, was die Mehrheit macht, sondern was belegt am sinnvollsten ist“; A780, A781).
+  - *Wirkung:* Eine Tinktur hebt den Hauptwert für 30 s um 10 %, höchstens um 461 (`ItemAction.Data`, `ItemFood` 686).
+    Nach der Schadensformel der Community ist das bei Ausrüstung dieser Stufe höchstens etwa 11 % mehr eigener Schaden.
+    *Werkzeugquelle, nicht aus dem Spiel.* Die Tinktur gehört also in die 30-s-Fenster mit dem meisten eigenen Schaden.
+  - *Gemessen (FFLogs, 14.11.2026, `tincture_windows.py`):*
+    - Grundlage: je 4 beste Kämpfe aller 21 Jobs an drei Savage-Bossen (AAC Heavyweight 101, 103, 104; 6:08 bis 11:00).
+    - Gemessen ist der eigene Schaden je Sekunde, Begleiter eingeschlossen, im besten 30-s-Fenster um jeden Burst.
+    - Die Tinktur ist einmal mit 0 % und einmal mit 11 % Wirkung herausgerechnet. Nur ein Ergebnis, das bei beiden gilt,
+      ist belegt.
+  - *Ergebnis:*
+    - Bei Schnitter, Viper, Barde, Dragoon und Tänzer ist der 2-Minuten-Burst stärker als der Opener: Opener durch
+      2 min 0,82 bis 0,96, mit zwei Tränken (0 + 6) durch (2 + 8) 0,89 bis 1,00.
+    - Bei Krieger, Mönch und Ninja ist der Opener stärker (1,02 bis 1,16).
+    - Bei den übrigen 13 Jobs schließen die Grenzen beide Seiten ein; dort entscheidet nur die Zahl der Tränke.
+  - *Zahl der Tränke:* Wiederverwendung 300 s (`Item.Cooldowns`). Aus dem Opener folgen Tränke bei 0, 6, 12 min, aus
+    dem 2-Minuten-Burst bei 2, 8, 14 min. Je nach Kampflänge bringt der Opener einen Trank mehr. Ein ganzer Trank wiegt
+    mehr als jeder gemessene Unterschied zwischen zwei Fenstern.
+  - *Regel* (`UseBurstMedicine`, für alle Jobs; nur die Liste der Jobs ist je Job):
+    - Bei einem Job mit stärkerem 2-Minuten-Burst wartet die Tinktur des ersten Bursts, wenn beide Pläne bei der zu
+      erwartenden Kampflänge gleich viele Tränke bringen.
+    - Die Kampflänge ist der letzte Zug im Gebiet (`LastPullTime`). Der Burst-Takt ist der je Gebiet gemessene zweite
+      Burst. Wiederverwendung und Wirkdauer kommen aus dem Gegenstand.
+    - Ohne diese Werte, im ersten Zug, trinkt der Job im Opener, denn der Opener bringt nie weniger Tränke.
+  - *Im Kampf:*
+    - Schnitter, Kampf von 11 min: Tränke bei 2 und 8 statt 0 und 6 min, beide im stärkeren Fenster.
+    - Schnitter, Kampf von 7 min: Trank im Opener. Er trinkt dann bei 0 und 6, statt nur einmal bei 2 min.
+  - *Grenzen:*
+    - Gemessen sind Spitzenkämpfe dieser drei Bosse. Kämpfe mit Pausen verschieben Fenster.
+    - Dunkelritter und Beschwörer liegen je in einem der beiden Fälle unter 1, im anderen nicht. Sie bleiben im
+      Opener, bis eine Messung beide Fälle trennt.
 - *In der Lernphase* (A780, aus A779 verallgemeinert):
   - Jeder Wipe vor dem zweiten Burst kostet die Opener-Tinktur ohne Nutzen (seine Regel A501). Ein Zug, der den
     zweiten Burst erreicht, verbraucht in beiden Fällen eine.

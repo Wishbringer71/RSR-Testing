@@ -137,8 +137,9 @@ public partial class CustomRotation
 				continue;
 			}
 
-			// A780 (concept 03, "In der Lernphase"): no tincture in the first burst of a pull while learning the fight.
-			if (TinctureWaitsWhileLearning(medicine.EffectSeconds))
+			// A780, A781 (concept 03): the first burst's tincture waits while learning the fight, and for a job whose
+			// two-minute burst is stronger where that costs no tincture over the fight.
+			if (TinctureWaitsForLaterBurst(medicine.EffectSeconds, medicine.RecastSeconds))
 			{
 				return false;
 			}

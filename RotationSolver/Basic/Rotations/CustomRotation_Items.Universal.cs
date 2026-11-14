@@ -1,4 +1,5 @@
 using ECommons.DalamudServices;
+using ECommons.ExcelServices;
 using Lumina.Excel.Sheets;
 
 namespace RotationSolver.Basic.Rotations;
@@ -46,13 +47,19 @@ public partial class CustomRotation
 	private static float _lastCombatSeen;
 	private static bool _laterBurst;
 
+	// A781 (concept 03, "Opener oder später"): the jobs whose two-minute burst carries more of their own damage than the
+	// opener, measured on FFLogs with the tincture taken out at 0 % and at its upper bound (tincture_windows.py,
+	// 14.11.2026). For the others the opener is stronger or the measure does not tell.
+	private static readonly HashSet<Job> TwoMinutePeakJobs = [Job.DRG, Job.RPR, Job.VPR, Job.BRD, Job.DNC];
+
 	/// <summary>
-	/// While learning a fight, the tincture of the pull's first burst waits (concept 03, "In der Lernphase", A780): a wipe
-	/// before the second burst wastes it, and every pull that reaches the second burst drinks one there anyway. Not in a
-	/// cleared duty, and not once the last pull here reached the second burst; a burst counts as later when the rotation
-	/// asks again after a gap longer than the tincture lasts.
+	/// Whether the tincture of the pull's first burst waits for a later burst (concept 03, A780, A781). While learning a
+	/// fight (not cleared, the last pull here short of the second burst), a wipe before the second burst would waste it.
+	/// For a job whose two-minute burst is stronger, it waits when starting there gives as many tinctures over the
+	/// expected fight - the last pull here - as starting in the opener. A burst counts as later when the rotation asks
+	/// again after a gap longer than the tincture lasts.
 	/// </summary>
-	internal static bool TinctureWaitsWhileLearning(float effectSeconds)
+	internal static bool TinctureWaitsForLaterBurst(float effectSeconds, float recastSeconds)
 	{
 		var combat = DataCenter.InCombat ? DataCenter.CombatTimeRaw : 0f;
 		if (combat < _lastCombatSeen)
@@ -77,12 +84,33 @@ public partial class CustomRotation
 			_lastAskAt = combat;
 		}
 
-		if (_laterBurst || InClearedDuty)
+		if (_laterBurst)
 		{
 			return false;
 		}
 
-		return !(_secondBurstAt.TryGetValue(territory, out var second) && LastPullTime >= second);
+		var knowsSecond = _secondBurstAt.TryGetValue(territory, out var second);
+		var reachedSecond = knowsSecond && LastPullTime >= second;
+		if (!InClearedDuty && !reachedSecond)
+		{
+			return true;
+		}
+
+		return TwoMinutePeakJobs.Contains(DataCenter.Job) && knowsSecond && recastSeconds > 0f
+			&& Tinctures(0f, second, recastSeconds, effectSeconds, LastPullTime) == Tinctures(second, second, recastSeconds, effectSeconds, LastPullTime);
+	}
+
+	// How many tinctures a fight of <length> seconds holds when the first goes at <first> and each next one at the first
+	// burst (every <cadence> seconds) after the recast.
+	private static int Tinctures(float first, float cadence, float recast, float effect, float length)
+	{
+		var count = 0;
+		for (var at = first; at + effect <= length; at = MathF.Ceiling((at + recast) / cadence) * cadence)
+		{
+			count++;
+		}
+
+		return count;
 	}
 
 	/// <summary>Set once this rotation has asked for a tincture in a fight; a rotation that never does holds no potion.</summary>

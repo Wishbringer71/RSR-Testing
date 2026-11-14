@@ -598,7 +598,7 @@ Sekundentakt") und löst die GCD-Abklingzeit aus; jede andere Aktion, Bewegung u
 | Punkt | The Balance | RSR | Stand |
 |---|---|---|---|
 | Opener | Reassemble vor dem Pull, Air Anchor zum Pull; Variante mit dem zweiten Drill nach dem Hypercharge-Fenster | Reassemble ab 4,75 s, Air Anchor bei 0,1 s, danach dieselbe Folge | deckt sich mit der Variante (Modell, A342) |
-| Trank im Opener | „Potion (As late as possible without clipping)“ nach Shadow of Death im Opener; „Slice – Potion ends here“ (abgerufen 14.11.2026). FFLogs, je 8 beste Kämpfe an drei Savage-Bossen: 22 von 24 Schnittern trinken in den ersten 10 s | Die Tinktur kommt im Fenster von Arcane Circle, auch im Opener. Ob sie in der Lernphase wartet, entscheidet die allgemeine Regel (Konzept 03, „In der Lernphase“, A780). Upstreams „Use potion“ und „First Potion timing“ (6462f8a90) sind entfernt: Sie stellten dieselbe Frage ein zweites Mal. | deckt sich |
+| Trank | „Potion (As late as possible without clipping)“ nach Shadow of Death im Opener (abgerufen 14.11.2026) | Gemessen (A781): Der 2-Minuten-Burst des Schnitters bringt mehr als der Opener (0,82 bis 0,89, Trank herausgerechnet). Die allgemeine Regel (Konzept 03, „Opener oder später“) legt die Tinktur deshalb in den 2-Minuten-Burst, wo beide Pläne gleich viele Tränke bringen; sonst in den Opener. Upstreams eigene Schalter sind entfernt (A780). | weicht ab, begründet |
 | Hypercharge vor einem Werkzeug | nicht, wenn Air Anchor, Drill oder Chain Saw in unter 8 s bereit wird (drei GCDs Überhitzung, 7,5 s) | `ToolChargeSoon`: dieselben 8 s; bei Drill erst, wenn beide Ladungen voll würden | deckt sich; Drill hat zwei Ladungen, verloren geht erst eine volle |
 | Scattergun | ab 3 Gegnern | AoE-Zahl 3 | deckt sich |
 | Scattergun mitten in der Heated-Kombination | – | Scattergun steht vor den Kombischritten und bricht die Kombination (Spielblatt: `PreservesCombo` falsch; Drill, Air Anchor, Chain Saw, Auto Crossbow und Blazing Shot halten sie). Steigt die Zahl mitten in der Kombination auf drei, fällt der Abschluss weg | Ob der Abschluss bei genau drei Gegnern mehr bringt (Heated Clean Shot 420 und 10 Batterie gegen 3 × 130 und 5 Heat mehr), hängt am Wert von Batterie und Heat, den kein Tooltip nennt – mit dem Batteriewert von The Balance gewinnt der Abschluss, ohne ihn und mit einem Wert für Heat Scattergun; dieselbe Lage wie bei Bioblaster. Nicht gebaut. Daedalus hält die Flächenreihe nach dem Erreichen 3 s fest (`DamageModule`, c4a788f, gegen Schwanken seiner Zählung im 12-Yalm-Kreis): Das hielte Scattergun auf zwei Gegnern (260) statt der Einzelzielreihe; RSR zählt je Aktion die Ziele in ihrer Gestalt. Nicht übernommen (A593) |
@@ -889,7 +889,7 @@ Ladung da ist, und an der vollen Ladung.
 
 ### Schnitter: Enshroud
 
-**Deckt sich** (26.10.2026, A383; Trank 14.11.2026, A780) mit The Balance, Reaper Basic Guide („Patch Applicable: 7.5").
+**Deckt sich** (26.10.2026, A383; Trank 14.11.2026, A780, A781) mit The Balance, Reaper Basic Guide („Patch Applicable: 7.5"), außer beim Trank: belegt abweichend.
 
 | Punkt | The Balance | RSR (`RPR_Reborn`) | Stand |
 |---|---|---|---|

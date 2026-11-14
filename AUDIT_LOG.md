@@ -22627,6 +22627,37 @@ schadenshöhepunkt über trankwirkzeit wirklich beim opener ist.“ Einordnung: 
 - *Quellen am Auftragsende:* lalalazy 078f80b4c bringt nur Fensterumbauten (LazySkywardTracker, LazyRetainerLive,
   LazyFoodBuff), nichts zu Crucible oder Kampf. Upstream unverändert.
 
+### A781 · Seine Rüge: nicht die Mehrheit, sondern der Beleg; Trankfenster nach gemessenem Schaden (14.11.2026)
+
+Seine Angabe (14.11.2026): „Es geht nicht darum, was die Mehrheit macht, sondern was belegt am sinnvollsten ist. Spruch
+für Kinder: wenn alle von der Brücke springen, springst du dann hinterher?“ Einordnung: Rüge, Vorgabe für die Belegart.
+- *Befund an A780:* Ich hatte aus dem Trinkzeitpunkt der besten Spieler geschlossen, der Schadenshöhepunkt liege im
+  Opener. Das belegt nur, was sie tun, nicht was mehr Schaden bringt.
+- *Messung (`tincture_windows.py`, versioniert, mit Selbsttest):*
+  - Grundlage: je 4 beste Kämpfe aller 21 Jobs an AAC Heavyweight 101, 103 und 104.
+  - Gemessen: der eigene Schaden je Sekunde, Begleiter eingeschlossen, im besten 30-s-Fenster um jeden Burst.
+  - Die Tinktur ist mit 0 % und mit der Obergrenze 11 % herausgerechnet; beide Grenzen müssen dasselbe sagen.
+- *Ergebnis:*
+  - Der 2-Minuten-Burst ist stärker bei Schnitter (Opener durch 2 min 0,82 bis 0,89), Viper, Barde, Dragoon und Tänzer.
+  - Der Opener ist stärker bei Krieger, Mönch und Ninja.
+  - 13 Jobs sind offen.
+  - Der Schnitter widerspricht damit A775 und A780 („deckt sich“).
+- *Warum die Besten trotzdem im Opener trinken:* Bei 300 s Wiederverwendung bringt der Opener je nach Kampflänge einen
+  Trank mehr, und ein ganzer Trank wiegt mehr als jeder gemessene Fensterunterschied.
+- *Umgesetzt (`TinctureWaitsForLaterBurst`, Konzept 03):* Bei den fünf Jobs mit stärkerem 2-Minuten-Burst wartet die
+  Tinktur des ersten Bursts, wo beide Pläne über die erwartete Kampflänge gleich viele Tränke bringen.
+  - Die Kampflänge ist der letzte Zug im Gebiet, der Takt der gemessene zweite Burst.
+  - Abklingzeit (`Item.Cooldowns`) und Dauer kommen aus dem Gegenstand.
+  - Durchgerechnet:
+    - 6:08 min: je ein Trank, bei 2 min.
+    - 7:00 min: Opener, zwei Tränke gegen einen.
+    - 11:00 min: je zwei Tränke, bei 2 und 8 min.
+- *Grenzen:*
+  - Gemessen sind Spitzenkämpfe dreier Bosse.
+  - Dunkelritter und Beschwörer sind je in einem Fall unter 1, im anderen nicht, und bleiben im Opener.
+  - Die Obergrenze von 11 % beruht auf der Schadensformel der Community.
+- *Prüfgrad:* Compile, Prüfskripte, Messung an FFLogs, Rechnung der Trankzahl; im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -22972,3 +23003,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C191 | A506 und Konzept 22 (Stand A506–A647): `AOZContentBriefingBNpc` führe „Verwundbarkeiten“ je Gegner, Slow bis Tod/fest | Die zehn Felder bedeuten Immunität: Spucksardine-Stellen der Führer 17 zu 1, Auric's Guide 19 zu 0; die Sperren lesen sie so (A762). |
 | C192 | A777 und Konzept 13, „Richtig stehen und weiter treffen“ (Stand A777): Sofortaktionen „unverändert“; eine Sofortaktion auf den Wirkenden treffe nur mit Blick in den Blick, dort bleibe die Sperre | Das gilt nur, wenn das Auge beim Ziel liegt. Liegt es daneben, gibt es innerhalb des 45°-Kegels der Aktion eine sichere Richtung; RSR dreht dorthin und schaltet das Drehen des Spiels für den Druck ab (A778). |
 | C193 | A775 und Konzept 14, „Schnitter“ (Stand A775): Trank ab Werk im Opener, weil The Balance es so führt und ein Kampf von 7 min damit zwei Tränke trägt | Der Preis war nicht gewogen: In der Lernphase verschwendet jeder Wipe vor zwei Minuten den Opener-Trank (seine Regel A501). Voreinstellung jetzt „Automatic“ nach Abschluss des Kampfs und Dauer des letzten Zugs (A779). |
+| C194 | A780 und Konzept 03/14 (Stand A780): Der Schadenshöhepunkt über 30 s liege bei allen Jobs im Opener, belegt durch den Trinkzeitpunkt der Besten; Schnitter „deckt sich“ | Der Trinkzeitpunkt belegt nur Verhalten. Gemessen am Schaden (A781) ist der 2-Minuten-Burst bei Schnitter, Viper, Barde, Dragoon und Tänzer stärker; die Besten trinken im Opener wegen der Zahl der Tränke. |
