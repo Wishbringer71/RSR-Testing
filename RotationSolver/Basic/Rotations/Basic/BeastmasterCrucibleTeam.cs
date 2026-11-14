@@ -101,12 +101,11 @@ public partial class BeastmasterRotation
 		return _squads = squads;
 	}
 
-	// K7 (A703): the most HP the team screen shows for each familiar of the team as it stands, and their mean - the HP of a
-	// familiar outside the team no sheet gives (concept 21, "Teamgröße nach Punkten").
+	// K7 (A703, A806): the most HP the team screen shows for each familiar of the team as it stands, and the fewest of them -
+	// the HP counted for a familiar outside the team, which no sheet gives (concept 21, "Ziel des Laufs").
 	private static unsafe Dictionary<BeastmasterPet, uint> ShownHealth(out uint mean)
 	{
 		var shown = new Dictionary<BeastmasterPet, uint>();
-		long hp = 0;
 		var party = AgentXBMPetParty.Instance();
 		if (party != null)
 		{
@@ -116,12 +115,18 @@ public partial class BeastmasterRotation
 				if ((BeastmasterPet)team[i].PetId != BeastmasterPet.None && party->PetMaxHealth[i] > 0)
 				{
 					shown[(BeastmasterPet)team[i].PetId] = party->PetMaxHealth[i];
-					hp += party->PetMaxHealth[i];
 				}
 			}
 		}
 
-		mean = shown.Count > 0 ? (uint)(hp / shown.Count) : 0u;
+		// A806 (review): a familiar outside the team counts the fewest HP shown, not the mean - the teams weighed for leveling
+		// rank lower than the one on the screen, and a lower rank has fewer HP.
+		mean = 0u;
+		foreach (var hp in shown.Values)
+		{
+			mean = mean == 0u ? hp : Math.Min(mean, hp);
+		}
+
 		return shown;
 	}
 
@@ -203,7 +208,7 @@ public partial class BeastmasterRotation
 		}
 
 		// In order: below the cap - the roles, then the lowest -, then at or above it, the lowest first.
-		var order = ChooseTeam(new List<TeamCandidate>(all), all.Count, weight, interrupting, LastRunTeam(team), out _, sync);
+		var order = ChooseTeam(new List<TeamCandidate>(all), all.Count, weight, interrupting, LastRunTeam(team), out _, sync, recommended);
 		var chosen = new List<TeamCandidate>(size);
 		var above = new List<TeamCandidate>();
 		var safe = 0;
@@ -223,7 +228,12 @@ public partial class BeastmasterRotation
 			}
 		}
 
-		var below = chosen.Count;
+		var below = 0;
+		foreach (var pick in chosen)
+		{
+			below += BelowCap(pick) ? 1 : 0;
+		}
+
 		var shown = ShownHealth(out var mean);
 		var filled = 0;
 		var swapped = 0;
@@ -304,9 +314,10 @@ public partial class BeastmasterRotation
 		var sync = CrucibleBoard.SyncRank(board);
 		var recommended = CrucibleBoard.RecommendedRank(board);
 		var shown = ShownHealth(out var mean);
-		var order = ChooseTeam(new List<TeamCandidate>(pool), pool.Count, weight, interrupting, team, out var roles, -Math.Max(sync, 1));
+		var order = ChooseTeam(new List<TeamCandidate>(pool), pool.Count, weight, interrupting, team, out var roles, -Math.Max(sync, 1),
+			recommended);
 		keep = Math.Min(size, order.Count);
-		for (var n = Math.Max(roles, 1); n < keep; n++)
+		for (var n = Math.Max(Math.Min(roles, keep), 1); n < keep; n++)
 		{
 			if (TeamEndangered(board, order.GetRange(0, n), recommended, shown, mean) == false)
 			{
@@ -497,7 +508,8 @@ public partial class BeastmasterRotation
 		{
 			// The lowest first; while the team is endangered - measured not to carry the board's losses, or unmeasured - the
 			// strongest outside takes the place of its weakest that neither heals, protects nor interrupts.
-			var order = ChooseTeam(new List<TeamCandidate>(all), all.Count, weight, interrupting, LastRunTeam(team), out _, int.MaxValue);
+			var order = ChooseTeam(new List<TeamCandidate>(all), all.Count, weight, interrupting, LastRunTeam(team), out _, int.MaxValue,
+				recommended);
 			chosen = order.Count > size ? order.GetRange(0, size) : order;
 			var outside = order.Count > size ? order.GetRange(size, order.Count - size) : [];
 			outside.Sort((a, b) => CrucibleBoard.FightingRank(b.Rank, b.OverRank, sync).CompareTo(CrucibleBoard.FightingRank(a.Rank, a.OverRank, sync)));
@@ -579,7 +591,7 @@ public partial class BeastmasterRotation
 	// at equal worth one above the board's rank first, then below it the higher rank, then one in the team already. `core`
 	// counts up to the last pick that covers a weakness anew or is needed as a healer or interrupter (A698).
 	private static List<TeamCandidate> ChooseTeam(List<TeamCandidate> candidates, int size, Dictionary<uint, int> weight,
-		bool interrupting, List<BeastmasterPet> team, out int core, int lowFirstFrom = 0)
+		bool interrupting, List<BeastmasterPet> team, out int core, int lowFirstFrom = 0, int fightsFrom = 0)
 	{
 		var lowFirst = lowFirstFrom > 0;
 
@@ -622,6 +634,21 @@ public partial class BeastmasterRotation
 				// board, LevelTeam measures.
 				covers &= !needSafe && !needSoul;
 				var adequate = Adequate(candidate);
+
+				// A806 (review, high): a role goes first to one the horn choice sends in - over the sync or at least the
+				// recommended rank (K6); one below only where none at it carries the role.
+				if ((lowFirst || highFirst) && (needSafe || needSoul) && best >= 0 && Fights(candidate) != Fights(candidates[best]))
+				{
+					if (Fights(candidate))
+					{
+						best = i;
+						bestWorth = worth;
+						bestCovers = covers;
+					}
+
+					continue;
+				}
+
 				var better = highFirst
 					? best < 0 || (Strength(candidate) != Strength(candidates[best]) ? Strength(candidate) > Strength(candidates[best])
 						: covers != bestCovers ? covers
@@ -691,6 +718,8 @@ public partial class BeastmasterRotation
 		}
 
 		// At equal worth: above the board's rank first, then below it the higher rank (A804), then one in the team already.
+		bool Fights(TeamCandidate candidate) => candidate.OverRank || candidate.Rank >= fightsFrom;
+
 		int Strength(TeamCandidate candidate) => CrucibleBoard.FightingRank(candidate.Rank, candidate.OverRank, strongSync);
 
 		// A805: a rank to level by - unknown counts as the highest.
@@ -775,6 +804,7 @@ public partial class BeastmasterRotation
 		}
 
 		var safeNeeded = Math.Min(safe, BossSafeFamiliars);
+		var shown = ShownHealth(out var least);
 		var bestPoints = mixedKeep < size ? SquadPoints(mixedKeep) : 0;
 		GambitPick? best = null;
 		foreach (var (kin, row, name) in Gambits())
@@ -796,6 +826,13 @@ public partial class BeastmasterRotation
 			}
 
 			var picks = FewestStrong(board, size, pool, weight, interrupting, team, out var keep);
+
+			// A806 (review): smaller than the board's size only where measured not endangered - unmeasured, the full size.
+			if (picks.Count < size && TeamEndangered(board, picks, CrucibleBoard.RecommendedRank(board), shown, least) != false)
+			{
+				continue;
+			}
+
 			var sizeNote = keep < size ? $"{keep} familiars carry the losses measured on this board with one in reserve." : string.Empty;
 
 			var hits = new HashSet<uint>();

@@ -31,7 +31,7 @@ internal sealed class CrucibleTeamWindow : RecommendationWindow
 
 	protected override void DrawContent()
 	{
-		using (Section("crucible_goal", "Goal of the runs", FontAwesomeIcon.Flag, "Kept until you change it; the team and the board's play follow it"))
+		using (Section("crucible_goal", "Goal of the runs", FontAwesomeIcon.Flag, "Kept until you change it; the team follows it, the board always plays safe, then for points"))
 		{
 			var picked = Choice("##crucible_goal", Goals, (int)BeastmasterRotation.CrucibleGoalNow);
 			if (picked >= 0 && picked != (int)BeastmasterRotation.CrucibleGoalNow && DataCenter.CurrentRotation is { } rotation

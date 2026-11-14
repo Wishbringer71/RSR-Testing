@@ -23450,6 +23450,14 @@ höchste Bonuszahl"; „du hast zu schauen, wie und ob safe win regeln in den an
 - *Vorhersage:* `predictions/2026-11-14.json`, „level-below-cap": Unter Level auf Brett 2 nennt „crucible team: goal Level -
   requested …" keinen Begleiter ab Rang 10, solange zwölf unter dem Cap zur Wahl stehen. Nach „Apply" ändert sich die
   Empfehlung bis zum nächsten Öffnen nicht (zweites „requested" mit anderen Begleitern ohne neues Öffnen fehlt).
+- *Unabhängige Prüfung gegen Z1 bis Z9 (eine Runde):* ein Befund hoher Schwere, zwei mittlere, eingearbeitet – Konzept
+  zuerst. (Hoch) Unter Level und Safe win gingen die Rollen an die rangniedrigsten, auch unter dem empfohlenen Rang; die
+  Hornwahl setzt solche nur ein, wenn zu wenige andere leben – vor dem Boss fehlte der Heiler. Das Konzept regelte das
+  Zusammenwirken nicht. Jetzt: eine Rolle nimmt zuerst einen, der kämpft (ab dem empfohlenen Rang oder über dem Cap).
+  (Mittel) Das Team einer Gattung umging die Gefährdungsprüfung und die volle Größe bei unbekannter Gefährdung; jetzt
+  kleiner als die Brettgröße nur, wenn gemessen ungefährdet. (Mittel) Für Begleiter außerhalb des Kaders setzte die
+  Prüfung die mittleren LP des Kaders an; jetzt die kleinsten gezeigten (Preis im Konzept). Niedrig: Kern über der
+  Brettgröße, Zählung „below the cap", Optionstext des Wegs, Kommentare und Untertitel.
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

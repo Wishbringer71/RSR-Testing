@@ -148,15 +148,15 @@ public sealed class BST_Reborn : BeastmasterRotation
 			+ "final one, included, leave you and the healers of the final fight's plan - each fight with what RSR measured "
 			+ "it to cost you, your healing items and what a campsite restores; whether that is safe (you live through "
 			+ "every fight on it with the items you hold, and the weakest final healer outlasts one use or is full); and "
-			+ "recommends one - among safe ways the one that scores more points (not under the Crucible goal Safe win), then "
-			+ "the one with more items, else the one that leaves you the most HP. Computed again on every space.\n"
+			+ "recommends one - among safe ways the one that scores more points, then the one with more items, else the one "
+			+ "that leaves you the most HP. Computed again on every space.\n"
 			+ "In a fight: nothing.\n"
 			+ "Off: no window.")]
 	private bool RecommendCrucibleRoute { get; set; } = true;
 
-	// K7, "Ziel des Laufs" (concept 21, A804): his proposal of 14.11.2026 - three goals, chosen in the team window; the team and
-	// the score bonuses on the board follow. It replaces "Prefer familiars that lag behind in rank" (A579, A796), whose "off"
-	// carries over as Score.
+	// K7, "Ziel des Laufs" (concept 21, A804, A806): his proposal of 14.11.2026 - three goals, chosen in the team window; the
+	// team follows them, the board plays safe, then for the highest score, under each. It replaces "Prefer familiars that lag
+	// behind in rank" (A579, A796), whose "off" carries over as Score.
 	[RotationConfig(CombatType.PvE, Name = "Goal of a Crucible run (also the three buttons of the team window)",
 		Tooltip = "The goals differ in the team alone. Every goal first takes two familiars that heal or protect for the boss, while "
 			+ "any is left, and an interrupter where enemies cast interruptibly. A team is endangered when the familiars the "
@@ -1716,7 +1716,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 	{
 		base.UpdateServices();
 
-		// A804: the goal of the run, read by the team, the items, the shop, the treasure, the campsite and the route.
+		// A804, A806: the goal of the run, read by the team recommendation.
 		// The old setting is removed on the first frame of this build, before any button could set the goal; the combo of
 		// the new one has stored its default by then, so its presence tells nothing.
 		if (Service.Config.RotationConfigurations.Remove(LaggingSettingBefore, out var lagging)
