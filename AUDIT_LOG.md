@@ -23329,6 +23329,18 @@ audit, codereview und fehlerbeseitigung".
   empfohlenen Rang (oder ohne bekannten Rang), bis der Kader die Größe hat. Niedrig: Der Kandidat trägt den höheren Rang
   aus Spiel und Abrechnung (Spur, Gleichstand und Filter lesen dasselbe); unter Level ohne Nachzügler bleibt der
   Größenhinweis stehen; Konzept, Optionstext und Fenstertexte nennen Weg, Schatz und Gattung.
+- *Dritte Prüfrunde (frischer Hilfsagent, statisch):* kein Befund hoher Schwere, zwei mittlere – beide aus derselben
+  Klasse wie die der zweiten Runde: Entscheidungen, die Punkte gegen Sicherheit wiegen, ohne als K15 gekennzeichnet zu
+  sein. Statt Stelle für Stelle ist die Klasse jetzt vollständig erhoben (jeder Leser von `BonusPoints`, `Points` der
+  Wege und der Trankschwelle im Crucible-Code); zwei Stellen fehlten: (M1) Der Laden kappte Schutz und Rauchbomben auf
+  den Bedarf unter der Trankschwelle auch ohne Gegenstandsbonus – unter Safe win und nach verwirktem Bonus nimmt K8
+  Schutz aber gegen jeden angekündigten Treffer (älter, A797); die Kappung gilt dafür nur noch bei `ItemBonusAtStake`,
+  für Heilung unter jedem Ziel. (M2) Unter sicheren Wegen entschieden unter Safe win die Punkte der Felder; dort
+  entscheiden jetzt Gegenstandsfelder, dann die LP. Niedrig: Fensterhinweis, wenn kein Rang bekannt ist; Texte zur
+  Gattung (A699) und zum Gleichstand nachgezogen. Nicht geändert (N1): Unter Safe win halten Schadensgegenstände
+  den Bonus strenger als unter Score (ohne Wegtest) – sie gehen, sobald ein Schutzgegenstand ihn verwirkt hat. Drei
+  Runden mit mittleren Befunden: Das Ziel „Safe win" war zuerst als Abschalten von K15 gebaut, nicht als Regel über
+  jede Entscheidung mit Punkten; die Anforderung lautet jetzt im Konzept so (Tabelle „Ziel des Laufs").
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

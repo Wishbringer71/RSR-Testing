@@ -407,8 +407,8 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     Begleiter, mit derselben Größenregel. Ein solches Team gilt, wenn es jede Schwäche des Bretts trifft, die das gemischte
     trifft, mindestens so viele Heiler und Schützer hält, wie das gemischte für den Boss braucht, und den Unterbrecher,
     wo das gemischte einen hält (nur Seelen-Begleiter unterbrechen, K4). Dann ist es so sicher wie das gemischte und
-    bringt 750 Punkte mehr, dazu die Punkte seiner Größe; unter mehreren das mit den meisten Punkten. Levelt RSR
-    nachhängende Begleiter (A579), tauscht es im Team einer Gattung nur gegen einen derselben Gattung. *Im Kampf:* Wo
+    bringt 750 Punkte mehr, dazu die Punkte seiner Größe; unter mehreren das mit den meisten Punkten. Unter dem Ziel
+    „Level" gilt es erst, wenn kein Begleiter mehr zurückliegt; unter „Safe win" nie (K7, „Ziel des Laufs", A804). *Im Kampf:* Wo
     eine Gattung die Schwächen nicht trägt, ändert sich nichts. *Gegenthese:* Gleiche Abdeckung heißt nicht gleicher
     Schaden – ein Begleiter, der eine Schwäche nur schwach trifft, verlängert den Kampf. Die Hornwahl wägt im Kampf nach
     gemessenem Schaden (K16); die Kaderwahl hat diese Messung je Begleiter erst nach einem Lauf. *Preis:* Ein Kampf
@@ -622,7 +622,9 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     sinnvoll nutzen, oder nicht zum kauf vorschlagen"):* Ein Heilgegenstand, ein Schutzgegenstand und eine Rauchbombe zählen
     höchstens den Teil dieses Bedarfs, der dich unter deine Trankschwelle („Use HP potions below this HP") brächte – über
     ihr nimmt K8 sie nicht, solange ein Gegenstandsbonus steht, und ohne ihn bringt ein Trank über der Schwelle nur LP am
-    Ende. Was du über der Schwelle hast, zieht RSR vom Bedarf ab: max(0, Bedarf − (deine LP jetzt − Schwelle) − gehaltene
+    Ende. Für Schutzgegenstände und Rauchbomben gilt die Grenze nur, solange ein Gegenstandsbonus auf dem Spiel steht
+    (`ItemBonusAtStake`): Ohne ihn – verwirkt, oder unter dem Ziel „Safe win" – nimmt K8 Schutz gegen jeden angekündigten
+    Treffer, und er zählt wieder voll (dritte Prüfrunde, A804). Für Heilgegenstände gilt sie unter jedem Ziel. Was du über der Schwelle hast, zieht RSR vom Bedarf ab: max(0, Bedarf − (deine LP jetzt − Schwelle) − gehaltene
     Heilung). Ausrüstung wirkt ohne Zutun und bleibt auf der Skala wie bisher; damit geht bleibende Ausrüstung vor
     Verbrauchsmitteln, wo der Weg dich nicht unter die Schwelle bringt. *Im Kampf (14.11.2026, Brett 2, erster Laden):*
     Ein Kampf kostete dich 4 %, sieben lagen vor dir; RSR empfahl Bestien-Heiltrank II, Bestien-Pulver II und ein Grimoire,
@@ -2198,7 +2200,7 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
   | Ziel | Kader (K7) | Im Brett (K15 und was daran hängt) |
   |---|---|---|
   | Level | Kämpfer und Lernende aus allen Gattungen (oben); ohne Nachzügler wie „Score" (seine Vorgabe vom 14.11.2026, „Nach dem Höchstrang") | Boni gewogen wie unter „Score": Die Begleiter-EP folgen der Punktzahl |
-  | Safe win | volle Größe, gierig nach Schwächen; unter dem empfohlenen Rang (oder ohne bekannten Rang) nur so viele, wie zum Füllen fehlen, die ranghöchsten; keine Verkleinerung, keine Gattung, keine Lernenden | kein Bonus hält zurück, was eine Sicherheitsregel verlangt: Schutz- und Heilgegenstände, Kauf, Schatz, Rast und Futter gehen wie ohne K15 (K8, K10, K13); der Weg zieht unter sicheren Wegen nicht mehr den ohne Gegenstände vor, sondern den mit mehr Gegenstandsfeldern |
+  | Safe win | volle Größe, gierig nach Schwächen; unter dem empfohlenen Rang (oder ohne bekannten Rang) nur so viele, wie zum Füllen fehlen, die ranghöchsten; keine Verkleinerung, keine Gattung, keine Lernenden | kein Bonus hält zurück, was eine Sicherheitsregel verlangt: Schutz- und Heilgegenstände, Kauf (Schutz zählt im Laden voll), Schatz, Rast und Futter gehen wie ohne K15 (K8, K10, K13); unter sicheren Wegen entscheiden nicht die Punkte der Felder, sondern mehr Gegenstandsfelder, dann deine LP und die der Endkampfheiler |
   | Score | Größe nach Punkten (A698) und Gattung (A699), keine Lernenden | K15 wie gebaut: ein Bonus bleibt, solange der Weg ohne die Handlung sicher ist |
   Was keine Sicherheitsregel verlangt, wiegt die Boni unter jedem Ziel (unabhängige Prüfung, zwei Runden, A804): die
   Heilung im letzten GCD des Endkampfs (A712) und die für „Unversehrte Bestien" (A695) gehen nur, wo ihr Bonus die

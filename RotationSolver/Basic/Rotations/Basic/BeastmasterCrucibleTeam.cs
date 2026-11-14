@@ -528,6 +528,14 @@ public partial class BeastmasterRotation
 
 		var all = new List<TeamCandidate>(candidates);
 
+		// A804: the window says when no rank is known at all - then leveling counts by the board's sync alone, and Safe win
+		// cannot tell the weak.
+		var anyRank = false;
+		foreach (var candidate in candidates)
+		{
+			anyRank |= candidate.Rank > 0;
+		}
+
 		// A804: under Safe win a familiar below the board's recommended rank - or of no known rank - takes a place only where the
 		// others do not fill the size, the highest of them first: one there goes on a horn only when fewer others live than
 		// horns (K6), so its place is no reserve.
@@ -561,7 +569,7 @@ public partial class BeastmasterRotation
 		// A698: as few as the score's bonus for a smaller team allows with the core and the familiars' measured loss - not
 		// under the goal Safe win (A804).
 		var sizeNote = "Safe win: the full team for the board's fights, the stronger at equal worth; no score bonus holds back "
-			+ "what safety asks for - an item, a purchase, a rest or a feed.";
+			+ "what safety asks for - an item, a purchase, a treasure's gear, a rest or a feed.";
 		var keep = safeWin ? size : TeamSizeForScore(board, size, core, chosen, out sizeNote);
 		CrucibleTeamSizeNote = sizeNote;
 		if (chosen.Count > keep)
@@ -599,6 +607,12 @@ public partial class BeastmasterRotation
 			CrucibleTeamSizeNote = gambit.Note;
 		}
 
+		if (!anyRank && candidates.Count > 0)
+		{
+			CrucibleTeamSizeNote = (CrucibleTeamSizeNote.Length > 0 ? CrucibleTeamSizeNote + " " : string.Empty)
+				+ "The game gave no familiar's rank, and no result window showed one: ranks count by the board's sync only.";
+		}
+
 		if (goal == CrucibleGoal.Score)
 		{
 			// A802: the state shows in the window, so a team without leveling is not read as a fault of the rule.
@@ -634,8 +648,8 @@ public partial class BeastmasterRotation
 	// K7: the greedy choice over `candidates`, which loses each pick - first as many that heal or protect as B5 wants before
 	// a boss, then, where enemies cast interruptibly, a Soulkin, then one by one the familiar that hits the weakness of the
 	// most enemies not yet covered (each enemy of a weakness counts one, shared by the familiars already chosen that hit it);
-	// at equal worth one above the board's rank first, then one in the team already. `core` counts up to the last pick
-	// that covers a weakness anew or is needed as a healer or interrupter (A698).
+	// at equal worth one above the board's rank first, then below it the higher rank, then one in the team already. `core`
+	// counts up to the last pick that covers a weakness anew or is needed as a healer or interrupter (A698).
 	private static List<TeamCandidate> ChooseTeam(List<TeamCandidate> candidates, int size, Dictionary<uint, int> weight,
 		bool interrupting, List<BeastmasterPet> team, out int core)
 	{
