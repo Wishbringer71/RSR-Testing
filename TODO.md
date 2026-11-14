@@ -35,7 +35,7 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
 ### Opener-Tinktur in der Lernphase, alle Jobs · N, R
 Im Kampf: Jeder Job außer dem Schnitter trinkt in High-End-Kämpfen im Opener, auch in einem Kampf, der noch nicht
 geschafft ist. Jeder Wipe vor dem zweiten Burst kostet dann eine Tinktur ohne Nutzen (seine Regel A501). Der Schnitter
-wägt das seit A779 mit `InClearedDuty` und `LastPullTime`. *Ort:* `UseBurstMedicine` (allgemein) und die Opener-Fenster
+wägt das mit `InClearedDuty` und `LastPullTime` (Konzept 14). *Ort:* `UseBurstMedicine` (allgemein) und die Opener-Fenster
 der Rotationen. *Nächster Schritt:* einen allgemeinen Begriff „erster Burst eines Zugs“ aus den Spieldaten bestimmen
 (Abklingzeit der eigenen Burst-Aktion des Jobs), dann die Regel des Schnitters auf die allgemeine Ebene heben.
 *Konzept:* 03, 14.
