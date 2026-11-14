@@ -149,6 +149,8 @@ internal static partial class ActionUpdater
 			DefenseTrace.Line($"combat ended after {(now - _startCombatTime).TotalSeconds:F0} s");
 			DataCenter.LastPullSeconds = (float)(now - _startCombatTime).TotalSeconds;
 			DataCenter.LastPullTerritoryId = DataCenter.Territory?.Id ?? 0;
+			// A809 (concept 13, "Kampfende"): a fight's gaze registrations end here, also with RSR off after a wipe.
+			GazeWatch.EndFight();
 			_startCombatTime = DateTime.MinValue;
 
 			if (DataCenter.AutoOffAfterCombatEnabled && !DataCenter.IsHenched && !DataCenter.IsAutoDuty)

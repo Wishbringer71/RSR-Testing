@@ -23637,6 +23637,22 @@ Anforderungen B1 bis B6 in Konzept 13 geprüft, keine Flickrunde.
   entfernt; Schlüssel von Wirken und Mitglied über `HashCode.Combine` statt XOR; eine gehaltene Richtung endet mit ihrem
   Blick, nicht erst mit dem Kampf. Unverändert: die Anlage im Abschluss von `Harmed` (je Paket, nicht je Bild). Prüfgrad:
   statisch, Compile, CI.
+- *Siebte unabhängige Prüfung (auf 55feaf517):* kein Befund hoher, drei mittlerer Schwere; die Regel selbst bestätigt
+  (kein Weg über zwei gezählte Treffer, gelassen bleibt gelassen, ein Fehlschlag je Paket). Eingearbeitet, Konzept 13
+  zuerst: (M1) Gelernt wurde je Name des Wirkens; „Tödlicher Blick" tragen Angra Mainyu, die Ahriman des Crucible und
+  Destrudo, und zwei Wellen im Crucible hätten Destrudo im Pilgerpfad losgelassen. Jetzt je Zeile; den Zwilling eines
+  Helfers beurteilt dasselbe Paket, jeder zugehörige Blick lernt unter seiner Zeile. (M2) Das Kampfende räumte nur die
+  Blickwache selbst ab, wenn sie lief; nach einem Wipe schaltet sich RSR ab, und der erste schädliche Status des nächsten
+  Versuchs las eine offene Anmeldung als Fehlschlag. Jetzt `GazeWatch.EndFight` an der Stelle, die das Kampfende jedes
+  Bild misst (`ActionUpdater.UpdateCombatTime`), auch mit RSR aus. (M3) Ohne gemessene Verzögerung im Gebiet schloss
+  eine Anmeldung von Marker, Status oder Mitglied nie; jetzt der Vorlauf, ohne ihn ein Bild. Niedrig, im Konzept als
+  bekannte Grenzen mit Preis geführt, ohne neue Mechanik (keine Anforderung): Zeitraum „dieselbe Mechanik" je Gebiet statt
+  je Aktion (L1); nur der erste haltende Blick wird bei der Zielwahl angemeldet (L2, beim Drücken alle); Richtung der
+  anderen im Client (L3, wie N3); T9 ohne Rückfall (L4, offene Annahme); ein über einen Helfer aufgelöstes Wirken schließt
+  nicht als „avoided" (L6); ein zweiter Treffer bei eigenem Blick ins Auge lässt los (L7, wie die Regel in `code.md`).
+  Berichtigt: Konzepttext und Kommentare (L5, L8; der Schlüssel „Gebiet mit Namen" in „Dauer" war seit A809 veraltet).
+  Unverändert: die Anlagen in `Harmed` (je Paket) und im Statuszugriff (je Bild, gleiches Muster überall in RSR,
+  unbelegt). Prüfgrad: statisch, Compile, CI.
 
 ### A810 · Seine Angabe: LLM-Framework als allgemeines Regelwerk (14.11.2026)
 

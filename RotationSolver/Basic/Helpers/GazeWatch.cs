@@ -68,7 +68,7 @@ internal static partial class GazeWatch
 
 	// What the eye came from, kept as values so a frame builds no text; Describe writes it for the trace. Trusted is
 	// false for a gaze that hit despite RSR's facing in this build (A786, A809): it still holds actions over the whole cast,
-	// but RSR no longer turns or chooses a facing for it.
+	// and RSR no longer turns for it - a facing chosen for another gaze still keeps clear of it.
 	// Margin (A789) widens the gaze's half width by the angle the player's and the eye's movement makes until it resolves.
 	private readonly record struct Gazer(Vector3 Eye, ulong Key, bool Inverted, float Left, Origin From, uint Id, IGameObject? Who,
 		bool Trusted = true, float Margin = 0f);
@@ -520,9 +520,9 @@ internal static partial class GazeWatch
 
 	/// <summary>
 	/// An enemy's effect packet (A783, A786). It measures how long after its bar a cast resolves, ends a gaze that waited
-	/// for it, writes who it hit, and judges every gaze RSR acted on: harm on the player from the gaze's own cast, from a
-	/// cast of the same name, or for a status or member gaze from the eye, is a failure - RSR then only holds for that gaze
-	/// until RSR is loaded again, as A770; the gaze's own packet without harm is a gaze avoided.
+	/// for it, writes who it hit, and judges every gaze RSR acted on (Related): harm on the player is a failure, learned by
+	/// the one rule in Learn - hold only, or leave the gaze, until RSR is loaded again; the gaze's own packet without harm
+	/// is a gaze avoided.
 	/// </summary>
 	internal static void ObserveLanding(ActionEffectSet set)
 	{
@@ -778,13 +778,10 @@ internal static partial class GazeWatch
 	// ends (A801) - early in a zone the longest delay measured was shorter than this one's.
 	private static void CloseAvoided(float lead)
 	{
-		if (_landingMost <= 0f)
-		{
-			return;
-		}
-
+		// A809 (seventh review, M3): without a delay measured in this zone yet, the lead alone, else a frame - left open, any
+		// later harmful packet in the fight read as the gaze failing.
 		var now = DateTime.Now;
-		var window = _landingMost + (float.IsInfinity(lead) ? 0f : lead);
+		var window = _landingMost + (float.IsInfinity(lead) ? AnimationLockTweak.MeanFrameTime : lead);
 		for (var i = _pending.Count - 1; i >= 0; i--)
 		{
 			var pending = _pending[i];
@@ -816,11 +813,10 @@ internal static partial class GazeWatch
 		}
 	}
 
-	// What a failure is learned under: the cast's name (so a helper's twin counts too), else the source and its id.
-	// A809: a cast without a name under its row - every unnamed helper row shares the empty name.
-	private static ulong LearnKey(Gazer gazer) => gazer.From == Origin.Cast && ActionName(gazer.Id).Length > 0
-		? (ulong)(uint)StringComparer.Ordinal.GetHashCode(ActionName(gazer.Id))
-		: (ulong)(uint)HashCode.Combine(gazer.From, gazer.Id);
+	// What a failure is learned under: the gaze itself - a cast's row, a marker's kind, a status's id. A809 (seventh
+	// review, M1): not the cast's name - Angra Mainyu, the Crucible's Ahriman and Destrudo share "Mortal Gaze", and a
+	// failure on one released the others. A helper's twin is judged by the same packet and learns under its own row.
+	private static ulong LearnKey(Gazer gazer) => (ulong)(uint)HashCode.Combine(gazer.From, gazer.Id);
 
 	private static string ActionName(uint actionId)
 	{
@@ -1081,6 +1077,31 @@ internal static partial class GazeWatch
 	}
 
 	// Every gaze on the player with its eye and the seconds left, once per frame.
+	/// <summary>
+	/// What a fight registered ends with it (A809, seventh review, M2): called where RSR measures the fight's end every
+	/// frame (ActionUpdater), whether RSR is on or not - after a wipe RSR switches itself off, and an open registration was
+	/// read as failed by the next pull's first harmful status. What was learned stays until RSR is loaded again.
+	/// </summary>
+	internal static void EndFight()
+	{
+		foreach (var pending in _pending)
+		{
+			DefenseTrace.Line($"gaze: unknown {pending.Text}, the fight ended before its packet");
+		}
+
+		_pending.Clear();
+		_landing.Clear();
+		_casts.Clear();
+		_castsBefore.Clear();
+		_traced.Clear();
+		_turnTraced.Clear();
+		_refusedTraced.Clear();
+		_heldFacing.Clear();
+		_markers.Clear();
+		_eyesBefore.Clear();
+		_movedTick = long.MinValue;
+	}
+
 	private static List<Gazer> Gazers()
 	{
 		var now = Environment.TickCount64;
@@ -1110,22 +1131,7 @@ internal static partial class GazeWatch
 		var player = Player.Object;
 		if (!DataCenter.InCombat || player == null)
 		{
-			foreach (var pending in _pending)
-			{
-				DefenseTrace.Line($"gaze: unknown {pending.Text}, the fight ended before its packet");
-			}
-
-			_pending.Clear();
-			_landing.Clear();
-			_casts.Clear();
-			_castsBefore.Clear();
-			_traced.Clear();
-			_turnTraced.Clear();
-			_refusedTraced.Clear();
-			_heldFacing.Clear();
-			_markers.Clear();
-			_eyesBefore.Clear();
-			_movedTick = long.MinValue;
+			EndFight();
 			return _gazers;
 		}
 
