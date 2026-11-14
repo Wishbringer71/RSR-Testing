@@ -629,8 +629,8 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     zum ganzen Bedarf des Wegs). Rauchbomben setzt der Weg ein: unter Safe win zwischen sicheren Wegen für LP (sie zählen
     voll), unter Level und Score nur, wo der Kampfweg unsicher ist – sie zählen den Teil des Netto-Bedarfs des Wegs
     (`CarriesToFinal`, A709), der über deine LP, die gehaltene und schon gewählte Heilung und die Kämpfe hinausgeht, die
-    gehaltene Bomben schon ersparen; ist ein Kampf ungemessen, nach dem rohen Bedarf, auf den auch der Weg dann
-    zurückfällt (gelernte Last, sonst die schwerste; Prüfung A805). *Preis:* Die Rast am Lager und die Wahl des besseren Wegs an einer Gabelung rechnet der
+    gehaltene Bomben schon ersparen; ist ein Kampf ungemessen, nach dem rohen Bedarf mit der schwersten Last (der Weg
+    setzt einen gewöhnlichen Kampf dann mit dem Mittel an – die Bombe zählt höchstens etwas zu viel; Prüfung A805). *Preis:* Die Rast am Lager und die Wahl des besseren Wegs an einer Gabelung rechnet der
     Wegtest des Ladens nicht ein (er nimmt den schwersten Weg ohne Rast), der Weg selbst schon – vor einem Lager oder
     einer Gabelung zählt eine Bombe unter Level und Score höchstens zu viel. Was du über der Schwelle hast, zieht RSR vom Bedarf ab: max(0, Bedarf − (deine LP jetzt − Schwelle) − gehaltene
     Heilung). Ausrüstung wirkt ohne Zutun und bleibt auf der Skala wie bisher; damit geht bleibende Ausrüstung vor
@@ -2157,7 +2157,8 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
     der Unterbrecher) und die Reserve. *Der Kern aus Nachzüglern (A805; sein Hinweis und seine Vorgabe vom 14.11.2026:
     „ich habe das brett auch mit lvl6er begleitern am anfang geschafft. also sind zum leveln keine level 10er mehr
     notwendig, ausser zum auffüllen, falls reserve benötigt wird"):* Solange ein Begleiter zurückliegt, wählt RSR auch
-    den Kern nach Rang: zuerst die Heiler und Schützer, die B5 verlangt, und der Unterbrecher, dann je Schritt wer eine
+    den Kern nach Rang: zuerst die Heiler und Schützer, die B5 verlangt (solange einer verfügbar ist), und der
+    Unterbrecher, dann je Schritt wer eine
     Schwäche neu abdeckt; darunter jeweils einer ab dem empfohlenen Rang des Bretts vor einem darunter, dann der
     rangniedrigste, erst bei gleichem Rang der mit dem höheren Schwächenwert. Begleiter über dem Synchronrang kommen so
     nur, wo kein Nachzügler darunter eine Schwäche trägt, und zum Auffüllen; einer unter dem empfohlenen Rang trägt eine

@@ -681,7 +681,9 @@ public partial class BeastmasterRotation
 		core = 0;
 		while (chosen.Count < size && candidates.Count > 0)
 		{
-			var needSafe = safeTaken < BossSafeFamiliars;
+			// A805 review: only while one that heals or protects is left - with fewer than the boss asks for, the phase would
+			// otherwise last the whole team, and no weakness, interrupter or core would count.
+			var needSafe = safeTaken < BossSafeFamiliars && HasSafe();
 			var needSoul = !needSafe && interrupting && !soulTaken && HasSoul();
 			var best = -1;
 			var bestWorth = -1f;

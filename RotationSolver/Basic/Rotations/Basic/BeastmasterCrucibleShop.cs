@@ -1237,8 +1237,8 @@ public partial class BeastmasterRotation
 
 			// The healing chosen in this shop beside what the inventory holds (HealingHeldShare reads only the inventory).
 			var chosenHealing = Math.Max(0f, holding - held) + healedChosen;
-			// With a fight on the way unmeasured the route weighs it as the shop does here - its learned load, else the
-			// heaviest (A805 review) - so the raw demand stands in for the net one.
+			// With a fight on the way unmeasured the route weighs it by its learned load, else the mean of an enemy fight or
+			// the heaviest (A805 review); the shop's raw demand takes the heaviest - a bomb counts at most a little too much.
 			spareLine = wayLoad is { } wayNeed
 				? Math.Max(0f, wayNeed - Service.Config.UseHpPotionsPercent - heldShare - chosenHealing - spared)
 				: Math.Max(0f, healable - 1f - spared);

@@ -161,7 +161,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 		Tooltip = "Level: every familiar in the team earns experience, on a horn or not. The familiars the board's fights need - "
 			+ "each weakness, healing and protection for the boss, the reserve the measured losses ask for - are themselves the "
 			+ "lowest in true rank at or above the rank the game recommends; one higher only where none lower carries a weakness, "
-			+ "or to fill. Every other place goes to the familiars lowest in true rank, of every kin, in turns, up to the "
+			+ "or to fill, one below that rank only where none at it carries the role or weakness. Every other place goes to the familiars lowest in true rank, of every kin, in turns, up to the "
 			+ "board's size. Once none lags behind, as Score. On the board the "
 			+ "score bonuses are weighed as under Score - the experience follows the score.\n"
 			+ "Safe win: the full team for the board's fights; below the recommended rank, or of no known rank, only as many as "

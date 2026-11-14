@@ -23404,6 +23404,11 @@ Vorgabe (zum Leveln keine Begleiter ab Rang 10, außer zum Auffüllen der Reserv
   dem rohen Bedarf. (Nebenbefund, fc69357e6) Im Laden zählten gewählte Heilgegenstände zweimal gegen den Bedarf (in
   `held` und in `healed`); `healed` nimmt jetzt nur noch Auto-Tränke. Preis ergänzt: Die Lasten je Kampf fallen bis zur
   ersten Messung auf der neuen Rangstufe auf die schwersten aller Läufe zurück.
+- *Zweite Prüfung (379512038):* kein Befund hoher Schwere, ein mittlerer: Mit weniger als zwei freigeschalteten Begleitern,
+  die heilen oder schützen, blieb die Heilerphase der gierigen Wahl für den ganzen Kader stehen – unter Level zählte
+  keine Schwäche mehr, unter jedem Ziel wurde der Unterbrecher nie erzwungen und der Kern war der ganze Kader (keine
+  Verkleinerung unter Score; der Teil älter). `needSafe` gilt jetzt nur, solange einer verfügbar ist. Niedrig: Optionstext
+  nennt den Begleiter unter dem empfohlenen Rang; Rückfall des Wegs (Mittel eines gewöhnlichen Kampfs) richtig beschrieben.
 - *Prüfgrad:* Bildbefund, Compile, CI; Laufzeit nicht beobachtet.
 - *Vorhersage:* `predictions/2026-11-14.json`, „level-core-low": Fordert er unter Level auf Brett 2 den Kader an, nennt
   „crucible team: goal Level - requested …" mindestens drei Begleiter auf Rang 6 bis 9 aus dem Spiel.
