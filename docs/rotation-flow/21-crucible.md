@@ -2146,13 +2146,19 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
   begleitern geringere punktzahl zu bekommen, oder dass diese durch essen gebufft werden müssen." Ohne Nachzügler gilt
   die Größe nach Punkten (A698): die kleinste Stufe von In Unterzahl, deren Begleiter jeden gemessenen Verlust des
   Bretts ohne Rast, Gegenstand und Futter tragen (die Rechnung kennt keine Heilung, A703), mit einem in Reserve.
-  *Gegenthese 3 (Rang über dem Synchronrang unbekannt):* Zwei Begleiter über dem Synchronrang sind am Brett nicht zu
-  unterscheiden; einer davon kann auf 25 stehen und lernt nichts. Nicht widerlegt: RSR zählt sie als Nachzügler,
-  bis ein Brett mit Synchronrang 25 ihren Rang zeigt. *Preis:* Auf den ersten vier Brettern bleibt der Kader voll, auch
-  wenn alle schon auf 25 stehen, und In Unterzahl entfällt. Seit 7.58 zeigt das Teamfenster den ursprünglichen Rang
-  (Patchnotes); wo er in den Werten des Fensters steht, nennt keine Struktur des Clients. Die Fensterspur schreibt das
-  Teamfenster deshalb auch vor dem Brett (`CrucibleWindowTrace`); der nächste Upload zeigt die Stelle, dann liest RSR
-  den Rang dort und prüft ihn gegen `GetSyncedRank`. *Ausgeschlossen:* den Rang über das Umsetzen des Bretts im Agenten zu erfragen (`ContentId` umschreiben und
+  *Der echte Rang aus der Abrechnung (A799):* Das Abrechnungsfenster am Ende eines Brett-Laufs (`XBMResult`) führt je
+  Begleiter des Kaders seinen Rang vor und nach dem Lauf, ungesynct, und seine Erfahrung (gelesen in seiner Spur vom
+  14.11.2026, Brett 2: Wert 72 die Zahl der Begleiter, ab 73 ihre Symbole – 242000 plus Bestiariumsnummer –, ab 89 die
+  Erfahrung davor, ab 105 danach, ab 121 der Rang davor, ab 137 danach, je 16 Plätze; zwölf Begleiter, Rang 9 bis 11
+  davor, 10 bis 12 danach, jeder 121 Erfahrung, ob auf einem Horn oder nicht). RSR liest den Rang danach je Begleiter
+  und hält ihn je Charakter in einer gelernten Datei, die nur steigt (`CrucibleFamiliarRank`); geprüft wird jeder Wert:
+  Symbol im Bereich der Begleiter, Ränge 1 bis 25, danach nicht unter davor – sonst wird die Abrechnung verworfen und
+  die Spur sagt es. Für einen Begleiter über dem Synchronrang gilt der gelernte Rang, wo er den Synchronrang übersteigt;
+  steht er auf 25, ist er kein Nachzügler mehr. *Gegenthese 3 (Rang über dem Synchronrang unbekannt):* Ein Begleiter,
+  der nie in einem Lauf mit RSR war, hat keinen gelernten Rang; er zählt als Nachzügler, bis die erste Abrechnung ihn
+  zeigt. *Preis:* bis dahin ein voller Kader, wo alle schon auf 25 stehen. Steigt ein Begleiter außerhalb von RSR, ist
+  der gelernte Rang zu niedrig – er bleibt Nachzügler, bis die nächste Abrechnung ihn hebt. Seit 7.58 zeigt auch das
+  Teamfenster den ursprünglichen Rang (Patchnotes); die Fensterspur schreibt es vor dem Brett mit. *Ausgeschlossen:* den Rang über das Umsetzen des Bretts im Agenten zu erfragen (`ContentId` umschreiben und
   `GetSyncedRank` rufen) – ein Schreiben in Spielspeicher ohne Beleg, was die Funktion liest.
   *Ausgeliefert, und nichts ändert sich:* Er übernimmt die Empfehlung nicht („Apply"), oder er hat keine Nachzügler unter
   dem Synchronrang. Die Spur nennt je Begleiter Rang und Rolle („crucible team: requested Puk 10, … Lamb 6 levels").

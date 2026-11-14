@@ -155,6 +155,7 @@ public partial class MainWindow
 			CrucibleFamiliarLossTab(),
 			CrucibleFightNetTab(),
 			CrucibleCampPoolTab(),
+			CrucibleFamiliarRankTab(),
 			SleepLimitTab(game),
 			DotTab(),
 			PenaltyTab(game),
@@ -564,6 +565,29 @@ public partial class MainWindow
 
 		Sort(rows);
 		return new LearnedTab("Crucible campsites", ["Board", "A rest shares, smallest read"], rows);
+	}
+
+	// K7 of the Crucible (concept 21, "Leveln", A799): this character's familiars with the true rank the last board's result
+	// window showed.
+	private static LearnedTab CrucibleFamiliarRankTab()
+	{
+		var rows = new List<string[]>();
+		foreach (var pet in Enum.GetValues<BeastmasterPet>())
+		{
+			if (pet != BeastmasterPet.None && CrucibleBoard.KnownRank(pet) is var rank and > 0)
+			{
+				rows.Add([pet.ToString(), rank.ToString()]);
+			}
+		}
+
+		int stored;
+		lock (OtherConfiguration.CrucibleFamiliarRankGate)
+		{
+			stored = OtherConfiguration.CrucibleFamiliarRank.Count;
+		}
+
+		Sort(rows);
+		return new LearnedTab("Crucible familiar ranks", ["Familiar", $"True rank, last result ({stored} kept for every character)"], rows);
 	}
 
 	private static LearnedTab SleepLimitTab(string? game)

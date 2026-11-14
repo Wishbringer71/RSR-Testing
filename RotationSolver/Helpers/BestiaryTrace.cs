@@ -248,6 +248,27 @@ internal static class BestiaryTrace
 		}
 	}
 
+	/// <summary>
+	/// One window value, read through <see cref="Dalamud.SafeMemory"/> as <see cref="Values"/> reads them (A787, A799); false
+	/// when the index lies beyond the count or the value cannot be read. A text value's pointer is not followed.
+	/// </summary>
+	internal static unsafe bool TryReadValue(AtkValue* values, uint count, int index, out AtkValue value)
+	{
+		value = default;
+		if (values == null || index < 0 || index >= count
+			|| !Dalamud.SafeMemory.ReadBytes((nint)(values + index), sizeof(AtkValue), out var raw))
+		{
+			return false;
+		}
+
+		fixed (byte* copy = raw)
+		{
+			value = *(AtkValue*)copy;
+		}
+
+		return Enum.IsDefined(value.Type);
+	}
+
 	internal static unsafe string Values(AtkValue* values, uint count)
 	{
 		if (values == null || count == 0)

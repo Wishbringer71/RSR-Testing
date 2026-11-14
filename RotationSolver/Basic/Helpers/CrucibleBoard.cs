@@ -1486,6 +1486,77 @@ internal static class CrucibleBoard
 	/// <summary>A729: a familiar's rank on this board as last read in this run; 0 when not read.</summary>
 	internal static int RankOf(BeastmasterPet pet) => _petRanks.GetValueOrDefault(pet);
 
+	private static uint _petSpan;
+
+	// K7 (A799): one more than the highest familiar id, so a character's familiars share one block of keys.
+	private static uint PetSpan
+	{
+		get
+		{
+			if (_petSpan == 0)
+			{
+				foreach (var pet in Enum.GetValues<BeastmasterPet>())
+				{
+					_petSpan = Math.Max(_petSpan, (uint)pet + 1);
+				}
+			}
+
+			return _petSpan;
+		}
+	}
+
+	/// <summary>
+	/// K7 (A799): the key of a familiar's learned rank - the character (another keeps its own) and the familiar; 0 while no
+	/// character is logged in.
+	/// </summary>
+	internal static uint RankOwnerKey(BeastmasterPet pet)
+	{
+		var character = Player.CID;
+		return character == 0 ? 0u : ((uint)(character % (uint.MaxValue / PetSpan)) * PetSpan) + (uint)pet;
+	}
+
+	/// <summary>K7 (A799): a familiar's true rank as the last board's result window showed it for this character; 0 unknown.</summary>
+	internal static int KnownRank(BeastmasterPet pet)
+	{
+		var key = RankOwnerKey(pet);
+		if (key == 0)
+		{
+			return 0;
+		}
+
+		lock (OtherConfiguration.CrucibleFamiliarRankGate)
+		{
+			return OtherConfiguration.CrucibleFamiliarRank.GetValueOrDefault(key);
+		}
+	}
+
+	/// <summary>
+	/// K7 (A799): keeps the true ranks a board's result window shows - each only rising - and writes what changed to the
+	/// trace.
+	/// </summary>
+	internal static void RecordFamiliarRanks(List<(BeastmasterPet Pet, int Before, int After)> ranks)
+	{
+		var learned = new List<string>();
+		lock (OtherConfiguration.CrucibleFamiliarRankGate)
+		{
+			foreach (var (pet, _, after) in ranks)
+			{
+				var key = RankOwnerKey(pet);
+				if (key != 0 && after > OtherConfiguration.CrucibleFamiliarRank.GetValueOrDefault(key))
+				{
+					OtherConfiguration.CrucibleFamiliarRank[key] = after;
+					learned.Add($"{pet} {after}");
+				}
+			}
+		}
+
+		if (learned.Count > 0)
+		{
+			DefenseTrace.Line($"crucible result: true ranks learned - {string.Join(", ", learned)}");
+			_ = OtherConfiguration.SaveCrucibleFamiliarRank();
+		}
+	}
+
 	/// <summary>A729: the sync rank of <paramref name="board"/> (XBMContent's SyncRank, Lumina's Unknown36); 0 when the row is missing.</summary>
 	internal static int SyncRank(uint board)
 	{

@@ -2402,6 +2402,66 @@
    "status": "exception",
    "loop": "A780",
    "reason": "A column of the ItemAction sheet (an identity, not a quantity): for the gemdraughts Data holds the status (49), its value and the seconds (xivapi v2, items 44157, 44162, 45995: [49, 644|662|686, 30]). The seconds themselves come from the sheet."
+  },
+  {
+   "file": "RotationSolver/Helpers/CrucibleWindowTrace.cs",
+   "code": "private const int ResultCount = 72;",
+   "values": [
+    "72"
+   ],
+   "status": "exception",
+   "loop": "A799",
+   "reason": "The result window XBMResult holds the number of the team's familiars at value 72 (the owner's DefenseTrace.log of 14.11.2026, board 2: the result window XBMResult with twelve familiars: uint 12). The game's layout of the window, not a tuned value; every reading is checked value by value and dropped whole when one fails."
+  },
+  {
+   "file": "RotationSolver/Helpers/CrucibleWindowTrace.cs",
+   "code": "private const int ResultFirstIcon = 73;",
+   "values": [
+    "73"
+   ],
+   "status": "exception",
+   "loop": "A799",
+   "reason": "The result window XBMResult lists the familiars' icons from value 73 (the owner's DefenseTrace.log of 14.11.2026, board 2: the result window XBMResult with twelve familiars: 242014 Puk, 242036 Gigantoad ...). The game's layout of the window, not a tuned value."
+  },
+  {
+   "file": "RotationSolver/Helpers/CrucibleWindowTrace.cs",
+   "code": "private const int ResultBlock = 16;",
+   "values": [
+    "16"
+   ],
+   "status": "exception",
+   "loop": "A799",
+   "reason": "The result window XBMResult keeps each list of the familiars in a block of 16 values - icons from 73, experience before from 89 and after from 105, rank before from 121 and after from 137 (the owner's DefenseTrace.log of 14.11.2026, board 2: the result window XBMResult with twelve familiars). The game's layout of the window, not a tuned value; a count above it is not read."
+  },
+  {
+   "file": "RotationSolver/Helpers/CrucibleWindowTrace.cs",
+   "code": "private const int ResultRankBeforeBlock = 3;",
+   "values": [
+    "3"
+   ],
+   "status": "exception",
+   "loop": "A799",
+   "reason": "The familiars' ranks before the run stand in the fourth block of XBMResult, from value 121 = 73 + 3 x 16 (the owner's DefenseTrace.log of 14.11.2026, board 2: the result window XBMResult with twelve familiars: 10, 10, 11, 11, 11 ...). The game's layout, not a tuned value."
+  },
+  {
+   "file": "RotationSolver/Helpers/CrucibleWindowTrace.cs",
+   "code": "private const int ResultRankAfterBlock = 4;",
+   "values": [
+    "4"
+   ],
+   "status": "exception",
+   "loop": "A799",
+   "reason": "The familiars' ranks after the run stand in the fifth block of XBMResult, from value 137 = 73 + 4 x 16 (the owner's DefenseTrace.log of 14.11.2026, board 2: the result window XBMResult with twelve familiars: 12, 11, 11, 11, 12 ... with experience falling where the rank rose). The game's layout, not a tuned value."
+  },
+  {
+   "file": "RotationSolver/Helpers/CrucibleWindowTrace.cs",
+   "code": "private const int FamiliarIconBase = 242000;",
+   "values": [
+    "242000"
+   ],
+   "status": "exception",
+   "loop": "A799",
+   "reason": "A familiar's icon is 242000 plus its Bestiary number (Daedalus 74659a6, CrucibleTeamScreen.IconBase, recorded 24.10.2026; the owner's DefenseTrace.log of 14.11.2026, board 2: the result window XBMResult with twelve familiars: 242014 for Puk, row 14). XBMPet has no icon column (EXDSchema); not a tuned value."
   }
  ]
 }

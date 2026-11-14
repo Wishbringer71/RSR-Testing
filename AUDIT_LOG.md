@@ -23152,6 +23152,39 @@ damit ursachen beseitigt werden können."
   „exception:"; jede, die steht, ist eine Ursache zum Beseitigen.
 - *Prüfgrad:* Compile, CI; Laufzeit nicht beobachtet.
 
+### A799 · Abrechnung des Bretts: echter Rang der Begleiter, Punktboni des Laufs vom 14.11.2026 (14.11.2026)
+
+Seine Vorgabe (14.11.2026): „dazu die punktebonis genau analysieren, die man am ende in der zusammenfassung bekommt, bzw.
+dies vorab analysieren, damit eine vernünftige strategie erstellt werden kann, welche begleiter zusammen man überhaupt auf
+das brett mitnimmt". Grundlage: das Abrechnungsfenster `XBMResult` in seiner Spur (Brett 2, 14:52:52, Build 3900a0892).
+- *Was das Fenster führt (gemessen, Werkzeugquelle: seine Spur):* Wert 0 Brett, 1 Grad („Normal"), 4 Abschluss 5.000,
+  6 Gegnerfelder 2 × 250 = 500, 8 Elitefelder 2 × 800 = 1.600, 10 Endgegner 1.000, 11 und 12 die Werte 2.099 und 764
+  (Bedeutung unbelegt, vermutlich Rest-LP des Spielers und der Begleiter), 13 Boni zusammen 4.500, 14 ihre Zahl 5; 15 bis
+  19 ihre Namen, 31 bis 35 ihre Punkte; 68 die Summe 13.364, 69 der Rang „Meisterlich"; 72 die Zahl der Begleiter (12), ab
+  73 ihre Symbole (242000 plus Bestiariumsnummer), ab 89 und 105 die Erfahrung vor und nach dem Lauf, ab 121 und 137 der
+  Rang davor und danach, ungesynct, je Block 16 Plätze.
+- *Erhaltene Boni:* Keine Verluste 1.000, Gewitzt 1.250, Wettrüsten 500, Heilfasten 750, Schlaflose Nächte 1.000.
+- *Verfehlt und warum:* Sparsamkeit 750 (14:41:02 ging ein Gegenstand aus dem Inventar), Sammelleidenschaft 1.000 (Feder
+  im Endkampf, A797), Geizhals 500 und Mit leeren Händen 750 (Käufe im ersten Laden, darunter Verbrauchsmittel ohne
+  Bedarf, A797), 2.000 Marken gehalten 500, In Unterzahl 1.250 bis 4.250 (zwölf Begleiter; beim Leveln gewollt, A796),
+  eine Gattung 750, Unversehrter Bändiger 250, Unversehrte Bestien 1.000.
+- *Erfahrung:* jeder der zwölf +121, ob auf einem Horn oder nicht (sein Hinweis, A796, damit belegt); Ränge davor 9 bis 11,
+  danach 10 bis 12.
+- *Strategie daraus (Konzept 21, K7 „Leveln", K15):* Solange Nachzügler leben, bringt jeder weitere Begleiter im Kader
+  121 Erfahrung (gemessen) gegen höchstens eine Stufe In Unterzahl; nach dem Höchstrang die kleinste sichere Stufe (A698,
+  A703). Die Gegenstands- und Kaufboni (zusammen bis 3.500) bleiben, solange Last und Weg es tragen (K15); was K8 nicht
+  benutzt, empfiehlt der Laden nicht mehr (A797).
+- *Gebaut:* RSR liest am Ende des Bretts den Rang danach je Begleiter (Werte einzeln über `SafeMemory`, geprüft: Symbol eines
+  Begleiters, Ränge 1 bis 25, danach nicht unter davor; sonst verworfen mit Spurzeile) und hält ihn je Charakter in
+  `CrucibleFamiliarRank` (steigt nur; Reiter „Crucible familiar ranks" im Lernfenster). Die Kaderwahl nimmt ihn für
+  Begleiter über dem Synchronrang; wer auf 25 steht, ist kein Nachzügler mehr. Die Fensterpositionen sind feste Werte des
+  Spiels (Ausnahmen in `fixed_values.json`, Loop hier): Die Struktur des Fensters nennt keine Quelle, gelesen ist sie aus
+  seiner Spur, und jede Lesung prüft sich selbst.
+- *Konzept:* 21, K7 „Der echte Rang aus der Abrechnung".
+- *Vorhersage:* Nach dem nächsten Brett steht „crucible result: true ranks learned - …" mit den Rängen danach; eine Zeile
+  „crucible result: ranks not read" widerlegt die Lage der Werte.
+- *Prüfgrad:* Laufzeitbeobachtung (Abrechnung in seiner Spur), Compile, CI; das Lesen nicht im Spiel beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

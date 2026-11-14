@@ -12,5 +12,7 @@
   {"id": "team-levels", "archive": "A796",
    "kind": "present", "situation": "crucible team: requested ", "match": "crucible team: requested .* levels"},
   {"id": "exception-none", "archive": "A798",
-   "kind": "absent", "situation": "combat started", "match": " exception: "}
+   "kind": "absent", "situation": "combat started", "match": " exception: "},
+  {"id": "result-ranks-read", "archive": "A799",
+   "kind": "absent", "situation": "crucible window XBMResult PostRefresh", "match": "crucible result: ranks not read"}
 ]

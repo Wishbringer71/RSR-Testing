@@ -298,6 +298,16 @@ internal sealed partial class OtherConfiguration
 	/// <inheritdoc cref="CrucibleFightLoadsByRank"/>
 	internal static Dictionary<uint, int> CrucibleFamiliarHitsByRank = [];
 
+	/// <summary>
+	/// K7 of the Crucible (concept 21, "Leveln", A799): each familiar's true rank as the last board's result window showed it,
+	/// per character - the key is <c>CrucibleBoard.RankOwnerKey</c>. Learned in play, only rising. Under
+	/// <see cref="CrucibleFamiliarRankGate"/>.
+	/// </summary>
+	internal static Dictionary<uint, int> CrucibleFamiliarRank = [];
+
+	/// <summary>Guards <see cref="CrucibleFamiliarRank"/> against the save on a pool thread.</summary>
+	internal static readonly object CrucibleFamiliarRankGate = new();
+
 	/// <summary>What the last save and load of each store by rank (<see cref="CrucibleFightLoadsByRank"/>) did, in words.</summary>
 	internal static readonly System.Collections.Concurrent.ConcurrentDictionary<string, string> CrucibleByRankStoreState = new();
 
@@ -938,6 +948,9 @@ internal sealed partial class OtherConfiguration
 		new LearnedFile<int>(nameof(CrucibleFamiliarHitsByRank), () => CopyUnder(CrucibleFamiliarHitsGate, CrucibleFamiliarHitsByRank),
 			v => { lock (CrucibleFamiliarHitsGate) { CrucibleFamiliarHitsByRank = v; } },
 			Math.Max, state => CrucibleByRankStoreState[nameof(CrucibleFamiliarHitsByRank)] = state, "Crucible familiar hit value(s) by rank"),
+		new LearnedFile<int>(nameof(CrucibleFamiliarRank), () => CopyUnder(CrucibleFamiliarRankGate, CrucibleFamiliarRank),
+			v => { lock (CrucibleFamiliarRankGate) { CrucibleFamiliarRank = v; } },
+			Math.Max, state => CrucibleByRankStoreState[nameof(CrucibleFamiliarRank)] = state, "Crucible familiar rank(s) from a board's result"),
 		new LearnedFile<int>(nameof(CrucibleCampPools), CopyCrucibleCampPools,
 			v => { lock (CrucibleCampPoolsGate) { CrucibleCampPools = v; } },
 			Math.Min, state => CrucibleCampPoolsStoreState = state, "Crucible board(s) with a read campsite rest"),

@@ -181,14 +181,19 @@ public partial class BeastmasterRotation
 		// Below the board's sync the game gives the true rank; above it only the sync, so such a familiar counts as lagging
 		// behind until a board of the highest sync shows it at the highest rank (his order of 14.11.2026: all up to the highest
 		// rank first; concept 21, K7 "Leveln", Gegenthese 3).
+		// A799: above the sync the rank the last result window showed counts where it is higher; without one the familiar
+		// stands at the sync, unknown.
 		var sync = CrucibleBoard.SyncRank(board);
 		var lagging = new List<TeamCandidate>();
+		var known = new Dictionary<BeastmasterPet, bool>();
 		foreach (var candidate in all)
 		{
-			var behind = candidate.OverRank ? sync < maxRank : candidate.Rank < maxRank;
+			var rank = TrueRank(candidate, sync, out var isKnown);
+			known[candidate.Pet] = isKnown;
+			var behind = isKnown ? rank < maxRank : sync < maxRank;
 			if (candidate.Rank > 0 && behind && (kin == BeastmasterKinType.None || KinOf(candidate.Pet) == kin))
 			{
-				lagging.Add(candidate);
+				lagging.Add(candidate with { Rank = rank });
 			}
 		}
 
@@ -197,10 +202,10 @@ public partial class BeastmasterRotation
 			return chosen;
 		}
 
-		// Lowest rank first, a known rank before one above the sync; at equal rank one not in the team now - the team screen
+		// Lowest rank first, a known rank before an unknown one; at equal rank one not in the team now - the team screen
 		// shows the last run's team, so equals take turns (his order of 14.11.2026: "reihum").
 		lagging.Sort((a, b) => a.Rank != b.Rank ? a.Rank.CompareTo(b.Rank)
-			: a.OverRank != b.OverRank ? a.OverRank.CompareTo(b.OverRank)
+			: known[a.Pet] != known[b.Pet] ? known[b.Pet].CompareTo(known[a.Pet])
 			: team.Contains(a.Pet).CompareTo(team.Contains(b.Pet)));
 		var core = CoreOf(chosen, weight, interrupting);
 
@@ -291,6 +296,21 @@ public partial class BeastmasterRotation
 			+ $"{learning.Count} lag behind in rank and level with them, {learners} of them off the horns unless too few others live"
 			+ (fighters.Count < size && squad > 0 ? $"; {fighters.Count} familiars bring {squad} points for a small team." : ".");
 		return fighters;
+	}
+
+	// K7 (A799): a familiar's true rank - the synced one below the board's sync, above it the rank the last result window
+	// showed where that is higher; `known` false when it stands above the sync and no result window showed more.
+	private static int TrueRank(TeamCandidate candidate, int sync, out bool known)
+	{
+		if (!candidate.OverRank)
+		{
+			known = true;
+			return candidate.Rank;
+		}
+
+		var learned = CrucibleBoard.KnownRank(candidate.Pet);
+		known = learned > sync;
+		return known ? learned : candidate.Rank;
 	}
 
 	// K7: the core of a team in its greedy order - up to the last pick that covers a weakness anew, or heals or protects while
