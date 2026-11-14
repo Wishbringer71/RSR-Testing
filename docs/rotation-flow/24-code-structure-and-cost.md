@@ -294,6 +294,34 @@ Messungen. Ausgeliefert, und nichts ändert sich? Möglich, wenn der nächste Ab
 Prüfung der Zeiger und Schleifen unten. *Vorhersage* (`predictions/2026-11-14.json`, „hook-no-fault"): In keiner
 Sitzung mit Kampf steht „hook fault:"; steht eine, nennt sie Stelle und Ausnahme, und das Spiel lief weiter.
 
+*Klassen 2 bis 4 über alle Änderungen seit 03af7190f* (unabhängige Prüfung am Code, A795; Fremdquellen: ECommons
+3.2.1.26, Dalamud 15.0.3.9, FFXIVClientStructs 80cb4a7b, Werkzeugquellen):
+- *Ereignisquellen fangen ab:* ECommons' `ProcessActionEffectDetour` je Abonnent, Dalamuds `AddonLifecycle` je Listener
+  (`InvokeListenersSafely`), `Framework.Update` je Delegat (`ProfileAndInvoke`), `UiBuilder.Draw`, die IPC über
+  `EzIPC` mit `SafeWrapper.AnyException`. Eine Ausnahme dort kostet RSRs Teil für dieses Ereignis, nicht das Spiel.
+- *Figuren über Bilder gehalten* (`GazeWatch`: ein Blick bis zu seinem Wirkpaket): Dalamuds `IsValid()` prüft nur,
+  ob der eigene Charakter geladen ist, nicht ob die Figur noch besteht; `GameObjectId` und `Name` rufen über die
+  virtuelle Tabelle der Spielstruktur. Kein Absturzweg: Kampffiguren liegen in einem vorab angelegten Block von 100
+  Plätzen (`CharacterManager.BattleCharaMemory`), der Platz bleibt gültig. Schlimmstenfalls liest RSR die Kennung des
+  nächsten Bewohners, und das Wirkpaket passt dann nicht; ein Blick bleibt ohne Urteil.
+- *Rekursion im Brett* (`CrucibleRoute.WorstNeedAhead`): Der Platz wurde erst nach dem Abstieg gemerkt; ein Rückweg in
+  den Spieldaten (`XBMContentStageEventMap`) liefe bis zum Stapelüberlauf, den .NET nicht abfängt. Die Bretter führen
+  heute nur vorwärts – darauf darf das Spiel nicht hängen. Behoben wie in den drei Suchen daneben: Der Platz zählt
+  sich selbst, bevor die Wege dahinter gesucht werden; ein Rückweg endet dort.
+- *Fremde Plugins im Hook des Spiels:* Die Übernahme der Sperrzeit-Werkzeuge (BossModReborn per IPC, NoClippy per
+  Befehl, die Modulliste des Prozesses auf XivAlexander) lief beim Gebietswechsel aus dem Bild-Hook des Aktionsmanagers.
+  Ihre Ausnahmen fängt das `try` dort, nicht aber was sie an eigenen Hooks auf dieselbe Spielfunktion umschalten,
+  während deren Aufruf läuft. Verlegt in `Framework.Update` (`RunOnTick`); Preis: ein Bild lang gilt nach dem
+  Gebietswechsel die Feststellung des vorigen Gebiets, ob ein anderes Werkzeug die Sperre selbst kürzt.
+- *Bleibt, mit Grund:* `AgentXBMPetParty.GetSyncedRank` ruft beim Betreten des Bretts native Funktionen ohne Prüfung,
+  ob der Agent offen ist – der Agent besteht, solange das Spiel läuft, die Aufrufe standen schon im Lauf vom 11.11.
+  ohne Absturz; was die Funktion intern liest, ist unbelegt. Fensterwerte ohne Obergrenze von Anzahl und Textlänge
+  (`BestiaryTrace.Values`): Die Anzahl ist die des Spiels, das sie selbst durchläuft, und jede Seite liest
+  `SafeMemory`; ein Text ohne Nullbyte über viele Seiten ist unwahrscheinlich (Schluss, nicht gemessen). Die Lücke
+  unbeantworteter Anfragen (`AnimationLockTweak.NoteAnswer`) ist so groß wie die gesendeten Anfragen ohne Antwort.
+- *Threads, Hooks beim Entladen, Arithmetik mit Startwerten:* ohne Befund (WarmUp-Thread in `try`, Abbruch über Token;
+  jeder Hook wird beim Entladen freigegeben; `AddMargins` war die einzige ungeprüfte Rechnung mit einem Startwert).
+
 ### Analyzer auf Fork-Zeilen
 
 - *Behoben:* `MainWindow_Debug` las ein Aktionsblatt mit `GetRow`, das für eine unbekannte Id eine Ausnahme wirft;

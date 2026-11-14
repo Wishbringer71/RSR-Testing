@@ -1727,7 +1727,9 @@ verlangen keinen Mindestabstand.
     später wieder eingeschaltet wird nur, was an war; hattest du es aus, bleibt es aus.
   - RSR prüft bei jedem Gebietswechsel den tatsächlichen Zustand und schaltet erneut ab, was wieder an ist. Das betrifft
     etwa ein neu geladenes BossMod, das seinen gespeicherten Wert wieder trägt, oder ein von Hand wieder eingeschaltetes
-    NoClippy. Den Wert, den es dem Spieler zurückgibt, merkt es sich beim ersten Abschalten.
+    NoClippy. Den Wert, den es dem Spieler zurückgibt, merkt es sich beim ersten Abschalten. Das geschieht im nächsten
+    Takt von Dalamuds `Framework.Update`, nicht im Hook des Spiels, in dem der Gebietswechsel bemerkt wird (Konzept 24,
+    „Fehlertoleranz“, A795).
   - XivAlexander lässt sich aus Dalamud nicht schalten. Läuft es, ruht RSRs Verkürzung, und die Webregel webt nach dem,
     was XivAlexander übrig lässt.
   - Ändert ein Plugin die Sperre zwischen Paket und Spiel, ruht die Verkürzung bis zum nächsten Gebiet. Die Einstellung

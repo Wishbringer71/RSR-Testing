@@ -23042,6 +23042,35 @@ prüfen. es darf nicht sein, dass der part nun jedes mal crashed und du immer nu
 - *Vorhersage:* `predictions/2026-11-14.json`, „hook-no-fault“: In keiner Sitzung mit Kampf steht „hook fault:“.
 - *Prüfgrad:* Compile ohne Warnung, 58 CI-Schritte grün, Prüfskript; Laufzeit nicht beobachtet.
 
+### A795 · Absturzwege seit 03af7190f, Klassen 2 bis 7: unabhängige Prüfung, zwei Stellen behoben (14.11.2026)
+
+Fortsetzung seines Auftrags vom 14.11.2026 (A794). Ein frischer Prüfer ohne meinen Zwischenstand las
+`git diff 03af7190f..HEAD` ganz, je Fundstelle mit Aufrufer, gegen die Quelltexte von ECommons 3.2.1.26 (bc38dc7),
+Dalamud 15.0.3.9 (43b34118) und FFXIVClientStructs 80cb4a7b (Werkzeugquellen).
+- *Ergebnis:* Seit 790b041f0 kein gesicherter Weg mehr, auf dem eine .NET-Ausnahme das Spiel erreicht. Die
+  Ereignisquellen (ECommons `ActionEffect`, `AddonLifecycle`, `Framework.Update`, `UiBuilder.Draw`, IPC) fangen je
+  Abonnent ab.
+- *Behoben – Stapelüberlauf:* `CrucibleRoute.WorstNeedAhead` (A709) merkte sich einen Platz erst nach dem Abstieg; ein
+  Rückweg in `XBMContentStageEventMap` hätte bis zum Stapelüberlauf rekursiert, den .NET nicht abfängt. Jetzt wie die drei
+  Suchen daneben: der Platz zählt sich selbst, bevor die Wege dahinter gesucht werden.
+- *Behoben – fremde Plugins im Hook des Spiels:* Die Übernahme von BossModReborn (IPC), NoClippy (Befehl) und die Suche
+  nach XivAlexander (Modulliste des Prozesses) liefen beim Gebietswechsel aus dem Bild- und dem Wirkungs-Hook des
+  Aktionsmanagers (A753). Jetzt im nächsten Takt von `Framework.Update` (`RunOnTick`), mit Prüfung, dass RSR nicht
+  inzwischen entladen ist. Preis: Ein Bild lang gilt die Feststellung des vorigen Gebiets.
+- *Geprüft, kein Absturzweg:* `GazeWatch` hält Figuren über Bilder (bis zum Wirkpaket). Dalamuds `IsValid()` prüft nur,
+  ob der eigene Charakter geladen ist; `GameObjectId` ruft über die virtuelle Tabelle. Kampffiguren liegen aber in einem
+  vorab angelegten Block (`CharacterManager.BattleCharaMemory`, 100 Plätze), der gültig bleibt – schlimmstenfalls eine
+  fremde Kennung, dann bleibt ein Blick ohne Urteil.
+- *Bleibt, mit Grund (Konzept 24):* native Rangabfrage am Agenten beim Betreten des Bretts (stand schon im Lauf vom 11.11.;
+  was sie liest, unbelegt); Fensterwerte ohne Obergrenze (Anzahl des Spiels, `SafeMemory` je Seite; ein Text ohne
+  Nullbyte über viele Seiten ist ein Schluss, nicht gemessen); die Lücke unbeantworteter Anfragen (so groß wie die
+  gesendeten Anfragen ohne Antwort).
+- *Damit seit dem letzten Lauf ohne Absturz:* drei Abstürze, drei Klassen; Klasse „Ausnahme im Hook“ als Ganzes
+  geschlossen und in der CI gehalten (A794), Klasse „Lesen über Zeiger“ für Fensterwerte und Texte (A764, A787),
+  Stapelüberlauf und fremder Code im Hook hier.
+- *Prüfgrad:* statisch (unabhängiger Prüfer, Quelltexte der Fremdbibliotheken), Compile ohne Warnung, CI; Laufzeit nicht
+  beobachtet. Vorhersage wie A794 („hook-no-fault“); ein Crucible-Lauf ohne Absturz auf diesem Build ist die Bestätigung.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

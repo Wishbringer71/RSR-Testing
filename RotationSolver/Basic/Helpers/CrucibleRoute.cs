@@ -535,6 +535,9 @@ internal static class CrucibleRoute
 					break;
 			}
 
+			// A way back to a space still being searched ends there, as in the searches above: a cycle in the game data must
+			// not recurse until the stack overflows, which .NET cannot catch and which closes the game (concept 24, A795).
+			memo[index] = own?.Peak;
 			var total = own is { } here && (node.Kind == Space.Boss || route.Next[index].Count == 0 ? 0f : Rest(index)) is { } after
 				? Math.Max(here.Peak, here.Through + after)
 				: (float?)null;

@@ -100,17 +100,47 @@ public sealed unsafe partial class AnimationLockTweak
 		_delays.Clear();
 		_castSequences.Clear();
 		_missing = _heldInZone = false;
+		ScheduleOtherTools(true);
+	}
 
-		TakeOverOtherTools();
-		var found = XivAlexanderLoaded() ? "XivAlexander"
-			: _noClippyTakenOver ? null
-			: DataCenter.IsPluginLoaded("NoClippy", "NoClippy") ? "NoClippy" : null;
-		if (found != null && found != _conflictingTool)
+	// Concept 24, "Fehlertoleranz" (A795): the other tools are taken over and looked for in the framework's update, not here
+	// - this runs from the game's action update and its effect handler, and BossMod's IPC, NoClippy's command and the walk
+	// over the process's modules would run inside them. Until the next tick the last finding stands.
+	private void ScheduleOtherTools(bool look)
+	{
+		_ = Svc.Framework.RunOnTick(() =>
 		{
-			DefenseTrace.Line($"animation lock reduction held: {found} shortens the lock itself; RSR weaves on what it leaves");
-		}
+			if (ActionManagerEx.CurrentLockTweak != this)
+			{
+				return; // unloaded in between: the tools were given back already
+			}
 
-		_conflictingTool = found;
+			TakeOverOtherTools();
+			if (look)
+			{
+				LookForOtherTools();
+			}
+		});
+	}
+
+	private void LookForOtherTools()
+	{
+		try
+		{
+			var found = XivAlexanderLoaded() ? "XivAlexander"
+				: _noClippyTakenOver ? null
+				: DataCenter.IsPluginLoaded("NoClippy", "NoClippy") ? "NoClippy" : null;
+			if (found != null && found != _conflictingTool)
+			{
+				DefenseTrace.Line($"animation lock reduction held: {found} shortens the lock itself; RSR weaves on what it leaves");
+			}
+
+			_conflictingTool = found;
+		}
+		catch (Exception ex)
+		{
+			Svc.Log.Warning($"[AnimationLockTweak] Looking for other lock tools failed: {ex.Message}");
+		}
 	}
 
 	private static bool XivAlexanderLoaded()
@@ -509,7 +539,7 @@ public sealed unsafe partial class AnimationLockTweak
 		{
 			// The setting changed: take the other tools over, or give them back, now rather than at the next zone.
 			_tookOverFor = TakeOverWanted;
-			TakeOverOtherTools();
+			ScheduleOtherTools(false);
 		}
 
 		_frameMean = (_frameMean * _frames + delta) / (_frames + 1);
