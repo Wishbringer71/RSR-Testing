@@ -13,7 +13,10 @@ public enum CrucibleGoal : byte
 	[Description("Level")]
 	Level,
 
-	/// <summary>The full team, the stronger at equal worth; no score bonus holds back an item, a purchase, a rest or a feed.</summary>
+	/// <summary>
+	/// The full team, the stronger at equal worth; every decision on the board as if there were no score bonus - items,
+	/// purchases, treasures, rests, feeds, the way - but what the final fight's last GCD buys only points.
+	/// </summary>
 	[Description("Safe win")]
 	SafeWin,
 
@@ -540,7 +543,7 @@ public partial class BeastmasterRotation
 		// others do not fill the size, the highest of them first: one there goes on a horn only when fewer others live than
 		// horns (K6), so its place is no reserve.
 		var safeWin = goal == CrucibleGoal.SafeWin;
-		if (safeWin)
+		if (safeWin && anyRank)
 		{
 			var recommended = CrucibleBoard.RecommendedRank(board);
 			while (candidates.Count > size)

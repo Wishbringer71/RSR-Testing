@@ -23341,6 +23341,16 @@ audit, codereview und fehlerbeseitigung".
   den Bonus strenger als unter Score (ohne Wegtest) – sie gehen, sobald ein Schutzgegenstand ihn verwirkt hat. Drei
   Runden mit mittleren Befunden: Das Ziel „Safe win" war zuerst als Abschalten von K15 gebaut, nicht als Regel über
   jede Entscheidung mit Punkten; die Anforderung lautet jetzt im Konzept so (Tabelle „Ziel des Laufs").
+- *Vierte Prüfrunde (Plateauprüfung, Klasse unabhängig neu hergeleitet):* kein Befund hoher Schwere, zwei mittlere. (1) Die
+  dritte Behebung hob die Grenze im Laden auch für Rauchbomben auf, sobald kein Gegenstandsbonus mehr steht; Rauchbomben
+  setzt aber der Weg ein, und der kämpft unter Level und Score unter sicheren Wegen für die Punkte – sie wären
+  verfallen (gegen seine Vorgabe „sinnvoll nutzen, oder nicht zum kauf vorschlagen"). Jetzt voll nur unter Safe win.
+  (2) Unter Safe win hielten Schadens-, TP- und Stärkungsgegenstände den Bonus strenger als unter Score, gerade wo der
+  Weg nicht getragen wird. *Zurück zur Anforderung:* Vier Runden mit mittleren Befunden, weil Safe win Verbraucher für
+  Verbraucher festgelegt war. Die Regel ist jetzt geschlossen (Konzept 21, „Die Regel unter Safe win, geschlossen"):
+  jede Entscheidung, als gäbe es keinen Bonus, außer was der letzte GCD des Endkampfs kauft – Punkte gegen Punkte
+  unter jedem Ziel; der Laden folgt dem, was K8 und der Weg unter dem Ziel tun. Dazu: Hornwahl und Laststufe lesen den
+  höheren aus Spiel- und gelerntem Rang (`TrueRankOf`); ohne jeden bekannten Rang kürzt Safe win nicht nach Rang.
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

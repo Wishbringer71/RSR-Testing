@@ -1541,6 +1541,9 @@ internal static class CrucibleBoard
 		return rank <= int.MaxValue ? (int)rank : 0;
 	}
 
+	/// <summary>K7 (A803, A799): a familiar's true rank - the higher of the game's and the last result window's; 0 unknown.</summary>
+	internal static unsafe int TrueRankOf(AgentXBMPetParty* party, BeastmasterPet pet) => Math.Max(PetRank(party, pet), KnownRank(pet));
+
 	/// <summary>K7 (A799): a familiar's true rank as the last board's result window showed it for this character; 0 unknown.</summary>
 	internal static int KnownRank(BeastmasterPet pet)
 	{
@@ -1622,7 +1625,7 @@ internal static class CrucibleBoard
 				continue;
 			}
 
-			var rank = FightingRank(PetRank(party, (BeastmasterPet)member.PetId), party->IsPetOverSyncedRank(member.PetId), sync);
+			var rank = FightingRank(TrueRankOf(party, (BeastmasterPet)member.PetId), party->IsPetOverSyncedRank(member.PetId), sync);
 			if (rank <= 0)
 			{
 				continue;

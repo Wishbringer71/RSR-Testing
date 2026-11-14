@@ -164,10 +164,10 @@ public sealed class BST_Reborn : BeastmasterRotation
 			+ "a reserve place only one at least at the rank the game recommends. Once none lags behind, as Score. On the board the "
 			+ "score bonuses are weighed as under Score - the experience follows the score.\n"
 			+ "Safe win: the full team for the board's fights; below the recommended rank, or of no known rank, only as many as "
-			+ "the others leave places, the highest first; at equal worth the higher rank. On the board no score bonus holds "
-			+ "back what a safety rule asks for - a protecting or healing item, a purchase, a treasure's gear, a rest or a "
-			+ "feed - and the way with more item spaces goes before the one safe without items. What no safety rule asks for "
-			+ "still weighs the bonuses: a heal in the final fight's last moment, damage, TP and buff items.\n"
+			+ "the others leave places, the highest first; at equal worth the higher rank. On the board every choice as if there "
+			+ "were no score bonus - items, purchases, a treasure's gear, rests, feeds; between safe ways item spaces and your HP "
+			+ "decide, not points. Only what the final fight's last GCD buys - points, no safety - still weighs the bonuses: "
+			+ "the heals to full HP and damage, TP and buff items.\n"
 			+ "Score: a smaller team and a team of one kin where the measured losses allow it; on the board a bonus stays while "
 			+ "the way to the final fight is safe without the action that would cost it.\n"
 			+ "In a fight: a familiar below the recommended rank goes on a horn only when fewer others live than horns.")]
@@ -2523,7 +2523,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 		{
 			var pet = (BeastmasterPet)team[i].PetId;
 			if (i < current.Length && EffectiveHealth(pet, current[i]) > 0
-				&& (party->IsPetOverSyncedRank((uint)pet) || CrucibleBoard.PetRank(party, pet) >= recommended))
+				&& (party->IsPetOverSyncedRank((uint)pet) || CrucibleBoard.TrueRankOf(party, pet) >= recommended))
 			{
 				adequateLiving++;
 			}
@@ -2542,7 +2542,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 			}
 
 			// A803: the rank it fights with here - the true one, at most the board's sync.
-			var rank = CrucibleBoard.FightingRank(CrucibleBoard.PetRank(party, pet), party->IsPetOverSyncedRank((uint)pet),
+			var rank = CrucibleBoard.FightingRank(CrucibleBoard.TrueRankOf(party, pet), party->IsPetOverSyncedRank((uint)pet),
 				CrucibleBoard.SyncRank(party->ContentId));
 			if (adequateLiving >= Horns.Length && !party->IsPetOverSyncedRank((uint)pet) && rank < recommended)
 			{

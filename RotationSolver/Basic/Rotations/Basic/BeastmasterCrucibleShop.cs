@@ -1210,11 +1210,13 @@ public partial class BeastmasterRotation
 
 		// A796 (his rule of 14.11.2026, "entweder sinnvoll nutzen, oder nicht zum kauf vorschlagen"): K8 takes healing,
 		// protection and smoke bombs only below the potion line while an item bonus stands, so they are worth only the part
-		// of the way's demand that would take you below it - what you have above the line comes off first. A804: protection
-		// and smoke bombs only while an item bonus is at stake - without one (lost, or under Safe win) K8 protects against
-		// every announced hit, and they count in full; healing keeps the line under every goal.
+		// of the way's demand that would take you below it - what you have above the line comes off first. A804: what K8 and
+		// the route do under the goal - protection only while an item bonus is at stake (without one, lost or under Safe win,
+		// K8 protects against every announced hit); smoke bombs except under Safe win (only there the route flees between
+		// safe ways for HP; elsewhere it fights for the points); healing under every goal (K8 heals only below the line).
 		var belowLine = Math.Max(0f, healable - (1f - Service.Config.UseHpPotionsPercent));
 		var guardLine = ItemBonusAtStake ? belowLine : float.MaxValue;
+		var spareLine = WeighsScore ? belowLine : float.MaxValue;
 		foreach (var (row, id, _) in offers)
 		{
 			if (gear.TryGetValue(id, out var piece))
@@ -1346,7 +1348,7 @@ public partial class BeastmasterRotation
 					: (0f, double.MaxValue, 0f);
 				var spares = item.Kind == CrucibleItemKind.Escape && bombsHeld < enemyLoads.Count ? enemyLoads[bombsHeld] : 0f;
 				var value = heals > 0f ? Math.Min(full, belowLine) : protects > 0f ? Math.Min(protects, guardLine)
-					: restores > 0f ? restores : spares > 0f ? Math.Min(spares, guardLine) : gives;
+					: restores > 0f ? restores : spares > 0f ? Math.Min(spares, spareLine) : gives;
 				var lasting = seconds < double.MaxValue ? $" for {seconds:0} s" : string.Empty;
 				result.Add((row, id, value, heals > 0f
 					? (value < full

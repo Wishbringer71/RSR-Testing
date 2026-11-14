@@ -21,12 +21,13 @@ public partial class BeastmasterRotation
 
 	/// <summary>
 	/// K15 (A796): whether items that do not protect - damage, TP, buffs - may go: no item bonus is at stake, or the player is
-	/// known not to carry the way to the final fight. An unknown load does not free them. Under Safe win (A804) no safety rule
-	/// asks for them, so they still weigh the bonus: they go once no item bonus stands - a protecting item has cost it then.
+	/// known not to carry the way to the final fight. An unknown load does not free them. Under Safe win (A804) they go as
+	/// without a bonus - they shorten the fight and spare load (A676) - except once the final fight ends within a GCD: then
+	/// they buy nothing but points, and weigh them while an item bonus stands.
 	/// </summary>
 	private static bool NonSafetyItemsGo(IBattleChara player) => WeighsScore
 		? !KeepsNoItemBonus(player) && (!ItemBonusAtStake || _scoreShortKnown)
-		: !ItemBonusStands;
+		: !ItemBonusStands || !FinalFightEndsNow;
 	private static DateTime _scoreKeepAt = DateTime.MinValue;
 
 	/// <summary>
