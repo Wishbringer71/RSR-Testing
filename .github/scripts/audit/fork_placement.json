@@ -390,14 +390,6 @@
    "member": "internal static bool IsMagic(uint attackType)"
   },
   {
-   "file": "RotationSolver/Basic/Data/TerritoryInfo.cs",
-   "member": "public byte ClassJobLevelSync { get; private set; }"
-  },
-  {
-   "file": "RotationSolver/Basic/Data/TerritoryInfo.cs",
-   "member": "internal uint ContentFinderConditionId { get; private set; }"
-  },
-  {
    "file": "RotationSolver/Basic/DataCenter.cs",
    "member": "public static bool AnyLivingHealer(bool excludeSelf)"
   },

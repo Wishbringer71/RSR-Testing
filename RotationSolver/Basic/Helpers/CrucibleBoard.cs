@@ -553,9 +553,14 @@ internal static class CrucibleBoard
 	/// K15 (A699): the points the board the player is on grants for the XBMScoreBonus row <paramref name="bonusRow"/> - by
 	/// the row, for bonuses RSR finds by their condition (the kin of "a team of only beastkin").
 	/// </summary>
-	internal static int BonusPoints(uint bonusRow)
+	internal static int BonusPoints(uint bonusRow) => BonusPoints(CurrentBoard, bonusRow);
+
+	/// <summary>
+	/// K7 (A807): the points <paramref name="board"/> grants for the XBMScoreBonus row <paramref name="bonusRow"/> - for the
+	/// team window, which names its board in the agent while the player stands on none.
+	/// </summary>
+	internal static int BonusPoints(uint board, uint bonusRow)
 	{
-		var board = CurrentBoard;
 #pragma warning disable PendingExcelSchema // the sheet's named BonusPoints; the regular sheet holds them as Unknown0 to Unknown32
 		return board != 0
 			&& Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.Experimental.XBMContent>()?.GetRowOrDefault(board) is { } row
@@ -1599,6 +1604,23 @@ internal static class CrucibleBoard
 	internal static int FightingRank(int synced, bool overRank, int sync)
 	{
 		return sync <= 0 ? synced : overRank ? sync : Math.Min(synced, sync);
+	}
+
+	/// <summary>
+	/// K7 (A807): <paramref name="pet"/>'s vitality at <paramref name="rank"/> - XBMPetParamGrow's Constitution (Lumina's
+	/// Unknown4) in the row XBMPet's ParamGrow names (Lumina's Unknown8, the byte 0x19 the game reads), subrow rank - 1, the
+	/// last subrow above the sheet's ranks; the team window shows exactly it ("VIT"). 0 without the rows or a rank.
+	/// </summary>
+	internal static int FamiliarVitality(BeastmasterPet pet, int rank)
+	{
+		if (rank <= 0
+			|| Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.XBMPet>()?.GetRowOrDefault((uint)pet) is not { } row
+			|| Svc.Data.GetSubrowExcelSheet<Lumina.Excel.Sheets.XBMPetParamGrow>()?.GetRowOrDefault(row.Unknown8) is not { Count: > 0 } grow)
+		{
+			return 0;
+		}
+
+		return grow[Math.Min(rank, grow.Count) - 1].Unknown4;
 	}
 
 	/// <summary>A729: the rank step of a team - the mean of its fighting ranks, rounded down; 0 for none.</summary>

@@ -26,5 +26,9 @@
   {"id": "level-core-low", "archive": "A805",
    "kind": "present", "situation": "crucible team: goal Level ", "match": "crucible team: goal Level - requested (.*\\b[6-9] game){3}"},
   {"id": "level-below-cap", "archive": "A806",
-   "kind": "absent", "situation": "crucible team: goal Level ", "match": "crucible team: goal Level - requested .*\\b(1[0-9]|2[0-5])\\+? game"}
+   "kind": "absent", "situation": "crucible team: goal Level ", "match": "crucible team: goal Level - requested .*\\b(1[0-9]|2[0-5])\\+? game"},
+  {"id": "board-familiar-loss", "archive": "A807",
+   "kind": "present", "situation": "crucible result: ", "match": "crucible board [1-5]: the familiars lost \\d+ HP"},
+  {"id": "crucible-synced", "archive": "A807",
+   "kind": "absent", "situation": "crucible agents \\(fight", "match": "above the level the content syncs to"}
 ]

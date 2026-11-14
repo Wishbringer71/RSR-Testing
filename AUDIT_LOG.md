@@ -23471,6 +23471,59 @@ höchste Bonuszahl"; „du hast zu schauen, wie und ob safe win regeln in den an
   von neun Runden zielten auf Laden und Safe win. Folge fürs Vorgehen: Eine Kaderregel wird vor dem Code an seinem Bestand
   aus Spur und `CrucibleFamiliarRank.json` als Ergebnis durchgerechnet.
 
+### A807 · Crucible: Auf dem Brett las RSR kein Brett – Inhaltszeile aus der ContentFinderCondition; LP aus der VIT (14.11.2026)
+
+Anlass: Schlussprüfung von 087764ec2 (A806) – kein Befund hoher Schwere, zwei mittlere: (M1) Die Gefährdungsprüfung
+setzte für jeden Begleiter außerhalb des Kaders die kleinsten gezeigten LP an; ein stärkerer brachte so keine LP, und
+Level und Safe win tauschten bei gemessener Gefährdung jeden Platz ohne Rolle. (M2) Ein Rollenträger wurde nie
+getauscht, auch nicht gegen einen stärkeren mit derselben Rolle. Niedrig: Gleichstand beim schwächsten fiel auf den
+ersten statt den letzten; `RoleHolders` zählte einen heilenden Seelen-Begleiter anders als die Reihenfolge; der
+Hinweis unter Level zählte Tausche unter dem Cap als „at or above"; Falsifikation (3) ungenau.
+- *M1 an der Quelle:* In 57 Paaren aus sechs Uploads (11. bis 14.11.2026, Ränge 1 bis 10) gilt LP = ⌊VIT × 6,7⌋ ohne
+  Abweichung. Die VIT steht in `XBMPetParamGrow` (Zeile `XBMPet.ParamGrow`, Unterzeile Rang − 1, Spalte Constitution):
+  Blatt (xivapi, EXDSchema a1e24a0) und Fenster gleich (Puk Rang 10: STR 164, P.RES 118, VIT 137, INT 164, M.RES 101).
+  Lumina: `XBMPet.Unknown8` liest Byte 0x19 – dasselbe, das die Spielfunktion liest; `XBMPetParamGrow.Unknown4` ist die
+  fünfte Spalte (IL der Getter). Disassemblierung seiner `ffxiv_dx11.exe` (13.11.2026): Die Funktion, die ClientStructs
+  (80cb4a7) `GetPetHealth(petId, index)` nennt (0x140AA6DA0), gibt einen Wert nach Spalte (0 Rang, 1 STR, 2 INT, 3
+  P.RES, 4 M.RES, 5 VIT, 6 Restpunkte) und liest ungefüllten Stapelspeicher, solange der Vektor des Agenten leer ist;
+  `UpdatePetsHealth` und ihr zweiter Aufrufer sortieren nur. Beide Namen in ClientStructs führen in die Irre; RSR ruft
+  sie nicht und liest das Blatt.
+- *Bei der Durchrechnung an seinem Bestand gefunden (hoch, Klasse):* `CrucibleBoard.CurrentBoard` war auf jedem Brett 0.
+  Es sucht `XBMContent` über die ContentFinderCondition des Gebiets, und das Gebietsblatt nennt für die Gebiete 1339 bis
+  1343 keine (0); nur umgekehrt nennen die Bedingungen 1088 bis 1092 ihr Gebiet. Wirkung seit 11.11.2026 (9a2064cc6,
+  09140f2c2, 9ad071879): jeder Bonus des Bretts 0 (Sammelleidenschaft nie gehalten, „Unversehrte Bestien" nie
+  aufgefüllt), kein Teamrang (alle Tabellen „by rank" in seinem Upload leer, Spur „crucible team rank" nie), kein
+  Verlust je Brett (Spur „crucible board N: the familiars lost" nie; `CrucibleFamiliarLoss.json` nur je Kampf) – die
+  Gefährdungsprüfung von A806 blieb in jedem Lauf ungemessen, Safe win nahm die stärksten, Score die volle Größe; die
+  Spur „fight 0 on the way, the final fight, was never measured on this board" stammt daher. Dazu im Kaderfenster
+  (abseits des Bretts, wo `CurrentBoard` richtig 0 ist): In Unterzahl und das Team einer Gattung brachten nie Punkte.
+  Die Lücke ist eine Klasse (xivapi, 14.11.2026, alle 1119 Bedingungen gegen alle 1290 Gebiete): 39 Gebiete, darunter
+  die zehn der Himmelssäule – dort galt `IsInDeepDungeons` nie, Pomander und Magicite ruhten –, die Karten von
+  Crystalline Conflict, Chocobo-Rennen, LoVM, Mahjong, Air Force One, Diadem. Wo mehrere Bedingungen ein Gebiet nennen,
+  stimmen Art, Synchronstufe und Hochleistung überein.
+- *Behebung (Konzept 03 „Inhalt eines Gebiets", Konzept 21, 23, 13 zuerst):* `TerritoryInfo` nimmt die Bedingung des
+  Gebiets, sonst die erste, die das Gebiet nennt (`TerritoryInfo.Content.cs`, die beiden Fork-Member dorthin verlegt).
+  Das Kaderfenster liest Punkte für das Brett des Agenten (`BonusPoints(board, row)`). LP außerhalb des Kaders: VIT auf
+  dem Kampfrang mal dem gezeigten Verhältnis LP/VIT (aus dem Spiel, keine 6,7 im Code); ohne gezeigten Begleiter mit
+  bekanntem Rang ungemessen. `Strengthen` tauscht den schwächsten Platz (Gleichstand: der spätere), eine Rolle nur gegen
+  dieselbe; `RoleHolders` zählt wie die Reihenfolge und dient Leveln und Tausch; der Hinweis unter Level zählt
+  aufgefüllte und getauschte getrennt.
+- *An seinem Bestand durchgerechnet (Brett 2, Sync 10, empfohlen 6; Ränge 6 bis 9 unter dem Cap, zwölf und mehr):*
+  Einsatzverluste aus seinen Läufen vom 14.11.2026 (Lauf 1: 461, 419, 361, 216, 122; Lauf 2: 701, 570, 520, 490 LP),
+  je Platz der größte: 701, 570, 520, 490, 122. Level: zwölf unter dem Cap, gemessen ungefährdet (rund 10.000 LP gegen
+  2.400), kein Auffüllen, kein Tausch. Safe win: der niedrigste volle Kader, kein Tausch. Score: Schon vier der
+  stärksten (je 1.172 LP auf Rang 10) tragen die Verluste mit einem in Reserve; es bleibt der Kern aus Rollen und
+  Schwächen, In Unterzahl bringt jetzt Punkte. Erst nach dem ersten Endkampf je Brett gilt das; bis dahin ungemessen.
+- *Tragende Annahme:* Das Spiel synchronisiert den Beastmaster auf den Brettern auf 30, 40, 50 (Synchronstufe der
+  Bedingung, jetzt gelesen). Stimmt sie nicht, legen die lernenden Tabellen auf Brett 1 und 2 nichts ab (Preis: Lernen
+  ruht dort, kein Eingriff im Kampf). Sein ACT-Mitschnitt vom 14.11.2026 enthält kein Brett.
+- *Prüfgrad:* Blattdaten (xivapi), Disassemblierung, Modell an seinen Daten, Compile, CI (58 Schritte); Laufzeit nicht
+  beobachtet.
+- *Vorhersage:* `predictions/2026-11-14.json`, „board-familiar-loss": Nach der Abrechnung eines Bretts steht „crucible
+  board N: the familiars lost … HP"; widerlegt, wenn die Abrechnung ohne sie kommt. „crucible-synced": In einer Sitzung
+  mit Brettkämpfen keine Zeile „above the level the content syncs to". „team-rank-step-runs" (A803) wird erstmals
+  beurteilbar.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

@@ -1065,7 +1065,10 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     `XBMScoreBonus` (EXDSchema latest; in Lumina benannt im experimentellen Blatt, dessen Diagnose `PendingExcelSchema` RSR an der einen
     Stelle unterdrückt, im regulären als `Unknown0` bis `Unknown32`;
     Werte geprüft an ffxiv-datamining 52a72b3 vom 10.11.2026). RSR liest sie für das laufende Brett, das `XBMContent` über
-    die ContentFinderCondition nennt (1088 bis 1092; A695). Die Punkte je Feld (250, 800) führt kein Blatt; sie stehen
+    die ContentFinderCondition nennt (1088 bis 1092; A695), im Kaderfenster für das Brett des Agenten (`ContentId`). Das
+    Gebietsblatt nennt für die Bretter keine ContentFinderCondition (Gebiete 1339 bis 1343: 0); es gilt die, die das
+    Gebiet nennt (Konzept 03, „Inhalt eines Gebiets", A807). Bis dahin las RSR auf dem Brett kein Brett: jeder Bonus 0,
+    kein Teamrang, kein Verlust je Brett. Die Punkte je Feld (250, 800) führt kein Blatt; sie stehen
     fest im Code, mit Quelle (A689). Spur: „crucible score: …", wenn die Gegenstände für den Bonus liegen bleiben oder
     wieder gehen und wenn der Bonus fällt.
   - *Sammelleidenschaft (1.000, außer Brett 1; `XBMScoreBonus` 16; gebaut A695):* Zehn Gegenstände am Ende – alle zehn
@@ -2240,29 +2243,46 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
   oder ohne Horn (sein Hinweis), höchstens 255 je Brett, der Punktzahl folgend (Wiki, CrucibleSux). Die Hornwahl (K6)
   setzt einen Begleiter unter dem empfohlenen Rang nur ein, wenn weniger andere leben als Hörner da sind. Vor dem Boss
   verlangt B5 zwei, die heilen oder schützen; wo Gegner unterbrechbar zaubern, verlangt K4 einen Seelen-Begleiter. Der
-  echte Rang kommt aus dem Spiel (A803) und der Abrechnung (A799). Die Verluste der Begleiter sind je Brett und Rangstufe
-  gelernt (A703, A729), die des Spielers je Kampf und Rangstufe (A706, A729).
+  echte Rang kommt aus dem Spiel (A803) und der Abrechnung (A799). Die Verluste der Begleiter lernt der Endkampf je Brett
+  und Rangstufe (A703, A729), die des Spielers jeder Kampf je Kampf und Rangstufe (A706, A729); je Brett erst seit A807,
+  vorher las RSR auf dem Brett das Brett 0, und keiner seiner Läufe bis 14.11.2026 lehrte einen Verlust je Brett. Die LP
+  eines Begleiters sind ⌊VIT × 6,7⌋ – 57 Paare aus sechs Uploads (11. bis 14.11.2026, Ränge 1 bis 10), keine
+  Abweichung (A807). Die VIT steht je Begleiter und Rang in `XBMPetParamGrow`: Zeile `XBMPet.ParamGrow` (Lumina
+  `Unknown8`, Byte 0x19, das die Spielfunktion liest), Unterzeile Rang − 1, Spalte Constitution (`Unknown4`); das
+  Teamfenster zeigt genau sie (Puk Rang 10: STR 164, P.RES 118, VIT 137, INT 164, M.RES 101 – Blatt und Fenster gleich),
+  auf dem Rang, mit dem der Begleiter auf dem Brett kämpft. Das Spiel liest sie mit der Funktion, die ClientStructs
+  `GetPetHealth` nennt (0x140AA6DA0, Spalte 5 = VIT; sie gibt einen Wert, keine LP, und liest ungefüllten Speicher,
+  solange das Blatt im Agenten nicht geladen ist) – RSR liest das Blatt.
   *Bauart – eine Gefährdungsprüfung, je Ziel eine Reihenfolge und ein Auffüllen:* *Gefährdet* ist ein Kader, wenn die
   Begleiter, die die Hornwahl einsetzt (über dem Cap oder mindestens auf dem empfohlenen Rang), die gemessenen Verluste
   dieses Bretts auf ihrer Rangstufe mit einem in Reserve nicht tragen (`CarriesLosses`, A703); ohne Messung ist die
   Gefährdung unbekannt (`TeamEndangered` null), auch wenn kein Begleiter des Kaders kämpft. Die Reihenfolge beginnt unter jedem Ziel mit den Rollen (zwei, die heilen
   oder schützen, solange einer verfügbar ist; der Unterbrecher, wo das Brett ihn verlangt) – sie tragen die Sicherheit
-  vor dem Boss und sind deshalb kein „niedriger Begleiter, der weichen kann"; nur wer eine Rolle hält, ist vom Tausch
-  ausgenommen – ein dritter Heiler oder ein Seelen-Begleiter ohne unterbrechbare Gegner ist ein gewöhnlicher Platz.
+  vor dem Boss und sind deshalb kein „niedriger Begleiter, der weichen kann"; wer eine Rolle hält, wird nur
+  gegen einen getauscht, der dieselbe Rolle trägt – ein dritter Heiler oder ein Seelen-Begleiter ohne
+  unterbrechbare Gegner ist ein gewöhnlicher Platz. Wer eine Rolle hält, zählt eine Stelle für Reihenfolge, Leveln und
+  Tausch (`RoleHolders`): die ersten zwei, die heilen oder schützen, und der erste Seelen-Begleiter, wo Gegner
+  unterbrechbar zaubern; ein Seelen-Begleiter, der heilt, hält beide.
   *Tausch gegen Gefährdung (Z4, „die niedrigsten Vorrang"):* immer der rangniedrigste, der den Kader stärker macht, einer
-  nach dem anderen, bis er nicht mehr gefährdet ist – nicht der stärkste. *Eine Rolle muss kämpfen:* Die Hornwahl
+  nach dem anderen, bis er nicht mehr gefährdet ist – nicht der stärkste. Er ersetzt den schwächsten Platz (niedrigster
+  Kampfrang; bei gleichem der spätere in der Reihenfolge, also der, den die Reihenfolge zuletzt wollte), für den einer
+  außerhalb stärker kämpft und dieselbe Rolle trägt, wo der Platz eine hält (A807: vorher war jeder Rollenträger
+  ausgenommen – ein Heiler auf Rang 7 blieb auch, wenn ein Heiler auf Rang 10 zu Hause stand). *Eine Rolle muss kämpfen:* Die Hornwahl
   setzt einen Begleiter unter dem empfohlenen Rang nur ein, wenn weniger andere leben als Hörner da sind (K6); ein
   Heiler dort fehlte vor dem Boss (unabhängige Prüfung A806, hoch). Darum nimmt jede Rolle zuerst einen Begleiter ab dem
   empfohlenen Rang – unter Level und Safe win davon den rangniedrigsten, unter Score den stärksten –, einen darunter nur,
-  wo keiner ab ihm die Rolle trägt. *LP eines Begleiters außerhalb des Kaders:* Das Teamfenster zeigt LP nur für den
-  Kader; für die übrigen setzt die Gefährdungsprüfung die kleinsten gezeigten LP an, nicht den Mittelwert (ein
-  niedrigerer Rang hat weniger LP; kein Blatt nennt die LP je Rang, `XBMPetParamGrow` nur die Konstitution). *Preis:* Ein
-  Kader aus Begleitern unter dem kleinsten gezeigten Rang gilt noch zu günstig, bis die Verluste auf seiner Rangstufe
-  gemessen sind (A729).
+  wo keiner ab ihm die Rolle trägt. *LP eines Begleiters (A807):* die gezeigten, wo das Teamfenster ihn im Kader zeigt;
+  sonst seine VIT auf dem Rang, mit dem er auf diesem Brett kämpft, mal dem Verhältnis von LP zu VIT der gezeigten
+  Begleiter, abgerundet. Das Verhältnis kommt aus dem Spiel, nicht als Zahl in den Code: Es ist das, was das Fenster
+  gerade zeigt (6,7 in allen 57 Paaren); zeigt das Fenster keinen Begleiter mit bekanntem Rang, ist die Gefährdung
+  unbekannt. Damit macht ein Tausch den Kader messbar stärker – ein Rang mehr bringt mindestens 3 VIT, meist 5 bis 9,
+  also mindestens 20 LP (alle Zeilen des Blatts, xivapi 14.11.2026; Puk Rang 9 → 10: VIT 130 → 137, LP 871 → 917) –, und die Rangstufe, deren Verluste gelten, steigt mit. Vorher setzte die
+  Prüfung für jeden nicht gezeigten die kleinsten gezeigten LP an: Ein stärkerer brachte so keine LP, und Level und
+  Safe win tauschten bei gemessener Gefährdung jeden Platz ohne Rolle (unabhängige Prüfung A806, mittel).
   | Ziel | Reihenfolge nach den Rollen | Auffüllen | Unbekannte Gefährdung |
   |---|---|---|---|
-  | Level | unter dem Cap zuerst, dann der niedrigste Rang; bei gleichem Rang wer eine Schwäche neu abdeckt, dann der Schwächenwert, dann wer im letzten Lauf fehlte | jeder Platz unter dem Cap; fehlen welche, die niedrigsten am oder über dem Cap, bis nicht gefährdet; ist auch ein voller Kader unter dem Cap gefährdet, tritt an die Stelle des schwächsten ohne Rolle der rangniedrigste außerhalb, der stärker kämpft – zuerst unter dem Cap, dann am oder über ihm –, bis nicht gefährdet | als gefährdet beim Auffüllen (volle Größe); kein Tausch eines Kaders unter dem Cap (Z2) |
-  | Safe win | der niedrigste Rang insgesamt, dann wie Level | volle Größe; solange gefährdet, tritt an die Stelle des schwächsten ohne Rolle der rangniedrigste außerhalb, der stärker kämpft | als gefährdet: getauscht, bis keiner stärker kämpft |
+  | Level | unter dem Cap zuerst, dann der niedrigste Rang; bei gleichem Rang wer eine Schwäche neu abdeckt, dann der Schwächenwert, dann wer im letzten Lauf fehlte | jeder Platz unter dem Cap; fehlen welche, die niedrigsten am oder über dem Cap, bis nicht gefährdet; ist auch ein voller Kader unter dem Cap gefährdet, tritt an die Stelle des schwächsten Platzes der rangniedrigste außerhalb, der stärker kämpft (eine Rolle nur gegen dieselbe) – zuerst unter dem Cap, dann am oder über ihm –, bis nicht gefährdet | als gefährdet beim Auffüllen (volle Größe); kein Tausch eines Kaders unter dem Cap (Z2) |
+  | Safe win | der niedrigste Rang insgesamt, dann wie Level | volle Größe; solange gefährdet, tritt an die Stelle des schwächsten Platzes der rangniedrigste außerhalb, der stärker kämpft (eine Rolle nur gegen dieselbe) | als gefährdet: getauscht, bis keiner stärker kämpft |
   | Score | der stärkste nach dem Rang, mit dem er kämpft; bei gleichem wer eine Schwäche neu abdeckt, dann der Schwächenwert, dann wer im letzten Lauf fehlte (Z9: reihum auch nach dem Höchstrang) | die kleinste Zahl ab dem Kern (Rollen und jede Schwäche, höchstens die Größe des Bretts), die nicht gefährdet ist; dann ein Team einer Gattung, wo es mehr Punkte bringt, dieselben Schwächen und Rollen hält (Rollen nur mit Begleitern, die kämpfen) und selbst nicht gefährdet ist – kleiner als die Größe des Bretts nur, wenn gemessen ungefährdet | volle Größe; ein Team einer Gattung nur in voller Größe |
   Ohne Begleiter unter Rang 25 wählt Level wie Score (seine Vorgabe: danach „weniger, so dass punktezahl erhöht werden
   kann").
@@ -2278,7 +2298,10 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
   Lasten des Spielers je Rangstufe fallen bis zur ersten Messung auf die schwersten aller Läufe zurück (A729): Bonuswahl
   (K15) und Wegtest rechnen dann zu günstig, die Heilung unter der Trankschwelle (K8) bleibt. Die Größe nach Punkten
   bringt In Unterzahl, wo Score oder Level ohne Nachzügler unter sieben bleibt. Das Reihum vergleicht mit dem Kader beim
-  Öffnen des Fensters (A806), nicht mit dem nach „Apply". Die Abrechnung hebt den gelernten Rang (A799).
+  Öffnen des Fensters (A806), nicht mit dem nach „Apply". Die Abrechnung hebt den gelernten Rang (A799). Die Punkte von
+  In Unterzahl und des Teams einer Gattung liest das Kaderfenster für das Brett des Agenten (A807); vorher fragte es das
+  Brett, auf dem der Spieler steht – im Kaderfenster keines –, bekam 0, und weder die kleinere Größe noch ein Team einer
+  Gattung brachte je einen Punkt.
   *Falsifikation:* (1) *Kein Defekt:* widerlegt – am 14.11.2026 (Builds 13e4a15d0 und fcd5c89c3) blieben die Begleiter
   unter dem Cap bis auf zwei zu Hause, er wählte selbst. (2) *Bauart falsch – die Gefährdung misst nur die Verluste der
   Begleiter, nicht den Spieler:* Der Spieler ist im Brett durch K8, K15 und den Wegtest geschützt, die mit seinen eigenen
@@ -2286,9 +2309,14 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
   durch einen schwachen Kader misst keine Quelle getrennt – sie zeigt sich als höhere Last je Rangstufe (A729), und die
   lernt RSR. (3) *Ausgeliefert, und nichts ändert sich:* Er übernimmt nicht („Apply"); das Ziel steht nach der Übernahme
   der alten Einstellung auf Score (das Fenster zeigt es); die Ränge lesen 0 (Spur „0 unknown", A803); keine Verluste sind
-  gemessen – dann füllt Level voll, Safe win wählt die stärksten, Score den vollen Kader, bis eine Abrechnung sie lehrt.
+  gemessen – dann füllt Level jeden Platz, Safe win tauscht bis zu den stärksten, Score bleibt in voller Größe. Genau
+  das trat bis A807 in jedem Lauf ein: RSR las auf dem Brett das Brett 0, und kein Endkampf lehrte den Verlust je Brett
+  (seine Läufe vom 14.11.2026: Verluste je Kampf gelernt, je Brett keiner, Teamrang nie gelesen, alle Tabellen „by rank"
+  leer). Seit A807 lehrt der erste Endkampf je Brett ihn; bis dahin gilt der Kader als ungemessen (Preis: ein Lauf je
+  Brett ohne Größe nach Punkten unter Score, unter Safe win der stärkste Kader).
   *Vorhersage:* „level-core-low" (A805) und „level-below-cap" (A806): Unter Level stehen in „crucible team: goal Level -
-  requested …" nur Begleiter unter dem Cap, solange es genug gibt.
+  requested …" nur Begleiter unter dem Cap, solange es genug gibt. „board-familiar-loss" (A807): Nach der Abrechnung eines Bretts steht „crucible board N: the familiars
+  lost …"; „team-rank-step-runs" (A803) wird damit erstmals beurteilbar: „crucible team rank …" auf jedem Brett.
 - *Umsetzen:* erst die Abgänge, dann die Zugänge, je ein `TogglePet`; danach wartet RSR, bis der Kader sich ändert,
   höchstens einen GCD. Nimmt das Spiel einen Zugang nicht, fällt er für diese Sitzung aus der Empfehlung, und es geht
   weiter; geht ein Abgang nicht, hört RSR auf. Jede Stufe steht in der Spur („crucible team: …"); bestätigen und

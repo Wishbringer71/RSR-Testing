@@ -164,7 +164,10 @@ Bosskampf. In Eureka Orthos kommt Unei zu Beginn des Bosskampfs und heilt mit.
 benannt; der Notfall beendet sonst den Lauf, der Boss nur vielleicht.
 *Gegenthese 2 – Der Tod während der Beschwörung:* „if the user dies during Feo Ul's animation, the attack will not go off,
 but the item will still be consumed" (Poisonfruit). Preis benannt; Raising geht im selben Fall vorher (Pomander zuerst).
-*Gegenthese 3 (ausgeliefert, und nichts ändert sich):* In Pilgers Pfad ist der Agent ohne Fenster leer – dann bleibt dort
+*Gegenthese 3 (ausgeliefert, und nichts ändert sich):* In der Himmelssäule galt bis A807 kein Gebiet als Tiefes
+Gewölbe: Ihr Gebietsblatt nennt keine `ContentFinderCondition`, und `IsInDeepDungeons` las die Art 0 – Pomander und
+Magicite ruhten dort. Seit A807 gilt die `ContentFinderCondition`, die das Gebiet nennt (Konzept 03, „Inhalt eines
+Gebiets"). In Pilgers Pfad ist der Agent ohne Fenster leer – dann bleibt dort
 alles wie bisher; die Spurzeile je Stockwerk zeigt es, und ein Upload belegt die Zuordnung. In Himmelssäule und Eureka
 Orthos trägt die Spalte, solange die abgeleitete Bedeutung des Werts stimmt; stimmt sie nicht, zeigt die Spurzeile den
 Widerspruch zum Agenten.

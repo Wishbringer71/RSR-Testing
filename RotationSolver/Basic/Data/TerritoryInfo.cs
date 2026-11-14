@@ -6,7 +6,7 @@ namespace RotationSolver.Basic.Data;
 /// Represents detailed information about a specific territory, including its name, identifier,
 /// and various attributes such as PvP status and content finder details.
 /// </summary>
-public class TerritoryInfo
+public partial class TerritoryInfo
 {
 	/// <summary>
 	/// Gets the name of the territory.
@@ -77,18 +77,6 @@ public class TerritoryInfo
 	public uint ContentFinderIcon { get; private set; }
 
 	/// <summary>
-	/// The level the territory's content syncs to, from its content finder condition; zero where it syncs to none, as in
-	/// the open world. Read for the learned tables: a hit taken above it is smaller than in sync (A452).
-	/// </summary>
-	public byte ClassJobLevelSync { get; private set; }
-
-	/// <summary>
-	/// The territory's row of the ContentFinderCondition sheet; zero where it has none, as in the open world. Matched against
-	/// the duty finder's last popped entry to tell an unrestricted party (A466).
-	/// </summary>
-	internal uint ContentFinderConditionId { get; private set; }
-
-	/// <summary>
 	/// Represents detailed information about a specific game territory.
 	/// Contains attributes such as the territory's name, unique identifier, PvP status,
 	/// content finder details, and whether it is classified as a high-end duty.
@@ -99,12 +87,12 @@ public class TerritoryInfo
 		Name = sheetType.PlaceName.Value.Name.ExtractText();
 		IsPvP = sheetType.IsPvpZone;
 
-		var contentFinder = sheetType.ContentFinderCondition.Value;
+		var contentFinder = ContentOf(sheetType);
 		ContentFinderName = contentFinder.Name.ExtractText();
 		IsHighEndDuty = contentFinder.HighEndDuty;
 		ContentType = (TerritoryContentType)contentFinder.ContentType.Value.RowId;
 		ContentFinderIcon = contentFinder.Icon;
 		ClassJobLevelSync = contentFinder.ClassJobLevelSync;
-		ContentFinderConditionId = sheetType.ContentFinderCondition.RowId;
+		ContentFinderConditionId = contentFinder.RowId;
 	}
 }

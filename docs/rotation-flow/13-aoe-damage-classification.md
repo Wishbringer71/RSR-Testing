@@ -1643,7 +1643,8 @@ nichts.
 
 **Ohne Stufensynchronisation: nicht abgelegt** (A452, A466; `DataCenter.OutOfContentSync`). Steht der Spieler über der
 Stufe, auf die der Inhalt synchronisiert (`DataCenter.AboveContentLevel`: `PlayerSyncedLevel` gegen `ClassJobLevelSync` der
-`ContentFinderCondition` des Gebiets, gelesen mit `TerritoryInfo` beim Gebietswechsel), zeigt jeder Treffer weniger als im synchronisierten
+`ContentFinderCondition` des Gebiets, gelesen mit `TerritoryInfo` beim Gebietswechsel; nennt das Gebiet keine, die,
+die es nennt – Konzept 03, „Inhalt eines Gebiets"), zeigt jeder Treffer weniger als im synchronisierten
 Lauf – wie viel, hängt vom Abstand der Stufen ab und ist nicht gemessen. Abgelegt, bewertete er eine noch unbewertete
 Aktion zu klein, und im nächsten synchronisierten Lauf sparte die Größenregel die Minderung oder der Plan das Bündel.
 Deshalb legt keiner der drei Speicher, die eine Größe lernen, eine solche Messung ab: Tankbuster-Tabelle

@@ -1447,6 +1447,21 @@ gelernt –, keinen Ortsgrund. A613 verließ sich darauf, dass die Prüfung die 
   Vorübergehendes. Gründe des Augenblicks (Wirken 580, Springen 1263, Interaktion 592) bleiben außen vor.
 - „Ausgeliefert, und nichts ändert sich": wenn das Spiel einen anderen Code liefert. Auch das zeigt die Messzeile.
 
+## Inhalt eines Gebiets
+
+*Was gilt (A807):* Welcher Inhalt läuft – Art, Synchronstufe, Name, Hochleistung, die Zeile der Inhaltssuche –, liest
+RSR beim Gebietswechsel aus der `ContentFinderCondition` des Gebiets (`TerritoryInfo`), für alle Jobs an dieser einen
+Stelle. Nennt das Gebietsblatt keine, gilt die `ContentFinderCondition`, die das Gebiet nennt; nennen es mehrere, die
+erste. Das betrifft 39 Gebiete (xivapi, 14.11.2026): die fünf Bretter des Crucible, die zehn Gebiete der Himmelssäule,
+die Karten von Crystalline Conflict, Chocobo-Rennen, Lord of Verminion, Mahjong, Air Force One und das Diadem. Wo
+mehrere ein Gebiet nennen, stimmen Art, Stufe und Hochleistung in allen 39 überein; die erste ändert nur die Zeile.
+*Warum:* Mit der Zeile 0 galt die Himmelssäule nicht als Tiefes Gewölbe – Pomander und Magicite (Konzept 23) ruhten dort –,
+und auf den Brettern las RSR kein Brett: kein Bonus, kein Teamrang, kein Verlust je Brett (Konzept 21). Die Spalte
+des Gebiets bleibt erste Quelle, wo sie etwas nennt.
+*Preis:* Die Bretter tragen jetzt ihre Synchronstufe (30, 40, 50). Wird der Beastmaster dort nicht auf sie
+synchronisiert, steht er über ihr, und die lernenden Tabellen legen dort nichts ab (Konzept 13, „Ohne
+Stufensynchronisation") – eine tragende Annahme, geprüft mit der Vorhersage „crucible-synced" (A807).
+
 ## Tiefe Gewölbe
 
 Eigenes Konzept: `23-deep-dungeons.md` – Verwandlung, Pomander, Magicite, Demiklone und Weihrauch. Die
