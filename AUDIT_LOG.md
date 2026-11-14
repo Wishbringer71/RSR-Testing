@@ -22762,6 +22762,26 @@ offenen Frage 2 aus A782. Einordnung: Vorgabe, die die Entscheidung an mich gibt
 - *Entscheidung:* (2), eingetragen in CLAUDE.md, „Prüfgrad“. Sofort angewandt auf die Blickwache (A770–A783); das
   Ergebnis der ersten Runde folgt im nächsten Eintrag.
 
+### A785 · Seine Vorgabe: Issues der anderen eigenen Repositories beachten; Zahlprüfer, pre-push, Hook-Umgebung (14.11.2026)
+
+Seine Angabe (14.11.2026): „gemeldete issues anderer eigener repos sind zu beachten.“ Einordnung: Vorgabe, eingetragen
+in CLAUDE.md, „Wenn er etwas sagt“. Der Sitzungsbrief nennt die Repositories, denn ihre Issues sind privat und für
+seinen Abruf ohne Anmeldung nicht lesbar.
+- *Gelesen (14.11.2026):* KerbalMissionDirector #5 und Retainer-Repricer #4, beide Weitergaben aus KSP-MyContracts
+  (dort A183). Die übrigen Issues dort sind geschlossen, hier keines offen.
+- *Klassen, hier an `.github/scripts/audit/` gemessen:*
+  1. `check_fixed_values.py` hatte dasselbe Zahlmuster: `5_400.0`, `.5f`, `2.5e-3f` und das Ende eines Bereichs (`..5`)
+     entgingen ihm. Im Fork-Code stand keine solche Zahl (`git diff` gegen die Merge-Basis), die Lücke war latent.
+     Behoben: ein Muster für alle vier Formen, Trenner entfernt, führender Punkt als „0.“; sechs Fälle im Selbsttest.
+     Danach unverändert 232 Zeilen, alle gelistet.
+  2. Kein pre-push-Hook: Ein Commit, der pre-commit umgeht (`cherry-pick`, `--no-verify`), landete mit fremdem Namen
+     auf origin, bevor die CI ihn meldet. Behoben: `.githooks/pre-push` mit `check_commit_identity.py --pre-push` für
+     jeden ausgehenden Commit; der Selbsttest pusht gegen ein Wegwerf-Remote und erwartet die Abweisung.
+  3. Der Hook-Test übernahm `os.environ` samt `GIT_*`: Aus einem Hook aufgerufen, hätten seine git-Aufrufe auf dieses
+     Repository gewirkt. Behoben: Umgebung ohne `GIT_*`.
+  4. Die Bindung einer Vorhersage an die Commit-Zeit: Hier gibt es kein Auswertungsskript für Vorhersagen; die Zeile
+     „*Vorhersage:*“ (archiv-todo.md) wird von Hand ausgewertet. Nicht anwendbar, solange kein solches Skript besteht.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

@@ -63,6 +63,7 @@ Diese Datei gilt in jeder Lage. Die übrigen Regeln stehen je genau einmal im Re
 - Berührt es eine dokumentierte Entscheidung: ihm vorlegen, nicht selbst umstellen (→ „Getroffene Entscheidungen").
 - Widerlegt er etwas von mir: das ganze Konzept neu prüfen, nicht die eine Stelle flicken (→ „Definition of Ready").
 - Eine Weitergabe aus seinen anderen Repositories – Issue oder eingefügter Bericht – prüfe ich hier am Artefakt, bevor ich sie übernehme; seine wörtlichen Aussagen darin ordne ich ein wie jede seiner Angaben.
+- Auch die Issues in seinen anderen Repositories lese ich bei Sitzungsbeginn und am Auftragsende, nicht nur die hier (seine Vorgabe, 14.11.2026: „gemeldete issues anderer eigener repos sind zu beachten“). Jede Defektklasse darin prüfe ich hier an meinem Gegenstück, etwa einem Prüfskript gleicher Bauart. Grund: Ihre Weitergaben gehen an die Repositories, die gerade gemeint sind; dieselbe Klasse steckt oft auch hier, und der Sitzungsbrief kann ihre privaten Issues nicht abrufen.
 
 **Bevor ich etwas zu einem Thema behaupte**
 - Konzept unter `docs/rotation-flow/` lesen, das Archiv zum Bereich über `archive.py find`.
@@ -237,7 +238,7 @@ Gilt für jede Regel, im Code wie im Konzept (seine Vorgabe, 26.09.2026; für di
 
 **Grenzen und Löschungen**
 - Tag-Pushes, Ref-Löschungen und das Bearbeiten von Releases sind dieser Sitzungsart gesperrt (403, beim Release „not permitted for this session type", 22.10.2026; Tag-Push am 25.10.2026 von der Rechteprüfung der Sitzung abgewiesen). Ein Release erzeuge ich deshalb über `publish.yaml` per `workflow_dispatch`, sobald er es aufträgt (seine Vorgabe, 26.10.2026: „ich habe dich angewiesen, zu compilieren und zu releasen"); sein Auftrag ist die Freigabe, ich stelle sie nicht erneut zur Wahl. Ohne seinen Auftrag erzeuge ich kein Release.
-- Seine anderen Repositories (KerbalMissionDirector, Retainer-Repricer) sind nicht meine Zuständigkeit. Fällt mir bei meinen Aufgaben ein Fehler in einem von ihnen auf, darf ich ihn dort als Issue melden; sonst arbeite und ändere ich dort nichts (seine Präzisierung, 29.10.2026). Was er aus ihnen hierher weitergibt, prüfe ich weiter (→ „Wenn er etwas sagt").
+- Seine anderen Repositories (KSP-MyContracts, KerbalMissionDirector, Retainer-Repricer) sind nicht meine Zuständigkeit. Fällt mir bei meinen Aufgaben ein Fehler in einem von ihnen auf, darf ich ihn dort als Issue melden; sonst arbeite und ändere ich dort nichts (seine Präzisierung, 29.10.2026). Was er aus ihnen hierher weitergibt, prüfe ich weiter (→ „Wenn er etwas sagt").
 - Auf `origin` erzeuge ich nichts ohne geprüften Rückweg.
 - Destruktive Operationen sind freigabepflichtig, auch `git branch -D`; geringes Risiko ist ein Argument, keine Freigabe.
 - Ausnahme: Reste der Sitzungsumgebung räume ich selbst auf, sobald sie als risikofrei gemessen sind (lokal, ohne Remote, ohne eigenen Commit, `git branch -d`), und melde es.

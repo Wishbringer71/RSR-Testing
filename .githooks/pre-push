@@ -1,0 +1,6 @@
+#!/bin/sh
+# Refuse a push that carries a commit whose author or committer is not an identity this repository publishes
+# under. pre-commit refuses such a commit when it is made; a cherry-pick or --no-verify goes past it, and the CI
+# reports only once the commit is on origin, where removing it needs a force push (from Retainer-Repricer, passed
+# on in KerbalMissionDirector #5, 14.11.2026). check_commit_identity.py tests this hook with a real push.
+exec python3 "$(dirname "$0")/../.github/scripts/audit/check_commit_identity.py" --pre-push
