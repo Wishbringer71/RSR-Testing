@@ -23604,6 +23604,16 @@ Anforderungen B1 bis B6 in Konzept 13 geprüft, keine Flickrunde.
 - *Vorhersage:* `predictions/2026-11-14.json`, „gaze-refused-names-gaze": jede Zeile „gaze: refused" nennt den Blick und
   seine Restzeit unter Vorlauf plus Sperre.
 
+### A810 · Seine Angabe: LLM-Framework als allgemeines Regelwerk (14.11.2026)
+
+Seine Angabe (14.11.2026): „diese repo dient zukünftig dazu, ein allgemeines llm-regelwerk für alle repos zu erstellen.
+ist im neusten branch zukünftig mit zu prüfen und abzugleichen. aktuell noch in entwicklung." Einordnung: Vorgabe zur
+Arbeitsweise, eingetragen in CLAUDE.md, „Grenzen und Löschungen". Auf seinen Auftrag in diese Sitzung geklont
+(`/home/user/llm-framework`, nur lesend). Stand am 14.11.2026: `main` 4de1752 (nur README), neuester Branch
+`wsh/busy-archimedes-08pon2` 2d01c19 (19:45, „Record the hand-over to the source repositories"; CLAUDE.md, AGENTS.md,
+ADR 0001 bis 0009, Hooks, Prüfskripte unter `llmfw/`). Ein Abgleich steht beim nächsten Anlass an (Abgleich mit seinen
+anderen Repositories oder Änderung an den Regeldateien), nicht jetzt: Es ist in Entwicklung.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
