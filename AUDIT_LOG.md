@@ -23214,6 +23214,25 @@ Sein Auftrag (14.11.2026): „weiter todo in vollen kritischen loops". Grundlage
   nach einer Ablöse ohne Bewegung bei rund 0,9 s.
 - *Prüfgrad:* Laufzeitbeobachtung (Upload), Compile, CI, Zeitmodell; die Änderungen nicht im Spiel beobachtet.
 
+### A801 · Blickwache: das Lernen wartet auf das Paket, und nur ein Status ist ein Fehlschlag (14.11.2026)
+
+Sein Lauf vom 14.11.2026 (Brett 2, A797), TODO „Blickwache: Umbau der vierten Prüfrunde und Wartezeit auf das Paket".
+Nach den Regeln zum Prüfgrad zurück zu den Anforderungen (Konzept 13, B1 bis B6): Beide Befunde treffen B3 (lernen).
+- *Befund 1:* Beim Tödlichen Strahl des Taurus (#48143) drehte RSR ihn 0,12 s vor dem Eintreffen um 180° weg; 0,27 s
+  später schrieb es „unknown – its packet unseen", 0,15 s bevor das Paket kam („hit you … 1 %"). Die Frist war die
+  längste bisher im Gebiet gemessene Paketverzögerung, früh im Gebiet kürzer als diese. *Behoben:* Ein gewirkter Blick
+  wartet auf sein Paket bis zum Kampfende; Status-, Marker- und Mitgliederblicke behalten die Frist.
+- *Befund 2:* Beide Strahlen trafen ihn abgewandt mit 1 % und legten keinen Status (ACT-Mitschnitt: keine Zeile 26 auf
+  ihn). Die Wache zählte jeden Schaden als Fehlschlag; mit gesehenem Paket hätte sie einen Fehlschlag gelernt und, da die
+  Abgewandten auch Schaden nahmen, den Blick als widerlegt – RSR hätte ihn bei diesem Blick nicht mehr gedreht. *Behoben:*
+  Als Fehlschlag zählt nur ein schädlicher Status aus dem Paket, auch in der Gegenprobe an den anderen Getroffenen.
+  *Preis:* Ein Blick, der nur Schaden macht, lernt keinen Fehlschlag; die Drehung gilt weiter.
+- *Der übrige Umbau der vierten Prüfrunde* (Stash: gemeinsames Zeitfenster, Abweisen ohne sichere Richtung, Lernen
+  misstrauter Blicke, Vorlauf) bleibt im TODO; er enthält noch den Überlauf aus A793 und wird gegen B1 bis B6 neu geprüft.
+- *Vorhersage:* Im nächsten Lauf mit einem gewirkten Blick steht nach „gaze: turned …" ein Urteil „avoided" oder „hit
+  despite", kein „unknown – its packet unseen"; Schaden allein ergibt kein „hit despite".
+- *Prüfgrad:* Laufzeitbeobachtung (Upload, Mitschnitt), Compile, CI; die Änderung nicht im Spiel beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

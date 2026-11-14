@@ -38,6 +38,12 @@ Fensterspur jeden Laden mit seiner Ausrüstungsliste zeigt. *Konzept:* 21, K13 �
 
 ## Offene Arbeit
 
+### Blickwache: Umbau der vierten Prüfrunde · N
+*Wirkung:* Die Befunde der vierten Prüfrunde (Zeitfenster von Sperre, Richtung und Lernen; Abweisen ohne sichere
+Richtung; Lernen auch misstrauter Blicke; Vorlauf) liegen ungeprüft beiseite. *Ort:* `GazeWatch`,
+`ActionTargetInfo`, `ActionManagerEx`. *Nächster Schritt:* zurück zu den Anforderungen (Konzept 13, „Blickwache:
+Anforderungen und tragende Annahmen"), jede Mechanik gegen sie prüfen, dann bauen und unabhängig prüfen. *Konzept:* 13.
+
 ## Technische Schuld
 
 Ohne Wirkung im Kampf oder bewusst eingegangen; je Kosten und Auflösungsbedingung.

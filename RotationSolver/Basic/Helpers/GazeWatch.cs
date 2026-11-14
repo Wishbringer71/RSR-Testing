@@ -523,7 +523,9 @@ internal static partial class GazeWatch
 		}
 	}
 
-	// Damage or a harmful status on <targetId> in the packet.
+	// A harmful status on <targetId> in the packet - a gaze works through its status (Doom, Stone, Paralysis). A801: damage
+	// alone does not count; Mortal Ray (#48143) dealt 1 % to him facing away, and counting it would have read every gaze
+	// that also damages as failed and, with the members facing away hit too, as refuted.
 	private static bool Harmed(ActionEffectSet set, ulong targetId)
 	{
 		var harmed = false;
@@ -536,9 +538,8 @@ internal static partial class GazeWatch
 
 			effect.ForEach(entry =>
 			{
-				harmed |= ActionEffectReading.DamageOnTarget(entry) > 0
-					|| (entry.type == ActionEffectType.ApplyStatusEffectTarget && entry.value != 0
-						&& Service.GetSheet<Lumina.Excel.Sheets.Status>().GetRowOrDefault(entry.value) is { StatusCategory: (byte)StatusCategory.Detrimental });
+				harmed |= entry.type == ActionEffectType.ApplyStatusEffectTarget && entry.value != 0
+					&& Service.GetSheet<Lumina.Excel.Sheets.Status>().GetRowOrDefault(entry.value) is { StatusCategory: (byte)StatusCategory.Detrimental };
 			});
 		}
 
@@ -664,8 +665,9 @@ internal static partial class GazeWatch
 		return null;
 	}
 
-	// Gazes RSR acted on whose packet did not come within the longest delay measured in this zone: a status or member
-	// gaze without harm from its eye is avoided; a cast gaze is unknown, its packet unseen.
+	// Status and member gazes RSR acted on, without harm from any enemy within the longest delay measured in this zone:
+	// avoided. A cast gaze waits for its own packet until the fight ends (A801) - early in a zone the longest delay measured
+	// was shorter than this one's, and "unknown" came 0.15 s before the packet that would have judged it.
 	private static void CloseAvoided(float lead)
 	{
 		if (_landingMost <= 0f)
@@ -676,10 +678,9 @@ internal static partial class GazeWatch
 		var deadline = DateTime.Now.AddSeconds(-(_landingMost + (float.IsInfinity(lead) ? 0f : lead)));
 		for (var i = _pending.Count - 1; i >= 0; i--)
 		{
-			if (_pending[i].Due < deadline)
+			if (_pending[i].Action == 0 && _pending[i].Due < deadline)
 			{
-				DefenseTrace.Line(_pending[i].Action == 0 ? $"gaze: avoided {_pending[i].Text}, no harm seen from any enemy"
-					: $"gaze: unknown {_pending[i].Text}, its packet unseen");
+				DefenseTrace.Line($"gaze: avoided {_pending[i].Text}, no harm seen from any enemy");
 				_pending.RemoveAt(i);
 			}
 		}

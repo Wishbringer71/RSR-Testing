@@ -439,10 +439,19 @@ Mainyu wurde von jedem GCD zurück ins Auge gedreht. BossModReborn nimmt nur 0 a
       harm seen“. *Preis:* Eine gleichzeitige Fläche zählt als Fehlschlag, und RSR dreht für diesen Blick nicht mehr.
     - Automatische Angriffe (`ActionCategory` 1) zählen nie. Bis A786 zählte bei Markern jeder Schaden jedes Gegners.
       Für einen Tank reichte ein automatischer Angriff, und der Marker galt im Gebiet als misstraut.
-    - *Frist ohne Paket:* die größte im Gebiet gemessene Verzögerung vom Balkenende bis zum Effekt-Paket plus Vorlauf.
-      Danach schreibt RSR „gaze: unknown …“, nicht „avoided“. Bis A786 schloss RSR nach Vorlauf plus Antwortzeit als
-      vermieden. Das waren 0,2 bis 0,4 s nach dem Balken, vor dem Paket, das 0,26 bis 0,30 s danach kommt. Ein Treffer
-      blieb so unerkannt.
+    - *Frist ohne Paket:* Ein gewirkter Blick wartet auf sein Paket, bis der Kampf endet; erst dann schreibt RSR
+      „gaze: unknown …". Ein Blick aus Status, Marker oder Mitglied hat kein eigenes Paket: Er schließt nach der größten im
+      Gebiet gemessenen Verzögerung vom Balkenende bis zum Effekt-Paket plus Vorlauf. *Gemessen (14.11.2026, Brett 2, A801):*
+      Mit dieser Frist auch für gewirkte Blicke schrieb RSR beim Tödlichen Strahl des Taurus (#48143) „unknown – its packet
+      unseen" 0,15 s, bevor das Paket kam: Früh im Gebiet war die gemessene Verzögerung kürzer als diese. Bis A786 schloss
+      RSR nach Vorlauf plus Antwortzeit als vermieden, vor dem Paket, das 0,26 bis 0,30 s nach dem Balken kommt.
+    - *Was als Fehlschlag zählt* (A801): ein schädlicher Status, den das Paket des Blicks auf dich legt. Ein Blick wirkt
+      durch seinen Status (Verhängnis, Versteinerung, Lähmung); Schaden trifft oft auch, wer wegsieht. *Gemessen
+      (14.11.2026):* Beide Tödlichen Strahlen trafen ihn abgewandt mit 1 % seiner LP und legten keinen Status. Bis A801
+      zählte jeder Schaden: Hätte RSR das Paket gesehen, hätte es einen Fehlschlag gelernt, und da auch die Abgewandten
+      Schaden nahmen, den Blick als widerlegt – RSR hätte dich bei ihm nicht mehr gedreht. *Preis:* Ein Blick, der nur
+      Schaden macht, wer hinsieht, lernt keinen Fehlschlag; RSR dreht für ihn weiter. Gilt ebenso für die Gegenprobe an
+      den anderen Getroffenen und für Blicke aus Status, Marker und Mitglied.
   - *Folge eines Fehlschlags* (A789, A791): Das Paket, das ihn zeigt, sagt auch, ob RSRs Annahme über Auge und
     Richtung stimmt. Gezählt werden die anderen Getroffenen: wie viele nach der Annahme ins Auge sahen, wie viele weg.
     - *Widerlegt* (mehr sahen weg als hin): RSR greift bei diesem Blick gar nicht mehr ein, also das Verhalten ohne die
@@ -625,7 +634,8 @@ und an seinen Mitschnitten; im Spiel ist kein Teil der Blickwache beobachtet.
   aufs Ziel. Preis: die Figur sieht bis zu 45° neben das Ziel.
 - *Horizont Vorlauf plus Sperre der Aktion* (B4): Die Richtung einer Aktion hält der Server eine Weile. Preis: keiner,
   solange das Ziel im Kegel bleibt.
-- *Nachlauf bis zum Paket* (B4): gemessen 0,26 bis 0,30 s. Preis: Sperre bis 0,3 s länger.
+- *Nachlauf bis zum Paket* (B4): gemessen 0,26 bis 0,30 s. Preis: Sperre bis 0,3 s länger. Das Lernen wartet bei einem
+  gewirkten Blick bis zum Paket, nicht bis zu einer Frist (B3, A801).
 - *Lernen und gestufter Rückfall* (B3): Preis: nach einem falschen Fehlschlag Schaden durch Sperre.
 - *Marker, Status, Mitglied als Auge* (B1; seine Hinweise zu Kefka und Windurst): Preis: Ein falsch zugeordnetes Auge
   dreht falsch, bis der Rückfall greift.
