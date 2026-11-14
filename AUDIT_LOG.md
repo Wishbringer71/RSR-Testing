@@ -23611,8 +23611,10 @@ ist im neusten branch zukünftig mit zu prüfen und abzugleichen. aktuell noch i
 Arbeitsweise, eingetragen in CLAUDE.md, „Grenzen und Löschungen". Auf seinen Auftrag in diese Sitzung geklont
 (`/home/user/llm-framework`, nur lesend). Stand am 14.11.2026: `main` 4de1752 (nur README), neuester Branch
 `wsh/busy-archimedes-08pon2` 2d01c19 (19:45, „Record the hand-over to the source repositories"; CLAUDE.md, AGENTS.md,
-ADR 0001 bis 0009, Hooks, Prüfskripte unter `llmfw/`). Ein Abgleich steht beim nächsten Anlass an (Abgleich mit seinen
-anderen Repositories oder Änderung an den Regeldateien), nicht jetzt: Es ist in Entwicklung.
+ADR 0001 bis 0009, Hooks, Prüfskripte unter `llmfw/`; nur angesehen, nichts übernommen). Seine Präzisierung
+(14.11.2026): „ich habe gesagt, dass die repo noch im aufbau ist, also hast du daraus nichts zu holen" – kein Abgleich,
+solange es im Aufbau ist; der Abgleich beginnt erst, wenn es fertig ist. Die erste Fassung der Regel sah ihn schon beim
+nächsten Anlass vor; berichtigt in CLAUDE.md.
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
