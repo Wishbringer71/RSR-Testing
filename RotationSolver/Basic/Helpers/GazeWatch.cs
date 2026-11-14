@@ -107,6 +107,8 @@ internal static partial class GazeWatch
 	private static Vector3 _playerBefore;
 	private static long _movedTick = long.MinValue;
 	private static readonly HashSet<ulong> _heldFacing = [];
+	private static float _updateGap;
+	private static DateTime _lastOrientedAction = DateTime.MinValue;
 	private static readonly List<IBattleChara> _largest = [];
 	private static long _gazersTick = long.MinValue;
 	private static readonly List<Pending> _pending = [];
@@ -147,7 +149,9 @@ internal static partial class GazeWatch
 	private static float Lead()
 	{
 		var most = ActionManagerEx.CurrentLockTweak?.DelayMost ?? 0f;
-		return Service.Config.TurnAwayFromGazes && most > 0f ? most + AnimationLockTweak.MeanFrameTime : float.PositiveInfinity;
+		// A791: plus the measured time between two updates, which "Minimum update interval" or a stall can make longer
+		// than a frame.
+		return Service.Config.TurnAwayFromGazes && most > 0f ? most + Math.Max(AnimationLockTweak.MeanFrameTime, _updateGap) : float.PositiveInfinity;
 	}
 
 	/// <summary>
@@ -197,7 +201,7 @@ internal static partial class GazeWatch
 			// every action that faces waits until its packet, so no further turn of the game starts.
 			var due = gazer.Left - span <= (turning ? lead : float.PositiveInfinity);
 			var holds = _heldFacing.Contains(gazer.Key) ? due
-				: moves ? due && Unsafe(rotation, player, gazer)
+				: moves ? (turning && gazer.Trusted ? due : true) && Unsafe(rotation, player, gazer)
 				: !turning || !gazer.Trusted ? Unsafe(rotation, player, gazer)
 				: held && due;
 			if (!holds)
@@ -248,8 +252,8 @@ internal static partial class GazeWatch
 			return;
 		}
 
-		CheckTurnHeld(player);
 		var lead = Lead();
+		CheckTurnHeld(player, lead);
 		if (float.IsInfinity(lead))
 		{
 			return;
@@ -330,7 +334,7 @@ internal static partial class GazeWatch
 	}
 
 	// Whether the facing RSR set last frame still stands while the player did not move; once per gaze in the trace.
-	private static void CheckTurnHeld(IBattleChara player)
+	private static void CheckTurnHeld(IBattleChara player, float lead)
 	{
 		if (_turnCheck is not { } check)
 		{
@@ -338,7 +342,9 @@ internal static partial class GazeWatch
 		}
 
 		_turnCheck = null;
-		if (player.Position == check.Position && player.Rotation != check.Rotation && _heldFacing.Add(check.Key))
+		// A791: only a facing that looks into a gaze again counts; another safe one (BossModReborn's) is no harm.
+		if (player.Position == check.Position && player.Rotation != check.Rotation && !SafeFor(player.Rotation, player, lead)
+			&& _heldFacing.Add(check.Key))
 		{
 			DefenseTrace.Line($"gaze: turn undone the next frame, by the game or another tool, {float.RadiansToDegrees(Difference(player.Rotation, check.Rotation)):F0}° "
 				+ "- RSR turns again each frame and holds every action that faces until the gaze resolves");
@@ -358,12 +364,16 @@ internal static partial class GazeWatch
 			return null;
 		}
 
+		// A791: the server keeps an action's facing for a while after it (concept 13, "Richtung einer Aktion"), so the safe
+		// facing is chosen against every gaze landing within the lead plus this action's lock.
+		_lastOrientedAction = DateTime.Now;
+		var horizon = ActionManagerEx.CurrentLockTweak?.AbilityWindow(actionId) ?? 0f;
 		if (action.TargetArea)
 		{
-			return location == null ? null : PrepareFacing(*location);
+			return location == null ? null : PrepareFacing(*location, horizon);
 		}
 
-		return targetId != player.GameObjectId && Svc.Objects.SearchById(targetId) is { } target ? PrepareFacing(target.Position) : null;
+		return targetId != player.GameObjectId && Svc.Objects.SearchById(targetId) is { } target ? PrepareFacing(target.Position, horizon) : null;
 	}
 
 	/// <summary>
@@ -373,7 +383,7 @@ internal static partial class GazeWatch
 	/// game refuses a target outside the cone. Either way "Auto face target" is off for the call, so the game does not
 	/// turn the player straight at the target. Returns the option's value to put back.
 	/// </summary>
-	internal static unsafe uint? PrepareFacing(Vector3 towards)
+	internal static unsafe uint? PrepareFacing(Vector3 towards, float horizon = 0f)
 	{
 		var player = Player.Object;
 		if (!Service.Config.TurnAwayFromGazes || !DataCenter.InCombat || player == null)
@@ -388,10 +398,11 @@ internal static partial class GazeWatch
 		}
 
 		var gazers = Gazers();
+		var reach = lead + Math.Max(0f, horizon);
 		var due = false;
 		foreach (var gazer in gazers)
 		{
-			due |= gazer.Trusted && gazer.Left <= lead;
+			due |= gazer.Trusted && gazer.Left <= reach;
 		}
 
 		var facing = towards - player.Position;
@@ -404,7 +415,7 @@ internal static partial class GazeWatch
 		var aim = MathF.Atan2(facing.X, facing.Z);
 		var half = float.DegreesToRadians(ActionHalfAngleDegrees);
 		var current = player.Rotation;
-		var turnTo = MathF.Abs(Difference(current, aim)) > half || !SafeFor(current, player, lead) ? SafeNear(player, aim, half, lead) : null;
+		var turnTo = MathF.Abs(Difference(current, aim)) > half || !SafeFor(current, player, reach) ? SafeNear(player, aim, half, reach) : null;
 
 		var framework = Framework.Instance();
 		var option = framework == null ? null : framework->SystemConfig.GetConfigOption((uint)ConfigOption.AutoFaceTargetOnAction);
@@ -420,7 +431,7 @@ internal static partial class GazeWatch
 			_turnCheck = null;
 			foreach (var gazer in gazers)
 			{
-				if (gazer.Trusted && gazer.Left <= lead && _turnTraced.Add(gazer.Key))
+				if (gazer.Trusted && gazer.Left <= reach && _turnTraced.Add(gazer.Key))
 				{
 					DefenseTrace.Line($"gaze: turned {float.RadiansToDegrees(Difference(target, current)):F0}° for an action, "
 						+ $"{float.RadiansToDegrees(Difference(target, aim)):F0}° off its target, {(gazer.Inverted ? "towards" : "away from")} "
@@ -454,9 +465,8 @@ internal static partial class GazeWatch
 
 			if (!known)
 			{
-				var action = gazer.From == Origin.Cast ? gazer.Id
-					: gazer.From == Origin.Marker && gazer.Who is IBattleChara eye ? eye.CastActionId
-					: 0u;
+				// A791: marker, status and member gazes resolve through helpers without a cast; any harm from an enemy judges them.
+				var action = gazer.From == Origin.Cast ? gazer.Id : 0u;
 				_pending.Add(new Pending(gazer.Key, LearnKey(gazer), gazer.From == Origin.Cast ? ActionName(gazer.Id) : null, gazer.From == Origin.Cast,
 					gazer.Who?.GameObjectId ?? 0, action, now.AddSeconds(gazer.Left), Describe(gazer)));
 			}
@@ -493,17 +503,16 @@ internal static partial class GazeWatch
 		{
 			var pending = _pending[i];
 			var resolves = pending.Action != 0 && pending.Source == sourceId && pending.Action == actionId;
-			var related = resolves || (pending.Cast && string.Equals(pending.Name, name, StringComparison.Ordinal))
-				|| (pending.Action == 0 && pending.Source == sourceId);
+			var related = resolves || (pending.Cast && string.Equals(pending.Name, name, StringComparison.Ordinal)) || pending.Action == 0;
 			if (harmed && related)
 			{
 				// A789: the same packet says whether RSR's eye and sense hold - others hit while facing the eye as RSR places
 				// it, and no more hit while facing away. Then only the timing failed and the hold stays; else RSR leaves it.
-				var holds = (landed is { } g && g.Key == pending.Key ? g : Find(pending.Key)) is { } gazer && ModelHolds(set, gazer, player.GameObjectId);
-				_distrusted[ZoneKey(pending.Learn)] = holds;
+				var refuted = (landed is { } g && g.Key == pending.Key ? g : Find(pending.Key)) is { } gazer && Refuted(set, gazer, player.GameObjectId);
+				_distrusted[ZoneKey(pending.Learn)] = !refuted;
 				DefenseTrace.Line($"gaze: hit despite RSR's facing by {pending.Text} ({name}) - "
-					+ (holds ? "the packet bears out its eye and sense, so RSR only holds actions for it until it is loaded again"
-						: "the packet does not bear out its eye or sense, so RSR leaves this gaze to you until it is loaded again"));
+					+ (refuted ? "others it hit faced away from the eye as RSR places it, so RSR leaves this gaze to you until it is loaded again"
+						: "the packet does not refute RSR's eye and sense, so RSR only holds actions for it until it is loaded again"));
 				_pending.RemoveAt(i);
 			}
 			else if (resolves)
@@ -571,6 +580,14 @@ internal static partial class GazeWatch
 
 		_ = _heldFacing.Remove(landed.Key);
 
+		// A791: a second hit while only the hold remained ends it too - a gaze whose sense RSR has wrong would otherwise keep
+		// the targets towards the real eye out of the choice.
+		if (!landed.Trusted && Player.Object is { } self && Harmed(set, self.GameObjectId))
+		{
+			_distrusted[ZoneKey(LearnKey(landed))] = false;
+			DefenseTrace.Line($"gaze: hit again by {Describe(landed)} while RSR only held actions - RSR leaves this gaze to you until it is loaded again");
+		}
+
 		int hitFacing = 0, hitAway = 0, sparedFacing = 0, sparedAway = 0;
 		foreach (var effect in set.TargetEffects)
 		{
@@ -594,13 +611,14 @@ internal static partial class GazeWatch
 		}
 
 		DefenseTrace.Line($"gaze: landed {Describe(landed)}: hit {hitFacing + hitAway} ({hitAway} looking the safe way by RSR's eye), "
-			+ $"spared {sparedFacing + sparedAway} ({sparedFacing} looking the wrong way)");
+			+ $"spared {sparedFacing + sparedAway} ({sparedFacing} looking the wrong way); RSR's last oriented action "
+			+ (_lastOrientedAction == DateTime.MinValue ? "none" : $"{(DateTime.Now - _lastOrientedAction).TotalSeconds:F2} s before"));
 		return landed;
 	}
 
-	// A789: whether the packet bears out RSR's eye and sense: among the others it hit, some faced into the gaze as RSR
-	// places it and no more faced the safe way. Without others hit nothing bears it out.
-	private static bool ModelHolds(ActionEffectSet set, Gazer gazer, ulong playerId)
+	// A791: whether the packet refutes RSR's eye and sense: among the others it hit, more faced the safe way as RSR places
+	// it than into it. Without others hit nothing refutes it.
+	private static bool Refuted(ActionEffectSet set, Gazer gazer, ulong playerId)
 	{
 		int facing = 0, away = 0;
 		foreach (var effect in set.TargetEffects)
@@ -621,7 +639,7 @@ internal static partial class GazeWatch
 			}
 		}
 
-		return facing > 0 && away <= facing;
+		return away > facing;
 	}
 
 	// The gaze with this key among the current, the ended and last frame's.
@@ -660,7 +678,8 @@ internal static partial class GazeWatch
 		{
 			if (_pending[i].Due < deadline)
 			{
-				DefenseTrace.Line(_pending[i].Action == 0 ? $"gaze: avoided {_pending[i].Text}" : $"gaze: unknown {_pending[i].Text}, its packet unseen");
+				DefenseTrace.Line(_pending[i].Action == 0 ? $"gaze: avoided {_pending[i].Text}, no harm seen from any enemy"
+					: $"gaze: unknown {_pending[i].Text}, its packet unseen");
 				_pending.RemoveAt(i);
 			}
 		}
@@ -1023,6 +1042,7 @@ internal static partial class GazeWatch
 		var now = Environment.TickCount64;
 		var seconds = (float)TimeSpan.FromMilliseconds(now - _movedTick).TotalSeconds;
 		var known = _movedTick != long.MinValue && seconds > 0f;
+		_updateGap = known ? seconds : 0f;
 		var ahead = (float.IsInfinity(lead) ? 0f : lead) + _landingMost;
 		var playerSpeed = known ? Vector3.Distance(player.Position, _playerBefore) / seconds : 0f;
 		for (var i = 0; i < _gazers.Count; i++)
@@ -1077,7 +1097,8 @@ internal static partial class GazeWatch
 	private static void AddLandings(float lead)
 	{
 		var now = DateTime.Now;
-		var finished = float.IsInfinity(lead) ? AnimationLockTweak.MeanFrameTime : lead;
+		// A791: plus the time since the last update - with a longer update interval the last bar seen had more left.
+		var finished = (float.IsInfinity(lead) ? AnimationLockTweak.MeanFrameTime : lead) + _updateGap;
 		foreach (var before in _castsBefore)
 		{
 			var running = false;
@@ -1203,36 +1224,51 @@ internal static partial class GazeWatch
 			}
 		}
 
+		// The eye's cast ends with the marker: its bar ends up to the zone's delay to the packet, plus a lead or a frame,
+		// before it. Without that delay measured every cast counts (A791: independent of the lead).
+		var tolerance = _landingMost > 0f ? _landingMost + (float.IsInfinity(lead) ? AnimationLockTweak.MeanFrameTime : lead) : float.PositiveInfinity;
 		foreach (var marker in _markers)
 		{
 			var left = Math.Max(0f, marker.Duration - (float)(now - marker.Seen).TotalSeconds);
-			_largest.Clear();
-			var radius = 0f;
-			foreach (var caster in DataCenter.CastingEnemies)
+
+			// A791: eyes once matched stay. In the last stretch the real eye no longer casts, and any enemy whose cast just
+			// ends would match - a helper with an area. They are matched anew only while none of them casts and the marker
+			// is not in that stretch yet.
+			var anyCasting = false;
+			foreach (var eye in marker.Eyes)
 			{
-				// The eye's cast ends with the marker: its bar ends up to the delay to the packet before it.
-				if (caster == null || !caster.IsCasting
-					|| (!float.IsInfinity(lead) && MathF.Abs(caster.TotalCastTime - caster.CurrentCastTime - left) > lead + _landingMost))
-				{
-					continue;
-				}
-
-				if (caster.HitboxRadius > radius)
-				{
-					radius = caster.HitboxRadius;
-					_largest.Clear();
-				}
-
-				if (caster.HitboxRadius == radius)
-				{
-					_largest.Add(caster);
-				}
+				anyCasting |= eye.IsValid() && eye.IsCasting;
 			}
 
-			if (_largest.Count > 0)
+			if (marker.Eyes.Count == 0 || (!anyCasting && left > tolerance))
 			{
-				marker.Eyes.Clear();
-				marker.Eyes.AddRange(_largest);
+				_largest.Clear();
+				var radius = 0f;
+				foreach (var caster in DataCenter.CastingEnemies)
+				{
+					if (caster == null || !caster.IsCasting || MathF.Abs(caster.TotalCastTime - caster.CurrentCastTime - left) > tolerance)
+					{
+						continue;
+					}
+
+					if (caster.HitboxRadius > radius)
+					{
+						radius = caster.HitboxRadius;
+						_largest.Clear();
+					}
+
+					if (caster.HitboxRadius == radius)
+					{
+						_largest.Add(caster);
+					}
+				}
+
+				if (_largest.Count > 0)
+				{
+					marker.Eyes.Clear();
+					marker.Eyes.AddRange(_largest);
+					DefenseTrace.Line($"gaze: marker to look {(marker.Inverted ? "at" : "away from")} {left:F1} s before it resolves - eyes: {EyeNames(marker.Eyes)}");
+				}
 			}
 
 			foreach (var eye in marker.Eyes)
@@ -1244,6 +1280,17 @@ internal static partial class GazeWatch
 				}
 			}
 		}
+	}
+
+	private static string EyeNames(List<IBattleChara> eyes)
+	{
+		var text = new System.Text.StringBuilder();
+		foreach (var eye in eyes)
+		{
+			text.Append(text.Length == 0 ? string.Empty : ", ").Append(eye.Name.TextValue).Append(" (").Append(eye.CastActionId).Append(')');
+		}
+
+		return text.ToString();
 	}
 
 	private static IBattleChara? NearestNamed(IBattleChara player, string englishName)

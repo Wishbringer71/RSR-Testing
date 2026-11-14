@@ -22925,6 +22925,36 @@ FFLogs-Archiv enthielt drei schon ausgewertete Mitschnitte (byte-gleich).
   Trefferserienlücke mehr.
 - *Vorhersagen:* A782, A783 und A786 offen (Stand im Eintrag); A787 bis A789 gelten ab dem nächsten Build.
 
+### A791 · Blickwache: dritte unabhängige Prüfrunde, Befunde eingearbeitet (14.11.2026)
+
+Frischer Prüfer ohne Zwischenstand (A784), Stand 419184304, BossModReborn 35a908ad7, FFXIVClientStructs 80cb4a7,
+Mitschnitte vom 11. bis 14.11.2026. Zwei Befunde hoher, fünf mittlerer, sieben niedriger Schwere. Konzept 13; die Regel
+„Entscheidung zur Laufzeit“ in `code.md` ist präzisiert.
+- *H1, bestätigt:* Ohne andere Getroffene ließ RSR einen Blick nach einem Fehlschlag ganz los. Allein oder zu viert im
+  Pilgerpfad (Destrudo, Pakete mit 2 bis 3 Zielen) hätte ein einziger Treffer jeden weiteren Angriff ins Auge gedreht,
+  bis zum nächsten Build. Behoben, über den Vorschlag hinaus: Nur ein widerlegendes Paket lässt ganz los; bestätigt
+  oder unbelegt bleibt die Sperre aus A770. Ein zweiter Treffer während der Sperre lässt ganz los. Das deckt einen in
+  Wahrheit umgekehrten Blick: höchstens zwei Treffer je Build statt einem je Wirken.
+- *H2, bestätigt:* Die Augen eines Markers wurden jedes Bild neu gewählt; im letzten Stück passte jeder Gegner, dessen
+  Wirken gerade endet. Behoben: Zugeordnete Augen bleiben; neu nur, solange keines wirkt und der Marker nicht im letzten
+  Stück ist. Die Zeile „gaze: marker …“ nennt sie (das Konzept berief sich auf sie, der Code schrieb sie nicht).
+- *M1, als Schluss übernommen:* Sein Mitschnitt vom 11.11.2026 zeigt einen Treffer 179° vom Auge, 0,45 s nach einer
+  eigenen Aktion zum Auge; die Gegenprobe vom 13.11. blieb verschont. Behoben: Beim Auslösen wählt RSR die sichere
+  Richtung für Blicke innerhalb von Vorlauf plus Sperre der Aktion. Die Zeile „landed“ nennt die Zeit seit der letzten
+  eigenen Aktion mit Richtung.
+- *M2, bestätigt an BossModReborns Enums:* Marker, Status und Mitglied lösen über Helfer ohne Wirken auf; RSR wertete
+  nur das Paket des Auges und schrieb „avoided“ ohne Beleg. Behoben: Jedes schädigende Paket eines Gegners in der Frist.
+- *M3, bestätigt:* Mit längerem „Minimum update interval“ galt ein Balkenende als Abbruch. Behoben: Vorlauf und
+  Erkennung rechnen den gemessenen Abstand zwischen zwei Berechnungen ein.
+- *M4, M5:* Konzepttexte berichtigt (die zwei Ausnahmen der 45°-Messung; der Preis eines falschen Fehlschlags).
+- *Niedrig:* N1 behoben (Ansturm bei misstrautem Blick über das ganze Wirken). N2 behoben (nur eine Rückdrehung in einen
+  Blick zählt). N3 behoben (Optionstext nennt das Warten nach einer Rückdrehung). N4 behoben (Toleranz des Markers
+  unabhängig vom Vorlauf). N5 behoben. N6 behoben (Beschreibung des Generators). N7 (BossModReborns „Restore character
+  orientation“, ab Werk aus) deckt die Rückdrehungsmessung mit ab.
+- *Vorhersage, Ergänzung:* In Windurst steht „gaze: marker …“ einmal je Marker mit denselben Augen bis zur Auflösung.
+  Nach einem Fehlschlag folgt „… does not refute …“ oder „others it hit faced away …“; ein zweiter Treffer schreibt
+  „hit again … while RSR only held actions“.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

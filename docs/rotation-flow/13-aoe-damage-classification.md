@@ -307,14 +307,24 @@ Mainyu wurde von jedem GCD zurück ins Auge gedreht. BossModReborn nimmt nur 0 a
   - *Gegenthese 3 (ausgeliefert, und nichts ändert sich):* mit abgeschalteter Option oder ohne Messung. Dann gilt das
     Zurückhalten über das ganze Wirken.
   - *Lauf im Vorlauf:* Läuft er im Vorlauf, dreht das Spiel die Figur in die Laufrichtung, Bild für Bild. Läuft er vom
-    Wirkenden weg, ist die Richtung sicher, und RSR tut nichts. Läuft er auf ihn zu, dreht RSR ihn jedes Bild weg, und
+    Wirkenden weg, ist die Richtung sicher, und RSR tut nichts – es sei denn, kurz zuvor ging eine Aktion zum Auge (unten,
+    „Richtung einer Aktion“). Läuft er auf ihn zu, dreht RSR ihn jedes Bild weg, und
     das Spiel dreht ihn mit dem nächsten Schritt zurück. RSR greift nicht in die Bewegung ein; BossModReborn tut es
     (`PlayerMove`). Das wäre Bewegung im Sinn seiner Vorgabe. Der Preis ist ein Flackern der Figur für höchstens L.
     Ein Blick, auf den er zuläuft, trifft ihn, wie ohne RSR.
   - *Lücke ohne Breite:* Berühren sich zwei gesperrte Bögen, liegt die Mitte der Lücke auf einer Grenze und sieht noch
     hinein. RSR prüft jede Mitte gegen alle Blicke, bevor es dreht; gibt es keine, dreht es nicht.
   - *Abstand zur Grenze* (A789): Gemessen an #3499 und #44355 (sechs Wirken, Pakete mit 24 Zielen): getroffen bis 44°
-    Abweichung, verschont ab 45°. Die 45° stimmen also. Jeder gesperrte Bogen wird um den Winkel verbreitert, den die
+    Abweichung, verschont ab 45°. Die 45° stimmen also. Ausgenommen sind zwei Getroffene bei 85° und 179° im Wirken vom
+    11.11.2026, 18:12:49, darunter er selbst; beide erklärt die „Richtung einer Aktion“.
+  - *Richtung einer Aktion* (A791; gemessen am 11.11.2026, 18:12:49, #3499): Eine eigene Sofortaktion zum Auge kam
+    0,19 s vor dem Balkenende an (Richtung im Paket −1,72 rad, Auge bei −1,77 rad). Danach lief er 3,3 Yalm in 0,45 s
+    nach Osten, stand beim Paket des Blicks 179° vom Auge weg und bekam trotzdem Verhängnis. Gegenprobe am 13.11.2026,
+    18:27:01: dieselbe Lage mit 0,24 s vor dem Balkenende, verschont. *Schluss aus zwei Fällen:* Der Server hält die
+    Richtung einer Aktion noch eine Weile nach ihr, und eine spätere Drehung des Clients zählt dann nicht. Deshalb wählt
+    RSR beim Auslösen die sichere Richtung schon für Blicke, die innerhalb von Vorlauf plus Sperre dieser Aktion landen.
+    Das kostet nichts, solange das Ziel im Kegel bleibt. Die Sperre bleibt bei L. Die Zeile „gaze: landed …“ nennt, wie
+    lange vor dem Paket RSR zuletzt eine Aktion mit Richtung auslöste; daran entscheidet seine nächste Aufnahme. Jeder gesperrte Bogen wird um den Winkel verbreitert, den die
     Bewegung von Spieler und Auge bis zur Auflösung erzeugt: Geschwindigkeit beider aus den letzten Bildern, mal Vorlauf
     plus gemessener Verzögerung bis zum Paket, im Verhältnis zum Abstand. Im Stand ist das 0. Bis A789 lag die gewählte
     Richtung im Nahkampf womöglich 2,5° vor der Grenze, und 0,2 Yalm Bewegung des Bosses verschoben das um mehrere Grad.
@@ -411,28 +421,41 @@ Mainyu wurde von jedem GCD zurück ins Auge gedreht. BossModReborn nimmt nur 0 a
     - *Helferfassung:* Ein Paket mit dem Namen des Blicks, das den Spieler schädigt, gilt als Fehlschlag desselben
       Blicks (#3499 zu #3281, die Strafaktion in Windurst).
     - *Marker:* Als Auge gilt ein wirkender Gegner, dessen Wirken mit dem Marker endet: Der Rest des Balkens liegt
-      höchstens die gemessene Verzögerung bis zum Paket plus Vorlauf unter dem Rest des Markers. Grund (A789): Der
+      höchstens die gemessene Verzögerung bis zum Paket plus ein Bild (mit Messung: plus Vorlauf) unter dem Rest des
+      Markers. Ohne gemessene Verzögerung gilt jeder Wirkende. Einmal zugeordnete Augen bleiben (A791): Im letzten Stück
+      wirkt das echte Auge nicht mehr, und dann passte jeder Gegner, dessen Wirken gerade endet, etwa ein Helfer mit einer
+      Fläche. Neu zugeordnet wird nur, solange keines der bisherigen Augen wirkt und der Marker noch nicht in diesem
+      Stück ist. Die Zeile „gaze: marker …“ nennt die Augen. Grund (A789): Der
       Balken eines Gegners ist 0,3 s kürzer als das Blatt (#3281 2,7 statt 3,0 s, #3499 4,2 statt 4,5 s); der Marker
       sagt „7s“, das Wirken #49121 hat 7,0 s im Blatt, also 6,7 s Balken. Mit dem Vorlauf allein fand RSR bei guter
       Verbindung kein Auge. Unter mehreren gilt der mit dem größten Trefferkreis. Der Marker bleibt fällig bis zu seiner
-      Dauer plus dieser Verzögerung; BossModReborn löst ihn bei 7,1 s auf (`A35ShinryuParadox`). Das Paket dieses
-      Wirkens entscheidet wie oben. Gibt es kein solches Wirken, gilt der Marker nicht als Blick, und RSR tut nichts.
-      Bis A786 galt der größte Wirkende, gleich was er wirkte.
-    - *Status auf dem Spieler, Mitglied als Auge:* Ein Paket des Gegners, der das Auge ist, mit Schaden oder schädlichem
-      Status auf dem Spieler, bis zum Ende der Frist unten.
+      Dauer plus dieser Verzögerung; BossModReborn löst ihn bei 7,1 s auf (`A35ShinryuParadox`). Gibt es kein solches
+      Wirken, gilt der Marker nicht als Blick, und RSR tut nichts. Bis A786 galt der größte Wirkende, gleich was er wirkte.
+    - *Marker, Status auf dem Spieler, Mitglied als Auge* (A791): Jedes Paket eines Gegners mit Schaden oder schädlichem
+      Status auf dem Spieler bis zum Ende der Frist ist ein Fehlschlag. Aufgelöst werden diese Blicke von Helfern ohne
+      Wirken: Nymeia über #31316 und #31317, Lapis Manalis über #31385 (BossModReborns Enums, „Helper->self, no cast“);
+      die Wirken in Windurst (#49121, #49161) sind laut BossModReborn nur Bild. Bis A791 zählte nur das Paket des
+      Auges, also nie ein Fehlschlag, und RSR schrieb „avoided“ ohne Beleg. Ohne Schaden schreibt es jetzt „avoided, no
+      harm seen“. *Preis:* Eine gleichzeitige Fläche zählt als Fehlschlag, und RSR dreht für diesen Blick nicht mehr.
     - Automatische Angriffe (`ActionCategory` 1) zählen nie. Bis A786 zählte bei Markern jeder Schaden jedes Gegners.
       Für einen Tank reichte ein automatischer Angriff, und der Marker galt im Gebiet als misstraut.
     - *Frist ohne Paket:* die größte im Gebiet gemessene Verzögerung vom Balkenende bis zum Effekt-Paket plus Vorlauf.
       Danach schreibt RSR „gaze: unknown …“, nicht „avoided“. Bis A786 schloss RSR nach Vorlauf plus Antwortzeit als
       vermieden. Das waren 0,2 bis 0,4 s nach dem Balken, vor dem Paket, das 0,26 bis 0,30 s danach kommt. Ein Treffer
       blieb so unerkannt.
-  - *Folge eines Fehlschlags* (A789): Das Paket, das ihn zeigt, sagt auch, ob RSRs Annahme über Auge und Richtung
-    stimmt. Zählt RSR darunter andere Getroffene, die nach der Annahme ins Auge sahen, und nicht mehr Getroffene, die
-    nach ihr wegsahen, stimmt die Annahme, und nur der Zeitpunkt reichte nicht. Dann dreht RSR für diesen Blick nicht
-    mehr und wählt keine Richtung, hält aber Aktionen über das ganze Wirken zurück, die genau ins Auge drehen würden,
-    wie A770. Sonst, oder ohne andere Getroffene, ist die Annahme falsch oder unbelegt: Dann greift RSR bei diesem Blick
-    gar nicht mehr ein, also das Verhalten ohne die Regel (`code.md`, „Entscheidung zur Laufzeit“). Grund: Ist das Auge
-    oder die Richtung falsch, verhinderte die Sperre gerade die Aktion, die den Spieler zum echten Auge dreht.
+  - *Folge eines Fehlschlags* (A789, A791): Das Paket, das ihn zeigt, sagt auch, ob RSRs Annahme über Auge und
+    Richtung stimmt. Gezählt werden die anderen Getroffenen: wie viele nach der Annahme ins Auge sahen, wie viele weg.
+    - *Widerlegt* (mehr sahen weg als hin): RSR greift bei diesem Blick gar nicht mehr ein, also das Verhalten ohne die
+      Regel. Grund: Ist das Auge oder die Richtung falsch, verhinderte die Sperre gerade die Aktion, die den Spieler zum
+      echten Auge dreht.
+    - *Bestätigt oder unbelegt* (sonst, auch ohne andere Getroffene): RSR dreht für diesen Blick nicht mehr und wählt
+      keine Richtung, hält aber Aktionen über das ganze Wirken zurück, die genau ins Auge drehen würden, wie A770. Die
+      Sperre dreht nicht selbst; sie nimmt nur Ziele aus der Wahl. Bis A791 ließ RSR den Blick auch ohne andere
+      Getroffene ganz los. Allein oder zu viert im Pilgerpfad (Pakete mit 2 bis 3 Zielen, gemessen am 12.11.2026) hätte ein
+      einziger Treffer dann jeden weiteren Angriff auf Destrudo ins Auge gedreht.
+    - *Zweiter Treffer:* Trifft der Blick den Spieler, während nur noch die Sperre gilt, lässt RSR ihn ganz los. Das deckt
+      einen in Wahrheit umgekehrten Blick, bei dem die Sperre gerade die Ziele zum Auge hin ausnimmt. Ein falsches Modell
+      kostet so höchstens zwei Treffer je Build, nicht einen bei jedem Wirken.
   - *Dauer:* bis RSR neu geladen wird, also bis zum nächsten Build; er kompiliert vor jedem Spielen. Der Schlüssel ist
     das Gebiet mit dem Namen des Wirkens, bei Markern der Marker-Art, bei Status der Status-Id. Bis A789 setzte jeder
     Gebietswechsel das zurück. Mit jeder neuen Runde desselben Dungeons kostete ein falsches Modell dann erneut einen
@@ -443,9 +466,10 @@ Mainyu wurde von jedem GCD zurück ins Auge gedreht. BossModReborn nimmt nur 0 a
     belegt seine nächste Aufnahme, ohne dass er stirbt. *Vorhersage* (A786): Bei Angra Mainyu, #3499, zeigt die Zeile
     getroffene Spieler, die zum Auge sahen, und keine getroffenen, die wegsahen. Getroffene, die wegsahen, widerlegen
     den Ort.
-  - *Gegenthese 1 (falscher Fehlschlag):* Eine gleichzeitige andere Wirkung mit demselben Namen, oder bei Status und
-    Mitglied ein Angriff des Auges, kann als Fehlschlag zählen. *Preis:* RSR dreht bei diesem Blick in diesem Gebiet
-    nicht mehr und sperrt nur noch. Das kostet Schaden, kein Leben.
+  - *Gegenthese 1 (falscher Fehlschlag):* Eine gleichzeitige andere Wirkung mit demselben Namen, oder bei Marker,
+    Status und Mitglied ein anderer Treffer, kann als Fehlschlag zählen. *Preis:* RSR dreht bei diesem Blick bis zum
+    nächsten Build nicht mehr und sperrt nur noch, das kostet Schaden. Ganz los lässt es ihn nur, wenn das Paket die
+    Annahme widerlegt oder der Blick ein zweites Mal trifft.
   - *Gegenthese 2 (Fehlschlag ohne Eingriff):* Hat RSR nur gesperrt, lernt es nichts. Dort drehte RSR nicht, also kann
     seine Regel den Tod nicht verursacht haben.
   - *Gegenthese 3 (ausgeliefert, und nichts ändert sich):* Ein Status, den der Server ohne das Paket des Blicks setzt,
@@ -547,7 +571,7 @@ Mainyu wurde von jedem GCD zurück ins Auge gedreht. BossModReborn nimmt nur 0 a
       aus dem Pfad („7s“). Augen sind die wirkenden Gegner mit dem größten Trefferkreis: in Phase 1 Shinryu und sein
       Teil „ShinryuGroin“ (beide 25 y, beide wirken #49121/#49122), in Phase 2 der Hollow King (25 y). Liegen zwei
       Augen in verschiedenen Richtungen, gilt jedes; bei „Look“ bleibt nur eine Richtung, die beide ansieht.
-      *Schluss, unbelegt am Mitschnitt:* Die Zeile „gaze: marker …“ nennt die gewählten Augen.
+      *Schluss, unbelegt am Mitschnitt:* Die Zeile „gaze: marker …“ nennt die gewählten Augen (seit A791 geschrieben).
     - Mitglied als Auge nach dem Statustext („petrifying attack in all directions“), ein normaler Blick vom Träger aus,
       solange der Träger nicht der Spieler ist und lebt.
     - *Unsicher:* Ids, die BossModReborn nur in selbst gebauten Blicken führt, zählen nicht als Blick, auch mit

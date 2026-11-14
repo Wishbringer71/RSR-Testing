@@ -10,7 +10,8 @@ are taken - which action ids, and whether the gaze is inverted (the player must 
 Gazes a module builds itself (`GenericGaze`, A776) place the eye or decide the inversion at runtime: at a created figure,
 by an icon, a status or an animation. RSR cannot read those, so their ids go to `Unsure` and count as no gaze, even with
 the gaze mark or a gaze's name. A class that inverts nothing and puts the eye where its cast happens (`spell.LocXZ` in
-`OnCastStarted`, without a module setting) gives its cast ids to `Gazes`: RSR places the eye at the cast's location.
+`OnCastStarted`, without a module setting) gives its cast ids to `Gazes`. RSR places the eye at the caster, at the cast's
+location only for a ground-targeted action; the packet's place is the caster's for these (concept 13, A786, A789).
 
   generate <BossmodReborn checkout>   writes RotationSolver/Basic/Resources/GazeActions.g.cs.
   --check       the file in the tree: ids ascending and unique, none in both lists, every id an enemy action of the
