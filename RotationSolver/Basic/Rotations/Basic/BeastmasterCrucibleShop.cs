@@ -1221,13 +1221,22 @@ public partial class BeastmasterRotation
 		var guardLine = k8Holds ? belowLine : float.MaxValue;
 		var healLine = k8Holds ? belowLine : healable;
 		// Smoke bombs: under Safe win the route flees between safe ways for HP; elsewhere only where the way with the fight is
-		// not safe - by the route's own net measure (A709, CarriesToFinal without the potion line), the demand beyond your HP
-		// and the healing held; with a fight on the way unmeasured, the part below the line as before.
+		// not safe (eighth review, A804) - the net demand (A709, CarriesToFinal without the potion line) beyond your HP, the
+		// healing held and chosen, and the fights the bombs held already spare; with a fight on the way unmeasured, nothing:
+		// the route does not flee from an unknown fight.
 		var spareLine = float.MaxValue;
 		if (WeighsScore)
 		{
 			_ = CarriesToFinal(true, out var heldShare, out var wayLoad);
-			spareLine = wayLoad is { } wayNeed ? Math.Max(0f, wayNeed - Service.Config.UseHpPotionsPercent - heldShare) : belowLine;
+			var spared = 0f;
+			for (var i = 0; i < bombsHeld && i < enemyLoads.Count; i++)
+			{
+				spared += enemyLoads[i];
+			}
+
+			spareLine = wayLoad is { } wayNeed
+				? Math.Max(0f, wayNeed - Service.Config.UseHpPotionsPercent - heldShare - healedChosen - spared)
+				: 0f;
 		}
 		foreach (var (row, id, _) in offers)
 		{

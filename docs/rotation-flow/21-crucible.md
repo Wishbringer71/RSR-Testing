@@ -628,9 +628,11 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     angekündigten Treffer (er zählt voll) und trinkt im Endkampf jede Heilung, die nicht überheilt (A664; sie zählt bis
     zum ganzen Bedarf des Wegs). Rauchbomben setzt der Weg ein: unter Safe win zwischen sicheren Wegen für LP (sie zählen
     voll), unter Level und Score nur, wo der Kampfweg unsicher ist – sie zählen den Teil des Netto-Bedarfs des Wegs
-    (`CarriesToFinal`, A709), der über deine LP und die gehaltene Heilung hinausgeht; ist ein Kampf ungemessen, den Teil
-    unter der Trankschwelle. *Preis:* Die Rast am Lager rechnet der Wegtest des Ladens nicht ein, der Weg selbst schon –
-    vor einem Lager zählt eine Bombe unter Level und Score höchstens zu viel. Was du über der Schwelle hast, zieht RSR vom Bedarf ab: max(0, Bedarf − (deine LP jetzt − Schwelle) − gehaltene
+    (`CarriesToFinal`, A709), der über deine LP, die gehaltene und schon gewählte Heilung und die Kämpfe hinausgeht, die
+    gehaltene Bomben schon ersparen; ist ein Kampf ungemessen, nichts – vor einem unbekannten Kampf flieht der Weg nicht
+    (achte Prüfrunde). *Preis:* Die Rast am Lager und die Wahl des besseren Wegs an einer Gabelung rechnet der
+    Wegtest des Ladens nicht ein (er nimmt den schwersten Weg ohne Rast), der Weg selbst schon – vor einem Lager oder
+    einer Gabelung zählt eine Bombe unter Level und Score höchstens zu viel. Was du über der Schwelle hast, zieht RSR vom Bedarf ab: max(0, Bedarf − (deine LP jetzt − Schwelle) − gehaltene
     Heilung). Ausrüstung wirkt ohne Zutun und bleibt auf der Skala wie bisher; damit geht bleibende Ausrüstung vor
     Verbrauchsmitteln, wo der Weg dich nicht unter die Schwelle bringt. *Im Kampf (14.11.2026, Brett 2, erster Laden):*
     Ein Kampf kostete dich 4 %, sieben lagen vor dir; RSR empfahl Bestien-Heiltrank II, Bestien-Pulver II und ein Grimoire,
@@ -2152,7 +2154,18 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
   ohne einen Tausch in der Spur, Begleiter auf Rang 6 bis 8 blieben auf Brett 2 zu Hause.
   *Regel:* Der Kader hat zwei Teile.
   - *Kämpfer:* der Kern (jeder, der eine Schwäche neu abdeckt, die Heiler und Schützer, die B5 vor dem Boss verlangt,
-    der Unterbrecher) und die Reserve bis zu der Zahl, die die gemessenen Verluste dieses Bretts mit einem Begleiter in
+    der Unterbrecher) und die Reserve. *Der Kern aus Nachzüglern (A805; sein Hinweis und seine Vorgabe vom 14.11.2026:
+    „ich habe das brett auch mit lvl6er begleitern am anfang geschafft. also sind zum leveln keine level 10er mehr
+    notwendig, ausser zum auffüllen, falls reserve benötigt wird"):* Solange ein Begleiter zurückliegt, wählt RSR auch
+    den Kern unter den Begleitern ab dem empfohlenen Rang des Bretts: wer eine Schwäche neu abdeckt (oder als Heiler,
+    Schützer, Unterbrecher gebraucht wird) und darunter der rangniedrigste, erst bei gleichem Rang der mit dem höheren
+    Schwächenwert. Begleiter über dem Synchronrang kommen so nur, wo kein Nachzügler darunter eine Schwäche trägt, und
+    zum Auffüllen. *Im Kampf (sein Bild vom 14.11.2026, Brett 2):* Der Kern waren zehn Begleiter ab Rang 10 – die
+    gierige Wahl nahm bei gleichem Wert die über dem Synchronrang zuerst –, und nur Salamander und Worm (Rang 6) kamen
+    auf die zwei Reserveplätze, obwohl 42 Begleiter zurücklagen. *Gegenthese (schwächer):* Rang 6 auf Brett 2 ist die
+    Empfehlung des Spiels, und er hat das Brett damit geschafft (Hinweis); die Hornwahl (K6) setzt je Kampf die
+    stärksten ein, die gemessenen Verluste bestimmen die Reserve. *Preis:* längere Kämpfe mit schwächeren Begleitern,
+    solange die Messung der Verluste nach Rangstufe (A729) noch nichts kennt. Die Reserve reicht bis zu der Zahl, die die gemessenen Verluste dieses Bretts mit einem Begleiter in
     Reserve trägt (A703, je Größe gerechnet, nicht nur auf den Stufen von In Unterzahl); ohne Messung die volle Größe.
     Auf den Reserveplätzen gehen *Nachzügler* vor, die adäquat ersetzen – echter Rang unter 25, mindestens der
     empfohlene Rang des Bretts –, aus jeder Gattung, der niedrigste zuerst; danach die gierige
@@ -2207,7 +2220,7 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
   bleibt gespeichert (Einstellung „Goal of a Crucible run (also the three buttons of the team window)", ab Werk „Level"). Kader und Verhalten im Brett folgen ihm:
   | Ziel | Kader (K7) | Im Brett (K15 und was daran hängt) |
   |---|---|---|
-  | Level | Kämpfer und Lernende aus allen Gattungen (oben); ohne Nachzügler wie „Score" (seine Vorgabe vom 14.11.2026, „Nach dem Höchstrang") | Boni gewogen wie unter „Score": Die Begleiter-EP folgen der Punktzahl |
+  | Level | Kämpfer (auch der Kern aus den rangniedrigsten ab dem empfohlenen Rang, A805) und Lernende aus allen Gattungen (oben); ohne Nachzügler wie „Score" (seine Vorgabe vom 14.11.2026, „Nach dem Höchstrang") | Boni gewogen wie unter „Score": Die Begleiter-EP folgen der Punktzahl |
   | Safe win | volle Größe, gierig nach Schwächen; unter dem empfohlenen Rang (oder ohne bekannten Rang, solange überhaupt einer bekannt ist) nur so viele, wie zum Füllen fehlen, die ranghöchsten; keine Verkleinerung, keine Gattung, keine Lernenden | jede Entscheidung, als gäbe es keinen Bonus – Gegenstände, Kauf, Schatz, Rast, Futter wie ohne K15 (K8, K10, K13), unter sicheren Wegen mehr Gegenstandsfelder, dann LP, nicht Punkte; nur was der letzte GCD des Endkampfs kauft, wiegt Punkte (unten) |
   | Score | Größe nach Punkten (A698) und Gattung (A699), keine Lernenden | K15 wie gebaut: ein Bonus bleibt, solange der Weg ohne die Handlung sicher ist |
   *Die Regel unter Safe win, geschlossen (nach vier Prüfrunden, A804):* Jede Entscheidung fällt, als gäbe es keinen

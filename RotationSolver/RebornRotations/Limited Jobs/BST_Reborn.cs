@@ -158,10 +158,11 @@ public sealed class BST_Reborn : BeastmasterRotation
 	// the score bonuses on the board follow. It replaces "Prefer familiars that lag behind in rank" (A579, A796), whose "off"
 	// carries over as Score.
 	[RotationConfig(CombatType.PvE, Name = "Goal of a Crucible run (also the three buttons of the team window)",
-		Tooltip = "Level: every familiar in the team earns experience, on a horn or not. The team keeps the familiars the board's "
-			+ "fights need - each weakness, healing and protection for the boss, the reserve the measured losses ask for - and "
-			+ "fills every other place with the familiars lowest in true rank, of every kin, in turns, up to the board's size; on "
-			+ "a reserve place only one at least at the rank the game recommends. Once none lags behind, as Score. On the board the "
+		Tooltip = "Level: every familiar in the team earns experience, on a horn or not. The familiars the board's fights need - "
+			+ "each weakness, healing and protection for the boss, the reserve the measured losses ask for - are themselves the "
+			+ "lowest in true rank at or above the rank the game recommends; one higher only where none lower carries a weakness, "
+			+ "or to fill. Every other place goes to the familiars lowest in true rank, of every kin, in turns, up to the "
+			+ "board's size. Once none lags behind, as Score. On the board the "
 			+ "score bonuses are weighed as under Score - the experience follows the score.\n"
 			+ "Safe win: the full team for the board's fights; below the recommended rank, or of no known rank, only as many as "
 			+ "the others leave places, the highest first; at equal worth the higher rank. On the board every choice as if there "

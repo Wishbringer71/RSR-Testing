@@ -23371,6 +23371,33 @@ audit, codereview und fehlerbeseitigung".
   kein Modell. Preis benannt: Die Rast rechnet der Wegtest des Ladens nicht ein. Niedrig, nicht geändert: Der Weg nennt
   eine Flucht nur an Gabelungen; ob eine Rauchbombe Sparsamkeit kostet, ist unbelegt; das Auffüllen im letzten GCD setzt
   „Bonus geht vor" fest, statt Punkte zu rechnen (A712, gemessen: der Bonus wiegt mehr).
+- *Achte Prüfrunde:* Heil- und Schutzzeile bestätigt; zwei mittlere an der Rauchbombe: Der Rückfall bei ungemessenem
+  Kampf zählte wieder bis unter die Trankschwelle (der Weg flieht vor einem unbekannten Kampf nie), und der Fehlbetrag
+  zog gehaltene Bomben und gewählte Heilung nicht ab. Unter Level und Score zählt eine Bombe jetzt den Netto-Fehlbetrag
+  abzüglich gehaltener und gewählter Heilung und der Kämpfe, die gehaltene Bomben ersparen; ungemessen nichts. Preis
+  benannt: Rast und Gabelung rechnet der Laden nicht ein. *Stand der Prüfung:* acht Runden, nie ein Befund hoher
+  Schwere; die mittleren der Runden 3 bis 8 lagen alle in Laden und Weg, wo der Laden die Entscheidung anderer Regeln
+  nachrechnet – die Konstruktion fragt jetzt deren Prüfungen ab; ein Plateau (eine Runde ohne mittleren Befund) ist
+  nicht erreicht.
+
+### A805 · Kader unter Level: auch der Kern aus Nachzüglern (14.11.2026)
+
+Sein Bild vom Kaderfenster (Brett 2, Build mit A804) und seine Worte (14.11.2026): „warum werden nur 2 geringlevelige
+genommen. ich habe das brett auch mit lvl6er begleitern am anfang geschafft. also sind zum leveln keine level 10er mehr
+notwendig, ausser zum auffüllen, falls reserve benötigt wird". Einordnung: Hinweis (Brett 2 mit Rang 6 geschafft) und
+Vorgabe (zum Leveln keine Begleiter ab Rang 10, außer zum Auffüllen der Reserve).
+- *Befund am Bild:* Der echte Rang wird gelesen (A803 wirkt): „42 lag behind", Salamander und Worm „levels in reserve,
+  rank 6". Der Kern waren zehn Begleiter ab Rang 10: Die gierige Wahl nahm den mit dem höchsten Schwächenwert und bei
+  Gleichstand den über dem Synchronrang; für Nachzügler blieben die zwei Reserveplätze.
+- *Regel (Konzept 21, K7 „Leveln", „Der Kern aus Nachzüglern"):* Unter Level, solange ein Begleiter zurückliegt, wählt
+  RSR auch den Kern unter den Begleitern ab dem empfohlenen Rang: wer eine Schwäche neu abdeckt (oder als Heiler,
+  Schützer, Unterbrecher gebraucht wird), darunter der rangniedrigste, dann der Schwächenwert. Wer unter dem empfohlenen
+  Rang steht, kommt nur als Lernender.
+- *Gegenthese:* schwächer im Kampf – widerlegt durch seinen Hinweis (Brett 2 mit Rang 6 geschafft) und die Hornwahl je
+  Kampf (K6); Preis: längere Kämpfe, bis die Verluste je Rangstufe gemessen sind (A729).
+- *Prüfgrad:* Bildbefund, Compile, CI; Laufzeit nicht beobachtet.
+- *Vorhersage:* `predictions/2026-11-14.json`, „level-core-low": Fordert er unter Level auf Brett 2 den Kader an, nennt
+  „crucible team: goal Level - requested …" mindestens drei Begleiter auf Rang 6 bis 9 aus dem Spiel.
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
