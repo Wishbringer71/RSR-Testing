@@ -564,7 +564,8 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     „Bestienausrüstung"), das Schatzfenster (`XBMContentsTreasure`, ab 75), die Beute nach einem Kampf
     (`XBMContentsBooty`, ab 78) und der Laden (`XBMContentsItemShop`, ab 205) – gelesen in seinen Spuren vom 11. bis
     14.11.2026, je Fenster derselbe Opferring auf Platz 1. Mit jeder Auffrischung eines dieser Fenster gilt seine Liste;
-    was RSR aus einem Schatz nimmt, zählt bis zur nächsten Auffrischung dazu. Jede Änderung geht in die Spur („crucible
+    was RSR aus einem Schatz nimmt, zählt dazu, bis ein Fenster es listet (eine Auffrischung kann noch die Liste von
+    vorher zeigen). Jede Änderung geht in die Spur („crucible
     gear held: …"). *Warum:* Vorher kannte RSR nur, was der letzte Laden zeigte und was es selbst aus Schätzen nahm.
     Ausrüstung aus der Beute, aus einem von Hand genommenen Schatz oder von Hand gekauft nach dem letzten Lesen fehlte:
     Am 14.11.2026 um 14:43 (Lauf seiner Meldung „es wurde ein equipment gegenstand vorgeschlagen, der bereits vorhanden

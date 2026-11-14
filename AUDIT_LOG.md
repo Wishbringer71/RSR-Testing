@@ -23575,6 +23575,11 @@ gegenstand vorgeschlagen, der bereits vorhanden war").
 - *Prüfgrad:* Spuranalyse, Compile, CI; Laufzeit nicht beobachtet.
 - *Vorhersage:* `predictions/2026-11-14.json`, „gear-held-traced": Nach einem Schatz steht „crucible gear held: …" mit
   dem Opferring; widerlegt, wenn ein Schatzfenster aufgefrischt wird und keine solche Zeile im Lauf steht.
+- *Code-Review (14.11.2026, Kader, Laden, Schatz, Fensterspur, Inhaltszeile):* eingearbeitet: eine Stelle hält die
+  Ausrüstung (`NoteGearHeld`, auch der Laden schreibt nur über sie); was RSR nahm, bleibt, bis ein Fenster es listet, und
+  der Vergleich gilt der Menge; die LP je Begleiter rechnet der Kader einmal je Durchgang statt in jeder Schleife
+  (Blattzugriffe je Bild bei offenem Fenster); ein Kommentar. Nicht geändert: das kleinste Verhältnis LP/VIT – ein zu hoch
+  gelesener Rang macht es vorsichtiger, der Median gäbe bei einem zu niedrigen mehr LP.
 
 ### A809 · Blickwache: vierte Prüfrunde gegen die Anforderungen eingearbeitet (14.11.2026)
 

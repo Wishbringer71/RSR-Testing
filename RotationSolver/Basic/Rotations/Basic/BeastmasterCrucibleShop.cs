@@ -135,6 +135,9 @@ public partial class BeastmasterRotation
 	// A662: by run (CrucibleBoard.Run), not by area - a new run on the same board is the same area and starts without gear.
 	private static (int Run, List<ushort> Gear, int Slots)? _gearSeen;
 
+	// A808: the gear RSR took from a treasure in this run.
+	private static (int Run, List<ushort> Gear)? _gearTaken;
+
 	/// <summary>
 	/// K13 (A808): the gear a window of the board shows held - the main HUD, a treasure, the spoils of a fight, a shop - on each
 	/// refresh; it replaces what was known, and each change goes to the trace.
@@ -146,12 +149,25 @@ public partial class BeastmasterRotation
 			return;
 		}
 
+		// What RSR took from a treasure in this run stays held until a window lists it - a refresh may still show the list
+		// from before the take.
+		if (_gearTaken is { } taken && taken.Run == CrucibleBoard.Run)
+		{
+			foreach (var id in taken.Gear)
+			{
+				if (!gear.Contains(id))
+				{
+					gear.Add(id);
+				}
+			}
+		}
+
 		var before = _gearSeen is { } seen && seen.Run == CrucibleBoard.Run ? seen.Gear : null;
 		_gearSeen = (CrucibleBoard.Run, gear, slots);
 		var same = before != null && before.Count == gear.Count;
 		for (var i = 0; same && i < gear.Count; i++)
 		{
-			same = before![i] == gear[i];
+			same = before!.Contains(gear[i]);
 		}
 
 		if (!same)
@@ -513,35 +529,27 @@ public partial class BeastmasterRotation
 			}
 		}
 
-		var owned = new List<CrucibleGear>();
 		var gearSlots = 0;
-		var seen = new List<ushort>();
+		var listed = new List<ushort>();
 		foreach (var piece in reader.OwnedEntries)
 		{
 			gearSlots++;
 			if (piece.Owned && piece.Id <= ushort.MaxValue)
 			{
-				seen.Add((ushort)piece.Id);
-				if (gear.TryGetValue((ushort)piece.Id, out var held))
-				{
-					owned.Add(held);
-				}
+				listed.Add((ushort)piece.Id);
 			}
 		}
 
-		// What RSR took from a treasure in this run counts as worn, should the shop's list not show it yet (A657, A662).
-		if (_gearSeen is { } before && before.Run == CrucibleBoard.Run)
+		// A808: the one place that keeps the gear held - with what RSR took from a treasure in this run, should the list not
+		// show it yet (A657, A662).
+		NoteGearHeld(listed, gearSlots);
+		var seen = _gearSeen is { } held ? held.Gear : listed;
+		var owned = new List<CrucibleGear>(seen.Count);
+		foreach (var id in seen)
 		{
-			foreach (var id in before.Gear)
+			if (gear.TryGetValue(id, out var piece))
 			{
-				if (!seen.Contains(id))
-				{
-					seen.Add(id);
-					if (gear.TryGetValue(id, out var taken))
-					{
-						owned.Add(taken);
-					}
-				}
+				owned.Add(piece);
 			}
 		}
 
@@ -564,8 +572,6 @@ public partial class BeastmasterRotation
 
 		_shopKey = key;
 
-		// Remembered for the treasure (K13, A578): the gear held in this run, and how many slots there are.
-		_gearSeen = (CrucibleBoard.Run, seen, gearSlots);
 
 		var offers = new List<(int Row, ushort Item, int Price)>();
 		for (var r = 0; r < stock.Count; r++)

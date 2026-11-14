@@ -133,17 +133,23 @@ public partial class BeastmasterRotation
 			}
 		}
 
-		return new TeamHealth(shown, sync, perVitality);
+		// Each candidate's HP once for this pass: as shown, else its vitality at its fighting rank times the shown ratio,
+		// rounded down (at most a point or two below the game's floor(VIT x 6.7) - the safe side); 0 where neither is known.
+		var health = new Dictionary<BeastmasterPet, uint>(all.Count);
+		foreach (var candidate in all)
+		{
+			health[candidate.Pet] = shown.TryGetValue(candidate.Pet, out var hp) ? hp
+				: (uint)Math.Floor(perVitality * CrucibleBoard.FamiliarVitality(candidate.Pet,
+					CrucibleBoard.FightingRank(candidate.Rank, candidate.OverRank, sync)));
+		}
+
+		return new TeamHealth(health, perVitality);
 	}
 
-	// K7 (A807): what the team screen shows, and the HP per point of vitality it shows at the board's sync.
-	private readonly record struct TeamHealth(Dictionary<BeastmasterPet, uint> Shown, int Sync, double PerVitality)
+	// K7 (A807): each candidate's HP on this board, and the HP per point of vitality the team screen shows.
+	private readonly record struct TeamHealth(Dictionary<BeastmasterPet, uint> Health, double PerVitality)
 	{
-		// A familiar's HP on this board: as shown, else its vitality at its fighting rank times the shown ratio, rounded down
-		// (at most a point or two below the game's floor(VIT x 6.7) - the safe side); 0 where neither is known.
-		public uint Of(TeamCandidate candidate) => Shown.TryGetValue(candidate.Pet, out var hp) ? hp
-			: (uint)Math.Floor(PerVitality * CrucibleBoard.FamiliarVitality(candidate.Pet,
-				CrucibleBoard.FightingRank(candidate.Rank, candidate.OverRank, Sync)));
+		public uint Of(TeamCandidate candidate) => Health.GetValueOrDefault(candidate.Pet);
 	}
 
 	// K7 (A703, A729): whether the first `n` of `picks` carry every use of a familiar measured on this board - with a team as
@@ -353,7 +359,7 @@ public partial class BeastmasterRotation
 			var stronger = -1;
 			var weakest = long.MaxValue;
 
-			// From the end: at equal rank the later place is found first and kept.
+			// From the end: at equal strength the later place is found first and kept.
 			for (var i = team.Count - 1; i >= 0; i--)
 			{
 				var strength = Strength(team[i]);

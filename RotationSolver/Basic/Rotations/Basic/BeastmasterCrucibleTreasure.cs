@@ -116,18 +116,16 @@ public partial class BeastmasterRotation
 		{
 			if (offer.Row == row && CrucibleGearTable.ContainsKey(offer.Item))
 			{
-				// A808: what RSR took counts as held until a window of the board refreshes the list.
-				if (_gearSeen is not { } held || held.Run != CrucibleBoard.Run)
+				// A808: what RSR took counts as held until a window of the board lists it.
+				if (_gearTaken is not { } taken || taken.Run != CrucibleBoard.Run)
 				{
-					held = (CrucibleBoard.Run, [], 0);
+					taken = (CrucibleBoard.Run, []);
 				}
 
-				if (!held.Gear.Contains(offer.Item))
-				{
-					held.Gear.Add(offer.Item);
-				}
-
-				_gearSeen = held;
+				taken.Gear.Add(offer.Item);
+				_gearTaken = taken;
+				var known = _gearSeen is { } seen && seen.Run == CrucibleBoard.Run;
+				NoteGearHeld(known ? new List<ushort>(_gearSeen!.Value.Gear) : [], known ? _gearSeen!.Value.Slots : 0);
 			}
 		}
 
