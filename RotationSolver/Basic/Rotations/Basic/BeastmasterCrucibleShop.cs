@@ -1212,14 +1212,15 @@ public partial class BeastmasterRotation
 		// protection and smoke bombs only below the potion line while an item bonus stands, so they are worth only the part
 		// of the way's demand that would take you below it - what you have above the line comes off first. A804: what K8 and
 		// the route do under the goal - protection only while an item bonus is at stake (without one, lost or under Safe win,
-		// K8 protects against every announced hit); smoke bombs except under Safe win (only there the route flees between
-		// safe ways for HP; elsewhere it fights for the points); healing while an item bonus is at stake.
+		// K8 protects against every announced hit); healing while an item bonus is at stake.
 		var belowLine = Math.Max(0f, healable - (1f - Service.Config.UseHpPotionsPercent));
 		var guardLine = ItemBonusAtStake ? belowLine : float.MaxValue;
 		// Without an item bonus at stake K8 drinks every heal in the final fight that does not overheal (A664): up to the
 		// way's whole demand.
 		var healLine = ItemBonusAtStake ? belowLine : healable;
-		var spareLine = WeighsScore ? belowLine : float.MaxValue;
+		// Smoke bombs: under Safe win the route flees between safe ways for HP; elsewhere only where the way with the fight is
+		// not safe - the demand beyond your HP and the healing held.
+		var spareLine = WeighsScore ? Math.Max(0f, healable - 1f) : float.MaxValue;
 		foreach (var (row, id, _) in offers)
 		{
 			if (gear.TryGetValue(id, out var piece))

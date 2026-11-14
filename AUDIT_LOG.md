@@ -23358,6 +23358,12 @@ audit, codereview und fehlerbeseitigung".
   (Niedrig) Unter Level und Score gingen Schadensgegenstände im letzten GCD, wenn erst dort feststand, dass der Weg
   nicht getragen wird; die Ausnahme des letzten GCD gilt jetzt unter jedem Ziel in einem Ausdruck. Texte: Weg, Fenster,
   Größenhinweis, Konzepttabelle und K15 „Weg" nennen die Regel.
+- *Sechste Prüfrunde (Ladenlinien gegen K8 und Weg, alle Ziele und Bonuslagen):* kein Befund hoher Schwere, ein
+  mittlerer, älter (A796), aber Teil der geschlossenen Regel: Unter Level und Score zählte eine Rauchbombe den Bedarf
+  unter der Trankschwelle; der Weg flieht dort aber nur, wo der Kampfweg unsicher ist (Bedarf über LP und gehaltener
+  Heilung) – bei vollen LP, 80 % Weg und keiner Heilung empfahl der Laden eine Bombe, die nie ging. Sie zählt jetzt
+  diesen Teil. Konzept „Nur was K8 benutzt" neu gefasst: Jeder Gegenstand zählt, was K8 oder der Weg mit ihm deckt. Alle
+  übrigen Linien, `NonSafetyItemsGo` und die Texte stimmten mit der Regel.
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

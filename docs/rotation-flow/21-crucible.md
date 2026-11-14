@@ -619,14 +619,14 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     (nur noch der Endgegner, 07.11.2026) empfahl RSR so die Mithril-Rüstung für 858 Marken mit „+4 %"; der
     Bestien-Heiltrank I für 35 Marken bringt 10 %, sofern du sie noch heilen kannst. Die Obergrenze verhindert das
     Gegenteil, zehn Tränke für drei Kämpfe zu 18 %. *Nur was K8 benutzt (A796, seine Vorgabe vom 14.11.2026: „entweder
-    sinnvoll nutzen, oder nicht zum kauf vorschlagen"):* Ein Heilgegenstand, ein Schutzgegenstand und eine Rauchbombe zählen
-    höchstens den Teil dieses Bedarfs, der dich unter deine Trankschwelle („Use HP potions below this HP") brächte – über
-    ihr nimmt K8 sie nicht, solange ein Gegenstandsbonus steht, und ohne ihn bringt ein Trank über der Schwelle nur LP am
-    Ende. Für Schutzgegenstände gilt die Grenze nur, solange ein Gegenstandsbonus auf dem Spiel steht
-    (`ItemBonusAtStake`): Ohne ihn – verwirkt, oder unter dem Ziel „Safe win" – nimmt K8 Schutz gegen jeden angekündigten
-    Treffer, und er zählt wieder voll. Für Rauchbomben gilt sie außer unter Safe win: Nur dort flieht der Weg unter
-    sicheren Wegen für LP (A804). Für Heilgegenstände gilt sie, solange ein Gegenstandsbonus auf dem Spiel steht; ohne
-    ihn trinkt K8 im Endkampf jede Heilung, die nicht überheilt (A664), und sie zählt bis zum ganzen Bedarf des Wegs. Was du über der Schwelle hast, zieht RSR vom Bedarf ab: max(0, Bedarf − (deine LP jetzt − Schwelle) − gehaltene
+    sinnvoll nutzen, oder nicht zum kauf vorschlagen"):* Ein Gegenstand zählt höchstens den Teil dieses Bedarfs, den K8
+    oder der Weg mit ihm wirklich deckt. Heil- und Schutzgegenstände: solange ein Gegenstandsbonus auf dem Spiel steht
+    (`ItemBonusAtStake`), nur den Teil, der dich unter deine Trankschwelle („Use HP potions below this HP") brächte –
+    über ihr nimmt K8 sie dann nicht. Ohne ihn – verwirkt, oder unter dem Ziel „Safe win" – nimmt K8 Schutz gegen jeden
+    angekündigten Treffer (er zählt voll) und trinkt im Endkampf jede Heilung, die nicht überheilt (A664; sie zählt bis
+    zum ganzen Bedarf des Wegs). Rauchbomben setzt der Weg ein: unter Safe win zwischen sicheren Wegen für LP (sie zählen
+    voll), unter Level und Score nur, wo der Kampfweg unsicher ist – sie zählen den Teil des Bedarfs, der über deine LP
+    und die gehaltene Heilung hinausgeht (sechste Prüfrunde, A804). Was du über der Schwelle hast, zieht RSR vom Bedarf ab: max(0, Bedarf − (deine LP jetzt − Schwelle) − gehaltene
     Heilung). Ausrüstung wirkt ohne Zutun und bleibt auf der Skala wie bisher; damit geht bleibende Ausrüstung vor
     Verbrauchsmitteln, wo der Weg dich nicht unter die Schwelle bringt. *Im Kampf (14.11.2026, Brett 2, erster Laden):*
     Ein Kampf kostete dich 4 %, sieben lagen vor dir; RSR empfahl Bestien-Heiltrank II, Bestien-Pulver II und ein Grimoire,
@@ -2215,7 +2215,8 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
   Gegenstandsbonus auf dem Spiel steht, nur unter der Trankschwelle (K8 heilt nur dort), sonst bis zum ganzen Bedarf
   des Wegs (im Endkampf trinkt K8 jede Heilung, die nicht überheilt, A664); Schutzgegenstände voll, sobald kein
   Gegenstandsbonus auf dem Spiel steht (K8 schützt dann gegen jeden angekündigten Treffer); Rauchbomben voll nur unter
-  Safe win (nur dort flieht der Weg unter sicheren Wegen für LP, unter Level und Score kämpft er für die Punkte). Die Wahl gilt ab dem Klick,
+  Safe win (nur dort flieht der Weg unter sicheren Wegen für LP), unter Level und Score nur mit dem Teil des Bedarfs,
+  der über LP und gehaltene Heilung hinausgeht (dort flieht der Weg nur, wo der Kampfweg unsicher ist). Die Wahl gilt ab dem Klick,
   auch mitten im Lauf über die Einstellung, und für alle folgenden Läufe; ein schon verlorener Bonus bleibt verloren. Die
   Spur nennt das Ziel mit dem angeforderten Kader („crucible team: goal Level - requested …"). Unter Level gilt das Team
   einer Gattung (A699) erst, wenn kein Begleiter mehr zurückliegt – auch keiner im Kern: Vorher schlösse es Nachzügler
