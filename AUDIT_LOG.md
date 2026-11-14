@@ -23100,6 +23100,40 @@ geringere punktzahl zu bekommen, oder dass diese durch essen gebufft werden müs
   Zeile „crucible team: requested …" mindestens einen Begleiter mit „levels".
 - *Prüfgrad:* Compile, CI; Laufzeit nicht beobachtet.
 
+### A797 · Upload vom 14.11.2026, 15:02: Brett 2 ohne Absturz; Laden und Gegenstände nach seiner Vorgabe (14.11.2026)
+
+Sein Upload (`DefenseTrace.log`, `BestiaryTrace.log`, ACT-Mitschnitt, Dalamud-Protokolle) mit seinen Meldungen: „brett2 im
+letzten laden gab es keinen vorschlag mehr"; „ich hatte am schluss eine menge ungenutzter verbrauchsmittel. also entweder
+sinnvoll nutzen, oder nicht zum kauf vorschlagen. ausserdem wurden eher verbrauchsmittel vorgeschlagen als beständiges
+inventar" (Vorgabe); „es wurde ein equipment gegenstand vorgeschlagen, der bereits vorhanden war" (Defekt); „beim
+begleiterauswahlfenster beachten, dass es nicht zu hoch wird und die bildschirmauflösung des spiels überschreitet"
+(Vorgabe); dazu die Punktboni der Abrechnung genau auswerten, als Grundlage der Kaderwahl (Vorgabe; K7 A796, K15).
+- *Sitzung:* 14:36:59 bis 15:01:46 auf 3900a0892, normal beendet. Vorhersagen: hook-no-fault PASS (A794),
+  gaze-no-hit-after-turn PASS (A783), übrige offen (Inhalt nicht gespielt).
+- *Kader:* derselbe wie am 11.11. ohne Tausch (behoben in A796).
+- *Erster Laden (nach Kampf 7):* ein Kampf kostete ihn 4 %, sieben lagen vor ihm; RSR empfahl Todesrüstung,
+  Bestien-Heiltrank II, Bestien-Pulver II, Grimoire der Unantastbarkeit. Am Ende ungenutzt: zwei Tränke III, ein Trank IV,
+  zwei Grimoires, Asche II. Ursache: Die Skala (A659, A661) wog Heilung und Schutz nach dem ganzen Bedarf des Wegs, K8
+  nimmt sie aber nur unter der Trankschwelle. *Behoben:* Verbrauchsmittel zählen nur den Teil des Bedarfs unter der
+  Trankschwelle; Ausrüstung bleibt, wie sie war, und geht damit vor, wo der Weg ihn nicht unter die Schwelle bringt.
+- *Zweiter Laden:* empfahl Bestien-Flinkheitsmittel (500) und Rundschild; er kaufte Ohrring und Rundschild, bei 490
+  Marken blieb keine Empfehlung. Der Lichtarmreif (430; Velocitas +15 %, magische Verwundbarkeit −8 %, `XBMItem` 37)
+  fängt nur gemessenen magischen Schaden ab, der auf Brett 2 gering war – nach der Skala folgerichtig.
+- *Endkampf:* Zu Beginn zehn Gegenstände gehalten (Sammelleidenschaft, 1.000); RSR nahm die Feder (100 TP), danach
+  Reißzahn und Asche I – „items go again – a fight on the way to the final fight was never measured". Der Endkampf kostete
+  32 %. *Behoben:* Schaden, TP und Stärkung gehen bei erhaltenem Gegenstandsbonus nur, wenn belegt ist, dass er den Weg
+  nicht trägt; eine unbekannte Last gibt nur Schutz und Versicherung frei.
+- *Schon vorhandene Ausrüstung empfohlen:* nicht zu belegen – die Fensterspur schrieb nur den ersten Laden des Laufs.
+  Sie schreibt jetzt jeden Laden und das Teamfenster vor dem Brett; TODO „Ausrüstung empfohlen, die er schon hatte".
+- *Teamfenster:* Höhe bis zum unteren Bildschirmrand, darüber Bildlauf (A654); `window_layout_model.py` am Stand
+  bestätigt (auch 800 × 400). Die neuen Begründungen sind kurz gehalten.
+- *Konzept:* 21, K13 „Nur was K8 benutzt", K15 „Kein Gegenstand".
+- *Vorhersage:* Im nächsten Lauf mit leichten Kämpfen empfiehlt der Laden keinen Heiltrank, solange „a fight cost you" mal
+  die Kämpfe bis zum Endkampf über seiner Trankschwelle bleibt; im Endkampf mit zehn gehaltenen Gegenständen und unbekannter
+  Last geht kein Schaden-, TP- oder Stärkungsgegenstand („crucible item: … in the final fight" fehlt), solange er über der
+  Schwelle steht.
+- *Prüfgrad:* Laufzeitbeobachtung (Upload), Compile, CI, Fenstermodell; die Änderungen nicht im Spiel beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

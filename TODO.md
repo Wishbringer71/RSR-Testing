@@ -30,18 +30,11 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
 
 ## Defekte
 
-### Crucible: Laden empfiehlt Verbrauchsmittel, die ungenutzt bleiben · N
-*Wirkung:* Brett 2 am 14.11.2026: Heiltrank, Pulver und drei Grimoires gekauft bei 4 % LP-Verlust je Kampf, ungenutzt am
-Ende; Verbrauchsmittel vor bleibender Ausrüstung; im letzten Laden bei 490 Marken keine Empfehlung, obwohl der
-Lichtarmreif (430) da war; ein Ausrüstungsteil empfohlen, das er schon trug. *Ort:* `BeastmasterCrucibleShop`
-(Kaufliste K13), `CrucibleBoard`. *Nächster Schritt:* Loop zu K13 gegen seine Vorgabe „entweder sinnvoll nutzen, oder
-nicht zum kauf vorschlagen". *Konzept:* 21, K13.
-
-### Crucible: Gegenstände im Endkampf kosten „zehn gehalten“ · N
-*Wirkung:* 14.11.2026: Zu Beginn des Endkampfs zehn Gegenstände gehalten (1.000 Punkte), dann Feder, Reißzahn und Asche I
-benutzt, laut Spur ohne Bedarf („nothing is worth anything after it"). *Ort:* `BeastmasterCrucibleItems` (K8). *Nächster
-Schritt:* Loop K8/K15: ein Gegenstand ohne Sicherheitsgrund wird nicht benutzt, solange der Bonus für zehn gehaltene
-steht. *Konzept:* 21, K8, K15.
+### Crucible: Ausrüstung empfohlen, die er schon hatte · N
+*Wirkung:* Seine Meldung vom 14.11.2026 (Brett 2): ein Ausrüstungsteil empfohlen, das er schon besaß; welches, zeigt die
+Spur nicht – sie schrieb nur den ersten Laden des Laufs. *Ort:* `BeastmasterCrucibleShop` (A657, Ausschluss getragener
+Ausrüstung), `BeastmasterCrucibleTreasure`. *Auflösungsbedingung:* der nächste Upload mit einem Lauf mit zwei Läden, in dem die
+Fensterspur jeden Laden mit seiner Ausrüstungsliste zeigt. *Konzept:* 21, K13 „Was du trägst".
 
 ## Offene Arbeit
 

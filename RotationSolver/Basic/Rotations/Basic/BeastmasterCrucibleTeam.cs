@@ -287,8 +287,8 @@ public partial class BeastmasterRotation
 		}
 
 		var squad = SquadPoints(fighters.Count);
-		note = $"{fighting} fighting{(fighting < chosen.Count ? " (the measured losses fit with one in reserve)" : string.Empty)}, "
-			+ $"{learning.Count} that lag behind in rank level with them ({learners} off the horns)"
+		note = $"{fighting} fight{(fighting < chosen.Count ? " (they carry the measured losses, one in reserve)" : string.Empty)}; "
+			+ $"{learning.Count} lag behind in rank and level with them, {learners} of them off the horns unless too few others live"
 			+ (fighters.Count < size && squad > 0 ? $"; {fighters.Count} familiars bring {squad} points for a small team." : ".");
 		return fighters;
 	}
@@ -505,7 +505,7 @@ public partial class BeastmasterRotation
 				+ (hit.Count > 0 ? $"hits {string.Join(", ", hit)}" : "no weakness of this board")
 				+ (pick.OverRank ? string.Empty : "; below the board's rank")
 				+ (learning.TryGetValue(pick.Pet, out var learns)
-					? learns ? $"; levels: rank {pick.Rank}, off the horns unless too few others live" : $"; levels: rank {pick.Rank}, fights in reserve"
+					? learns ? $"; levels, rank {pick.Rank}" : $"; levels in reserve, rank {pick.Rank}"
 					: string.Empty);
 			picks.Add(new CrucibleTeamPick(pick.Pet, why, team.Contains(pick.Pet)));
 			_teamRanks[pick.Pet] = $"{(pick.OverRank ? $"{pick.Rank}+" : pick.Rank.ToString())}{(learning.ContainsKey(pick.Pet) ? " levels" : string.Empty)}";

@@ -15,6 +15,15 @@ public partial class BeastmasterRotation
 	private static bool _scoreItemUsed;
 	private static bool? _scoreKeepTraced;
 	private static bool _scoreKeep;
+
+	// A796: the last weighing found the way known and not carried - not merely unknown.
+	private static bool _scoreShortKnown;
+
+	/// <summary>
+	/// K15 (A796): whether items that do not protect - damage, TP, buffs - may go: no item bonus is at stake, or the player is
+	/// known not to carry the way to the final fight. An unknown load does not free them.
+	/// </summary>
+	private static bool NonSafetyItemsGo(IBattleChara player) => !KeepsNoItemBonus(player) && (!ItemBonusAtStake || _scoreShortKnown);
 	private static DateTime _scoreKeepAt = DateTime.MinValue;
 
 	/// <summary>
@@ -335,6 +344,7 @@ public partial class BeastmasterRotation
 		}
 
 		_scoreKeep = keep;
+		_scoreShortKnown = !keep && load != null;
 		return keep;
 	}
 }

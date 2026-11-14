@@ -505,7 +505,10 @@ public partial class BeastmasterRotation
 		// K15 (A689): while the no-item bonus stands and the player carries the way to the final fight, only items against a
 		// present danger go - healing below the line, cures, protection against an announced hit, the familiar's care.
 		var keepNoItem = KeepsNoItemBonus(player);
-		damage &= !keepNoItem;
+
+		// A796: damage, TP and buffs protect nothing - while an item bonus is at stake they wait unless the way is known not
+		// to be carried; an unknown load frees only what protects.
+		damage &= NonSafetyItemsGo(player);
 		var slot = -1;
 		var why = string.Empty;
 		IBattleChara on = player;

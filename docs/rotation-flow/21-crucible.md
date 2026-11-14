@@ -617,7 +617,18 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     schon nahm. Grund: Vorher stand jede Ausrüstung mit messbarem Gewinn vor jedem Trank. Im Laden auf Zug 8 von Brett 1
     (nur noch der Endgegner, 07.11.2026) empfahl RSR so die Mithril-Rüstung für 858 Marken mit „+4 %"; der
     Bestien-Heiltrank I für 35 Marken bringt 10 %, sofern du sie noch heilen kannst. Die Obergrenze verhindert das
-    Gegenteil, zehn Tränke für drei Kämpfe zu 18 %. *Berichtigt (A661):* Bis A661 rechnete sie jeden Kampf, den Endkampf
+    Gegenteil, zehn Tränke für drei Kämpfe zu 18 %. *Nur was K8 benutzt (A796, seine Vorgabe vom 14.11.2026: „entweder
+    sinnvoll nutzen, oder nicht zum kauf vorschlagen"):* Ein Heilgegenstand, ein Schutzgegenstand und eine Rauchbombe zählen
+    höchstens den Teil dieses Bedarfs, der dich unter deine Trankschwelle („Use HP potions below this HP") brächte – über
+    ihr nimmt K8 sie nicht, solange ein Gegenstandsbonus steht, und ohne ihn bringt ein Trank über der Schwelle nur LP am
+    Ende. Was du über der Schwelle hast, zieht RSR vom Bedarf ab: max(0, Bedarf − (deine LP jetzt − Schwelle) − gehaltene
+    Heilung). Ausrüstung wirkt ohne Zutun und bleibt auf der Skala wie bisher; damit geht bleibende Ausrüstung vor
+    Verbrauchsmitteln, wo der Weg dich nicht unter die Schwelle bringt. *Im Kampf (14.11.2026, Brett 2, erster Laden):*
+    Ein Kampf kostete dich 4 %, sieben lagen vor dir; RSR empfahl Bestien-Heiltrank II, Bestien-Pulver II und ein Grimoire,
+    am Ende lagen drei Grimoires, zwei Tränke III und ein Trank IV ungenutzt. Mit der Regel empfiehlt der Laden dort nur
+    Ausrüstung. *Gegenthese:* Ein Kampf schwerer als jeder gemessene bringt dich doch unter die Schwelle. Teilweise
+    widerlegt: Ein ungemessener Kampf zählt so schwer wie dein schwerster; der Rest steht als Preis – ein Kampf über allen
+    Messungen trifft dich ohne gekauften Trank, die gehaltenen Gegenstände und die Heilung unter der Schwelle bleiben. *Berichtigt (A661):* Bis A661 rechnete sie jeden Kampf, den Endkampf
     eingeschlossen, so schwer wie deinen schwersten gemessenen, mit der Begründung, im Endkampf von Brett 1 hätten dich
     seine Zauber mit 1 bis 9 % getroffen wie davor. Das stimmte je Treffer, nicht je Kampf: Der Endkampf dauerte doppelt so
     lange und kostete dich 35 %, der schwerste davor 18 % – die Obergrenze lag dort bei der Hälfte dessen, was du heilen
@@ -985,9 +996,14 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     Tabelle hält je Treffer den größten gemessenen Anteil; ein größerer bringt ihn unter die Trankschwelle, dort greift
     die Heilung, und die Tabelle lernt den größeren Anteil. *Preis:* einmal Heilung unter der Schwelle statt Schutz davor. *Gegenthese 3 (ausgeliefert, und nichts ändert sich):* Die Größe ist auf einem Brett nie
     gemessen – dann geht der Schutz wie bisher, und die Tabelle lernt aus dem Treffer. Die Versicherungen ohne Gefahr – Sand der Zeit, Wiederaufstehen, Auto-Trank gegen
-    einen Endgegner – und Schaden aus Gegenständen gehen bei erhaltenem Bonus nur, wenn der Spieler die schwerste Last
+    einen Endgegner – gehen bei erhaltenem Bonus nur, wenn der Spieler die schwerste Last
     bis einschließlich Endkampf nicht mit seinen LP trägt (`CrucibleRoute.WorstAhead` ohne Lager, mit der getragenen
-    Ausrüstung). Heilung, die kein Kampf mehr braucht, bleibt im Endkampf bei erhaltenem Bonus liegen: Was verbleibende LP
+    Ausrüstung) oder ein Kampf auf dem Weg nie gemessen wurde (sichere Seite). *Schaden, TP und Stärkung aus Gegenständen*
+    gehen bei erhaltenem Bonus nur, wenn belegt ist, dass er den Weg nicht trägt – eine unbekannte Last gibt sie nicht frei
+    (A796): Sie schützen nicht, und die unmittelbare Gefahr deckt die Heilung unter der Trankschwelle. *Im Kampf
+    (14.11.2026, Brett 2):* Zu Beginn des Endkampfs hielt er zehn Gegenstände (Sammelleidenschaft, 1.000); RSR nahm die
+    Feder (100 TP), weil ein Kampf auf dem Weg nie gemessen war, danach Reißzahn und Asche I – der Endkampf kostete ihn
+    32 %, kein Gegenstand war nötig. Seine Vorgabe dazu: „entweder sinnvoll nutzen, oder nicht zum kauf vorschlagen". Heilung, die kein Kampf mehr braucht, bleibt im Endkampf bei erhaltenem Bonus liegen: Was verbleibende LP
     an Punkten bringen, nennt keine Quelle (unbelegt), die 750 sind belegt.
   - *Keine Marken ausgegeben (500; „Geizhals", 19), keine Ausrüstung (750; „Mit leeren Händen", 13; gebaut A690):*
     - *Laden:* Solange in diesem Lauf nichts gekauft wurde und der Spieler mit seinen LP und der gehaltenen Heilung die

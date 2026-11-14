@@ -50,7 +50,11 @@ internal static class CrucibleWindowTrace
 			_seen.Clear();
 		}
 
-		if (_seen.Add($"{args.AddonName} {type}"))
+		// A796: a shop and the team screen before a board at every opening - each shop offers other wares, and the gear held
+		// changes between them; the other windows once a run.
+		var everyOpening = type == AddonEvent.PostSetup
+			&& (args.AddonName == "XBMContentsItemShop" || (args.AddonName == "XBMPetParty" && !DataCenter.IsInCrucible));
+		if (everyOpening || _seen.Add($"{args.AddonName} {type}"))
 		{
 			DefenseTrace.Line($"crucible window {args.AddonName} {type}: {BestiaryTrace.Values((AtkValue*)values, count)}");
 		}

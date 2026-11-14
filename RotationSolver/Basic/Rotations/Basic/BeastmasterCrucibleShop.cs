@@ -1207,6 +1207,11 @@ public partial class BeastmasterRotation
 		}
 		var worst = ahead + (1f - (Player is { MaxHp: > 0u } player ? player.GetHealthRatio() : 1f));
 		var healable = Math.Max(0f, worst - (holding * (1f + now.Recovery)) - healedChosen);
+
+		// A796 (his rule of 14.11.2026, "entweder sinnvoll nutzen, oder nicht zum kauf vorschlagen"): K8 takes healing,
+		// protection and smoke bombs only below the potion line while an item bonus stands, so they are worth only the part
+		// of the way's demand that would take you below it - what you have above the line comes off first.
+		var belowLine = Math.Max(0f, healable - (1f - Service.Config.UseHpPotionsPercent));
 		foreach (var (row, id, _) in offers)
 		{
 			if (gear.TryGetValue(id, out var piece))
@@ -1337,12 +1342,12 @@ public partial class BeastmasterRotation
 					? AutoPotionValue(item, owned, heldItems, healable, now.Recovery)
 					: (0f, double.MaxValue, 0f);
 				var spares = item.Kind == CrucibleItemKind.Escape && bombsHeld < enemyLoads.Count ? enemyLoads[bombsHeld] : 0f;
-				var value = heals > 0f ? Math.Min(full, healable) : protects > 0f ? protects : restores > 0f ? restores
-					: spares > 0f ? spares : gives;
+				var value = heals > 0f ? Math.Min(full, belowLine) : protects > 0f ? Math.Min(protects, belowLine)
+					: restores > 0f ? restores : spares > 0f ? Math.Min(spares, belowLine) : gives;
 				var lasting = seconds < double.MaxValue ? $" for {seconds:0} s" : string.Empty;
 				result.Add((row, id, value, heals > 0f
 					? (value < full
-						? $"used once, heals ~{full:P0}, of which ~{value:P0} can still be needed: the fights left and what you miss come to at most ~{worst:P0}, you hold ~{holding * (1f + now.Recovery):P0} in healing"
+						? $"used once, heals ~{full:P0}, of which ~{value:P0} can still be needed below your potion line: the fights left and what you miss come to at most ~{worst:P0}, you hold ~{holding * (1f + now.Recovery):P0} in healing"
 						: $"used once, heals ~{value:P0}")
 						+ (item.Kind == CrucibleItemKind.Heal && item.Allies ? " to you and the allies near you" : string.Empty)
 						+ (item.Kind != CrucibleItemKind.Heal ? $" while you carry a {item.HealCarrying}" : string.Empty)
