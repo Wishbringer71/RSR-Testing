@@ -132,7 +132,7 @@ public sealed unsafe partial class ActionManagerEx : IDisposable
 		}
 
 		// A809 (concept 13, "Abweisen ohne sichere Richtung"): no safe facing within the action's cone for a gaze it would
-		// still face when it lands - the action does not go, as BossModReborn holds it.
+		// still face when it lands - the action does not go (BossModReborn passes this hook and holds through its AI).
 		if (refused)
 		{
 			return false;

@@ -23603,6 +23603,18 @@ Anforderungen B1 bis B6 in Konzept 13 geprüft, keine Flickrunde.
 - *Prüfgrad:* statisch, Compile, CI; im Spiel nicht beobachtet.
 - *Vorhersage:* `predictions/2026-11-14.json`, „gaze-refused-names-gaze": jede Zeile „gaze: refused" nennt den Blick und
   seine Restzeit unter Vorlauf plus Sperre.
+- *Fünfte unabhängige Prüfung (auf 82f5acdaf):* bestätigt: kein falsches oder zu langes Abweisen, ein Zeitraum an allen
+  drei Stellen, kein Absturzweg, nichts je Frame angelegt. Befunde, eingearbeitet (Konzept zuerst): (Hoch, seit A791) Der
+  zweite Treffer beim Wirken griff nie – `Landed` las `Trusted` am Blick, wie er beim Balkenende weitergegeben wurde, und
+  der war immer vertraut; ein Blick mit falschem Sinn hätte nach dem ersten Treffer bei jedem weiteren getroffen. Jetzt
+  aus dem Gelernten. (Mittel) Ein nur sperrender Marker-, Status- oder Mitglied-Blick war über seine ganze Dauer
+  angemeldet, und jeder Schaden ließ ihn los; jetzt erst im Vorlauf, einmal je Kampf. (Mittel) Zwei Pakete einer Mechanik
+  (#3281 und #3499; zwei Augen eines Markers) zählten als zwei Fehlschläge; jetzt gehört ein Paket innerhalb der größten
+  Verzögerung plus Vorlauf zum ersten. (Mittel) Namenlose Wirken teilten den Lernschlüssel des leeren Namens; jetzt ihre
+  Zeile. Niedrig: „wie BossModReborn sperrt" falsch (BossModReborn lässt den Hook durch und hält über KI und „NoCasting");
+  die Abweisungsspur nennt auch einen nur sperrenden Blick; „held" statt „avoided" für einen nur sperrenden; Feldname.
+  Offen benannt: Weist RSR einen eigenen Druck erst bei der Ausführung aus der Warteschlange ab, zählt es ihn als gedrückt
+  (T5).
 
 ### A810 · Seine Angabe: LLM-Framework als allgemeines Regelwerk (14.11.2026)
 

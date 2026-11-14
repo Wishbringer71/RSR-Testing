@@ -121,6 +121,12 @@ internal static partial class GazeWatch
 	// A789: the gazes that hit despite RSR's facing, by gaze (A809: no longer by zone), until RSR is loaded again; true where the packet
 	// bore out RSR's eye and sense (only the turning ends), false where it did not (RSR leaves the gaze alone).
 	private static readonly Dictionary<ulong, bool> _distrusted = [];
+
+	// A809: when each learned gaze failed first - a packet of the same mechanic shortly after is no second hit.
+	private static readonly Dictionary<ulong, DateTime> _failedAt = [];
+
+	// A809: the hold-only gazes watched in this fight, each once.
+	private static readonly HashSet<ulong> _holdWatched = [];
 	private static readonly List<Gazer> _casts = [];
 	private static readonly List<Gazer> _castsBefore = [];
 	private static readonly List<Landing> _landing = [];
@@ -129,7 +135,7 @@ internal static partial class GazeWatch
 	private static float _landingMost;
 	private static (float Rotation, Vector3 Position, ulong Key)? _turnCheck;
 	private static readonly Dictionary<uint, string> _actionNames = [];
-	private static uint _distrustTerritory;
+	private static uint _zoneTerritory;
 	private static volatile Texts? _texts;
 	private static int _textsRequested;
 
@@ -434,7 +440,7 @@ internal static partial class GazeWatch
 			refuse = true;
 			foreach (var gazer in gazers)
 			{
-				if (gazer.Trusted && gazer.Left <= reach && _refusedTraced.Add(gazer.Key))
+				if (gazer.Left <= reach && _refusedTraced.Add(gazer.Key))
 				{
 					DefenseTrace.Line($"gaze: refused an action - no safe facing within its cone while {Describe(gazer)} lands in {gazer.Left:F2} s");
 				}
@@ -474,15 +480,23 @@ internal static partial class GazeWatch
 		return original;
 	}
 
-	// A809: a marker, status or member gaze that only holds after a first hit, until its deadline.
+	// A809: a hit counts as the second only after the first failure's mechanic has resolved - within the longest delay to
+	// the packet plus the lead after it, a packet belongs to the same mechanic (#3281 and #3499; two eyes of a marker).
+	private static bool SecondHit(ulong learned)
+	{
+		var lead = Lead();
+		var window = _landingMost + (float.IsInfinity(lead) ? AnimationLockTweak.MeanFrameTime : lead);
+		return !_failedAt.TryGetValue(learned, out var first) || (DateTime.Now - first).TotalSeconds > window;
+	}
+
+	// A809: a marker, status or member gaze that only holds after a first hit, from the lead before it lands until its
+	// deadline, once a fight - registered earlier, any harm in its whole length would end the hold.
 	private static void WatchHoldOnly(Gazer gazer)
 	{
-		foreach (var pending in _pending)
+		var lead = Lead();
+		if (float.IsInfinity(lead) || gazer.Left > lead || !_holdWatched.Add(gazer.Key))
 		{
-			if (pending.Key == gazer.Key)
-			{
-				return;
-			}
+			return;
 		}
 
 		_pending.Add(new Pending(gazer.Key, LearnKey(gazer), null, false, gazer.Who?.GameObjectId ?? 0, 0u,
@@ -549,7 +563,7 @@ internal static partial class GazeWatch
 			var resolves = pending.Action != 0 && pending.Source == sourceId && pending.Action == actionId;
 			var related = resolves || (pending.Cast && !string.IsNullOrEmpty(name) && string.Equals(pending.Name, name, StringComparison.Ordinal))
 				|| pending.Action == 0;
-			if (harmed && related && pending.HoldOnly)
+			if (harmed && related && pending.HoldOnly && SecondHit(ZoneKey(pending.Learn)))
 			{
 				// A809: a second hit while only the hold remained - for a marker, status or member gaze as for a cast (Landed).
 				_distrusted[ZoneKey(pending.Learn)] = false;
@@ -562,6 +576,7 @@ internal static partial class GazeWatch
 				// it, and no more hit while facing away. Then only the timing failed and the hold stays; else RSR leaves it.
 				var refuted = (landed is { } g && g.Key == pending.Key ? g : Find(pending.Key)) is { } gazer && Refuted(set, gazer, player.GameObjectId);
 				_distrusted[ZoneKey(pending.Learn)] = !refuted;
+				_failedAt[ZoneKey(pending.Learn)] = DateTime.Now;
 				DefenseTrace.Line($"gaze: hit despite RSR's facing by {pending.Text} ({name}) - "
 					+ (refuted ? "others it hit faced away from the eye as RSR places it, so RSR leaves this gaze to you until it is loaded again"
 						: "the packet does not refute RSR's eye and sense, so RSR only holds actions for it until it is loaded again"));
@@ -635,9 +650,12 @@ internal static partial class GazeWatch
 
 		// A791: a second hit while only the hold remained ends it too - a gaze whose sense RSR has wrong would otherwise keep
 		// the targets towards the real eye out of the choice.
-		if (!landed.Trusted && Player.Object is { } self && Harmed(set, self.GameObjectId))
+		// A809: whether it only holds is what was learned - the gaze handed on at its bar end still says trusted.
+		var learned = ZoneKey(LearnKey(landed));
+		if (_distrusted.TryGetValue(learned, out var holdOnly) && holdOnly && SecondHit(learned) && Player.Object is { } self
+			&& Harmed(set, self.GameObjectId))
 		{
-			_distrusted[ZoneKey(LearnKey(landed))] = false;
+			_distrusted[learned] = false;
 			DefenseTrace.Line($"gaze: hit again by {Describe(landed)} while RSR only held actions - RSR leaves this gaze to you until it is loaded again");
 		}
 
@@ -732,14 +750,16 @@ internal static partial class GazeWatch
 		{
 			if (_pending[i].Action == 0 && _pending[i].Due < deadline)
 			{
-				DefenseTrace.Line($"gaze: avoided {_pending[i].Text}, no harm seen from any enemy");
+				DefenseTrace.Line(_pending[i].HoldOnly ? $"gaze: held {_pending[i].Text}, no harm seen from any enemy"
+					: $"gaze: avoided {_pending[i].Text}, no harm seen from any enemy");
 				_pending.RemoveAt(i);
 			}
 		}
 	}
 
 	// What a failure is learned under: the cast's name (so a helper's twin counts too), else the source and its id.
-	private static ulong LearnKey(Gazer gazer) => gazer.From == Origin.Cast
+	// A809: a cast without a name under its row - every unnamed helper row shares the empty name.
+	private static ulong LearnKey(Gazer gazer) => gazer.From == Origin.Cast && ActionName(gazer.Id).Length > 0
 		? (ulong)(uint)StringComparer.Ordinal.GetHashCode(ActionName(gazer.Id))
 		: (ulong)(uint)HashCode.Combine(gazer.From, gazer.Id);
 
@@ -1020,9 +1040,9 @@ internal static partial class GazeWatch
 		// A789: distrust lasts until RSR is loaded again - a new build proves itself again, the same build does not die
 		// again in the next run of the same duty. A zone change starts the measured delays anew.
 		var territory = DataCenter.Territory?.Id ?? 0;
-		if (territory != _distrustTerritory)
+		if (territory != _zoneTerritory)
 		{
-			_distrustTerritory = territory;
+			_zoneTerritory = territory;
 			_pending.Clear();
 			_barEnds.Clear();
 			_landingMost = 0f;
@@ -1047,6 +1067,7 @@ internal static partial class GazeWatch
 			_traced.Clear();
 			_turnTraced.Clear();
 			_refusedTraced.Clear();
+			_holdWatched.Clear();
 			_heldFacing.Clear();
 			_markers.Clear();
 			_eyesBefore.Clear();

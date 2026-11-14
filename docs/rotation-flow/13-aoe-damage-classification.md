@@ -641,10 +641,14 @@ und an seinen Mitschnitten; im Spiel ist kein Teil der Blickwache beobachtet.
   ins Auge, und eine früh gewählte Richtung blieb ungelernt (vierte unabhängige Prüfung, H1 und H2). Preis: Auf den
   Wirkenden wartet eine Aktion bis zu Vorlauf plus Sperre (etwa 0,6 s) vor dem Blick statt nur den Vorlauf.
 - *Abweisen ohne sichere Richtung* (B4, B1; A809): Findet das Auslösen für einen Blick in diesem Zeitraum keine sichere
-  Richtung im Kegel der Aktion, geht sie nicht – auch aus der Warteschlange des Spiels und von Hand gedrückt, wie
-  BossModReborn sperrt. Vorher drehte RSR dann nicht, schaltete „Auto face target“ aus, und die Aktion ging mit der
+  Richtung im Kegel der Aktion, geht sie nicht – auch aus der Warteschlange des Spiels und von Hand gedrückt.
+  BossModReborn lässt im selben Hook alles durch und hält über seine KI und über „NoCasting“ (unten); RSR hält hier,
+  weil es eigene Blicke kennt, die BossModReborn nicht kennt (#3499, Destrudo). Vorher drehte RSR dann nicht, schaltete „Auto face target“ aus, und die Aktion ging mit der
   Richtung auf das Auge. Preis: Ein eigener Druck auf den Wirkenden geht in diesem Zeitraum nicht; die Spur sagt es
-  einmal je Blick („gaze: refused …“). Mit „Turn away from gaze attacks“ aus und ohne gemessenen Vorlauf weist RSR nichts ab.
+  einmal je Blick („gaze: refused …“, mit dem Blick, der die Richtung nimmt, auch einem, der nur noch sperrt). Legt
+  das Spiel RSRs Druck in die Warteschlange und weist RSR ihn bei der Ausführung ab, zählt RSR ihn trotzdem als
+  gedrückt (Annahme T5 offen); da die Sperre der Ziele dieselben Blicke zählt, geschieht das nur, wenn sich die Lage
+  zwischen Druck und Ausführung ändert. Mit „Turn away from gaze attacks“ aus und ohne gemessenen Vorlauf weist RSR nichts ab.
 - *Rand der Messung* (B4; A809): RSR wählt seine Richtung mit 1° Abstand zur Grenze von 45°. Gemessen: der letzte
   Getroffene 44,2°, der erste Verschonte 45,1° vom Auge (#3499, #44355, #48153, 117 Ziele, 33 getroffen), ACT führt die
   Richtung auf 0,57° genau; die Grenze liegt also bis zu 45,4°. Die Auswertung, wer getroffen wurde, rechnet ohne ihn.
@@ -652,13 +656,18 @@ und an seinen Mitschnitten; im Spiel ist kein Teil der Blickwache beobachtet.
 - *Nachlauf bis zum Paket* (B4): gemessen 0,26 bis 0,30 s. Preis: Sperre bis 0,3 s länger. Das Lernen wartet bei einem
   gewirkten Blick bis zum Paket, nicht bis zu einer Frist (B3, A801).
 - *Lernen und gestufter Rückfall* (B3): Preis: nach einem falschen Fehlschlag Schaden durch Sperre. Auch ein Blick, der
-  nur noch sperrt, bleibt angemeldet, gleich welcher Herkunft (Wirken, Marker, Status, Mitglied): Ein zweiter Treffer
-  lässt ihn los (A809; vorher nur beim Wirken, M1 der vierten Prüfung). Damit gilt B3 für jede Herkunft. Ein Treffer bei
+  nur noch sperrt, bleibt angemeldet, gleich welcher Herkunft (Wirken, Marker, Status, Mitglied), sobald er im Vorlauf
+  liegt: Ein zweiter Treffer lässt ihn los (A809). Ob ein Blick nur noch sperrt, liest RSR aus dem Gelernten, nicht aus
+  dem Blick, wie das Spiel ihn beim Balkenende weitergab – so hatte der zweite Treffer beim Wirken seit A791 nie
+  gegriffen (fünfte unabhängige Prüfung, hoch). Ein zweiter Treffer derselben Mechanik zählt nicht: Pakete, die
+  innerhalb der größten gemessenen Verzögerung plus Vorlauf nach dem ersten Fehlschlag kommen (#3281 und #3499 bei
+  Angra Mainyu; zwei Augen eines Markers), gehören zu ihm. Damit gilt B3 für jede Herkunft. Ein Treffer bei
   falschem Sinn (in Wahrheit umgekehrt) kostet in der Sperre höchstens diesen zweiten Treffer (M5 der vierten Prüfung):
   Der Sinn ist nur bei BossModReborns Liste belegt, beim Kennzeichen und beim Namen nicht; die Sperre bleibt trotzdem,
   weil ohne sie allein im Pilgerpfad jeder Angriff ins Auge drehte (A791, H1) und die Grenze von zwei Treffern auch so
   hält. Gelernt wird je Blick, nicht je Gebiet (A809): Der Pilgerpfad wechselt alle zehn Ebenen das Gebiet und zahlte den
-  Fehlschlag sonst in jedem neu.
+  Fehlschlag sonst in jedem neu. Ein Wirken ohne Namen lernt unter seiner Zeile, nicht unter dem leeren Namen, den
+  alle namenlosen Helferzeilen teilen.
 - *BossModReborns Halt* (Wechselwirkung, A809): BossModReborn setzt bei RSR jedes Bild „NoCasting“, solange eine
   verbotene Richtung weniger als 0,75 s voraus liegt, für den Rest der Mechanik oder 1 s (`AIHintsBuilder`, 35a908ad7,
   Zeilen 100–122). Bei jedem Blick, den BossModReborn kennt, steht RSR so etwa 2 s still, auch wenn er richtig steht (B2).
