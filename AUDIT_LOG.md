@@ -23071,6 +23071,35 @@ Dalamud 15.0.3.9 (43b34118) und FFXIVClientStructs 80cb4a7b (Werkzeugquellen).
 - *Prüfgrad:* statisch (unabhängiger Prüfer, Quelltexte der Fremdbibliotheken), Compile ohne Warnung, CI; Laufzeit nicht
   beobachtet. Vorhersage wie A794 („hook-no-fault“); ein Crucible-Lauf ohne Absturz auf diesem Build ist die Bestätigung.
 
+### A796 · Crucible-Kader: Begleiter levelten nicht; Kern und Leveln neu (14.11.2026)
+
+Seine Meldungen (14.11.2026, Defekt und Hinweise): „die begleiter werden nicht mehr gelevelt. das ist ein fehler. es bleibt
+bei den höchsten"; „es wurden keine begleiter auf level 6,7 oder 8 ausgewählt" (Brett 2); „viele begleiter mitnehmen lohnt
+für das leveln, da alle am anfang mitgenommenen begleiter, egal ob im kampf oder nicht erfahrung und level bekommen";
+„auf brett 2 kämpfen alle BIS rang 10 … ein hochskalieren auf 10 gibt es nicht" (Hinweis; mein Chat hatte es verkürzt
+falsch gesagt, Konzept 21 stand richtig); die Frage, wo die Verkleinerung des Kaders blieb. Dazu seine Vorgabe: „am besten
+alle reihum bis zum höchstlevel aufsteigen lassen, sobald das erreicht ist, reihum immer begleiter nehmen, aber weniger,
+so dass punktezahl erhöht werden kann. aber nie soweit reduzieren, dass große gefahr besteht, durch tode von begleitern
+geringere punktzahl zu bekommen, oder dass diese durch essen gebufft werden müssen."
+- *Befund in den Spuren:* 11.11. (dreimal) und 14.11.2026 (zweimal) derselbe Kader von zwölf ohne einen Tausch „levels".
+- *Ursachen:* (1) `ChooseTeam` setzte den Kern bei jedem Pick mit Wert über null; bei abnehmendem Gewicht hat fast jeder
+  Begleiter, der eine Schwäche des Bretts trifft, einen Wert – der Kern war der ganze Kader. Konzept 21 (A698) sagt „bis
+  zum letzten, der eine Schwäche neu abdeckt". Damit entfiel jede Verkleinerung nach Punkten. (2) Der Tausch zum Leveln
+  (A579) ersetzte eins gegen eins, nur wo der Ersatz jede Schwäche trifft, die im Kader nur der Ersetzte trifft.
+- *Behoben:* Der Kern endet mit dem letzten Pick, der eine Schwäche neu abdeckt (oder Heiler/Schützer für den Boss,
+  Unterbrecher). Mit „Prefer familiars that lag behind" teilt `LevelingTeam` den Kader in Kämpfer (Kern und die Reserve,
+  die die gemessenen Verluste mit einem in Reserve trägt, je Größe gerechnet; auf Reserveplätzen Nachzügler ab dem
+  empfohlenen Rang zuerst) und Lernende (übrige Nachzügler, jeder Rang unter 25, bis zur Größe des Bretts). Begleiter über
+  dem Synchronrang zählen als Nachzügler, bis ein Brett mit Synchronrang 25 sie auf 25 zeigt; gleicher Rang reihum (wer
+  nicht im letzten Kader stand, zuerst). Ohne Nachzügler gilt die Größe nach Punkten (A698), deren Verlustrechnung keine
+  Heilung kennt – keine Rast, kein Gegenstand, kein Futter. Die Spur nennt je Begleiter Rang und Rolle.
+- *Offen:* den echten Rang über dem Synchronrang lesen (seit 7.58 im Teamfenster, Stelle unbekannt); die Fensterspur
+  schreibt das Teamfenster jetzt auch vor dem Brett. Preis bis dahin: auf den ersten vier Brettern stets voller Kader.
+- *Konzept:* 21, K7 „Leveln", „Teamgröße nach Punkten".
+- *Vorhersage:* `predictions/2026-11-14.json`, „team-levels": Fordert er auf Brett 2 den empfohlenen Kader an, nennt die
+  Zeile „crucible team: requested …" mindestens einen Begleiter mit „levels".
+- *Prüfgrad:* Compile, CI; Laufzeit nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

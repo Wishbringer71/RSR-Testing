@@ -30,7 +30,10 @@ internal static class CrucibleWindowTrace
 
 	private static unsafe void OnWindow(AddonEvent type, AddonArgs args)
 	{
-		if (!DataCenter.IsInCrucible || !args.AddonName.StartsWith(Prefix, StringComparison.Ordinal))
+		// A796: also the team screen before a board - since 7.58 it shows the true rank beside the synced one, which no
+		// structure of the client names yet (concept 21, K7 "Leveln").
+		if (!args.AddonName.StartsWith(Prefix, StringComparison.Ordinal)
+			|| !(DataCenter.IsInCrucible || BeastmasterRotation.CrucibleTeamScreenOpen(out _)))
 		{
 			return;
 		}

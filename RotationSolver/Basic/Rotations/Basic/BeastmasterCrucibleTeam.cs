@@ -55,12 +55,47 @@ public partial class BeastmasterRotation
 	// on the familiar with the most HP left that still stands after it. The HP are those the team agent shows for the
 	// picks, the mean of the team for one outside it (a conclusion: no sheet gives them). The full size while no run there
 	// was measured.
-	private static unsafe int TeamSizeForScore(uint board, int size, int core, List<TeamCandidate> picks, out string note)
+	private static int TeamSizeForScore(uint board, int size, int core, List<TeamCandidate> picks, out string note)
 	{
 		note = string.Empty;
-		var party = AgentXBMPetParty.Instance();
+		var shown = ShownHealth(out var mean);
+		foreach (var (_, max, bonus, name) in Squads())
+		{
+			if (max >= size || max < core || max > picks.Count)
+			{
+				continue;
+			}
+
+			var points = CrucibleBoard.BonusPoints(bonus);
+			var fits = CarriesLosses(board, picks, max, shown, mean, out var uses);
+			if (fits == null)
+			{
+				note = $"Full team: a team of {max} would bring \"{name}\" ({points} points), but no run on this board has measured "
+					+ "what each use of a familiar costs here yet.";
+				continue;
+			}
+
+			if (fits == true)
+			{
+				note = $"{max} familiars: \"{name}\", {points} points. The {uses.Count} uses measured on this board, up to {uses[0]} HP "
+					+ $"each, fit on {max - 1} of them without one falling; one more stands in reserve.";
+				return max;
+			}
+
+			note = $"Full team: the {uses.Count} uses measured on this board, up to {uses[0]} HP each, do not fit on {max - 1} familiars "
+				+ "without one falling.";
+		}
+
+		return size;
+	}
+
+	// K7 (A703): the most HP the team screen shows for each familiar of the team as it stands, and their mean - the HP of a
+	// familiar outside the team no sheet gives (concept 21, "Teamgröße nach Punkten").
+	private static unsafe Dictionary<BeastmasterPet, uint> ShownHealth(out uint mean)
+	{
 		var shown = new Dictionary<BeastmasterPet, uint>();
 		long hp = 0;
+		var party = AgentXBMPetParty.Instance();
 		if (party != null)
 		{
 			var team = party->SelectedPets.AsSpan();
@@ -74,75 +109,234 @@ public partial class BeastmasterRotation
 			}
 		}
 
-		var mean = shown.Count > 0 ? (uint)(hp / shown.Count) : 0u;
+		mean = shown.Count > 0 ? (uint)(hp / shown.Count) : 0u;
+		return shown;
+	}
+
+	// K7 (A703, A729): whether the first `n` of `picks` carry every use of a familiar measured on this board - with a team as
+	// strong as they are, or weaker - with the one of fewest HP in reserve; null while no run on the board measured them.
+	private static bool? CarriesLosses(uint board, List<TeamCandidate> picks, int n, Dictionary<BeastmasterPet, uint> shown,
+		uint mean, out List<uint> uses)
+	{
 		var sync = CrucibleBoard.SyncRank(board);
-		foreach (var (_, max, bonus, name) in Squads())
+		long ranks = 0;
+		for (var i = 0; i < n; i++)
 		{
-			if (max >= size || max < core || max > picks.Count)
-			{
-				continue;
-			}
-
-			// A729: the uses measured with a team as strong as these picks, or weaker.
-			long ranks = 0;
-			for (var i = 0; i < max; i++)
-			{
-				ranks += CrucibleBoard.FightingRank(picks[i].Rank, picks[i].OverRank, sync);
-			}
-
-			var uses = CrucibleBoard.FamiliarUseLossesOf(board, CrucibleBoard.RankStep(ranks, max));
-
-			var points = CrucibleBoard.BonusPoints(bonus);
-			if (uses.Count == 0 || mean == 0)
-			{
-				note = $"Full team: a team of {max} would bring \"{name}\" ({points} points), but no run on this board has measured "
-					+ "what each use of a familiar costs here yet.";
-				continue;
-			}
-
-			// The familiars of the first `max` picks; the one with the fewest HP stays in reserve.
-			var left = new List<uint>();
-			for (var i = 0; i < max; i++)
-			{
-				left.Add(shown.TryGetValue(picks[i].Pet, out var known) ? known : mean);
-			}
-
-			left.Sort();
-			left.RemoveAt(0);
-			var fits = true;
-			foreach (var use in uses)
-			{
-				var best = -1;
-				for (var i = 0; i < left.Count; i++)
-				{
-					if (left[i] > use && (best < 0 || left[i] > left[best]))
-					{
-						best = i;
-					}
-				}
-
-				if (best < 0)
-				{
-					fits = false;
-					break;
-				}
-
-				left[best] -= use;
-			}
-
-			if (fits)
-			{
-				note = $"{max} familiars: \"{name}\", {points} points. The {uses.Count} uses measured on this board, up to {uses[0]} HP "
-					+ $"each, fit on {max - 1} of them without one falling; one more stands in reserve.";
-				return max;
-			}
-
-			note = $"Full team: the {uses.Count} uses measured on this board, up to {uses[0]} HP each, do not fit on {max - 1} familiars "
-				+ "without one falling.";
+			ranks += CrucibleBoard.FightingRank(picks[i].Rank, picks[i].OverRank, sync);
 		}
 
-		return size;
+		uses = CrucibleBoard.FamiliarUseLossesOf(board, CrucibleBoard.RankStep(ranks, n));
+		if (uses.Count == 0 || mean == 0 || n < 1)
+		{
+			return null;
+		}
+
+		var left = new List<uint>();
+		for (var i = 0; i < n; i++)
+		{
+			left.Add(shown.TryGetValue(picks[i].Pet, out var known) ? known : mean);
+		}
+
+		left.Sort();
+		left.RemoveAt(0);
+		foreach (var use in uses)
+		{
+			var best = -1;
+			for (var i = 0; i < left.Count; i++)
+			{
+				if (left[i] > use && (best < 0 || left[i] > left[best]))
+				{
+					best = i;
+				}
+			}
+
+			if (best < 0)
+			{
+				return false;
+			}
+
+			left[best] -= use;
+		}
+
+		return true;
 	}
+
+	/// <summary>
+	/// K7 "Leveln" (his rule of 05.11.2026, A579; his hints of 14.11.2026, A796): every familiar in the team earns
+	/// experience, on a horn or not. The fighters are the core of <paramref name="chosen"/> - every pick that covers a
+	/// weakness anew, heals or protects for the boss, interrupts - and the reserve the measured losses of the board ask for
+	/// (the full team while none is measured); a reserve place takes a familiar that lags behind and replaces adequately
+	/// first - below the highest rank, or above the board's sync where its true rank is unknown, and at least the rank the
+	/// game recommends - lowest rank first. The places left up to <paramref name="size"/> go to the other familiars that lag behind, lowest rank first.
+	/// Without any familiar that lags behind the team stays as chosen. <paramref name="learning"/> receives each familiar that
+	/// lags behind: true when it learns off the horns, false when it fights in reserve.
+	/// </summary>
+	private static List<TeamCandidate> LevelingTeam(uint board, int size, List<TeamCandidate> chosen, List<TeamCandidate> all,
+		Dictionary<uint, int> weight, bool interrupting, List<BeastmasterPet> team, BeastmasterKinType kin,
+		Dictionary<BeastmasterPet, bool> learning, out string note)
+	{
+		note = string.Empty;
+		var maxRank = CrucibleBoard.MaxRank;
+		var recommended = CrucibleBoard.RecommendedRank(board);
+		// Below the board's sync the game gives the true rank; above it only the sync, so such a familiar counts as lagging
+		// behind until a board of the highest sync shows it at the highest rank (his order of 14.11.2026: all up to the highest
+		// rank first; concept 21, K7 "Leveln", Gegenthese 3).
+		var sync = CrucibleBoard.SyncRank(board);
+		var lagging = new List<TeamCandidate>();
+		foreach (var candidate in all)
+		{
+			var behind = candidate.OverRank ? sync < maxRank : candidate.Rank < maxRank;
+			if (candidate.Rank > 0 && behind && (kin == BeastmasterKinType.None || KinOf(candidate.Pet) == kin))
+			{
+				lagging.Add(candidate);
+			}
+		}
+
+		if (lagging.Count == 0)
+		{
+			return chosen;
+		}
+
+		// Lowest rank first, a known rank before one above the sync; at equal rank one not in the team now - the team screen
+		// shows the last run's team, so equals take turns (his order of 14.11.2026: "reihum").
+		lagging.Sort((a, b) => a.Rank != b.Rank ? a.Rank.CompareTo(b.Rank)
+			: a.OverRank != b.OverRank ? a.OverRank.CompareTo(b.OverRank)
+			: team.Contains(a.Pet).CompareTo(team.Contains(b.Pet)));
+		var core = CoreOf(chosen, weight, interrupting);
+
+		// The reserve in the order it fills: familiars that lag behind and replace adequately, then the greedy picks.
+		var reserve = new List<TeamCandidate>();
+		foreach (var candidate in lagging)
+		{
+			if (candidate.Rank >= recommended && !ContainsPet(chosen, core, candidate.Pet))
+			{
+				reserve.Add(candidate);
+			}
+		}
+
+		for (var i = core; i < chosen.Count; i++)
+		{
+			if (!ContainsPet(reserve, reserve.Count, chosen[i].Pet))
+			{
+				reserve.Add(chosen[i]);
+			}
+		}
+
+		// Fighters: the smallest count from the core up to the chosen team's that carries the measured losses.
+		var shown = ShownHealth(out var mean);
+		var fighters = new List<TeamCandidate>(size);
+		for (var i = 0; i < core; i++)
+		{
+			fighters.Add(chosen[i]);
+		}
+
+		var fighting = chosen.Count;
+		for (var n = Math.Max(core, 1); n <= chosen.Count; n++)
+		{
+			while (fighters.Count < n && fighters.Count - core < reserve.Count)
+			{
+				fighters.Add(reserve[fighters.Count - core]);
+			}
+
+			var carries = CarriesLosses(board, fighters, fighters.Count, shown, mean, out _);
+			if (carries == null)
+			{
+				break;
+			}
+
+			if (carries == true)
+			{
+				fighting = fighters.Count;
+				break;
+			}
+		}
+
+		while (fighters.Count < fighting && fighters.Count - core < reserve.Count)
+		{
+			fighters.Add(reserve[fighters.Count - core]);
+		}
+
+		if (fighters.Count > fighting)
+		{
+			fighters.RemoveRange(fighting, fighters.Count - fighting);
+		}
+
+		foreach (var fighter in fighters)
+		{
+			if (ContainsPet(lagging, lagging.Count, fighter.Pet) && !ContainsPet(chosen, core, fighter.Pet))
+			{
+				learning[fighter.Pet] = false;
+			}
+		}
+
+		// Learners: the other familiars that lag behind, up to the board's size.
+		var learners = 0;
+		foreach (var candidate in lagging)
+		{
+			if (fighters.Count >= size)
+			{
+				break;
+			}
+
+			if (!ContainsPet(fighters, fighters.Count, candidate.Pet))
+			{
+				fighters.Add(candidate);
+				learning[candidate.Pet] = true;
+				learners++;
+			}
+		}
+
+		var squad = SquadPoints(fighters.Count);
+		note = $"{fighting} fighting{(fighting < chosen.Count ? " (the measured losses fit with one in reserve)" : string.Empty)}, "
+			+ $"{learning.Count} that lag behind in rank level with them ({learners} off the horns)"
+			+ (fighters.Count < size && squad > 0 ? $"; {fighters.Count} familiars bring {squad} points for a small team." : ".");
+		return fighters;
+	}
+
+	// K7: the core of a team in its greedy order - up to the last pick that covers a weakness anew, or heals or protects while
+	// fewer than the boss asks are in, or interrupts where the board asks for it (as ChooseTeam counts it).
+	private static int CoreOf(List<TeamCandidate> picks, Dictionary<uint, int> weight, bool interrupting)
+	{
+		var covered = new HashSet<uint>();
+		var safe = 0;
+		var soul = false;
+		var core = 0;
+		for (var i = 0; i < picks.Count; i++)
+		{
+			var anew = false;
+			foreach (var element in picks[i].Hits)
+			{
+				anew |= weight.ContainsKey(element) && covered.Add(element);
+			}
+
+			var needed = (picks[i].Safe && safe < BossSafeFamiliars)
+				|| (interrupting && !soul && KinOf(picks[i].Pet) == BeastmasterKinType.Soulkin);
+			safe += picks[i].Safe ? 1 : 0;
+			soul |= KinOf(picks[i].Pet) == BeastmasterKinType.Soulkin;
+			if (anew || needed)
+			{
+				core = i + 1;
+			}
+		}
+
+		return core;
+	}
+
+	private static bool ContainsPet(List<TeamCandidate> list, int count, BeastmasterPet pet)
+	{
+		for (var i = 0; i < count && i < list.Count; i++)
+		{
+			if (list[i].Pet == pet)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	// K7: rank and role of each familiar of the last recommendation, for the trace line of a requested team.
+	private static readonly Dictionary<BeastmasterPet, string> _teamRanks = [];
 
 	private static List<BeastmasterPet>? _teamWanted;
 	private static (BeastmasterPet Pet, bool Add, DateTime At)? _teamLastToggle;
@@ -232,6 +426,7 @@ public partial class BeastmasterRotation
 		var team = CrucibleTeamNow();
 		var party = AgentXBMPetParty.Instance();
 		var candidates = new List<TeamCandidate>();
+		_teamRanks.Clear();
 		foreach (var pet in Enum.GetValues<BeastmasterPet>())
 		{
 			if (pet == BeastmasterPet.None || _teamRefused.Contains(pet) || FamiliarUnlocked(pet) != true || FamiliarOf(pet) is not { } profile)
@@ -282,70 +477,16 @@ public partial class BeastmasterRotation
 			CrucibleTeamSizeNote = gambit.Note;
 		}
 
-		// A579: leveling - a pick gives way to the lowest-ranked familiar that replaces it adequately.
-		var replaced = new Dictionary<BeastmasterPet, TeamCandidate>();
+		// A579, A796 (concept 21, K7 "Leveln"): every familiar in the team earns experience, on a horn or not. The fighters - the
+		// core and the reserve the measured losses ask for - take familiars that lag behind first where they replace adequately;
+		// the places left up to the board's size go to the other familiars that lag behind, lowest rank first.
+		var learning = new Dictionary<BeastmasterPet, bool>();
 		if (levelLagging && party != null)
 		{
-			var recommended = CrucibleBoard.RecommendedRank(board);
-			var maxRank = CrucibleBoard.MaxRank;
-			var byRank = new List<TeamCandidate>(chosen);
-			byRank.Sort((a, b) => a.OverRank != b.OverRank ? (a.OverRank ? -1 : 1) : b.Rank.CompareTo(a.Rank));
-			foreach (var pick in byRank)
+			chosen = LevelingTeam(board, size, chosen, all, weight, interrupting, team, gambitKin, learning, out var levelNote);
+			if (levelNote.Length > 0)
 			{
-				var unique = new List<uint>();
-				foreach (var element in pick.Hits)
-				{
-					if (weight.ContainsKey(element) && covered.GetValueOrDefault(element) == 1)
-					{
-						unique.Add(element);
-					}
-				}
-
-				var safeLeft = 0;
-				foreach (var member in chosen)
-				{
-					safeLeft += member.Safe && member.Pet != pick.Pet ? 1 : 0;
-				}
-
-				var needsSafe = pick.Safe && safeLeft < BossSafeFamiliars;
-				var substitute = -1;
-				for (var i = 0; i < candidates.Count; i++)
-				{
-					var other = candidates[i];
-					if (other.OverRank || other.Rank < recommended || other.Rank >= maxRank
-						|| (gambitKin != BeastmasterKinType.None && KinOf(other.Pet) != gambitKin)
-						|| (!pick.OverRank && other.Rank >= pick.Rank) || (needsSafe && !other.Safe) || !other.Hits.IsSupersetOf(unique))
-					{
-						continue;
-					}
-
-					if (substitute < 0 || other.Rank < candidates[substitute].Rank
-						|| (other.Rank == candidates[substitute].Rank && team.Contains(other.Pet) && !team.Contains(candidates[substitute].Pet)))
-					{
-						substitute = i;
-					}
-				}
-
-				if (substitute < 0)
-				{
-					continue;
-				}
-
-				var joiner = candidates[substitute];
-				candidates.RemoveAt(substitute);
-				candidates.Add(pick);
-				_ = chosen.Remove(pick);
-				chosen.Add(joiner);
-				replaced[joiner.Pet] = pick;
-				foreach (var element in pick.Hits)
-				{
-					covered[element] = covered.GetValueOrDefault(element) - 1;
-				}
-
-				foreach (var element in joiner.Hits)
-				{
-					covered[element] = covered.GetValueOrDefault(element) + 1;
-				}
+				CrucibleTeamSizeNote = levelNote;
 			}
 		}
 
@@ -363,8 +504,11 @@ public partial class BeastmasterRotation
 			var why = (pick.Safe ? "heals or protects; " : string.Empty)
 				+ (hit.Count > 0 ? $"hits {string.Join(", ", hit)}" : "no weakness of this board")
 				+ (pick.OverRank ? string.Empty : "; below the board's rank")
-				+ (replaced.TryGetValue(pick.Pet, out var gave) ? $"; levels: rank {pick.Rank} in place of {gave.Pet} ({(gave.OverRank ? "above the board's rank" : $"rank {gave.Rank}")})" : string.Empty);
+				+ (learning.TryGetValue(pick.Pet, out var learns)
+					? learns ? $"; levels: rank {pick.Rank}, off the horns unless too few others live" : $"; levels: rank {pick.Rank}, fights in reserve"
+					: string.Empty);
 			picks.Add(new CrucibleTeamPick(pick.Pet, why, team.Contains(pick.Pet)));
+			_teamRanks[pick.Pet] = $"{(pick.OverRank ? $"{pick.Rank}+" : pick.Rank.ToString())}{(learning.ContainsKey(pick.Pet) ? " levels" : string.Empty)}";
 		}
 
 		return picks;
@@ -413,14 +557,19 @@ public partial class BeastmasterRotation
 			var pick = candidates[best];
 			candidates.RemoveAt(best);
 			chosen.Add(pick);
+			var anew = false;
 			foreach (var element in pick.Hits)
 			{
+				anew |= weight.ContainsKey(element) && covered.GetValueOrDefault(element) == 0;
 				covered[element] = covered.GetValueOrDefault(element) + 1;
 			}
 
 			safeTaken += pick.Safe ? 1 : 0;
 			soulTaken |= KinOf(pick.Pet) == BeastmasterKinType.Soulkin;
-			if (bestWorth > 0f || needSafe || needSoul)
+
+			// A796: the core ends with the last pick that covers a weakness anew (A698). Counting every pick that hits one at
+			// all made the core the whole team: no smaller team for points, and no room for familiars that lag behind.
+			if (anew || needSafe || needSoul)
 			{
 				core = chosen.Count;
 			}
@@ -600,7 +749,13 @@ public partial class BeastmasterRotation
 		_teamWanted = wanted;
 		_teamLastToggle = null;
 		CrucibleTeamStatus = "Setting the team...";
-		DefenseTrace.Line($"crucible team: requested {string.Join(", ", wanted)}");
+		var named = new List<string>(wanted.Count);
+		foreach (var pet in wanted)
+		{
+			named.Add(_teamRanks.TryGetValue(pet, out var rank) ? $"{pet} {rank}" : pet.ToString());
+		}
+
+		DefenseTrace.Line($"crucible team: requested {string.Join(", ", named)}");
 	}
 
 	// K7: one step of a requested change each time the team has taken the last one, at most one GCD after it; a joiner the

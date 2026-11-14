@@ -30,6 +30,19 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
 
 ## Defekte
 
+### Crucible: Laden empfiehlt Verbrauchsmittel, die ungenutzt bleiben · N
+*Wirkung:* Brett 2 am 14.11.2026: Heiltrank, Pulver und drei Grimoires gekauft bei 4 % LP-Verlust je Kampf, ungenutzt am
+Ende; Verbrauchsmittel vor bleibender Ausrüstung; im letzten Laden bei 490 Marken keine Empfehlung, obwohl der
+Lichtarmreif (430) da war; ein Ausrüstungsteil empfohlen, das er schon trug. *Ort:* `BeastmasterCrucibleShop`
+(Kaufliste K13), `CrucibleBoard`. *Nächster Schritt:* Loop zu K13 gegen seine Vorgabe „entweder sinnvoll nutzen, oder
+nicht zum kauf vorschlagen". *Konzept:* 21, K13.
+
+### Crucible: Gegenstände im Endkampf kosten „zehn gehalten“ · N
+*Wirkung:* 14.11.2026: Zu Beginn des Endkampfs zehn Gegenstände gehalten (1.000 Punkte), dann Feder, Reißzahn und Asche I
+benutzt, laut Spur ohne Bedarf („nothing is worth anything after it"). *Ort:* `BeastmasterCrucibleItems` (K8). *Nächster
+Schritt:* Loop K8/K15: ein Gegenstand ohne Sicherheitsgrund wird nicht benutzt, solange der Bonus für zehn gehaltene
+steht. *Konzept:* 21, K8, K15.
+
 ## Offene Arbeit
 
 ## Technische Schuld

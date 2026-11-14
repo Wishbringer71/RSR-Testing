@@ -381,7 +381,8 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     eins, mal mittlere LP der Begleiter im Teamfenster (Schluss: die LP der Begleiter außerhalb des Teams zeigt kein Blatt,
     `XBMPetParamGrow` führt nur Konstitution) – mindestens die LP fasst, die die Begleiter auf diesem Brett in einem Lauf je verloren haben (gelernt
     je Brett, der schwerste Lauf, Datei `CrucibleFamiliarLoss.json`). Ohne gemessenen Lauf auf dem Brett bleibt die volle
-    Größe (sichere Seite). Das Fenster nennt Größe, Bonus und den Vergleich; übernehmen bleibst du (C).
+    Größe (sichere Seite). Mit „Prefer familiars that lag behind in rank" füllen Nachzügler die
+    Plätze über den Kämpfern, solange es sie gibt (K7, „Leveln", A796); die Stufe gilt dann, wo die Größe sie trifft. Das Fenster nennt Größe, Bonus und den Vergleich; übernehmen bleibst du (C).
     *Gegenthese 1 – Der Verlust wächst mit weniger Begleitern:* Die Gegner teilen denselben Schaden aus, gleich wie viele
     Begleiter ihn tragen; mehr Einsätze je Begleiter verteilen ihn nur anders. Ein Begleiter, der fällt, fehlt danach;
     deshalb zählt der Vorrat einen weniger: Fällt einer, fassen die übrigen den schwersten gemessenen Verlust noch.
@@ -2077,34 +2078,68 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
   (`XBMContentBattle` → `XBMBattleDetail`), und jeder schon gewählte Begleiter mit derselben Schwäche teilt es
   (Gewicht durch eins plus die Zahl der schon Gewählten, die sie treffen). Bei Gleichstand zuerst, wer über dem Rang des
   Bretts steht (`IsPetOverSyncedRank`), dann wer schon im Kader ist. Ein Seelen-Begleiter für Soul Crush (K4) wartet darauf, dass RSR weiß, welche Kämpfe unterbrechbar zaubern.
-- *Leveln (seine Vorgabe, 05.11.2026, A579):* „zum leveln der begleiter sollten die begleiter bei der anfangsauswahl des
-  brettes bevorzugt werden, die hinter den anderen hinterherleveln. ausnahme: sie sind kein adäquater ersatz für die
-  kämpfe aufgrund falscher eigenschaften." *Mechanik:* Jeder Begleiter im Kader eines Laufs bekommt Erfahrung, mit oder
-  ohne Horn (Daedalus 74659a6, `CrucibleLevelPlan`, Werkzeugquelle aus dem Spielbetrieb, am Spiel nicht bestätigt); der
-  Rang reicht bis 25. Am Brett zeigt das Spiel den Rang synchronisiert (`AgentXBMPetParty.GetSyncedRank`): Wer über dem
-  Synchronrang des Bretts steht (`IsPetOverSyncedRank`), zeigt ihn, darunter den eigenen. Das Brett nennt seinen
-  Synchronrang und den empfohlenen Rang (`XBMContent`, Spalten 36 und 35; der empfohlene ist der Wert minus 2, wie das
-  Spiel rechnet – EXDSchema, und Brett 2 zeigt „Recommended Beast Rank: 6 (Sync from 10)" bei 8, Daedalus' Feldnotiz):
-  erstes Brett 1 und 5, zweites 6 und 10, drittes 11 und 15, Erstes Meisterbrett 16 und 20, Zweites 21 und 25 (xivapi,
-  05.11.2026).
-  *Regel:* Nach der Wahl oben tauscht RSR, vom höchsten Rang abwärts, jeden Gewählten gegen den Begleiter mit dem
-  niedrigsten Rang außerhalb des Kaders, der ihn **adäquat ersetzt**: Er trifft jede Schwäche, die im Kader nur der
-  Gewählte trifft; er heilt oder schützt, wenn der Gewählte das tut und sonst zu wenige blieben; und er steht mindestens
-  auf dem empfohlenen Rang des Bretts. Getauscht wird nur nach unten: Der Ersatz liegt im Rang unter dem Gewählten.
-  „Falsche Eigenschaften" sind damit die fehlende Schwäche, die fehlende Heilung oder der Schutz, und ein Rang unter der
-  Empfehlung des Spiels. Begleiter auf Rang 25 lernen nichts mehr und tauschen nicht ein. Der Grund steht in der
-  Empfehlung („levels: rank …").
-  *Einstellung:* „Prefer familiars that lag behind in rank for the Crucible team", ab Werk an (seine Regel; wer den
-  stärksten Kader will, schaltet sie ab).
-  *Gegenthese 1 (schwächer im Kampf):* Ein Begleiter auf Rang 2 hat auf dem ersten Brett weniger Werte als einer auf 5.
-  Teilweise widerlegt: Er tauscht nur ein, wo er mindestens auf der Empfehlung des Spiels steht; welche drei kämpfen,
-  wählt K6 je Kampf, und K6 nimmt einen Begleiter unter der Empfehlung nur, wenn nicht genug andere leben, und bei
-  Gleichstand den höheren Rang. Es bleibt: Zwischen Empfehlung und Synchronrang kämpft ein schwächerer Begleiter, wenn
-  er der einzige ist, der eine Schwäche trifft – Preis: weniger Schaden und LP dieses Begleiters in diesem Kampf.
-  *Gegenthese 2 (Erfahrung nur im Kampf):* Gibt das Spiel Erfahrung nur für eingesetzte Begleiter, levelt der Tausch nur,
-  wenn K6 ihn aufs Horn nimmt. Nicht widerlegt, unbelegt; der Kader bleibt in jedem Fall so geeignet wie vorher.
+- *Leveln (seine Vorgabe, 05.11.2026, A579; seine Hinweise vom 14.11.2026, A796):* „zum leveln der begleiter sollten die
+  begleiter bei der anfangsauswahl des brettes bevorzugt werden, die hinter den anderen hinterherleveln. ausnahme: sie
+  sind kein adäquater ersatz für die kämpfe aufgrund falscher eigenschaften." Am 14.11.2026: „die begleiter werden nicht
+  mehr gelevelt … es bleibt bei den höchsten"; „es wurden keine begleiter auf level 6,7 oder 8 ausgewählt" (Brett 2);
+  „viele begleiter mitnehmen lohnt für das leveln, da alle am anfang mitgenommenen begleiter, egal ob im kampf oder
+  nicht erfahrung und level bekommen" (Hinweis, deckt sich mit Daedalus 2644cbe, `CrucibleLevelPlan`); „auf brett 2
+  kämpfen alle bis rang 10 … ein hochskalieren auf 10 gibt es nicht" (Hinweis); und die Frage, wo die Verkleinerung des
+  Kaders blieb, wenn Begleiter ohnehin nicht eingesetzt werden.
+  *Mechanik:* Jeder Begleiter im Kader eines Laufs bekommt Erfahrung, mit oder ohne Horn (sein Hinweis); die
+  Begleiter-EP folgen der Punktzahl des Laufs (consolegameswiki), höchstens 255 je Begleiter und Brett (CrucibleSux,
+  nach dem Wiki zu 7.56, Werkzeugquelle), 100 je Rang (Daedalus, Bestiarium „21/100"); der Rang reicht bis 25. Das Spiel
+  gleicht nur nach unten an: Wer über dem Synchronrang des Bretts steht (`IsPetOverSyncedRank`), kämpft mit ihm, wer
+  darunter steht, mit dem eigenen (`GetSyncedRank` liefert dann den echten Rang). Den echten Rang über dem Synchronrang
+  zeigt das Spiel am Brett nicht, auch das Bestiarium nicht (Daedalus, Feldnotiz 31.10.2026); das Brett nennt
+  Synchronrang und empfohlenen Rang (`XBMContent`, Spalten 36 und 35, der empfohlene ist der Wert minus 2: erstes Brett
+  1 und 5, zweites 6 und 10, drittes 11 und 15, Erstes Meisterbrett 16 und 20, Zweites 21 und 25).
+  *Was falsch war (A796):* (1) Der *Kern* der gierigen Wahl sollte bis zum letzten Begleiter reichen, der eine Schwäche
+  neu abdeckt (A698); der Code zählte jeden, der überhaupt eine Schwäche des Bretts trifft – bei abnehmendem Gewicht ist
+  das fast jeder, der Kern war der ganze Kader. Darum blieb die Verkleinerung nach Punkten aus. (2) Der Tausch zum
+  Leveln tauschte nur eins gegen eins und nur, wo der Ersatz jede Schwäche trifft, die im Kader nur der Ersetzte trifft;
+  mit dem aufgeblähten Kern trug fast jeder Gewählte eine solche. Am 11. und 14.11.2026 stand viermal derselbe Kader
+  ohne einen Tausch in der Spur, Begleiter auf Rang 6 bis 8 blieben auf Brett 2 zu Hause.
+  *Regel:* Der Kader hat zwei Teile.
+  - *Kämpfer:* der Kern (jeder, der eine Schwäche neu abdeckt, die Heiler und Schützer, die B5 vor dem Boss verlangt,
+    der Unterbrecher) und die Reserve bis zu der Zahl, die die gemessenen Verluste dieses Bretts mit einem Begleiter in
+    Reserve trägt (A703, je Größe gerechnet, nicht nur auf den Stufen von In Unterzahl); ohne Messung die volle Größe.
+    Auf den Reserveplätzen gehen *Nachzügler* vor, die adäquat ersetzen – Rang unter 25, mindestens der empfohlene Rang
+    des Bretts, im Team einer Gattung von dieser Gattung –, der niedrigste zuerst; danach die gierige Wahl. Ein
+    Begleiter über dem Synchronrang zählt als Nachzügler, bis ein Brett mit Synchronrang 25 ihn auf 25 zeigt (seine
+    Vorgabe vom 14.11.2026: „am besten alle reihum bis zum höchstlevel aufsteigen lassen"); unter gleichem Rang gehen
+    die vor, die nicht im Kader des letzten Laufs standen – so kommen sie reihum. Eine Schwäche geht auf diesen Plätzen nicht verloren: Der Kern trifft jede, die
+    ein Begleiter treffen kann.
+  - *Lernende:* Die übrigen Plätze bis zur Größe des Bretts bekommen die übrigen Nachzügler, auch unter dem empfohlenen
+    Rang, der niedrigste zuerst. Sie kämpfen nur, wenn weniger andere leben als Hörner da sind (K6, unverändert).
+  Der Kader ist so groß wie Kämpfer plus Lernende; gibt es keine Nachzügler mehr, bleibt er bei den Kämpfern und bringt
+  In Unterzahl, wo seine Größe eine Stufe trifft. *Größe gegen Punkte (Schluss, unbelegt):* Ein Lernender mehr kostet
+  höchstens eine Stufe In Unterzahl (1.250 bis 4.250 Punkte), die EP aller Begleiter folgen der Punktzahl. Bei rund 15.000
+  Punkten bringt ein Begleiter mehr bei sieben (1/7 = 14 %) mehr als die Stufe (1.250/15.000 = 8 %), bei fünf (20 % gegen
+  17 %) und drei (33 % gegen 28 %) ebenso; erst unter rund 12.500 Punkten bei fünf gewinnt die Stufe. Darum füllen
+  Nachzügler, solange es sie gibt (seine Wertung: „viele begleiter mitnehmen lohnt für das leveln").
+  *Einstellung:* „Prefer familiars that lag behind in rank for the Crucible team", ab Werk an. Aus: der Kader nach
+  Schwächen und Punkten wie bisher (A698, A699), ohne Nachzügler.
+  *Gegenthese 1 (schwächer im Kampf):* Ein Nachzügler auf einem Reserveplatz hat weniger Werte als der Begleiter, den die
+  gierige Wahl dort hätte. Teilweise widerlegt: Er steht mindestens auf der Empfehlung des Spiels, die Schwächen trägt der
+  Kern, und K6 wählt je Kampf nach gemessenem Schaden. Es bleibt: weniger LP in Reserve – Preis: ein Begleiter fällt
+  früher, wenn die Messung den schwersten Lauf noch nicht kennt.
+  *Gegenthese 2 (Erfahrung nur im Kampf):* widerlegt durch seinen Hinweis vom 14.11.2026.
+  *Nach dem Höchstrang (seine Vorgabe, 14.11.2026):* „sobald das erreicht ist, reihum immer begleiter nehmen, aber
+  weniger, so dass punktezahl erhöht werden kann. aber nie soweit reduzieren, dass große gefahr besteht, durch tode von
+  begleitern geringere punktzahl zu bekommen, oder dass diese durch essen gebufft werden müssen." Ohne Nachzügler gilt
+  die Größe nach Punkten (A698): die kleinste Stufe von In Unterzahl, deren Begleiter jeden gemessenen Verlust des
+  Bretts ohne Rast, Gegenstand und Futter tragen (die Rechnung kennt keine Heilung, A703), mit einem in Reserve.
   *Gegenthese 3 (Rang über dem Synchronrang unbekannt):* Zwei Begleiter über dem Synchronrang sind am Brett nicht zu
-  unterscheiden. Nicht widerlegt: Unter ihnen tauscht RSR nicht; ein solcher ist für die Regel nie der Rückständige.
+  unterscheiden; einer davon kann auf 25 stehen und lernt nichts. Nicht widerlegt: RSR zählt sie als Nachzügler,
+  bis ein Brett mit Synchronrang 25 ihren Rang zeigt. *Preis:* Auf den ersten vier Brettern bleibt der Kader voll, auch
+  wenn alle schon auf 25 stehen, und In Unterzahl entfällt. Seit 7.58 zeigt das Teamfenster den ursprünglichen Rang
+  (Patchnotes); wo er in den Werten des Fensters steht, nennt keine Struktur des Clients. Die Fensterspur schreibt das
+  Teamfenster deshalb auch vor dem Brett (`CrucibleWindowTrace`); der nächste Upload zeigt die Stelle, dann liest RSR
+  den Rang dort und prüft ihn gegen `GetSyncedRank`. *Ausgeschlossen:* den Rang über das Umsetzen des Bretts im Agenten zu erfragen (`ContentId` umschreiben und
+  `GetSyncedRank` rufen) – ein Schreiben in Spielspeicher ohne Beleg, was die Funktion liest.
+  *Ausgeliefert, und nichts ändert sich:* Er übernimmt die Empfehlung nicht („Apply"), oder er hat keine Nachzügler unter
+  dem Synchronrang. Die Spur nennt je Begleiter Rang und Rolle („crucible team: requested Puk 10, … Lamb 6 levels").
 - *Umsetzen:* erst die Abgänge, dann die Zugänge, je ein `TogglePet`; danach wartet RSR, bis der Kader sich ändert,
   höchstens einen GCD. Nimmt das Spiel einen Zugang nicht, fällt er für diese Sitzung aus der Empfehlung, und es geht
   weiter; geht ein Abgang nicht, hört RSR auf. Jede Stufe steht in der Spur („crucible team: …"); bestätigen und
