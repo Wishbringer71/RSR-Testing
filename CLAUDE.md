@@ -84,6 +84,10 @@ Diese Datei gilt in jeder Lage. Die übrigen Regeln stehen je genau einmal im Re
 - Betrifft es meine Hilfsmittel oder einen Schaden, den ich verursacht habe? Dann nicht zur Wahl stellen.
 - Sonst gebündelt, erst nach vollständiger Abarbeitung des ganzen TODO, mit durchgerechneten Konsequenzen und Empfehlung (→ „Vorlagen an ihn"); jede Frage zuvor in einem eigenen Loop kritisch geprüft, mit Lösungsvorschlägen und Antithese (seine Vorgabe, 05.11.2026). Bis dahin arbeite ich die übrigen Punkte ab; ein Punkt, der an der Frage hängt, wartet, die anderen nicht.
 
+**Bevor ich etwas Gebautes entferne**
+- Prüfen, ob es sinnvoll war (seine Vorgabe, 14.11.2026: „Bevor du irgendwas gebautes entfernst, hast du zu prüfen, ob es sinnvoll war. Einfach so löschen ist nicht!“, A813): wofür es gebaut wurde (Archiv, `git log -S`), was es im Kampf bewirkt oder misst, und je Teil die Bilanz mit und ohne ihn. Gilt für Code, Prüfmittel, Regeln und Konzepte.
+- „Die Vorgabe verlangt es nicht“ belegt nur, dass es keine Pflicht ist, nicht dass es nutzlos ist. Was Nutzen hat, bleibt oder geht in einfacherer Form weiter; entfernt wird erst ohne Nutzen oder wenn sein Preis den Nutzen überwiegt, mit dieser Bilanz im Archiv.
+
 **Bevor ich etwas als fertig melde**
 - Wirkkette am Code, Richtigkeit und Bilanz am Spielgeschehen, Nachsteuerung, wo die Antwort erst zur Laufzeit fällt (→ „Definition of Done").
 - Konzept, `TODO.md` und Archiv fortgeschrieben.

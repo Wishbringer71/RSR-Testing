@@ -73,6 +73,10 @@ internal static partial class GazeWatch
 	private readonly record struct Gazer(Vector3 Eye, ulong Key, bool Inverted, float Left, Origin From, uint Id, IGameObject? Who,
 		bool Trusted = true, float Margin = 0f);
 
+	// A783, A786, A809: a gaze RSR acted on, until a packet judges it (Learn). Source and Action name a cast gaze's own
+	// cast, whose packet resolves it; Action 0 for a marker, status or member gaze, which any enemy packet from its Due on
+	// judges, Due moving on with the gaze while it is seen (CloseAvoided).
+	private readonly record struct Pending(ulong Key, ulong Learn, string? Name, ulong Source, uint Action, DateTime Due, string Text);
 
 	// A786: a cast gaze whose bar ended: the server resolves it about 0.3 s later, so it stays due until its packet.
 	private readonly record struct Landing(Gazer Gazer, DateTime Ended);
@@ -112,11 +116,9 @@ internal static partial class GazeWatch
 	private static DateTime _lastOrientedAction = DateTime.MinValue;
 	private static readonly List<IBattleChara> _largest = [];
 	private static long _gazersTick = long.MinValue;
-	// A812 (concept 13, "Im Spiel auswerten und lernen"): marker, status and member gazes with when each is due - they have
-	// no packet of their own, so any harmful packet in the window around this judges them.
-	private static readonly List<(Gazer Gazer, DateTime Due)> _uncast = [];
-	// A789, A812: the gazes that hit the player while RSR ran, by gaze (A809: no longer by zone), until RSR is loaded again;
-	// true after the first failure (only the turning ends), false after the second (RSR leaves the gaze alone).
+	private static readonly List<Pending> _pending = [];
+	// A789: the gazes that hit despite RSR's facing, by gaze (A809: no longer by zone), until RSR is loaded again; true where the packet
+	// bore out RSR's eye and sense (only the turning ends), false where it did not (RSR leaves the gaze alone).
 	private static readonly Dictionary<ulong, bool> _distrusted = [];
 
 	// A809: when each learned gaze failed first - a packet of the same mechanic shortly after is no second hit.
@@ -128,6 +130,7 @@ internal static partial class GazeWatch
 	private static readonly Dictionary<uint, bool> _areaTargeted = [];
 	private static float _landingMost;
 	private static (float Rotation, Vector3 Position, ulong Key)? _turnCheck;
+	private static readonly Dictionary<uint, string> _actionNames = [];
 	private static uint _zoneTerritory;
 	private static volatile Texts? _texts;
 	private static int _textsRequested;
@@ -200,11 +203,12 @@ internal static partial class GazeWatch
 		var held = turning && (SafeNear(player, rotation, float.DegreesToRadians(ActionHalfAngleDegrees), Math.Max(0f, startsIn) + reach) == null
 			|| (castTime > 0f && SafeNear(player, rotation, float.DegreesToRadians(CastHalfAngleDegrees), span + reach) == null));
 
+		var holdsAny = false;
 		foreach (var gazer in gazers)
 		{
 			// Without turning, and for a gaze that hit despite RSR's facing (A786): the game turns the player straight at the
-			// target, and a cast holds that heading to its end, so the whole cast counts. With turning, the hold names the
-			// first gaze that lands while the action needs its facing. A789: an action that moves the player keeps facing the
+			// target, and a cast holds that heading to its end, so the whole cast counts. With turning, the hold counts every
+			// gaze that lands while the action needs its facing. A789: an action that moves the player keeps facing the
 			// target until it lands, so the exact direction counts until then; and after the game undid RSR's turn for a gaze,
 			// every action that faces waits until its packet, so no further turn of the game starts.
 			var due = gazer.Left - span <= (turning ? reach : float.PositiveInfinity);
@@ -223,10 +227,14 @@ internal static partial class GazeWatch
 					+ $"{gazer.Left:F1} s left, lead {(turning && gazer.Trusted ? $"{lead:F2} s" : "the whole cast")}");
 			}
 
-			return true;
+			// A809 (sixth review, M6): a gaze RSR keeps a target out of the choice for is learned too - also without a measured
+			// lead or with turning off, where a wrong sense would otherwise keep the target towards the real eye out each cast.
+			// Eighth review: every such gaze, not the first - a held action is never pressed, so nothing else registers it.
+			Watch(gazer);
+			holdsAny = true;
 		}
 
-		return false;
+		return holdsAny;
 	}
 
 	/// <summary>
@@ -309,6 +317,7 @@ internal static partial class GazeWatch
 		// M1 of the review (A786): the game may turn the player back the next frame while it interpolates a turn
 		// (BossModReborn sets DesiredRotation for that, at offsets of its own); RSR measures it instead.
 		_turnCheck = (player.Rotation, player.Position, first);
+		Watch(gazers, lead);
 	}
 
 	// As BossModReborn turns (ActionManagerEx.FaceDirection): the game's own facing call, with "Auto face target" on for
@@ -438,9 +447,13 @@ internal static partial class GazeWatch
 				}
 			}
 
+			Watch(gazers, reach);
 			return null;
 		}
 
+		// A809: every gaze within the facing's reach is watched - the server judges by this facing (vierte Prüfung, H2);
+		// before the option is touched, so nothing here can leave "Auto face target" off.
+		Watch(gazers, reach);
 		var framework = Framework.Instance();
 		var option = framework == null ? null : framework->SystemConfig.GetConfigOption((uint)ConfigOption.AutoFaceTargetOnAction);
 		if (option == null)
@@ -477,11 +490,41 @@ internal static partial class GazeWatch
 		return !_failedAt.TryGetValue(learned, out var first) || (DateTime.Now - first).TotalSeconds > window;
 	}
 
+	// A783 (concept 13, "Lernen und gestufter Rückfall"): every gaze within the reach when RSR turned, chose a facing or
+	// refused an action.
+	private static void Watch(List<Gazer> gazers, float reach)
+	{
+		foreach (var gazer in gazers)
+		{
+			if (gazer.Left <= reach)
+			{
+				Watch(gazer);
+			}
+		}
+	}
+
+	// A809: a gaze RSR acted on waits for its judgement, whatever its origin and whether it is trusted or only holds -
+	// once while it is pending, so a status that comes again in the fight is watched again.
+	private static void Watch(Gazer gazer)
+	{
+		foreach (var pending in _pending)
+		{
+			if (pending.Key == gazer.Key)
+			{
+				return;
+			}
+		}
+
+		var cast = gazer.From == Origin.Cast;
+		_pending.Add(new Pending(gazer.Key, LearnKey(gazer), cast ? ActionName(gazer.Id) : null, gazer.Who?.GameObjectId ?? 0,
+			cast ? gazer.Id : 0u, DateTime.Now.AddSeconds(gazer.Left), Describe(gazer)));
+	}
+
 	/// <summary>
-	/// An enemy's effect packet (A783, A786, A812; concept 13, "Im Spiel auswerten und lernen"). It measures how long after
-	/// its bar a cast resolves and writes who a cast gaze hit. While RSR runs, a harmful status on the player is a failure of
-	/// the gaze it belongs to: the packet's own action where that is a gaze, and every marker, status or member gaze within
-	/// its window (Learn).
+	/// An enemy's effect packet (A783, A786). It measures how long after its bar a cast resolves, ends a gaze that waited
+	/// for it, writes who it hit, and judges every gaze RSR acted on (Related): harm on the player is a failure, learned by
+	/// the one rule in Learn - hold only, or leave the gaze, until RSR is loaded again; the gaze's own packet without harm
+	/// is a gaze avoided.
 	/// </summary>
 	internal static void ObserveLanding(ActionEffectSet set)
 	{
@@ -495,51 +538,116 @@ internal static partial class GazeWatch
 		var sourceId = source.GameObjectId;
 		var actionId = action.RowId;
 		NoteLandingDelay(sourceId, actionId);
-		var harmed = Harmed(set, player.GameObjectId);
-		_ = Landed(set, sourceId, actionId, harmed);
-		if (!harmed || !DataCenter.IsActivated())
+		var landed = Landed(set, sourceId, actionId);
+		if (_pending.Count == 0)
 		{
 			return;
 		}
 
 		var name = action.Name.ExtractText();
-		if (KindOf(actionId) != Kind.None)
+		if (!Harmed(set, player.GameObjectId))
 		{
-			Learn(LearnKey(Origin.Cast, actionId), $"#{actionId} of {source.Name}", name);
+			for (var i = _pending.Count - 1; i >= 0; i--)
+			{
+				// Eighth review: a cast resolved by a same-named helper closes with the helper's packet once its own gaze is gone.
+				var pending = _pending[i];
+				if (pending.Action != 0 && ((pending.Source == sourceId && pending.Action == actionId)
+					|| (!string.IsNullOrEmpty(name) && string.Equals(pending.Name, name, StringComparison.Ordinal) && Find(pending.Key) == null)))
+				{
+					Survived(pending, string.Empty);
+					_pending.RemoveAt(i);
+				}
+			}
+
+			return;
 		}
 
+		// A809 (sixth review, M2): whether the packet refutes RSR's eye and sense is judged once, against the gaze whose
+		// packet it is - not against each pending gaze of the same name, whose eye may stand elsewhere.
 		var now = DateTime.Now;
-		var window = CloseWindow(Lead());
-		foreach (var (gazer, due) in _uncast)
+		var landedLearn = landed is { } own ? LearnKey(own) : 0UL;
+		var landedRefuted = landed is { } judged && Refuted(set, judged, player.GameObjectId);
+		var othersRefuted = OthersRefuted(set, player.GameObjectId, sourceId, actionId, name, now, landed != null, landedLearn);
+		for (var i = _pending.Count - 1; i >= 0; i--)
 		{
-			if (now.AddSeconds(AnimationLockTweak.MeanFrameTime) >= due && (now - due).TotalSeconds <= window)
+			var pending = _pending[i];
+			if (Related(pending, sourceId, actionId, name, now))
 			{
-				Learn(LearnKey(gazer.From, gazer.Id), Describe(gazer), name);
+				Learn(pending, name, landed != null && pending.Learn == landedLearn ? landedRefuted : othersRefuted);
+				_pending.RemoveAt(i);
 			}
 		}
 	}
 
-	// The seconds after a marker, status or member gaze is due within which its packet may still come: the longest delay
+	// A809: a packet belongs to a pending gaze when it is the gaze's own cast, a cast of the same name (a helper resolving
+	// it), or - for a marker, status or member gaze - any enemy packet from its deadline on, a frame early (sixth review,
+	// M4: before it an unrelated "Vulnerability Up" read as the gaze failing), until the close window after it (eighth
+	// review: also where RSR was off and CloseAvoided did not run).
+	private static bool Related(Pending pending, ulong sourceId, uint actionId, string name, DateTime now)
+	{
+		return pending.Action != 0
+			? (pending.Source == sourceId && pending.Action == actionId)
+				|| (!string.IsNullOrEmpty(name) && string.Equals(pending.Name, name, StringComparison.Ordinal))
+			: now.AddSeconds(AnimationLockTweak.MeanFrameTime) >= pending.Due && (now - pending.Due).TotalSeconds <= CloseWindow(Lead());
+	}
+
+	// The seconds after a marker, status or member gaze is gone within which its packet may still come: the longest delay
 	// measured in this zone plus the lead, else a frame (A809).
 	private static float CloseWindow(float lead) => _landingMost + (float.IsInfinity(lead) ? AnimationLockTweak.MeanFrameTime : lead);
 
-	/// <summary>
-	/// The rule of learning (A812, concept 13, "Im Spiel auswerten und lernen"), per gaze for the build: the first failure -
-	/// RSR only holds actions for it; a second, after the first's mechanic - RSR leaves it; left stays left.
-	/// </summary>
-	private static void Learn(ulong key, string text, string name)
+	// A809: for the related cast gazes the packet is not the own packet of, it refutes only where it refutes every one of
+	// them that is still seen. A marker, status or member gaze is never refuted (eighth review): the packet is not its own,
+	// and members who just looked away from a "No Look" eye read as refuting it.
+	private static bool OthersRefuted(ActionEffectSet set, ulong playerId, ulong sourceId, uint actionId, string name, DateTime now,
+		bool hasLanded, ulong landedLearn)
 	{
-		if (!_distrusted.TryGetValue(key, out var holdOnly))
+		var any = false;
+		foreach (var pending in _pending)
 		{
-			_distrusted[key] = true;
-			_failedAt[key] = DateTime.Now;
-			DefenseTrace.Line($"gaze: hit despite RSR's facing by {text} ({name}) - RSR only holds actions for it until it is loaded again");
+			if (pending.Action == 0 || (hasLanded && pending.Learn == landedLearn) || !Related(pending, sourceId, actionId, name, now)
+				|| Find(pending.Key) is not { } gazer)
+			{
+				continue;
+			}
+
+			if (!Refuted(set, gazer, playerId))
+			{
+				return false;
+			}
+
+			any = true;
 		}
-		else if (holdOnly && SecondHit(key))
+
+		return any;
+	}
+
+	/// <summary>
+	/// The one rule of learning (A809, concept 13, "Lernen und gestufter Rückfall"), per gaze for the build: nothing learned
+	/// yet - RSR only holds for it, or leaves it where the packet refutes RSR's eye and sense; only holding - a second hit
+	/// after the first's mechanic leaves it; left - stays left. What is learned is read here, never from the pending.
+	/// </summary>
+	private static void Learn(Pending pending, string name, bool refuted)
+	{
+		if (!_distrusted.TryGetValue(pending.Learn, out var holdOnly))
 		{
-			_distrusted[key] = false;
-			DefenseTrace.Line($"gaze: hit again by {text} while RSR only held actions - RSR leaves this gaze to you until it is loaded again");
+			_distrusted[pending.Learn] = !refuted;
+			_failedAt[pending.Learn] = DateTime.Now;
+			DefenseTrace.Line($"gaze: hit despite RSR's facing by {pending.Text} ({name}) - "
+				+ (refuted ? "others it hit faced away from the eye as RSR places it, so RSR leaves this gaze to you until it is loaded again"
+					: "the packet does not refute RSR's eye and sense, so RSR only holds actions for it until it is loaded again"));
 		}
+		else if (holdOnly && SecondHit(pending.Learn))
+		{
+			_distrusted[pending.Learn] = false;
+			DefenseTrace.Line($"gaze: hit again by {pending.Text} while RSR only held actions - RSR leaves this gaze to you until it is loaded again");
+		}
+	}
+
+	// A gaze RSR acted on that passed without harm: avoided where RSR turned for it, held where it only held actions.
+	private static void Survived(Pending pending, string why)
+	{
+		var held = _distrusted.TryGetValue(pending.Learn, out var holdOnly) && holdOnly;
+		DefenseTrace.Line($"gaze: {(held ? "held" : "avoided")} {pending.Text}{why}");
 	}
 
 	// A harmful status on <targetId> in the packet - a gaze works through its status (Doom, Stone, Paralysis). A801: damage
@@ -584,7 +692,7 @@ internal static partial class GazeWatch
 
 	// A786: a cast gaze's own packet ends its wait, and RSR writes who it hit and whether they faced the eye as RSR places
 	// it - a hit on someone who faced away says the sense or the eye is wrong, before it costs the player.
-	private static Gazer? Landed(ActionEffectSet set, ulong sourceId, uint actionId, bool harmed)
+	private static Gazer? Landed(ActionEffectSet set, ulong sourceId, uint actionId)
 	{
 		Gazer? found = null;
 		for (var i = _landing.Count - 1; i >= 0; i--)
@@ -629,12 +737,33 @@ internal static partial class GazeWatch
 		DefenseTrace.Line($"gaze: landed {Describe(landed)}: hit {hitFacing + hitAway} ({hitAway} looking the safe way by RSR's eye), "
 			+ $"spared {sparedFacing + sparedAway} ({sparedFacing} looking the wrong way); RSR's last oriented action "
 			+ (_lastOrientedAction == DateTime.MinValue ? "none" : $"{(DateTime.Now - _lastOrientedAction).TotalSeconds:F2} s before"));
-		if (!harmed && _turnTraced.Contains(landed.Key))
+		return landed;
+	}
+
+	// A791: whether the packet refutes RSR's eye and sense: among the others it hit, more faced the safe way as RSR places
+	// it than into it. Without others hit nothing refutes it.
+	private static bool Refuted(ActionEffectSet set, Gazer gazer, ulong playerId)
+	{
+		int facing = 0, away = 0;
+		foreach (var effect in set.TargetEffects)
 		{
-			DefenseTrace.Line($"gaze: avoided {Describe(landed)}");
+			if (effect.TargetID == playerId || Svc.Objects.SearchById(effect.TargetID) is not IBattleChara member || member.IsEnemySideFigure()
+				|| !Harmed(set, effect.TargetID))
+			{
+				continue;
+			}
+
+			if (Unsafe(member.Rotation, member, gazer, false))
+			{
+				facing++;
+			}
+			else
+			{
+				away++;
+			}
 		}
 
-		return landed;
+		return away > facing;
 	}
 
 	// The gaze with this key among the current, the ended and last frame's.
@@ -659,45 +788,41 @@ internal static partial class GazeWatch
 		return null;
 	}
 
-	// A812: marker, status and member gazes keep when they are due while seen, until their window has passed; a held facing
-	// ends with its gaze - these have no packet of their own (Landed), and a status that came again held every facing
-	// action, a safe one too.
-	private static void Prune(float lead)
+	// Marker, status and member gazes RSR acted on: while the gaze is seen its deadline moves on with it; once it is gone,
+	// without harm from any enemy within the longest delay measured in this zone plus the lead, it passed (A809, sixth
+	// review, M5: a marker's eye may resolve after the marker's time). A cast gaze waits for its own packet until the fight
+	// ends (A801) - early in a zone the longest delay measured was shorter than this one's.
+	private static void CloseAvoided(float lead)
 	{
+		// A809 (seventh review, M3): without a delay measured in this zone yet, the lead alone, else a frame - left open, any
+		// later harmful packet in the fight read as the gaze failing.
 		var now = DateTime.Now;
-		foreach (var gazer in _gazers)
+		var window = CloseWindow(lead);
+		for (var i = _pending.Count - 1; i >= 0; i--)
 		{
-			if (gazer.From == Origin.Cast)
+			var pending = _pending[i];
+			if (pending.Action != 0)
 			{
 				continue;
 			}
 
-			var due = now.AddSeconds(gazer.Left);
-			var known = false;
-			for (var i = 0; i < _uncast.Count; i++)
+			if (Find(pending.Key) is { } gazer)
 			{
-				if (_uncast[i].Gazer.Key == gazer.Key)
+				var due = now.AddSeconds(gazer.Left);
+				if (due > pending.Due)
 				{
-					known = true;
-					_uncast[i] = (gazer, due > _uncast[i].Due ? due : _uncast[i].Due);
+					_pending[i] = pending with { Due = due };
 				}
 			}
-
-			if (!known)
+			else if ((now - pending.Due).TotalSeconds > window)
 			{
-				_uncast.Add((gazer, due));
+				Survived(pending, ", no harm seen from any enemy");
+				_pending.RemoveAt(i);
 			}
 		}
 
-		var window = CloseWindow(lead);
-		for (var i = _uncast.Count - 1; i >= 0; i--)
-		{
-			if ((now - _uncast[i].Due).TotalSeconds > window)
-			{
-				_uncast.RemoveAt(i);
-			}
-		}
-
+		// A809: a held facing ends with its gaze - a marker, status or member gaze has no packet of its own (Landed), and a
+		// status that came again held every facing action, a safe one too.
 		if (_heldFacing.Count > 0)
 		{
 			_ = _heldFacing.RemoveWhere(static key => Find(key) == null);
@@ -706,10 +831,19 @@ internal static partial class GazeWatch
 
 	// What a failure is learned under: the gaze itself - a cast's row, a marker's kind, a status's id. A809 (seventh
 	// review, M1): not the cast's name - Angra Mainyu, the Crucible's Ahriman and Destrudo share "Mortal Gaze", and a
-	// failure on one released the others. A helper's twin is a gaze by its name and learns under its own row.
-	private static ulong LearnKey(Origin from, uint id) => (ulong)(uint)HashCode.Combine(from, id);
+	// failure on one released the others. A helper's twin is judged by the same packet and learns under its own row.
+	private static ulong LearnKey(Gazer gazer) => (ulong)(uint)HashCode.Combine(gazer.From, gazer.Id);
 
-	private static ulong LearnKey(Gazer gazer) => LearnKey(gazer.From, gazer.Id);
+	private static string ActionName(uint actionId)
+	{
+		if (!_actionNames.TryGetValue(actionId, out var name))
+		{
+			name = Service.GetSheet<Lumina.Excel.Sheets.Action>().GetRowOrDefault(actionId)?.Name.ExtractText() ?? string.Empty;
+			_actionNames[actionId] = name;
+		}
+
+		return name;
+	}
 
 	/// <summary>Puts "Auto face target" back after <see cref="PrepareFacing"/>.</summary>
 	internal static unsafe void RestoreFacing(uint? original)
@@ -965,7 +1099,12 @@ internal static partial class GazeWatch
 	/// </summary>
 	internal static void EndFight()
 	{
-		_uncast.Clear();
+		foreach (var pending in _pending)
+		{
+			DefenseTrace.Line($"gaze: unknown {pending.Text}, the fight ended before its packet");
+		}
+
+		_pending.Clear();
 		_landing.Clear();
 		_casts.Clear();
 		_castsBefore.Clear();
@@ -1006,7 +1145,7 @@ internal static partial class GazeWatch
 		if (territory != _zoneTerritory)
 		{
 			_zoneTerritory = territory;
-			_uncast.Clear();
+			_pending.Clear();
 			_barEnds.Clear();
 			_landingMost = 0f;
 			if (_texts == null)
@@ -1036,9 +1175,10 @@ internal static partial class GazeWatch
 		}
 
 		AddMarkers(lead);
-		Prune(lead);
+		CloseAvoided(lead);
 
-		// A789, A812: a gaze that failed once keeps holding actions over the whole cast; after the second RSR leaves it alone.
+		// A789: a gaze that hit despite RSR's facing keeps holding actions over the whole cast where its packet bore out the
+		// eye and sense, else RSR leaves it alone.
 		if (_distrusted.Count > 0)
 		{
 			for (var i = _gazers.Count - 1; i >= 0; i--)

@@ -413,42 +413,17 @@ Mainyu wurde von jedem GCD zurück ins Auge gedreht. BossModReborn nimmt nur 0 a
   entstehen, dass durch die neue regel sofort und immer bis zum fix gestorben wird … ingame auswertung und ingame daraus
   lernen“; dazu: „ziel ist es doch erst einmal ein tragfähiges theoretisches konzept zu haben. dass wird dann entweder
   durch interne tests untermauert, oder durch externe logs widerlegt oder auch untermauert“). Einordnung: Vorgabe.
-  - *Grundsatz* (A812, nach acht Prüfrunden zurück zur Anforderung): eine Regel an einer Stelle, mit nichts, was sie
-    nicht braucht. Bis A812 meldete RSR jeden Blick, für den es handelte, in einer offenen Liste an, ordnete Pakete
-    über Namen, Fristen und Abschlussfenster zu und maß am Paket, ob die anderen Getroffenen das Modell widerlegen. Jede
-    der Prüfrunden sechs bis acht fand dort neue Befunde mittlerer Schwere (A809); die Vorgabe verlangt nichts davon.
-  - *Fehlschlag:* Solange RSR läuft, legt ein Paket eines Gegners einen schädlichen Status auf den Spieler
-    (`StatusCategory` schädlich; ein Blick wirkt durch seinen Status – Verhängnis, Versteinerung, Lähmung), und
-    - *Wirken:* die Aktion des Pakets ist selbst ein Blick (Kennzeichen, Liste, Name, „Was ein Blick ist“). Das deckt die
-      Helferfassung: #3499 ist über den Namen selbst ein Blick. Gelernt wird unter der Zeile des Pakets.
-    - *Marker, Status auf dem Spieler, Mitglied als Auge:* Sie haben kein eigenes Paket; aufgelöst werden sie von Helfern
-      ohne Wirken (Nymeia über #31316 und #31317, Lapis Manalis über #31385; die Wirken in Windurst, #49121 und #49161,
-      sind laut BossModReborn nur Bild). Es zählt jedes Paket ab ihrer Frist, ein Bild früher, bis zur größten im Gebiet
-      gemessenen Verzögerung vom Balkenende zum Paket plus Vorlauf danach (ohne Messung der Vorlauf, ohne ihn ein Bild).
-      Die Frist rückt mit dem Blick nach, solange er zu sehen ist. *Preis:* Ein fremder schädlicher Status in diesem
-      Zeitraum zählt als Fehlschlag.
-    - Automatische Angriffe (`ActionCategory` 1) zählen nie. Schaden allein zählt nicht (A801): Beide Tödlichen Strahlen
-      des Taurus trafen ihn abgewandt mit 1 % seiner LP und legten keinen Status. *Preis:* Ein Blick, der nur Schaden
-      macht, wer hinsieht, lernt keinen Fehlschlag.
-    - Ob RSR für den Blick gedreht oder nur gesperrt hat, spielt keine Rolle: Jeder Treffer, während RSR läuft, zeigt,
-      dass sein Schutz dort nicht hält. Ohne gemessenen Vorlauf und mit „Turn away from gaze attacks“ aus sperrt RSR
-      ebenfalls, und ein Blick mit falschem Sinn hielte sonst bei jedem Wirken das Ziel zurück, das zum echten Auge dreht.
-  - *Folge, je Blick für den Build* (Schlüssel: die Zeile des Wirkens, die Marker-Art, die Status-Id):
-    - *Erster Fehlschlag:* RSR dreht für diesen Blick nicht mehr, hält aber Aktionen zurück, die ins Auge drehen würden
-      („Sperre“). Die Sperre kostet nur Schaden.
-    - *Zweiter Fehlschlag:* RSR lässt ihn ganz, also das Verhalten ohne die Regel. Das deckt einen in Wahrheit umgekehrten
-      Blick, bei dem die Sperre gerade die Ziele zum Auge hin ausnimmt. Ein Paket innerhalb der größten gemessenen
-      Verzögerung plus Vorlauf nach dem ersten gehört zu derselben Mechanik und zählt nicht (zwei Augen eines Markers).
-    - Ein falsches Modell kostet so höchstens zwei Treffer je Blick und Build (B3), für jede Herkunft. *Preis gegenüber
-      A789–A809:* Ein Paket, dessen andere Getroffene das Modell offensichtlich widerlegen, lässt den Blick nicht schon
-      beim ersten Treffer los; der zweite kostet einen weiteren Treffer, innerhalb der Grenze. Dafür entfallen die
-      Gegenprobe an der Richtung der anderen im Client, die eine vom Server gehaltene Richtung falsch las (A809, N3), und
-      jede Zuordnung über eine offene Liste.
-    - *Dauer:* bis RSR neu geladen wird, also bis zum nächsten Build; er kompiliert vor jedem Spielen. Gelernt je Blick,
-      nicht je Gebiet (der Pilgerpfad wechselt alle zehn Ebenen das Gebiet) und je Zeile, nicht je Name: „Tödlicher
-      Blick“ tragen Angra Mainyu (#3281, #3499), die Ahriman des Crucible (#48152, #48153) und Destrudo (#44355).
-    - Die Spur schreibt „gaze: hit despite RSR's facing …“ beim ersten und „gaze: hit again …“ beim zweiten Fehlschlag.
-  - *Auge eines Markers:* Als Auge gilt ein wirkender Gegner, dessen Wirken mit dem Marker endet: Der Rest des Balkens liegt
+  - *Was zählt als Eingriff:* Im Vorlauf hat RSR gedreht (`TurnAway`, `PrepareFacing`) oder eine Richtung beim Auslösen
+    gewählt. Eine reine Sperre zählt nicht, denn sie dreht nicht; dort dreht der Spieler oder BossModReborn.
+  - *Woran RSR es erkennt* (A786, an seinem Mitschnitt vom 13.11.2026, Angra Mainyu): Der Server schickt zu jedem
+    Wirken ein Effekt-Paket an alle Ziele in Reichweite. Bei #3499 standen alle 24 Spieler darin. Wer getroffen wurde,
+    trug den Effekt „Status setzen“ (0x0E) mit Verhängnis (210), die übrigen „verfehlt“ (1). Das Paket entscheidet:
+    - *Wirken:* Das Paket kommt vom Wirkenden des Blicks mit dessen Aktion. Trägt es auf dem Spieler Schaden oder einen
+      schädlichen Status (`StatusCategory` schädlich), ist es ein Fehlschlag. Sonst ist der Blick vermieden, auch wenn
+      der Spieler nicht im Paket steht.
+    - *Helferfassung:* Ein Paket mit dem Namen des Blicks, das den Spieler schädigt, gilt als Fehlschlag desselben
+      Blicks (#3499 zu #3281, die Strafaktion in Windurst).
+    - *Marker:* Als Auge gilt ein wirkender Gegner, dessen Wirken mit dem Marker endet: Der Rest des Balkens liegt
       höchstens die gemessene Verzögerung bis zum Paket plus ein Bild (mit Messung: plus Vorlauf) unter dem Rest des
       Markers. Ohne gemessene Verzögerung gilt jeder Wirkende. Einmal zugeordnete Augen bleiben (A791): Im letzten Stück
       wirkt das echte Auge nicht mehr, und dann passte jeder Gegner, dessen Wirken gerade endet, etwa ein Helfer mit einer
@@ -459,20 +434,59 @@ Mainyu wurde von jedem GCD zurück ins Auge gedreht. BossModReborn nimmt nur 0 a
       Verbindung kein Auge. Unter mehreren gilt der mit dem größten Trefferkreis. Der Marker bleibt fällig bis zu seiner
       Dauer plus dieser Verzögerung; BossModReborn löst ihn bei 7,1 s auf (`A35ShinryuParadox`). Gibt es kein solches
       Wirken, gilt der Marker nicht als Blick, und RSR tut nichts. Bis A786 galt der größte Wirkende, gleich was er wirkte.
+    - *Marker, Status auf dem Spieler, Mitglied als Auge* (A791): Jedes Paket eines Gegners mit Schaden oder schädlichem
+      Status auf dem Spieler bis zum Ende der Frist ist ein Fehlschlag. Aufgelöst werden diese Blicke von Helfern ohne
+      Wirken: Nymeia über #31316 und #31317, Lapis Manalis über #31385 (BossModReborns Enums, „Helper->self, no cast“);
+      die Wirken in Windurst (#49121, #49161) sind laut BossModReborn nur Bild. Bis A791 zählte nur das Paket des
+      Auges, also nie ein Fehlschlag, und RSR schrieb „avoided“ ohne Beleg. Ohne Schaden schreibt es jetzt „avoided, no
+      harm seen“. *Preis:* Eine gleichzeitige Fläche zählt als Fehlschlag, und RSR dreht für diesen Blick nicht mehr.
+    - Automatische Angriffe (`ActionCategory` 1) zählen nie. Bis A786 zählte bei Markern jeder Schaden jedes Gegners.
+      Für einen Tank reichte ein automatischer Angriff, und der Marker galt im Gebiet als misstraut.
+    - *Frist ohne Paket:* Ein gewirkter Blick wartet auf sein Paket, bis der Kampf endet; erst dann schreibt RSR
+      „gaze: unknown …". Ein Blick aus Status, Marker oder Mitglied hat kein eigenes Paket: Er schließt nach der größten im
+      Gebiet gemessenen Verzögerung vom Balkenende bis zum Effekt-Paket plus Vorlauf. *Gemessen (14.11.2026, Brett 2, A801):*
+      Mit dieser Frist auch für gewirkte Blicke schrieb RSR beim Tödlichen Strahl des Taurus (#48143) „unknown – its packet
+      unseen" 0,15 s, bevor das Paket kam: Früh im Gebiet war die gemessene Verzögerung kürzer als diese. Bis A786 schloss
+      RSR nach Vorlauf plus Antwortzeit als vermieden, vor dem Paket, das 0,26 bis 0,30 s nach dem Balken kommt.
+    - *Was als Fehlschlag zählt* (A801): ein schädlicher Status, den das Paket des Blicks auf dich legt. Ein Blick wirkt
+      durch seinen Status (Verhängnis, Versteinerung, Lähmung); Schaden trifft oft auch, wer wegsieht. *Gemessen
+      (14.11.2026):* Beide Tödlichen Strahlen trafen ihn abgewandt mit 1 % seiner LP und legten keinen Status. Bis A801
+      zählte jeder Schaden: Hätte RSR das Paket gesehen, hätte es einen Fehlschlag gelernt, und da auch die Abgewandten
+      Schaden nahmen, den Blick als widerlegt – RSR hätte dich bei ihm nicht mehr gedreht. *Preis:* Ein Blick, der nur
+      Schaden macht, wer hinsieht, lernt keinen Fehlschlag; RSR dreht für ihn weiter. Gilt ebenso für die Gegenprobe an
+      den anderen Getroffenen und für Blicke aus Status, Marker und Mitglied.
+  - *Folge eines Fehlschlags* (A789, A791): Das Paket, das ihn zeigt, sagt auch, ob RSRs Annahme über Auge und
+    Richtung stimmt. Gezählt werden die anderen Getroffenen: wie viele nach der Annahme ins Auge sahen, wie viele weg.
+    - *Widerlegt* (mehr sahen weg als hin): RSR greift bei diesem Blick gar nicht mehr ein, also das Verhalten ohne die
+      Regel. Grund: Ist das Auge oder die Richtung falsch, verhinderte die Sperre gerade die Aktion, die den Spieler zum
+      echten Auge dreht.
+    - *Bestätigt oder unbelegt* (sonst, auch ohne andere Getroffene): RSR dreht für diesen Blick nicht mehr und wählt
+      keine Richtung, hält aber Aktionen über das ganze Wirken zurück, die genau ins Auge drehen würden, wie A770. Die
+      Sperre dreht nicht selbst; sie nimmt nur Ziele aus der Wahl. Bis A791 ließ RSR den Blick auch ohne andere
+      Getroffene ganz los. Allein oder zu viert im Pilgerpfad (Pakete mit 2 bis 3 Zielen, gemessen am 12.11.2026) hätte ein
+      einziger Treffer dann jeden weiteren Angriff auf Destrudo ins Auge gedreht.
+    - *Zweiter Treffer:* Trifft der Blick den Spieler, während nur noch die Sperre gilt, lässt RSR ihn ganz los. Das deckt
+      einen in Wahrheit umgekehrten Blick, bei dem die Sperre gerade die Ziele zum Auge hin ausnimmt. Ein falsches Modell
+      kostet so höchstens zwei Treffer je Build, nicht einen bei jedem Wirken.
+  - *Dauer:* bis RSR neu geladen wird, also bis zum nächsten Build; er kompiliert vor jedem Spielen. Der Schlüssel ist
+    der Blick selbst: beim Wirken seine Zeile, bei Markern die Marker-Art, bei Status die Status-Id (A809,
+    „Lernen und gestufter Rückfall“). Bis A789 setzte jeder Gebietswechsel das zurück. Mit jeder neuen Runde desselben Dungeons kostete ein falsches Modell dann erneut einen
+    Tod. Die Zeile „gaze: hit despite …“ steht im `DefenseTrace.log` und nennt die Folge.
   - *Messmittel für Richtung und Auge:* Zu jedem Paket eines Blicks schreibt RSR einmal, wie viele Spieler im Paket
     getroffen wurden und wie viele davon nach RSRs Annahme zum Auge sahen, ebenso für die Verschonten („gaze: landed
     …“). Widerspricht das der Annahme, etwa „getroffen, sah weg“, ist die Richtung oder der Ort des Auges falsch. Das
     belegt seine nächste Aufnahme, ohne dass er stirbt. *Vorhersage* (A786): Bei Angra Mainyu, #3499, zeigt die Zeile
     getroffene Spieler, die zum Auge sahen, und keine getroffenen, die wegsahen. Getroffene, die wegsahen, widerlegen
     den Ort.
-    Hat RSR für einen gewirkten Blick gedreht und trifft sein Paket den Spieler nicht, schreibt es „gaze: avoided …“.
-  - *Gegenthese 1 (falscher Fehlschlag):* Ein fremder schädlicher Status im Zeitraum eines Markers oder Status, oder ein
-    eigener Stellfehler des Spielers, zählt als Fehlschlag. *Preis:* Sperre statt Drehung für diesen Blick bis zum
-    nächsten Build; ganz los erst nach einem zweiten.
-  - *Gegenthese 2 (ausgeliefert, und nichts ändert sich):* Ein Status, den der Server ohne das Paket des Blicks setzt,
-    etwa über eine andersnamige Aktion, erkennt RSR beim Wirken nicht (T9; bei Angra Mainyu steht Verhängnis im Paket).
-    Gibt ein Blick mit seinem Paket jedem Ziel einen schädlichen Status, gleich wohin es sieht, zählt jeder Erfolg als
-    Fehlschlag (Schluss, unbelegt). Für andere Kämpfe entscheidet die Zeile „gaze: landed …“.
+  - *Gegenthese 1 (falscher Fehlschlag):* Eine gleichzeitige andere Wirkung mit demselben Namen, oder bei Marker,
+    Status und Mitglied ein anderer Treffer, kann als Fehlschlag zählen. *Preis:* RSR dreht bei diesem Blick bis zum
+    nächsten Build nicht mehr und sperrt nur noch, das kostet Schaden. Ganz los lässt es ihn nur, wenn das Paket die
+    Annahme widerlegt oder der Blick ein zweites Mal trifft.
+  - *Gegenthese 2 (Fehlschlag ohne Eingriff):* Hat RSR nur gesperrt, lernt es nichts. Dort drehte RSR nicht, also kann
+    seine Regel den Tod nicht verursacht haben.
+  - *Gegenthese 3 (ausgeliefert, und nichts ändert sich):* Ein Status, den der Server ohne das Paket des Blicks setzt,
+    etwa über eine andersnamige Aktion, erkennt RSR nicht. Bei Angra Mainyu steht Verhängnis im Paket (oben). Für
+    andere Kämpfe entscheidet die Zeile „gaze: landed …“.
 - *Im Kampf:* Während der 4,5 s von #3499 kämpft RSR bis L vor dem Blick weiter, auch auf Angra Mainyu. Ab dann drückt
   es nichts mehr auf ihn und nichts auf ein Ziel in seiner Richtung, und es dreht die Figur von ihm weg. Der Ausfall schrumpft so von zwei GCDs auf
   die gemessene Verzögerung plus ein Bild. Der Heiler heilt weiter, denn Heilungen
@@ -621,11 +635,12 @@ und an seinen Mitschnitten; im Spiel ist kein Teil der Blickwache beobachtet.
 - *Drehen im Vorlauf* (B2): statt das ganze Wirken zu sperren. Preis: ein Zauber außerhalb von 75° bricht ab.
 - *Auslösen ohne „Auto face target“* (B2, B1): Ohne ihn dreht jede Aktion, auch aus der Warteschlange des Spiels, genau
   aufs Ziel. Preis: die Figur sieht bis zu 45° neben das Ziel.
-- *Ein Zeitraum für Sperre und Richtung: Vorlauf plus Sperre der Aktion* (B4; A809): Die Richtung einer Aktion hält
-  der Server eine Weile (T1). Jeder Blick, der in diesem Zeitraum landet, zählt für beide gleich: Die Wahl der Ziele
-  sperrt ein Ziel, für das keine sichere Richtung im Kegel bleibt, und das Auslösen wählt die Richtung gegen ihn. Vorher
-  zählte die Sperre nur den Vorlauf: Eine Sofortaktion auf den Wirkenden 0,25 s vor dem Balkenende ging ins Auge
-  (vierte unabhängige Prüfung, H1). Preis: Auf den
+- *Ein Zeitraum für Sperre, Richtung und Lernen: Vorlauf plus Sperre der Aktion* (B4, B3; A809): Die Richtung einer
+  Aktion hält der Server eine Weile (T1). Jeder Blick, der in diesem Zeitraum landet, zählt dreifach gleich: Die Wahl der
+  Ziele sperrt ein Ziel, für das keine sichere Richtung im Kegel bleibt; das Auslösen wählt die Richtung gegen ihn; und
+  er wird zum Lernen angemeldet, sobald RSR seinetwegen handelt („Lernen und gestufter Rückfall“). Vorher zählte die Sperre nur den
+  Vorlauf und die Anmeldung nur Blicke im Vorlauf: Eine Sofortaktion auf den Wirkenden 0,25 s vor dem Balkenende ging
+  ins Auge, und eine früh gewählte Richtung blieb ungelernt (vierte unabhängige Prüfung, H1 und H2). Preis: Auf den
   Wirkenden wartet eine Aktion bis zu Vorlauf plus Sperre (etwa 0,6 s) vor dem Blick statt nur den Vorlauf.
 - *Abweisen ohne sichere Richtung* (B4, B1; A809): Findet das Auslösen für einen Blick in diesem Zeitraum keine sichere
   Richtung im Kegel der Aktion, geht sie nicht – auch aus der Warteschlange des Spiels und von Hand gedrückt.
@@ -646,13 +661,77 @@ und an seinen Mitschnitten; im Spiel ist kein Teil der Blickwache beobachtet.
   maß sonst Minuten, und jeder Zeitraum des Gebiets – „dieselbe Mechanik“, Abschluss, Markerzuordnung, Abstand aus
   Bewegung – wäre so weit geworden. Ebenso zählt der Abstand zwischen zwei Aktualisierungen, der den Vorlauf verlängert,
   nur, solange RSR läuft; nach einer Pause im Kampf hätte er sonst einen Vorlauf von der Länge der Pause ergeben.
-- *Lernen und gestufter Rückfall* (B3): steht in „Im Spiel auswerten und lernen“. Preis: nach einem Fehlschlag Schaden
-  durch Sperre, nach dem zweiten kein Schutz für diesen Blick bis zum nächsten Build. Bis A812 eine eigene Mechanik mit
-  Anmeldung, Zuordnung und Gegenprobe; nach acht Prüfrunden auf die Vorgabe zurückgeführt (A812).
-- *Ein Blick, der nur noch sperrt,* bekommt keine eigene Drehung. Dreht RSR für einen anderen Blick, meidet die gewählte
-  Richtung auch ihn: Stimmt sein Modell, schützt das; stimmt es nicht, kostet es den zweiten Treffer.
-- *Kampfende:* Was ein Kampf an Fristen und Landungen hält, endet mit ihm, auch wenn RSR aus ist – an der Stelle, die das
-  Kampfende jedes Bild misst (`ActionUpdater`). Was gelernt ist, bleibt bis zum nächsten Build.
+- *Lernen und gestufter Rückfall* (B3; A809, sechste unabhängige Prüfung): eine Regel an einer Stelle. Preis: nach
+  einem falschen Fehlschlag Schaden durch Sperre.
+  - *Anmelden:* Ein Blick wird zum Lernen angemeldet, sobald RSR seinetwegen handelt: dreht, beim Auslösen eine Richtung
+    wählt, behält oder die Aktion abweist, oder ein Ziel aus der Wahl nimmt – dann jeder Blick, der dieses Ziel hält,
+    nicht nur der erste. Sonst blieb ein zweiter Blick mit falschem Sinn, für den RSR jedes Ziel zurückhielt, ungelernt,
+    weil eine zurückgehaltene Aktion nie gedrückt wird (achte Prüfung). Das gilt für jede Herkunft (Wirken, Marker,
+    Status, Mitglied), für einen vertrauten wie für einen, der nur noch sperrt, und auch ohne gemessenen Vorlauf oder mit
+    „Turn away from gaze attacks“ aus, denn auch dann nimmt die Sperre Ziele aus der Wahl. Jeder Blick ist einmal
+    angemeldet, auch wenn er im selben Kampf wiederkommt (der Status von Euphrosyne): Das Doppel erkennt RSR an der
+    Anmeldung, nicht an einer Liste für den Kampf.
+  - *Urteil:* Ein Paket eines Gegners schadet dem Spieler (ein schädlicher Status) und gehört zu einem angemeldeten Blick:
+    sein eigenes Wirken, ein Wirken gleichen Namens (ein Helfer, der es auflöst), oder bei Marker, Status und Mitglied
+    jedes Paket ab der Frist des Blicks, ein Bild früher, bis zur größten gemessenen Verzögerung plus Vorlauf danach. Vor
+    der Frist zählt dort kein Paket – sonst hätte ein fremder Flächenangriff mit „Vulnerability Up“ den Blick als
+    Fehlschlag gelesen –, und danach auch nicht, selbst wenn die Anmeldung offen blieb, weil RSR im Kampf aus war.
+  - *Gelernt wird je Blick in drei Stufen:* noch nichts gelernt → nach dem Fehlschlag sperrt RSR nur noch, oder lässt den
+    Blick ganz, wenn das Paket Modell und Sinn widerlegt. Sperrt RSR nur noch, lässt es ihn nach einem zweiten Treffer
+    ganz. Ein gelassener Blick bleibt gelassen. Dieselbe Mechanik zählt nicht doppelt: Pakete innerhalb der größten
+    gemessenen Verzögerung plus Vorlauf nach dem ersten Fehlschlag (#3281 und #3499 bei Angra Mainyu; zwei Augen eines
+    Markers) gehören zu ihm. Die Stufe liest RSR aus dem Gelernten, nicht aus der Anmeldung und nicht aus dem Blick, wie
+    das Spiel ihn beim Balkenende weitergab; so überschreibt ein zweiter Blick, der noch als vertraut angemeldet war,
+    nichts Gelerntes (vorher drei Treffer statt zwei, sechste Prüfung M1).
+  - *Widerlegt* ist das Modell eines gewirkten Blicks, wenn unter den anderen Getroffenen des Pakets mehr sicher standen
+    als ins Auge sahen, so wie RSR das Auge setzt. Gemessen wird gegen den Blick, dessen Paket es ist, einmal je Paket;
+    nicht gegen jeden angemeldeten Blick gleichen Namens. Sonst las ein zweites Auge gleichen Namens auf der anderen Seite
+    die Getroffenen als „weggesehen“ und ließ einen richtigen Blick fallen (sechste Prüfung M2). Marker, Status und
+    Mitglied widerlegt kein Paket: Es ist nicht ihres, und wer darin getroffen wurde, sagt nichts über ihr Auge. Ein
+    Flächenangriff kurz nach einem „No Look“-Marker traf sonst Mitglieder, die eben vom Auge wegsahen, galt als
+    Widerlegung und ließ den Marker für den Build los (achte Prüfung). Ihr erster Fehlschlag führt immer zur Sperre.
+    Preis: Trifft ein fremder schädlicher Status im Zeitraum nach der Frist, sperrt RSR für diesen Blick nur noch,
+    statt zu drehen.
+  - *Abschluss ohne Treffer:* Ein gewirkter Blick wartet auf sein eigenes Paket bis zum Kampfende (A801). Marker, Status
+    und Mitglied gelten als überstanden, wenn der Blick verschwunden ist und danach die größte gemessene Verzögerung plus
+    Vorlauf ohne Schaden vergangen ist; bis dahin rückt die Frist mit dem Blick nach. Ein Marker, dessen Auge erst nach
+    der Markerdauer auflöst, schloss sonst vor seinem Paket (sechste Prüfung M5). Ist im Gebiet noch keine Verzögerung
+    gemessen, gilt der Vorlauf allein, ohne Vorlauf ein Bild. Vorher blieb die Anmeldung dann bis zum Kampfende offen, und
+    jeder spätere Flächenangriff mit „Vulnerability Up“ zählte als Fehlschlag (siebte Prüfung M3). Preis: Kommt das Paket
+    früh im Gebiet später als dieser Zeitraum, bleibt dieser eine Treffer ungelernt.
+  - *Kampfende:* Was ein Kampf angemeldet hat, endet mit ihm, auch nach einer Wiederholung des Kampfes und wenn RSR aus
+    ist – an der Stelle, die den Kampfbeginn und das Kampfende jedes Bild misst (`ActionUpdater`). Vorher räumte nur die
+    Blickwache selbst ab, wenn sie lief; nach einem Wipe schaltet sich RSR ab, und beim nächsten Versuch las der erste
+    schädliche Status von Euphrosynes Althyk die offene Anmeldung von „Attraction Reversed“ als Fehlschlag (siebte
+    Prüfung M2). Was gelernt ist, bleibt bis zum nächsten Build.
+  - *Grenze:* Damit kostet ein falsches Modell je Blick höchstens zwei Treffer je Build, für jede Herkunft. Ein Treffer
+    bei falschem Sinn (in Wahrheit umgekehrt) kostet in der Sperre höchstens den zweiten (M5 der vierten Prüfung): Der Sinn
+    ist nur bei BossModReborns Liste belegt, beim Kennzeichen und beim Namen nicht; die Sperre bleibt trotzdem, weil ohne
+    sie allein im Pilgerpfad jeder Angriff ins Auge drehte (A791, H1). Gelernt wird je Blick, nicht je Gebiet: Der
+    Pilgerpfad wechselt alle zehn Ebenen das Gebiet und zahlte den Fehlschlag sonst in jedem neu. Und je Zeile des
+    Wirkens, nicht je Name (siebte Prüfung M1): „Tödlicher Blick“ tragen Angra Mainyu (#3281, #3499), die Ahriman des
+    Crucible (#48152, #48153) und Destrudo (#44355). Zwei Wellen im Crucible hätten unter dem Namen auch Destrudo im
+    Pilgerpfad losgelassen, dessen Modell nie fehlschlug, und das Spiel hätte dort jeden Angriff ins Auge gedreht. Den
+    Zwilling eines Helfers (gleicher Name) beurteilt dasselbe Paket; jeder zugehörige angemeldete Blick lernt unter seiner
+    eigenen Zeile.
+  - *Ein Blick, der nur noch sperrt,* bekommt keine eigene Drehung. Dreht RSR für einen anderen Blick, meidet die gewählte
+    Richtung auch ihn: Stimmt sein Modell, schützt das; stimmt es nicht, kostet es den zweiten Treffer, nach dem RSR ihn
+    ganz lässt.
+  - *Bekannte Grenzen (siebte Prüfung, niedrig):* Der Zeitraum „dieselbe Mechanik“ ist die größte Verzögerung im
+    Gebiet; löst eine Aktion spät auf, wird er weit, und ein echter zweiter Treffer darin zählt nicht (Preis: ein
+    weiterer Treffer über die Grenze von zwei). Ein Treffer bei Verfolgung des Modells – der Spieler sieht selbst
+    ins Auge, während RSR nur sperrt – lässt den Blick los, wie die Regel es für jeden zweiten Fehlschlag vorsieht
+    (`code.md`, „Entscheidung zur Laufzeit“). Ein über einen Helfer gleichen Namens aufgelöstes Wirken schließt mit
+    dessen Paket ohne Schaden, sobald es selbst nicht mehr zu sehen ist (achte Prüfung). Wie viele Getroffene als
+    „weggesehen“ zählen, liest RSR an der Richtung im Client; eine vom Server gehaltene Richtung kann dort anders
+    stehen (A809, N3). Gibt ein Blick mit seinem Paket jedem Ziel einen schädlichen Status, gleich wohin es sieht,
+    zählt jeder Erfolg als Fehlschlag; T9 ist nur an #3499 gemessen (achte Prüfung, Schluss, unbelegt an weiteren
+    Blicken). Jede davon wäre eine neue Mechanik ohne Anforderung.
+  - *Gegenthese (die Anmeldung beim Zurückhalten lernt aus Fehlern des Spielers):* Steht er selbst falsch, während RSR
+    nur ein Ziel zurückhält, lernt RSR einen Fehlschlag, den es nicht verursacht hat. Preis: Sperre statt Drehung für
+    diesen Blick, nach einem weiteren Treffer gar nichts. Ohne die Anmeldung beim Zurückhalten hielte ein Blick mit
+    falschem Sinn bei jedem Wirken das Ziel zurück, das ihn zum echten Auge dreht – ohne Grenze (sechste Prüfung M6).
+    Die Grenze von zwei Treffern wiegt schwerer.
 - *BossModReborns Halt* (Wechselwirkung, A809): BossModReborn setzt bei RSR jedes Bild „NoCasting“, solange eine
   verbotene Richtung weniger als 0,75 s voraus liegt, für den Rest der Mechanik oder 1 s (`AIHintsBuilder`, 35a908ad7,
   Zeilen 100–122). Bei jedem Blick, den BossModReborn kennt, steht RSR so etwa 2 s still, auch wenn er richtig steht (B2).
