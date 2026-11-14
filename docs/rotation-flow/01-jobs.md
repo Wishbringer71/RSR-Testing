@@ -1905,6 +1905,16 @@ kurzen Einsätze der anderen (Entfesseln, Scheidender Schlag).
     fiel schon früh im GCD – dann bleibt es bei 2,5 s; die kann nur ein Ruf ohne Abtreten kürzen (unbelegt).
   - *Messmittel:* Je Abtreten des Zyklus schreibt RSR, wie lange der Begleiter bis zum Verschwinden brauchte und wie
     lange danach kein Begleiter draußen war; hält die Regel den Schlag, eine Zeile mit dem Grund, einmal je Halt.
+  - *Vorrang des Rufs (A800):* Ist kein Begleiter draußen, geht der Ruf des nächsten Horns vor jede andere Fähigkeit;
+    davor bleibt nur Schutz in der Gefahr (Scaleskin, B2). *Gemessen (sein Lauf vom 14.11.2026, Brett 2):* Nach dem
+    Abtreten kam der Nachfolger 0,9 s später, wo keine andere Fähigkeit dazwischenkam, und 3,1 bis 3,4 s später, wo RSR
+    das Ruffenster vor dem nächsten GCD mit Beastskin, Rally oder Gale Axe belegte (Kampf 8: Beastskin direkt nach dem
+    Abtreten, dann der GCD; Anspornen und Hiebsturm ebenso). Der Ruf stand in `GeneralAbility` hinter Beastskin, und
+    `AttackAbility` mit Rally, Rallying Cheer und Gale Axe läuft vor ihr. *Im Kampf:* Ohne Begleiter greifen die Gegner dich
+    an, und sein Schaden fehlt; jede Ablöse gewinnt rund einen GCD. *Preis:* Beastskin (30 s, solange die
+    Bestienverwandtschaft steht) und die TP-Fähigkeiten (Rally, Rallying Cheer: 120 s) kommen ein Fenster später; Gale
+    Axe verschiebt sich um ein Fenster. *Gegenthese:* Beastskin schützt dich in der Lücke. Teilweise widerlegt: Der
+    zurückkehrende Begleiter zieht die Gegner von dir weg; in der Gefahr geht Scaleskin wie bisher vor.
 - *B4, Schwächung oder Stärkung zuerst* (Entfesseln, das die Dressur eines anderen trifft oder dich stärkt): gerechnet
   zwischen −1,8 % (ein Gegner) und +1,3 %. Die geänderte Reihenfolge verschiebt den Zyklus der Hörner mehr, als die 20 % auf
   eine Dressur bringen.

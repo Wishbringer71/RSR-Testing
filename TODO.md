@@ -114,26 +114,14 @@ nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigt
   zurückhielt; Anfragen ohne Antwort (bleiben sie nahe r, lehnt der Server ab); Schnitt und Zuschlag; dreifaches Weben.
   Je Abweichung Loop. Weißmagier am 13.11.2026 geprüft (A765): kein GCD später, aber 8 % Anfragen ohne Antwort und ein
   Schnitt von 1 bis 34 ms. Offen: ein Job mit doppeltem Weben und die Zeilen „request without an answer“, ob die 8 %
-  Ablehnungen sind. Konzept 03, „Weben, Animationssperre und Latenz“.
+  Ablehnungen sind. Beastmaster am 14.11.2026 (A800): Alle 50 Lücken waren Nummern, die nie als Anfrage liefen, und
+  drückten den Schnitt auf 0 ms; sie zählen nicht mehr. Offen: der Schnitt danach. Konzept 03, „Weben, Animationssperre
+  und Latenz“.
 
 - **Absturz einer zweiten Installation am 11.11.2026, 21:18** (A736). Das Spiel endete als Dunkelritter in der
   Azim-Steppe 0,5 s nach Kampfbeginn, ohne die Plugins zu entladen; Build b184ee7fc (08.11.2026). Das `DefenseTrace.log`
   nennt keinen Fehler. Auflösung: das Dalamud-Protokoll dieser Minuten (und ein Bericht des Absturzbehandlers, falls
   vorhanden) – zeigt es eine Ausnahme aus RSR, Loop an der Stelle; sonst Punkt schließen.
-
-- **Crucible: die Regeln vom 11. und 12.11.2026 an seinen nächsten Läufen prüfen** (A703, A704, A708 bis A711, A699;
-  seine Meldung vom 11.11.2026 und sein Auftrag zum leichten Brett). Gebaut: Teamgröße aus den Einsätzen je Brett, Team
-  einer Gattung, Schutzgegenstände nach Treffergröße, die Ablöse der Hörner, der Test des Wegs ohne eigene Heilung, die
-  Reserve je Kampf, die Hornwahl nach Schaden je Potenz. Auflösung: in seinem nächsten Upload die Zeilen „horn relief",
-  „crucible fight …: net loss", „… a use cost a familiar", „… familiar damage per potency", „crucible score", die Reiter
-  „Crucible familiars", „Crucible familiar loss", „Crucible net loss", und die Dauer derselben Kämpfe gegen die Läufe vom
-  11.11.2026 (A687); je Abweichung Loop. Konzept 21 (K7, K11, K15, K16), Konzept 01 (B6).
-
-- **Crucible: Rate der Rest-LP in der Bewertung** (A695). Ein Heilgegenstand am Ende des Endkampfs bringt 250 bei voller
-  LP und die Punkte der geheilten LP; gegen einen erhaltenen Gegenstandsbonus (Sparsamkeit 750, Sammelleidenschaft
-  1.000) bleibt er bis dahin liegen, weil die Rate keine Quelle nennt. Auflösung: die Zeilen „crucible window XBM…" am
-  Ende eines Bretts in seinem nächsten `DefenseTrace.log` – die Abrechnung samt LP-Punkten –, dann die Rate in
-  `KeepsNoItemBonus` und `SpareHeal` einrechnen, Loop. Konzept 21, K15 („Am Ende des Endkampfs").
 
 - **Crucible: Flucht, Tötungsstapel und Zauberbücher an seinem Log nachprüfen** (A671, A677, A678; seine Vorgabe vom
   07.11.2026: „vorab im vollen kritischen loop prüfen, und auch nach einspielung der logs"). Lager, Weg, Endkampfplan

@@ -270,6 +270,13 @@ public sealed class BST_Reborn : BeastmasterRotation
 			}
 		}
 
+		// A800 (concept 01, B6 "Vorrang des Rufs"): with no familiar out, the next horn's call goes before every other ability -
+		// Beastskin, Rally and Gale Axe took its window, and the next familiar came a GCD later (3.4 s against 0.9 s).
+		if (InCombat && CallNextHorn(out act))
+		{
+			return true;
+		}
+
 		if (InCombat && FamiliarTankSwap)
 		{
 			if (!LasthornOnly || (LasthornOnly && OnLastHorn))
@@ -872,6 +879,18 @@ public sealed class BST_Reborn : BeastmasterRotation
 			}
 		}
 
+		if (CallNextHorn(out act))
+		{
+			return true;
+		}
+
+		return base.GeneralAbility(nextGCD, out act);
+	}
+
+	// The call of the next horn while no familiar is out - by the situation (B1 to B5), else in horn order.
+	private bool CallNextHorn(out IAction? act)
+	{
+		act = null;
 		// B5: while an assignment waits for the server, no horn is called, so a call never brings the familiar it replaces.
 		var assigning = BattlehornAssignmentPending;
 		if (ActiveBattlehorn == 0 && !assigning && HornBySituation && SituationalHorn(out act))
@@ -933,7 +952,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 			}
 		}
 
-		return base.GeneralAbility(nextGCD, out act);
+		return false;
 	}
 
 	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
@@ -1534,7 +1553,8 @@ public sealed class BST_Reborn : BeastmasterRotation
 				+ "next familiar comes as early and this one fights on until then";
 		}
 
-		if (why.Length > 0 && why != _reliefHold)
+		// Only while a familiar is out: with none, nothing is sent off, and the line said "None (None)" (A800).
+		if (why.Length > 0 && why != _reliefHold && ActiveBattlehorn != 0)
 		{
 			TraceHorn($"{(HornOrder)ActiveBattlehorn} ({CurrentPet}) is not sent off yet: {why}");
 		}

@@ -463,14 +463,14 @@ public sealed unsafe partial class AnimationLockTweak
 	{
 		if (_lastAnswered != 0 && sequence > _lastAnswered + 1)
 		{
-			// Only an instant without an answer counts; a cast's sequence in the gap was broken, not refused (A754).
+			// Only an instant seen as a request and left without an answer counts; a cast's sequence in the gap was broken, not
+			// refused (A754), and a sequence that never passed as a request is no press at the wrong time (A800).
 			var unanswered = 0;
 			for (var skipped = _lastAnswered + 1; skipped < sequence; skipped++)
 			{
-				if (!_castSequences.Remove((ushort)skipped))
+				if (!_castSequences.Remove((ushort)skipped) && TraceUnanswered((ushort)skipped))
 				{
 					unanswered++;
-					TraceUnanswered((ushort)skipped);
 				}
 			}
 
@@ -511,24 +511,29 @@ public sealed unsafe partial class AnimationLockTweak
 
 	// A765 (concept 03, "Weben, Animationssperre und Latenz"): an instant request without an answer, with what it was and
 	// how long after the previous answer it left, against that answer's lock - whether the server refused it as early.
-	private void TraceUnanswered(ushort sequence)
+	// Whether the sequence was an instant request RSR saw; written to the trace in combat either way.
+	private bool TraceUnanswered(ushort sequence)
 	{
-		if (!DataCenter.InCombat)
-		{
-			return;
-		}
-
 		foreach (var request in _instantRequests)
 		{
 			if (request.Sequence == sequence)
 			{
-				DefenseTrace.Line($"request without an answer: {(request.Gcd ? "GCD" : "ability")} #{request.Action}, "
-					+ $"{request.SinceAnswer * 1000:F0} ms after the previous answer (its lock {_lastLock * 1000:F0} ms), cut {_lastCut * 1000:F0} ms");
-				return;
+				if (DataCenter.InCombat)
+				{
+					DefenseTrace.Line($"request without an answer: {(request.Gcd ? "GCD" : "ability")} #{request.Action}, "
+						+ $"{request.SinceAnswer * 1000:F0} ms after the previous answer (its lock {_lastLock * 1000:F0} ms), cut {_lastCut * 1000:F0} ms");
+				}
+
+				return true;
 			}
 		}
 
-		DefenseTrace.Line($"request without an answer: sequence {sequence} not seen as a request");
+		if (DataCenter.InCombat)
+		{
+			DefenseTrace.Line($"request without an answer: sequence {sequence} not seen as a request - not counted");
+		}
+
+		return false;
 	}
 
 	/// <summary>Once per frame from the action manager's update: frame time, clipping, GCD time with nothing queued, the fight's end.</summary>

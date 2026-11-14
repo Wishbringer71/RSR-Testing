@@ -1694,9 +1694,13 @@ verlangen keinen Mindestabstand.
   - Der Anteil abgelehnter Anfragen pendelt sich so bei r ein. Dort wiegt der Verlust einer Ablehnung, eine neue
     Drücksperre, den Gewinn eines Frames Schnitt auf. Eine verspätete Antwort ist kein Verlust, denn der Server hat die
     Anfrage zurückgehalten und trotzdem verarbeitet; sie zählt nicht.
-  - Als Ablehnung zählt nur eine Sofortaktion ohne Antwort. Ein Zauber, den Bewegung abbricht, bekommt ebenfalls keine
-    Antwort mit Wirkung, hat aber mit der Sperre nichts zu tun. Zählte er mit, kürzte der Regler bei jedem Wirker, der
-    im Gehen abbricht, unnötig weniger.
+  - Als Ablehnung zählt nur eine Sofortaktion ohne Antwort, die RSR als Anfrage gesehen hat. Ein Zauber, den Bewegung
+    abbricht, bekommt ebenfalls keine Antwort mit Wirkung, hat aber mit der Sperre nichts zu tun. Zählte er mit, kürzte
+    der Regler bei jedem Wirker, der im Gehen abbricht, unnötig weniger. Ebenso eine Sequenznummer, die nie als Anfrage
+    durch die Aktionsfunktion lief (A800): Sie ist kein Druck zur Unzeit, und ihr Zeitpunkt ist unbekannt. *Gemessen
+    (14.11.2026, Beastmaster im Crucible, 5 Kämpfe):* 50 von 50 Lücken waren solche Nummern („sequence N not seen as a
+    request"); der Regler sank mit jeder, und der Schnitt stand in jedem Kampf bei 0 bis 1 ms. Woher die Nummern stammen
+    (Befehle an den Begleiter, Gegenstände des Crucible), ist unbelegt; die Spur nennt sie weiter.
   - Der Schnitt steigt höchstens bis zur größten Verzögerung des Gebiets; mehr lässt sich nicht abziehen. Ohne diese
     Grenze wüchse der Zuschlag bei einem Server, der nichts ablehnt, unbegrenzt. Lehnte der Server dann später doch ab,
     etwa auf einer anderen Route im selben Gebiet, bräuchte der Regler viele Ablehnungen, um wieder herunterzukommen.

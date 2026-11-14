@@ -23190,6 +23190,30 @@ das brett mitnimmt". Grundlage: das Abrechnungsfenster `XBMResult` in seiner Spu
   „crucible result: ranks not read" widerlegt die Lage der Werte.
 - *Prüfgrad:* Laufzeitbeobachtung (Abrechnung in seiner Spur), Compile, CI; das Lesen nicht im Spiel beobachtet.
 
+### A800 · TODO im Loop mit dem Lauf vom 14.11.2026: Rate der Rest-LP, Ablöse der Hörner, Regler der Sperre (14.11.2026)
+
+Sein Auftrag (14.11.2026): „weiter todo in vollen kritischen loops". Grundlage: sein Upload von 15:02 (Brett 2, A797).
+- *Rate der Rest-LP (TODO aus A695, geschlossen):* Die Abrechnung führt die Rest-LP (2.099, im ACT-Mitschnitt 2.099 von
+  2.577 nach dem letzten Schlag) und ihre Punkte (764; die Summe 13.364 geht damit genau auf): rund 0,36 Punkte je LP auf
+  Brett 2, eine Probe. Ein Heilgegenstand am Ende bringt so mit „Unversehrter Bändiger" (250) höchstens rund 720 Punkte,
+  wenn er die Hälfte der LP heilt – unter Sparsamkeit (750) und Sammelleidenschaft (1.000). Die Regel, Gegenstände bei
+  erhaltenem Bonus liegen zu lassen (A695, A712), ist damit belegt; keine Änderung. Ob die Punkte absolute LP oder den
+  Anteil zählen, trennt eine Probe nicht (Quellen: absolut).
+- *Regeln vom 11./12.11. (TODO, geschlossen):* Im Lauf zu sehen: Ablöse (Abtreten 2,04 bis 2,14 s, das Halten des
+  Schlags bis nach dem GCD), Verlust je Einsatz, Schaden je Potenz, Nettolast je Kampf, die Punktregeln (A797, A799).
+  *Abweichung:* Nach dem Abtreten kam der Nachfolger 0,9 s später, wo nichts dazwischenkam, und 3,1 bis 3,4 s, wo RSR
+  das Ruffenster mit Beastskin, Rally oder Gale Axe belegte (Kampf 8, am Mitschnitt: Beastskin direkt nach dem Abtreten,
+  dann der GCD). Ursache: Der Ruf stand in `GeneralAbility` hinter Beastskin, und `AttackAbility` läuft davor.
+  *Behoben:* Der Ruf ohne Begleiter draußen geht in `EmergencyAbility` vor jede Fähigkeit außer Scaleskin in der Gefahr
+  (Konzept 01, B6 „Vorrang des Rufs"). Die Spurzeile „None (None) is not sent off yet" ohne Begleiter entfällt.
+- *Regler der Sperre (TODO, eingegrenzt):* Alle 50 „request without an answer" waren Nummern, die nie als Anfrage durch
+  die Aktionsfunktion liefen; jede senkte den Zuschlag, der Schnitt stand in allen fünf Kämpfen bei 0 bis 1 ms. *Behoben:*
+  Nur eine gesehene Sofortanfrage ohne Antwort zählt; ungesehene schreibt die Spur mit „not counted" (Konzept 03).
+- *Vorhersage:* `predictions/2026-11-14.json`, „lock-cut-rises": Im nächsten Lauf als Beastmaster nennt eine Zeile
+  „action timing over the fight" einen Schnitt von 2 ms oder mehr. Textlich: „horn relief: … without a familiar" liegt
+  nach einer Ablöse ohne Bewegung bei rund 0,9 s.
+- *Prüfgrad:* Laufzeitbeobachtung (Upload), Compile, CI, Zeitmodell; die Änderungen nicht im Spiel beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

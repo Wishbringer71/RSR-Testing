@@ -53,7 +53,7 @@ beide Werkzeugquellen; sein Mitschnitt vom 04.11.2026.
     gewisse dinge macht oder sein lässt. nicht campt, nicht isst, weniger begleiter mitnimmt etc. recherchiere dazu".
     Bis A689 waren Punkte kein Ziel einer Regel (meine Ableitung); das kappte die Entscheidung, statt das Optimum zu
     verbessern (seine Vorgabe vom 07.11.2026). Gebaut in K15 (A689 bis A691, A695, A697) und K7 (Teamgröße A698,
-    Gattung A699); offen ist die Rate der Rest-LP (TODO, Warten auf Daten).
+    Gattung A699); die Rate der Rest-LP ist gemessen (A800, „Am Ende des Endkampfs").
   - *Was die Wertung bringt* (consolegameswiki, eorzeantavern, abgerufen 11.11.2026): Reste (faded und bright Remnants
     of Resilience) und Begleiter-EP anteilig zur Punktzahl, dazu Beastmaster-EP; neun Ränge von Apprentice bis
     Legendary, Legendary ab 17.875 Punkten auf den drei Unbroken-Brettern, ab 18.766 auf den Meisterbrettern. Die
@@ -1069,8 +1069,10 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
       Ende sind Anfangs-LP plus jede Heilung minus jeder Schaden, solange nichts überheilt – wann ein Gegenstand geht,
       ändert sie nicht, nur der letzte entscheidet über die 100 %.
     - *Gegen einen erhaltenen Gegenstandsbonus:* Ein Heilgegenstand am Ende bringt 250 und die LP-Punkte seiner
-      Heilung, gegen 750 (Sparsamkeit) oder 1.000 (Sammelleidenschaft). Ohne die Rate bleibt der belegte Bonus. *Preis:*
-      Liegt die Rate über (750 − 250) je geheilten LP, verliert der Lauf Punkte. *Messmittel (gebaut):* RSR schreibt
+      Heilung, gegen 750 (Sparsamkeit) oder 1.000 (Sammelleidenschaft). *Gemessen (A800, seine Abrechnung vom 14.11.2026,
+      Brett 2):* 2.099 Rest-LP brachten 764 Punkte, rund 0,36 je LP; ein Gegenstand, der die Hälfte seiner LP heilt, bringt
+      mit den 250 höchstens rund 720 – der Bonus wiegt mehr, er bleibt. Eine Probe; ob absolute LP oder Anteil zählt,
+      trennt sie nicht. *Messmittel (gebaut):* RSR schreibt
       jedes Fenster des Crucible (Name beginnt mit „XBM") beim ersten Öffnen je Lauf mit seinen Werten in
       `DefenseTrace.log` („crucible window …"), also auch die Abrechnung am Ende samt LP-Punkten. Aus ihr folgt die Rate.
       Selbst nachsteuern kann RSR erst, wenn der Aufbau dieses Fensters bekannt ist; den nennt keine Quelle. Die Werte
