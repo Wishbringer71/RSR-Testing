@@ -199,6 +199,7 @@ public partial class BeastmasterRotation
 
 		if (lagging.Count == 0)
 		{
+			note = "No familiar lags behind in rank: the team for the board's fights and the score.";
 			return chosen;
 		}
 
@@ -508,6 +509,12 @@ public partial class BeastmasterRotation
 			{
 				CrucibleTeamSizeNote = levelNote;
 			}
+		}
+		else
+		{
+			// A802: the state shows in the window, so a team without leveling is not read as a fault of the rule.
+			CrucibleTeamSizeNote = (CrucibleTeamSizeNote.Length > 0 ? CrucibleTeamSizeNote + " " : string.Empty)
+				+ "Leveling is off (\"Prefer familiars that lag behind in rank for the Crucible team\").";
 		}
 
 		foreach (var pick in chosen)

@@ -23233,6 +23233,23 @@ Nach den Regeln zum Prüfgrad zurück zu den Anforderungen (Konzept 13, B1 bis B
   despite", kein „unknown – its packet unseen"; Schaden allein ergibt kein „hit despite".
 - *Prüfgrad:* Laufzeitbeobachtung (Upload, Mitschnitt), Compile, CI; die Änderung nicht im Spiel beobachtet.
 
+### A802 · Kader: Leveln lief bei ihm nicht – der Zustand steht jetzt im Fenster, der Optionstext folgt der Regel (14.11.2026)
+
+Seine Meldung (14.11.2026, im Spiel „mit aktuellem build"): „es werden wieder nur begleiter >= 10 ausgewählt für brett 2.
+fehler besteht weiterhin", mit Bildern des Bestienbuchs (Cu Sith Rang 11, Schaudermilbe Rang 6) und des Teamfensters.
+- *Befund am Bild:* Kein Begleiter trägt „levels", und die Zeile zur Teilung in Kämpfer und Lernende fehlt. Seit A796
+  schreibt die Regel sie, sobald es Nachzügler gibt – auf Brett 2 mindestens alle über Rang 10 (echter Rang unbekannt)
+  und die Schaudermilbe (Rang 6). Die Regel lief also nicht: Entweder ist die Einstellung „Prefer familiars that lag
+  behind in rank for the Crucible team" in seiner Konfiguration aus (ab Werk an; er ist Tester), oder sein Build stammt
+  von vor c4824c253. Welches, zeigen das Bild und der Code nicht.
+- *Behoben, damit es sichtbar ist:* Das Fenster nennt den Zustand: „Leveling is off …", „No familiar lags behind in rank
+  …", sonst die Teilung. Der Text der Einstellung beschrieb noch den Eins-zu-eins-Tausch von A579; er nennt jetzt die
+  Regel von A796 und A799.
+- *Sein Hinweis:* Das Bestienbuch zeigt den echten Rang (Rang 11 über dem Synchronrang 10). Zweite Quelle neben der
+  Abrechnung: folgt (A803).
+- *Seine Boni-Bilder:* dieselben Namen, Bedingungen und Punkte, die RSR aus `XBMScoreBonus` und `XBMContent` liest (A695).
+- *Prüfgrad:* Bildbefund, Compile, CI.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

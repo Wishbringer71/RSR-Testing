@@ -156,13 +156,13 @@ public sealed class BST_Reborn : BeastmasterRotation
 
 	// K7 (concept 21, "Leveln", A579): his rule of 05.11.2026, the familiars that lag behind first, where they replace others adequately.
 	[RotationConfig(CombatType.PvE, Name = "Prefer familiars that lag behind in rank for the Crucible team",
-		Tooltip = "The team recommendation (team screen window) gives a familiar's place to the one with the lowest rank that "
-			+ "replaces it adequately - it hits every weakness of the board's fights only that familiar hits in the team, heals or "
-			+ "protects where that is still needed, and stands at least at the rank the game recommends for the board - so the "
-			+ "familiars that lag behind earn experience. On the horn screen a familiar below that rank fights only when fewer "
-			+ "others live than horns.\n"
-			+ "In a fight: the three on the horns are chosen as before; a familiar that only levels sits out unless it fits best.\n"
-			+ "Off: the strongest team for the board's fights, at equal worth those above the board's rank first.")]
+		Tooltip = "Every familiar in the team earns experience, on a horn or not. The team recommendation (team screen window) "
+			+ "keeps the familiars the board's fights need - each weakness, healing and protection for the boss, the reserve the "
+			+ "measured losses ask for - and fills every other place with the familiars lowest in rank, in turns, up to the board's "
+			+ "size. On a reserve place only one at least at the rank the game recommends. Above the board's sync the true rank "
+			+ "comes from the last board's result; one at the highest rank no longer lags behind.\n"
+			+ "In a fight: a familiar below the recommended rank goes on a horn only when fewer others live than horns.\n"
+			+ "Off: the team for the board's fights and the score (a smaller team where the measured losses allow it).")]
 	private bool PreferLaggingFamiliars { get; set; } = true;
 
 	// K9 of the Crucible (concept 21, A550): on by default. Without a tank the enemies attack only you, and your fall ends the

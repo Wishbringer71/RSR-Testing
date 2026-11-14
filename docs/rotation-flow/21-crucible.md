@@ -2166,8 +2166,10 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
   der gelernte Rang zu niedrig – er bleibt Nachzügler, bis die nächste Abrechnung ihn hebt. Seit 7.58 zeigt auch das
   Teamfenster den ursprünglichen Rang (Patchnotes); die Fensterspur schreibt es vor dem Brett mit. *Ausgeschlossen:* den Rang über das Umsetzen des Bretts im Agenten zu erfragen (`ContentId` umschreiben und
   `GetSyncedRank` rufen) – ein Schreiben in Spielspeicher ohne Beleg, was die Funktion liest.
-  *Ausgeliefert, und nichts ändert sich:* Er übernimmt die Empfehlung nicht („Apply"), oder er hat keine Nachzügler unter
-  dem Synchronrang. Die Spur nennt je Begleiter Rang und Rolle („crucible team: requested Puk 10, … Lamb 6 levels").
+  *Ausgeliefert, und nichts ändert sich:* Er übernimmt die Empfehlung nicht („Apply"), die Einstellung ist aus, oder er
+  spielt einen Build vor A796. *Im Kampf (14.11.2026, sein Bild vom Teamfenster auf Brett 2):* zwölf Begleiter, keiner
+  mit „levels", keine Zeile zur Teilung – die Regel lief nicht. Das Fenster nennt den Zustand jetzt selbst: „Leveling is
+  off …" oder „No familiar lags behind in rank …" (A802). Die Spur nennt je Begleiter Rang und Rolle („crucible team: requested Puk 10, … Lamb 6 levels").
 - *Umsetzen:* erst die Abgänge, dann die Zugänge, je ein `TogglePet`; danach wartet RSR, bis der Kader sich ändert,
   höchstens einen GCD. Nimmt das Spiel einen Zugang nicht, fällt er für diese Sitzung aus der Empfehlung, und es geht
   weiter; geht ein Abgang nicht, hört RSR auf. Jede Stufe steht in der Spur („crucible team: …"); bestätigen und
