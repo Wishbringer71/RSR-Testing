@@ -41,6 +41,10 @@ internal static partial class GazeWatch
 	// ActionManagerEx, empirical; A777). Between this and the gaze's half width the cast lands and the gaze misses.
 	private const float CastHalfAngleDegrees = 75f;
 
+	// How far an oriented action's target may lie off the facing for the action to go off (BossModReborn,
+	// ActionManagerEx, empirical; A778). The game's "Auto face target" turns the player straight at the target instead.
+	private const float ActionHalfAngleDegrees = 45f;
+
 	private enum Kind : byte
 	{
 		None,
@@ -131,20 +135,27 @@ internal static partial class GazeWatch
 
 		var lead = Lead();
 		var rotation = MathF.Atan2(facing.X, facing.Z);
-		bool? castCanTurn = null;
+
+		// A778: with turning on, RSR presses the action facing a safe way within the action's cone around the target
+		// (PrepareFacing), and a cast keeps a safe way within its wider limit until the game has it (TurnAway). It waits
+		// only where neither exists - above all on the eye's own caster.
+		var held = false;
+		if (!float.IsInfinity(lead))
+		{
+			held = SafeNear(player, rotation, float.DegreesToRadians(ActionHalfAngleDegrees), lead) == null
+				|| (castTime > 0f && SafeNear(player, rotation, float.DegreesToRadians(CastHalfAngleDegrees), castTime + lead) == null);
+		}
+
+		if (!float.IsInfinity(lead) && !held)
+		{
+			return false;
+		}
+
 		foreach (var gazer in gazers)
 		{
-			// An instant turns the player now, and RSR turns the player away at the lead; a cast holds the heading to its end.
-			if (gazer.Left - Math.Max(0f, castTime) > lead || !Unsafe(rotation, player, gazer))
-			{
-				continue;
-			}
-
-			// A777: a cast may begin when a direction within its limit around the target stays safe from every gaze that
-			// lands before the game has it; RSR turns there at the lead. Without turning or a measure it is held as before.
-			castCanTurn ??= castTime > 0f && !float.IsInfinity(lead)
-				&& SafeNear(player, rotation, float.DegreesToRadians(CastHalfAngleDegrees), castTime + lead) != null;
-			if (castCanTurn == true)
+			// Without turning: an instant turns the player straight at the target, a cast holds that heading to its end.
+			// With turning, the hold names the first gaze that lands while the action needs its facing.
+			if (gazer.Left - Math.Max(0f, castTime) > lead || (float.IsInfinity(lead) && !Unsafe(rotation, player, gazer)))
 			{
 				continue;
 			}
@@ -201,7 +212,9 @@ internal static partial class GazeWatch
 
 		// A777: a running cast the game does not have yet keeps going when the new facing stays within its limit around
 		// the cast's target; only where no safe direction is left there does the turn break it.
-		var near = CastAim(player, out var aim) ? SafeNear(player, aim, float.DegreesToRadians(CastHalfAngleDegrees), lead) : null;
+		var near = CastAim(player, out var aim) ? SafeNear(player, aim, float.DegreesToRadians(CastHalfAngleDegrees), lead)
+			: TargetAim(player, out aim) ? SafeNear(player, aim, float.DegreesToRadians(ActionHalfAngleDegrees), lead)
+			: null;
 		if ((near ?? SafeRotation(player, current, lead)) is not { } target)
 		{
 			return;
@@ -238,6 +251,113 @@ internal static partial class GazeWatch
 					+ $"{Describe(gazer)}, {gazer.Left:F2} s before it lands");
 			}
 		}
+	}
+
+	/// <summary>
+	/// Right before an oriented action goes off while a gaze is within the lead (A778, as BossModReborn's smart
+	/// orientation): the facing stays when the target lies within the action's cone and it looks into no gaze, else
+	/// RSR turns to the middle of the widest safe stretch of that cone; either way "Auto face target" is off for the
+	/// call, so the game does not turn the player straight at the target. Returns the option's value to put back.
+	/// </summary>
+	internal static unsafe uint? PrepareFacing(Vector3 towards)
+	{
+		var player = Player.Object;
+		if (!Service.Config.TurnAwayFromGazes || !DataCenter.InCombat || player == null)
+		{
+			return null;
+		}
+
+		var lead = Lead();
+		var gazers = Gazers();
+		var due = false;
+		foreach (var gazer in gazers)
+		{
+			due |= gazer.Left <= lead;
+		}
+
+		var facing = towards - player.Position;
+		facing.Y = 0;
+		if (!due || facing.LengthSquared() <= 0f)
+		{
+			return null;
+		}
+
+		var aim = MathF.Atan2(facing.X, facing.Z);
+		var half = float.DegreesToRadians(ActionHalfAngleDegrees);
+		var current = player.Rotation;
+		float? turnTo = null;
+		if (MathF.Abs(Difference(current, aim)) > half || !SafeFor(current, player, lead))
+		{
+			turnTo = SafeNear(player, aim, half, lead);
+			if (turnTo == null)
+			{
+				return null;
+			}
+		}
+
+		var manager = ActionManager.Instance();
+		var framework = Framework.Instance();
+		var option = framework == null ? null : framework->SystemConfig.GetConfigOption((uint)ConfigOption.AutoFaceTargetOnAction);
+		if (manager == null || option == null)
+		{
+			return null;
+		}
+
+		var original = option->Value.UInt;
+		if (turnTo is { } target)
+		{
+			option->Value.UInt = 1;
+			var point = player.Position + new Vector3(MathF.Sin(target), 0f, MathF.Cos(target));
+			manager->AutoFaceTargetPosition(&point);
+			foreach (var gazer in gazers)
+			{
+				if (gazer.Left <= lead && _turnTraced.Add(gazer.Key))
+				{
+					DefenseTrace.Line($"gaze: turned {float.RadiansToDegrees(Difference(target, current)):F0}° for an action, "
+						+ $"{float.RadiansToDegrees(Difference(target, aim)):F0}° off its target, {(gazer.Inverted ? "towards" : "away from")} "
+						+ $"{Describe(gazer)}, {gazer.Left:F2} s before it lands");
+				}
+			}
+		}
+
+		option->Value.UInt = 0;
+		return original;
+	}
+
+	/// <summary>Puts "Auto face target" back after <see cref="PrepareFacing"/>.</summary>
+	internal static unsafe void RestoreFacing(uint? original)
+	{
+		var framework = Framework.Instance();
+		if (original is not { } value || framework == null)
+		{
+			return;
+		}
+
+		var option = framework->SystemConfig.GetConfigOption((uint)ConfigOption.AutoFaceTargetOnAction);
+		if (option != null)
+		{
+			option->Value.UInt = value;
+		}
+	}
+
+	// The direction of the player's current enemy target, which the next attacks face.
+	private static bool TargetAim(IBattleChara player, out float aim)
+	{
+		aim = 0f;
+		if (Svc.Targets.Target is not IBattleChara target || target.GameObjectId == player.GameObjectId || !target.IsEnemy())
+		{
+			return false;
+		}
+
+		var facing = target.Position - player.Position;
+		facing.Y = 0;
+		if (facing.LengthSquared() <= 0f)
+		{
+			return false;
+		}
+
+		aim = MathF.Atan2(facing.X, facing.Z);
+		return true;
 	}
 
 	private static string Describe(Gazer gazer) => gazer.From switch

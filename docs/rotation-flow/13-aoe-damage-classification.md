@@ -239,8 +239,10 @@ drehen müsste.
   Helferfassungen von „Mortal Gaze“, „Hex Eye“, „Petrifaction“ und „Evil Eye“. Die Namen liest RSR einmal im
   Hintergrund; bis dahin zählt das Kennzeichen. Was BossModReborn nur in selbst gebauten Blicken führt, zählt nicht;
   Status, Kopfmarker und umgekehrte Namen ergänzen die Quellen (A776, „Umkehrung und Auge zur Laufzeit“).
-- *In den Blick drehen:* Liegt das Auge vom Spieler aus innerhalb von 45° zur Richtung des Ziels, blickt die gedrehte
-  Figur es an. Das Auge eines Wirkens liegt an dessen Ort, ohne Ort beim Wirkenden (A776). Die 45° sind BossMods halbe Breite einer verbotenen Richtung (`AIHintsBuilder`,
+- *In den Blick drehen:* Mit „Auto face target“ dreht das Spiel die Figur beim Auslösen genau aufs Ziel. Liegt das Auge
+  dann innerhalb von 45°, blickt die Figur es an. Mit „Turn away from gaze attacks“ ersetzt RSR dieses Drehen im
+  Vorlauf durch eine sichere Richtung im Kegel der Aktion („Richtig stehen und weiter treffen“, A778). Das Auge eines
+  Wirkens liegt an dessen Ort, ohne Ort beim Wirkenden (A776). Die 45° sind BossMods halbe Breite einer verbotenen Richtung (`AIHintsBuilder`,
   `ForbiddenDirections`; Werkzeugquelle). Das Spiel nennt keinen Winkel.
 - *Zeitraum und Wegdrehen* (A774, seine Frage vom 13.11.2026 nach anderen Plugins, die wegdrehen): RSR dreht die Figur
   selbst weg und hält Aktionen nur im letzten Stück zurück.
@@ -286,40 +288,60 @@ drehen müsste.
     Ein Blick, auf den er zuläuft, trifft ihn, wie ohne RSR.
   - *Lücke ohne Breite:* Berühren sich zwei gesperrte Bögen, liegt die Mitte der Lücke auf einer Grenze und sieht noch
     hinein. RSR prüft jede Mitte gegen alle Blicke, bevor es dreht; gibt es keine, dreht es nicht.
-- *Richtig stehen und weiter treffen* (A777; seine Vorgabe vom 14.11.2026: „wenn man bereits richtig rum steht, den
-  Gegner trifft, braucht nicht gedreht werden und der Kampf angehalten“). Einordnung: Vorgabe.
-  - *Sachlage:*
-    - Steht die Figur sicher, dreht RSR nicht (`TurnAway` dreht nur aus einer unsicheren Richtung). Ein Ziel in sicherer
-      Richtung bleibt wählbar.
-    - Eine Sofortaktion trifft nur, wenn das Ziel innerhalb von 45° vor der Figur liegt. BossModReborn
-      (`ActionManagerEx`, empirisch, Werkzeugquelle) nennt dafür denselben Winkel wie den Blickkegel. Den Wirkenden eines
-      normalen Blicks trifft eine Sofortaktion also nur mit Blick in den Blick. Dort bleibt die Sperre im Vorlauf.
-    - Ein Zauber mit Wirkzeit bricht erst ab, wenn das Ziel zu Beginn des Slidecast-Fensters mehr als 75° seitlich liegt
-      (BossModReborn, empirisch). Ab der Antwort des Spiels (`CastInfo.ResponseSourceSequence`, wie `MovementLock`) zählt
-      die Richtung nicht mehr.
-  - *Befund an A774:* RSR drehte im Vorlauf in die Mitte der nächsten Lücke, bei einem Blick vom Ziel aus also um 180°.
-    Ein eigener Zauber auf den Wirkenden brach dabei ab. Zauber, deren Ende nach dem Blick liegt, hielt RSR zurück,
-    obwohl sie bei 45° bis 75° durchlaufen.
-  - *Regel:*
-    - Läuft ein eigener Zauber mit Richtung und hat das Spiel ihn noch nicht, dreht RSR im Vorlauf in die Mitte des
-      breitesten sicheren Stücks innerhalb von 75° um das Ziel des Zaubers. Gibt es dort keines, dreht es wie bisher;
-      Sicherheit geht vor dem Zauber.
-    - Ein Zauber, der über den Blick hinaus wirkt, ist frei, wenn es innerhalb von 75° um sein Ziel eine Richtung gibt,
-      die vor allen Blicken bis zu seinem Ende sicher ist. RSR dreht dann im Vorlauf dorthin. Ohne „Turn away from gaze
-      attacks“ oder ohne Messung bleibt die Sperre über das ganze Wirken.
-    - Sofortaktionen: unverändert.
-  - *Optionen:* (0) A774 lassen. (1) Wie BossModReborn, mit festen 0,5 s Vorlauf. (2) Die Regel oben mit dem gemessenen
-    Vorlauf. *Gewählt:* (2).
-  - *Im Kampf:* Ein Zauberer wirkt einen Zauber von 2,5 s auf Angra Mainyu, und „Mortal Gaze“ landet nach 1,5 s. Bisher
-    hielt RSR den Zauber zurück. Lief er schon, drehte RSR die Figur kurz vorher um 180°, und der Zauber brach ab. Jetzt
-    beginnt der Zauber, und kurz vor dem Blick dreht RSR die Figur um 60° (Mitte von 45° bis 75°). Der Zauber trifft,
-    der Blick nicht.
-  - *Gegenthese 1 (die 75° gelten nicht):* Der Wert ist empirisch. Bricht der Zauber doch ab, kostet das den Zauber,
-    nicht den Spieler: Die Richtung ist in jedem Fall sicher.
-  - *Gegenthese 2 (zwei Blicke):* Sperren zwei Blicke die 75° um das Ziel, gibt es kein sicheres Stück. Dann gilt die
-    Sperre wie bisher.
-  - *Gegenthese 3 (ausgeliefert, und nichts ändert sich):* bei Sofortaktionen auf den Wirkenden. Dort trennt keine
-    Richtung Treffen und Blick.
+- *Richtig stehen und weiter treffen* (A777, A778; seine Vorgabe vom 14.11.2026: „wenn man bereits richtig rum steht, den
+  Gegner trifft, braucht nicht gedreht werden und der Kampf angehalten“; sein Hinweis dazu: „Spieler selbst kennen ja
+  die Kämpfe auch und können sich selbst ja so positionieren, dass sie bedenkenlos weiter kämpfen können“; seine Rüge:
+  die BossModReborn-Mechanik nicht ganz angesehen). Einordnung: Vorgabe und Hinweis.
+  - *Spielmechanik (BossModReborn `ActionManagerEx`, empirisch, Werkzeugquelle):*
+    - Eine Aktion mit Richtung geht nur, wenn ihr Ziel innerhalb von 45° vor der Figur liegt.
+    - Ein Zauber bricht erst ab, wenn sein Ziel zu Beginn des Slidecast-Fensters mehr als 75° seitlich liegt. Ab der
+      Antwort des Spiels (`CastInfo.ResponseSourceSequence`, wie `MovementLock`) zählt die Richtung nicht mehr.
+    - Mit der Spieloption „Auto face target“ dreht das Spiel die Figur beim Auslösen genau aufs Ziel.
+  - *Was BossModReborn tut (`SmartRotationTweak`, ab Werk an):* Es ersetzt dieses Drehen. Beim Auslösen schaltet es die
+    Spieloption ab und dreht nur, wenn das Ziel nicht im Kegel vor der Figur liegt oder die Richtung in einen Blick
+    sieht. Dann dreht es in das breiteste sichere Stück innerhalb des Kegels um das Ziel: 45° beim Auslösen, 75° während
+    eines Zaubers. Gibt es dort keines, sperrt es.
+  - *Befunde an RSR:*
+    - A770–A776: RSR ließ das Spiel genau aufs Ziel drehen. Deshalb sperrte es jedes Ziel, in dessen genauer Richtung ein
+      Auge lag, auch wenn eine Richtung innerhalb von 45° um das Ziel sicher war. Wer sich so stellte, dass das Ziel vorn
+      und das Auge seitlich liegt, wurde trotzdem angehalten oder vom Spiel ins Auge gedreht. Ein Beispiel sind die
+      Ahriman-Ebenbilder am Rand des zweiten Crucible-Bretts.
+    - A774: Im Vorlauf drehte RSR in die Mitte der nächsten Lücke, bis zu 180°, also oft weg vom Ziel.
+  - *Regel (A777, A778):*
+    - *Beim Auslösen* einer Aktion mit Richtung, während ein Blick im Vorlauf liegt (`GazeWatch.PrepareFacing`, aus
+      `BaseAction.Use`):
+      - Liegt das Ziel im 45°-Kegel vor der Figur und sieht sie in keinen Blick, bleibt die Richtung.
+      - Sonst dreht RSR in die Mitte des breitesten sicheren Stücks innerhalb von 45° um das Ziel.
+      - In beiden Fällen ist „Auto face target“ für diesen Aufruf aus und danach wieder wie zuvor.
+    - *Sperre:* Eine Aktion wartet nur, wenn es innerhalb von 45° um ihr Ziel keine sichere Richtung gibt. Für einen
+      Zauber gilt zusätzlich: innerhalb von 75° bis zu seinem Ende plus Vorlauf. Das trifft vor allem den Wirkenden selbst,
+      wenn sein Auge bei ihm liegt: Dort trennt keine Richtung Treffen und Blick.
+    - *Wegdrehen im Vorlauf:*
+      - Läuft ein eigener Zauber, den das Spiel noch nicht hat, dreht RSR innerhalb von 75° um dessen Ziel.
+      - Sonst dreht es innerhalb von 45° um das aktuelle Ziel des Spielers, damit der Kampf weiterläuft.
+      - Erst wenn dort nichts sicher ist, dreht es in die nächste Lücke. Sicherheit geht vor dem Treffer.
+    - Ohne „Turn away from gaze attacks“ oder ohne Messung gilt die Sperre über das ganze Wirken, und RSR dreht nicht.
+  - *Optionen:* (0) A776 lassen. (1) Wie BossModReborn mit festen 0,5 s. (2) Die Regel oben mit dem gemessenen Vorlauf.
+    *Gewählt:* (2).
+  - *Im Kampf:*
+    - *Crucible, zweites Brett:* Die Ebenbilder blicken von West und Ost, der Taurus steht nördlich. RSR greift den Taurus
+      ohne Pause an, denn er liegt im Kegel und kein Auge davor. Bisher hätte das Spiel bei jedem Druck genau zum Taurus
+      gedreht; RSR sperrte nur, wenn ein Ebenbild in dieser genauen Richtung stand.
+    - *Ein Auge 30° neben dem Ziel:* Bisher wartete jede Sofortaktion auf das Ziel. Jetzt dreht RSR 30° zur anderen Seite:
+      Das Ziel liegt im Kegel, das Auge 60° seitlich.
+    - *Angra Mainyu, Zauber von 2,5 s, Blick nach 1,5 s:* Der Zauber beginnt; kurz vor dem Blick dreht RSR 60° weg. Er
+      trifft, der Blick nicht.
+    - *Sofortaktion auf den Wirkenden selbst, Auge bei ihm:* Sie wartet im Vorlauf, die gemessene Antwortzeit plus ein
+      Bild lang.
+  - *Gegenthese 1 (kein Defekt, er stellt sich selbst):* Gerade dann drehte das Spiel ihn beim nächsten Druck genau aufs
+    Ziel. Nur RSR kann das beim Auslösen verhindern, und BossModReborn tut es nur, wenn es selbst auslöst.
+  - *Gegenthese 2 (die 45° oder 75° gelten nicht):* Beide Werte sind empirisch. Ist der Kegel enger, lehnt das Spiel
+    den Druck ab, und RSR versucht es im nächsten Bild. Ein Schaden für ihn entsteht nicht, denn die
+    Richtung ist sicher.
+  - *Gegenthese 3 (ausgeliefert, und nichts ändert sich):* Drückt er selbst, dreht das Spiel ihn wie immer. RSR fängt
+    fremde Drücke nicht ab.
+  - *Preis:* Während eines Vorlaufs schaut die Figur bis zu 45° neben das Ziel. Bei Angriffen von hinten oder der Seite
+    zählt der Standort, nicht die Blickrichtung; Positionals ändern sich nicht.
 - *Im Kampf:* Während der 4,5 s von #3499 kämpft RSR bis L vor dem Blick weiter, auch auf Angra Mainyu. Ab dann drückt
   es nichts mehr auf ihn und nichts auf ein Ziel in seiner Richtung, und es dreht die Figur von ihm weg. Der Ausfall schrumpft so von zwei GCDs auf
   die gemessene Verzögerung plus ein Bild. Der Heiler heilt weiter, denn Heilungen

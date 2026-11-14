@@ -22541,6 +22541,36 @@ und der Kampf angehalten. Machbar?“ Einordnung: Vorgabe.
 - *Prüfgrad:* Compile, Prüfskripte, Winkelmodell; im Spiel nicht beobachtet. Messmittel: die Zeile „gaze: turned …“
   nennt den Winkel; ein abgebrochener Zauber zeigt sich im Mitschnitt.
 
+### A778 · Seine Rüge: BossModReborns Blickrichtung beim Auslösen nicht angesehen; RSR dreht beim Auslösen selbst (14.11.2026)
+
+Seine Angaben (14.11.2026): „Spieler selbst kennen ja die Kämpfe auch und können sich selbst ja so positionieren, dass
+sie bedenkenlos weiter kämpfen können. Also hast du das Konzept nicht optimal genug gedacht. Sonst wäre dir das bei bmr
+vorher aufgefallen. Mangelhaft. Hast du dir die gesamte Bar Mechanik dazu angesehen oder hast du Scheuklappen?“
+Einordnung: Hinweis und Rüge.
+- *Ursache am System:* In A774 und A777 habe ich aus BossModReborn nur `SmartRotationTweak.GetSafeRotation` und die
+  Winkel gelesen, nicht seinen Aufrufer `ActionManagerEx.UpdateDetour`. Dort schaltet BossModReborn beim Auslösen die
+  Spieloption „Auto face target“ ab und dreht nur, wenn das Ziel nicht im 45°-Kegel liegt oder die Richtung in einen
+  Blick sieht. RSR ließ das Spiel genau aufs Ziel drehen.
+- *Wirkung im Kampf bis jetzt:* Stand das Ziel vorn und das Auge seitlich, aber innerhalb von 45° zur genauen
+  Zielrichtung, wartete jede Aktion auf dieses Ziel im Vorlauf. Ohne Messung wartete sie das ganze Wirken. Auch eine
+  richtige Aufstellung half nicht. Im Vorlauf drehte RSR in die Mitte der nächsten Lücke, oft weg vom Ziel.
+- *Konzept neu geprüft:* Konzept 13, „Richtig stehen und weiter treffen“, als Ganzes neu geschrieben; dazu „In den Blick
+  drehen“ berichtigt.
+- *Umgesetzt:*
+  - `GazeWatch.PrepareFacing` und `RestoreFacing` um jeden Druck in `BaseAction.Use`, solange ein Blick im Vorlauf liegt:
+    die Richtung bleibt, wenn das Ziel im Kegel liegt und sie sicher ist, sonst die Mitte des breitesten sicheren
+    Stücks im Kegel; „Auto face target“ ist für den Aufruf aus.
+  - Die Sperre greift nur ohne sichere Richtung im Kegel, bei Zaubern zusätzlich ohne eine im 75°-Bereich.
+  - Ohne Zauber dreht `TurnAway` innerhalb von 45° um das Ziel des Spielers.
+  - Die 45° stehen als Festwert-Ausnahme.
+- *Modell:*
+  - Auge 30° neben dem Ziel: 30° zur anderen Seite.
+  - Auge beim Ziel: Sperre.
+  - Crucible, Augen West und Ost, Ziel Nord: die Richtung bleibt.
+  - Auge 10° neben dem Ziel: 40° zur anderen Seite.
+- *Prüfgrad:* Compile, Prüfskripte, Winkelmodell; im Spiel nicht beobachtet. Messmittel: die Zeile „gaze: turned … for
+  an action, … off its target“.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -22884,3 +22914,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C189 | TODO.md und Konzept 03, „Ausweichen in der Sperre“ (Stand A630–A749): Raidwide und ausweichbare Fläche trenne man durch ein Merkmal aus den Spieldaten (`CastType`, `EffectRange`) bei der Aufnahme; eine gelistete Fläche gelte in den Sperren als unausweichlich | An seinen 63 aufgenommenen Ids trennt das Merkmal falsch herum: Omen und kleine Reichweiten sind Gruppentreffer, die drei ausweichbaren tragen keins. Die Form im Moment trennt (`CastCertainlyDodgeable`); die Sperren lesen jetzt auch Helfer (A750). |
 | C190 | Konzept 18, „Takt“ (Stand A748): „Countdown lead time“ und „Action ahead“ hingen an der Latenz; „eine Selbststeuerung aus gemessener Latenz wäre denkbar; kein Fehlverhalten im Kampf belegt“ | Sein Mitschnitt vom 11.11.2026 belegt es: Weben mit weniger als 0,7 s Rest verzögerte den nächsten GCD bis 0,46 s, die feste Grenze erlaubte es bis 0,61 s. Seit A753 rechnet die Webregel mit Sperre und gemessenem Rest. |
 | C191 | A506 und Konzept 22 (Stand A506–A647): `AOZContentBriefingBNpc` führe „Verwundbarkeiten“ je Gegner, Slow bis Tod/fest | Die zehn Felder bedeuten Immunität: Spucksardine-Stellen der Führer 17 zu 1, Auric's Guide 19 zu 0; die Sperren lesen sie so (A762). |
+| C192 | A777 und Konzept 13, „Richtig stehen und weiter treffen“ (Stand A777): Sofortaktionen „unverändert“; eine Sofortaktion auf den Wirkenden treffe nur mit Blick in den Blick, dort bleibe die Sperre | Das gilt nur, wenn das Auge beim Ziel liegt. Liegt es daneben, gibt es innerhalb des 45°-Kegels der Aktion eine sichere Richtung; RSR dreht dorthin und schaltet das Drehen des Spiels für den Druck ab (A778). |

@@ -410,7 +410,16 @@ public class BaseAction : IBaseAction
 			}
 
 			var loc = target.Position.Value;
-			return actionManager->UseActionLocation(ActionType.Action, ID, Player.Object.GameObjectId, &loc);
+			// A778 (concept 13): a safe facing within the action's cone while a gaze is due, instead of the game's turn.
+			var areaFacing = Info.NeedToFaceTarget ? GazeWatch.PrepareFacing(loc) : null;
+			try
+			{
+				return actionManager->UseActionLocation(ActionType.Action, ID, Player.Object.GameObjectId, &loc);
+			}
+			finally
+			{
+				GazeWatch.RestoreFacing(areaFacing);
+			}
 		}
 
 		var targetId = target.Target?.GameObjectId ?? Player.Object.GameObjectId;
@@ -419,7 +428,18 @@ public class BaseAction : IBaseAction
 			return false;
 		}
 
-		var used = actionManager->UseAction(ActionType.Action, adjustId, targetId);
+		var facing = Info.NeedToFaceTarget && Action.Range > 0 && targetId != Player.Object.GameObjectId && target.Target != null
+			? GazeWatch.PrepareFacing(target.Target.Position)
+			: null;
+		bool used;
+		try
+		{
+			used = actionManager->UseAction(ActionType.Action, adjustId, targetId);
+		}
+		finally
+		{
+			GazeWatch.RestoreFacing(facing);
+		}
 
 		// The tankbuster plan counts its own press from this moment, before the server confirms it
 		// (concept 09, "Die Zustände je Wirken"). Its round trip is measured on the request itself, when it
