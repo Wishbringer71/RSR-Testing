@@ -23543,6 +23543,39 @@ Hinweis unter Level zählte Tausche unter dem Cap als „at or above"; Falsifika
   Zeilen von `XBMPetParamGrow`). Folge fürs Vorgehen: Bevor eine Größe eine andere vertritt, ihre Streuung über alle
   Fälle an den vorhandenen Daten messen.
 
+### A808 · Crucible: Schatz empfahl getragene Ausrüstung – RSR las sie nur im Laden (14.11.2026)
+
+TODO „Crucible: Ausrüstung empfohlen, die er schon hatte" (seine Meldung vom 14.11.2026, A797: „es wurde ein equipment
+gegenstand vorgeschlagen, der bereits vorhanden war").
+- *Fehlerbild am Artefakt:* Im Lauf seiner Meldung (14:43:36, Build 3900a0892) listete das Schatzfenster als getragen
+  Opferring, Todesrüstung, Ring der Heilung, Lichtring; RSR empfahl „Ring der Heilung (offer 4)". Ebenso um 17:33:12
+  (fcd5c89c3): getragen Opferring, Todesrüstung, Ring der Heilung, Mithril-Sollerets, empfohlen Ring der Heilung. Die
+  Liste ist das Getragene, keine Vorschau: Lichtring und Mithril-Sollerets stehen unter keinem Angebot, und um 17:48
+  führt sie den Ring der Heilung ohne Angebot dazu.
+- *Ursache:* RSR kannte die Ausrüstung nur aus dem letzten Laden (`OwnedEntries`) und aus Schätzen, die es selbst nahm;
+  der Kommentar „The treasure window does not list the gear held" war falsch. Ausrüstung aus der Beute nach einem Kampf,
+  aus einem von Hand genommenen Schatz oder nach dem letzten Lesen gekauft fehlte – für Schatzwahl, Laden, Lager, Weg
+  und Gegenstände (`WornFactors`, `WornResists`, `WornWayEffects`, `WornKillStack`).
+- *Grundlagen:* Vier Fenster führen die Ausrüstung im selben Aufbau, zehn Plätze zu je fünf Werten: Haupt-HUD ab 60,
+  Schatz ab 75, Beute ab 78, Laden ab 205 (ECommons `OwnedEntries` ebenso), in seinen Spuren vom 11. bis 14.11.2026.
+- *Optionen:* (0) Nullvariante – der Defekt bleibt. (1) Nur der Schatz liest sein Fenster – Lager, Weg und Gegenstände
+  bleiben ohne die übrige Ausrüstung. (2) Jede Auffrischung der vier Fenster setzt die gehaltene Ausrüstung; was RSR
+  nimmt, gilt bis zur nächsten. (3) Speicher des Directors – Aufbau unbelegt. Gewählt (2): eine Quelle für alle Leser,
+  ereignisgetrieben, nichts je Frame.
+- *Falsifikation:* (1) kein Defekt – widerlegt an beiden Läufen. (2) Option falsch, wenn ein Fenster beim Wechsel der
+  Ausrüstung nicht auffrischt: Laden und Schatz frischen beim Öffnen auf und entscheiden mit ihrer eigenen Liste; nur
+  zwischen zwei Fenstern könnte der Stand alt sein, wie vorher. (3) ausgeliefert, und nichts ändert sich – wenn der
+  Aufbau abweicht, liest RSR nichts und behält den alten Stand; die Spur „crucible gear held: …" zeigt es.
+- *Behebung:* `CrucibleWindowTrace` liest mit jeder Auffrischung der vier Fenster die Ausrüstung und übergibt sie
+  (`NoteGearHeld`); jede Änderung geht in die Spur. Was RSR aus einem Schatz nimmt, zählt bis dahin dazu, ohne doppelt.
+  Die sieben Werte des Aufbaus stehen als Ausnahmen in `fixed_values.json`.
+- *Spur:* Die Korrektur aus A797 schrieb Laden und Teamfenster bei jedem „PostSetup" – das trägt keine Werte; die Werte
+  kommen mit „PostRefresh", das nur einmal je Lauf geschrieben wurde (zweiter Laden in jedem Lauf vom 14.11.2026 ohne
+  Inhalt). Jetzt schreibt jede Öffnung ihre Auffrischung. Widerruf C200.
+- *Prüfgrad:* Spuranalyse, Compile, CI; Laufzeit nicht beobachtet.
+- *Vorhersage:* `predictions/2026-11-14.json`, „gear-held-traced": Nach einem Schatz steht „crucible gear held: …" mit
+  dem Opferring; widerlegt, wenn ein Schatzfenster aufgefrischt wird und keine solche Zeile im Lauf steht.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -23894,3 +23927,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C197 | A802 (Stand A802): Die Leveln-Regel sei am 14.11.2026 nicht gelaufen – Einstellung aus oder Build vor c4824c253 | Sie lief im Build 13e4a15d0 und las jeden Rang als 0, weil die Spielfunktion vier Argumente nimmt und ClientStructs zwei deklariert (A803); die Spur „crucible team: requested Chimera 0, Treant 0+, …" zeigt es |
 | C198 | A804 und Konzept 21, „Ziel des Laufs" (Stand A804/A805): Unter Safe win entscheide im Brett jede Handlung, als gäbe es keinen Bonus („die Regel unter Safe win, geschlossen"); Safe win wähle die volle Größe gierig nach Schwächen | Seine Vorgaben vom 14.11.2026 (A806): Die Ziele unterscheiden sich nur im Kader; im Brett gilt unter jedem Ziel „immer sicher, dann die höchste Bonuszahl"; Safe win wählt die niedrigsten, solange das Bestehen sicher ist |
 | C199 | A785 und CLAUDE.md, „Wenn er etwas sagt" (Stand A785): Seine Vorgabe „gemeldete issues anderer eigener repos sind zu beachten" heiße, bei einer neuen Aufgabe die Issues in seinen anderen Repositories zu lesen | Seine Präzisierung vom 14.11.2026: „du hast nicht in anderen repos zu arbeiten" – gemeint sind die Issues, die sie hier melden. Gelesen hatte ich dort (A785 und am 14.11.2026 abends, drei leere Listen), geändert nichts. Regel in CLAUDE.md neu gefasst |
+| C200 | A797 (Stand A797): Die Fensterspur schreibe jetzt jeden Laden und das Teamfenster vor dem Brett | Sie schrieb jede Öffnung („PostSetup"), die keine Werte trägt; die Werte kommen mit „PostRefresh", das nur einmal je Lauf geschrieben wurde – jeder zweite Laden am 14.11.2026 ohne Inhalt. Behoben in A808 |

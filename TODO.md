@@ -30,11 +30,7 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
 
 ## Defekte
 
-### Crucible: Ausrüstung empfohlen, die er schon hatte · N
-*Wirkung:* Seine Meldung vom 14.11.2026 (Brett 2): ein Ausrüstungsteil empfohlen, das er schon besaß; welches, zeigt die
-Spur nicht – sie schrieb nur den ersten Laden des Laufs. *Ort:* `BeastmasterCrucibleShop` (A657, Ausschluss getragener
-Ausrüstung), `BeastmasterCrucibleTreasure`. *Auflösungsbedingung:* der nächste Upload mit einem Lauf mit zwei Läden, in dem die
-Fensterspur jeden Laden mit seiner Ausrüstungsliste zeigt. *Konzept:* 21, K13 „Was du trägst".
+Keine offenen Defekte.
 
 ## Offene Arbeit
 

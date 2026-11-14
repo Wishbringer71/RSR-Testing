@@ -116,13 +116,17 @@ public partial class BeastmasterRotation
 		{
 			if (offer.Row == row && CrucibleGearTable.ContainsKey(offer.Item))
 			{
-				// The treasure window does not list the gear held; what RSR took joins what the last shop showed.
+				// A808: what RSR took counts as held until a window of the board refreshes the list.
 				if (_gearSeen is not { } held || held.Run != CrucibleBoard.Run)
 				{
 					held = (CrucibleBoard.Run, [], 0);
 				}
 
-				held.Gear.Add(offer.Item);
+				if (!held.Gear.Contains(offer.Item))
+				{
+					held.Gear.Add(offer.Item);
+				}
+
 				_gearSeen = held;
 			}
 		}

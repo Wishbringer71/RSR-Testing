@@ -2492,6 +2492,76 @@
    "status": "exception",
    "loop": "A806",
    "reason": "The shop window XBMContentsItemShop as ECommons' ReaderXBMContentsItemShop reads it (StockCount at value 2, StockOffset 3, StockEntrySize 5; ECommons source, AtkReaderImplementations). The game's layout of the window, not a tuned value; RSR checks the values hold the rows before the reader reads them, so an unfilled window is skipped instead of throwing."
+  },
+  {
+   "file": "RotationSolver/Helpers/CrucibleWindowTrace.cs",
+   "code": "private const int HudGearFirst = 60;",
+   "values": [
+    "60"
+   ],
+   "status": "exception",
+   "loop": "A808",
+   "reason": "The gear list of the Crucible's windows: ten places of five values (held, -, icon, XBMItem row, name), from value 60 in XBMContentsMainHUD, 75 in XBMContentsTreasure, 78 in XBMContentsBooty and 205 in XBMContentsItemShop - read in the owner's traces of 11 to 14.11.2026, the Sacrifice Ring (row 2) on place 1 of each; the shop's 205 and 5 match ECommons' ReaderXBMContentsItemShop (OwnedEntries). The game's layout of the windows, not a tuned value; a place that does not read as this layout says drops the whole reading."
+  },
+  {
+   "file": "RotationSolver/Helpers/CrucibleWindowTrace.cs",
+   "code": "private const int TreasureGearFirst = 75;",
+   "values": [
+    "75"
+   ],
+   "status": "exception",
+   "loop": "A808",
+   "reason": "The gear list of the Crucible's windows: ten places of five values (held, -, icon, XBMItem row, name), from value 60 in XBMContentsMainHUD, 75 in XBMContentsTreasure, 78 in XBMContentsBooty and 205 in XBMContentsItemShop - read in the owner's traces of 11 to 14.11.2026, the Sacrifice Ring (row 2) on place 1 of each; the shop's 205 and 5 match ECommons' ReaderXBMContentsItemShop (OwnedEntries). The game's layout of the windows, not a tuned value; a place that does not read as this layout says drops the whole reading."
+  },
+  {
+   "file": "RotationSolver/Helpers/CrucibleWindowTrace.cs",
+   "code": "private const int BootyGearFirst = 78;",
+   "values": [
+    "78"
+   ],
+   "status": "exception",
+   "loop": "A808",
+   "reason": "The gear list of the Crucible's windows: ten places of five values (held, -, icon, XBMItem row, name), from value 60 in XBMContentsMainHUD, 75 in XBMContentsTreasure, 78 in XBMContentsBooty and 205 in XBMContentsItemShop - read in the owner's traces of 11 to 14.11.2026, the Sacrifice Ring (row 2) on place 1 of each; the shop's 205 and 5 match ECommons' ReaderXBMContentsItemShop (OwnedEntries). The game's layout of the windows, not a tuned value; a place that does not read as this layout says drops the whole reading."
+  },
+  {
+   "file": "RotationSolver/Helpers/CrucibleWindowTrace.cs",
+   "code": "private const int ShopGearFirst = 205;",
+   "values": [
+    "205"
+   ],
+   "status": "exception",
+   "loop": "A808",
+   "reason": "The gear list of the Crucible's windows: ten places of five values (held, -, icon, XBMItem row, name), from value 60 in XBMContentsMainHUD, 75 in XBMContentsTreasure, 78 in XBMContentsBooty and 205 in XBMContentsItemShop - read in the owner's traces of 11 to 14.11.2026, the Sacrifice Ring (row 2) on place 1 of each; the shop's 205 and 5 match ECommons' ReaderXBMContentsItemShop (OwnedEntries). The game's layout of the windows, not a tuned value; a place that does not read as this layout says drops the whole reading."
+  },
+  {
+   "file": "RotationSolver/Helpers/CrucibleWindowTrace.cs",
+   "code": "private const int GearPlaces = 10;",
+   "values": [
+    "10"
+   ],
+   "status": "exception",
+   "loop": "A808",
+   "reason": "The gear list of the Crucible's windows: ten places of five values (held, -, icon, XBMItem row, name), from value 60 in XBMContentsMainHUD, 75 in XBMContentsTreasure, 78 in XBMContentsBooty and 205 in XBMContentsItemShop - read in the owner's traces of 11 to 14.11.2026, the Sacrifice Ring (row 2) on place 1 of each; the shop's 205 and 5 match ECommons' ReaderXBMContentsItemShop (OwnedEntries). The game's layout of the windows, not a tuned value; a place that does not read as this layout says drops the whole reading."
+  },
+  {
+   "file": "RotationSolver/Helpers/CrucibleWindowTrace.cs",
+   "code": "private const int GearPlaceValues = 5;",
+   "values": [
+    "5"
+   ],
+   "status": "exception",
+   "loop": "A808",
+   "reason": "The gear list of the Crucible's windows: ten places of five values (held, -, icon, XBMItem row, name), from value 60 in XBMContentsMainHUD, 75 in XBMContentsTreasure, 78 in XBMContentsBooty and 205 in XBMContentsItemShop - read in the owner's traces of 11 to 14.11.2026, the Sacrifice Ring (row 2) on place 1 of each; the shop's 205 and 5 match ECommons' ReaderXBMContentsItemShop (OwnedEntries). The game's layout of the windows, not a tuned value; a place that does not read as this layout says drops the whole reading."
+  },
+  {
+   "file": "RotationSolver/Helpers/CrucibleWindowTrace.cs",
+   "code": "private const int GearRowValue = 3;",
+   "values": [
+    "3"
+   ],
+   "status": "exception",
+   "loop": "A808",
+   "reason": "The gear list of the Crucible's windows: ten places of five values (held, -, icon, XBMItem row, name), from value 60 in XBMContentsMainHUD, 75 in XBMContentsTreasure, 78 in XBMContentsBooty and 205 in XBMContentsItemShop - read in the owner's traces of 11 to 14.11.2026, the Sacrifice Ring (row 2) on place 1 of each; the shop's 205 and 5 match ECommons' ReaderXBMContentsItemShop (OwnedEntries). The game's layout of the windows, not a tuned value; a place that does not read as this layout says drops the whole reading."
   }
  ]
 }

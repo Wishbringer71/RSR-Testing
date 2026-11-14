@@ -136,6 +136,31 @@ public partial class BeastmasterRotation
 	private static (int Run, List<ushort> Gear, int Slots)? _gearSeen;
 
 	/// <summary>
+	/// K13 (A808): the gear a window of the board shows held - the main HUD, a treasure, the spoils of a fight, a shop - on each
+	/// refresh; it replaces what was known, and each change goes to the trace.
+	/// </summary>
+	internal static void NoteGearHeld(List<ushort> gear, int slots)
+	{
+		if (!DataCenter.IsInCrucible)
+		{
+			return;
+		}
+
+		var before = _gearSeen is { } seen && seen.Run == CrucibleBoard.Run ? seen.Gear : null;
+		_gearSeen = (CrucibleBoard.Run, gear, slots);
+		var same = before != null && before.Count == gear.Count;
+		for (var i = 0; same && i < gear.Count; i++)
+		{
+			same = before![i] == gear[i];
+		}
+
+		if (!same)
+		{
+			DefenseTrace.Line($"crucible gear held: {(gear.Count > 0 ? string.Join(", ", gear.ConvertAll(OfferName)) : "none")}");
+		}
+	}
+
+	/// <summary>
 	/// K10 Campsite (A661): what the gear worn in this run makes of the player's defences - his maximum HP (1 + its raises),
 	/// the damage he takes, and his physical and magic vulnerability with evasion, each as a factor, multiplied over the
 	/// pieces as the shop weighs them; all 1 before the run shows any gear.

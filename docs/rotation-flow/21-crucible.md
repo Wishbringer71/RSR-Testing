@@ -559,6 +559,18 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     Client sah RSR ab 1000 Marken eine einzige und meldete „Nothing here adds safety within your tokens and slots" (sein
     Bild vom 07.11.2026: 1421 Marken im Spiel, „1 tokens" im Fenster). Alle übrigen Zahlen, die RSR aus Text liest,
     stammen aus den englischen Blättern.
+    *Woher RSR weiß, was du trägst (A808):* Vier Fenster des Bretts führen deine Ausrüstung im selben Aufbau, zehn Plätze
+    zu je fünf Werten (getragen, –, Symbol, Zeile in `XBMItem`, Name): der Haupt-HUD (`XBMContentsMainHUD`, ab Wert 60,
+    „Bestienausrüstung"), das Schatzfenster (`XBMContentsTreasure`, ab 75), die Beute nach einem Kampf
+    (`XBMContentsBooty`, ab 78) und der Laden (`XBMContentsItemShop`, ab 205) – gelesen in seinen Spuren vom 11. bis
+    14.11.2026, je Fenster derselbe Opferring auf Platz 1. Mit jeder Auffrischung eines dieser Fenster gilt seine Liste;
+    was RSR aus einem Schatz nimmt, zählt bis zur nächsten Auffrischung dazu. Jede Änderung geht in die Spur („crucible
+    gear held: …"). *Warum:* Vorher kannte RSR nur, was der letzte Laden zeigte und was es selbst aus Schätzen nahm.
+    Ausrüstung aus der Beute, aus einem von Hand genommenen Schatz oder von Hand gekauft nach dem letzten Lesen fehlte:
+    Am 14.11.2026 um 14:43 (Lauf seiner Meldung „es wurde ein equipment gegenstand vorgeschlagen, der bereits vorhanden
+    war") und um 17:33 empfahl der Schatz den Ring der Heilung, den das Schatzfenster schon als getragen führte, und
+    Schatz, Lager, Weg und Gegenstände rechneten ohne Lichtring und Mithril-Sollerets. Das Fenster zur Entscheidung ist
+    selbst eines der vier: Laden und Schatz entscheiden mit der Liste, die sie gerade zeigen.
     *Was du trägst, steht nicht zur Wahl:* Ein Laden listet auch Ausrüstung, die du schon trägst, und das Spiel lehnt
     ihren Kauf ab („Du besitzt die Mithril-Rüstung bereits und kannst den Gegenstand deshalb nicht erwerben", sein Bild
     vom 07.11.2026). Ein Angebot, dessen `XBMItem`-Zeile unter deiner Ausrüstung steht, fällt deshalb aus Kaufliste und
@@ -1271,7 +1283,7 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
   Zustände des Bretts; Heilgegenstände; schützende Gegenstände. Bringt kein Angebot Sicherheit, ein Gegenstand für
   Schaden oder Stärkung (K8 setzt sie im Endkampf ein), sonst Ausrüstung, die dir nicht schadet. Ausrüstung, die dir
   einen Zustand zufügt, nie. *Was gehalten wird:* die Gegenstände aus dem Inventar des Bretts; die Ausrüstung, wie sie
-  der letzte Laden dieses Bretts zeigte, dazu was RSR selbst aus Schätzen genommen hat.
+  das zuletzt aufgefrischte Fenster des Bretts zeigt, das sie führt (A808, unten „Was du trägst").
   *Fenster:* „RSR – Crucible treasure" mit der Empfehlung, dem Grund und einem Knopf „Take", der genau sie nimmt; ohne
   Klick nimmt RSR nichts (wie Laden und Kader, Entscheidung C, A533). Einstellung „Recommend what to take from a
   Crucible treasure", ab Werk an.

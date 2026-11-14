@@ -71,6 +71,60 @@ internal static class CrucibleWindowTrace
 		CrucibleBoard.RecordFamiliarRanks(ranks);
 	}
 
+	// K13 (A808): the windows that list the gear held, each from its first value - ten places of five values (held, -, icon,
+	// XBMItem row, name), read in his traces of 11 to 14.11.2026 (the Sacrifice Ring on place 1 in each).
+	private const int HudGearFirst = 60;
+	private const int TreasureGearFirst = 75;
+	private const int BootyGearFirst = 78;
+	private const int ShopGearFirst = 205;
+	private const int GearPlaces = 10;
+	private const int GearPlaceValues = 5;
+	private const int GearRowValue = 3;
+
+	private static int GearListStart(string addon) => addon switch
+	{
+		"XBMContentsMainHUD" => HudGearFirst,
+		"XBMContentsTreasure" => TreasureGearFirst,
+		"XBMContentsBooty" => BootyGearFirst,
+		"XBMContentsItemShop" => ShopGearFirst,
+		_ => -1,
+	};
+
+	// K13 (A808): the gear the window shows held; nothing when the window is not filled yet or a place does not read as the
+	// layout says - then what was known stays.
+	private static unsafe void ReadGearHeld(AtkValue* values, uint count, int first)
+	{
+		if (count < first + (GearPlaces * GearPlaceValues))
+		{
+			return;
+		}
+
+		var gear = new List<ushort>(GearPlaces);
+		for (var i = 0; i < GearPlaces; i++)
+		{
+			var at = first + (i * GearPlaceValues);
+			if (!BestiaryTrace.TryReadValue(values, count, at, out var held) || held.Type != AtkValueType.Bool)
+			{
+				return;
+			}
+
+			if (!held.Bool)
+			{
+				continue;
+			}
+
+			if (!BestiaryTrace.TryReadValue(values, count, at + GearRowValue, out var row) || row.Type != AtkValueType.UInt
+				|| row.UInt == 0 || row.UInt > ushort.MaxValue)
+			{
+				return;
+			}
+
+			gear.Add((ushort)row.UInt);
+		}
+
+		BeastmasterRotation.NoteGearHeld(gear, GearPlaces);
+	}
+
 	public static void Disable()
 	{
 		Svc.AddonLifecycle.UnregisterListener(OnWindow);
@@ -99,12 +153,23 @@ internal static class CrucibleWindowTrace
 		}
 
 		// A796: a shop and the team screen before a board at every opening - each shop offers other wares, and the gear held
-		// changes between them; the other windows once a run.
+		// changes between them; the other windows once a run. A808: with the refresh that brings their values.
 		var everyOpening = type == AddonEvent.PostSetup
 			&& (args.AddonName == "XBMContentsItemShop" || (args.AddonName == "XBMPetParty" && !DataCenter.IsInCrucible));
 		if (args.AddonName == ResultWindow && type == AddonEvent.PostRefresh)
 		{
 			ReadResultRanks((AtkValue*)values, count);
+		}
+
+		if (type == AddonEvent.PostRefresh && DataCenter.IsInCrucible && GearListStart(args.AddonName) is >= 0 and var first)
+		{
+			ReadGearHeld((AtkValue*)values, count, first);
+		}
+
+		// A808: their values come with the refresh after the setup (the setup holds none) - each opening writes its refresh.
+		if (everyOpening)
+		{
+			_ = _seen.Remove($"{args.AddonName} {AddonEvent.PostRefresh}");
 		}
 
 		if (everyOpening || _seen.Add($"{args.AddonName} {type}"))

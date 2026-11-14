@@ -30,5 +30,7 @@
   {"id": "board-familiar-loss", "archive": "A807",
    "kind": "present", "situation": "crucible result: ", "match": "crucible board [1-5]: the familiars lost \\d+ HP"},
   {"id": "crucible-synced", "archive": "A807",
-   "kind": "absent", "situation": "crucible agents \\(fight", "match": "above the level the content syncs to"}
+   "kind": "absent", "situation": "crucible agents \\(fight", "match": "above the level the content syncs to"},
+  {"id": "gear-held-traced", "archive": "A808",
+   "kind": "present", "situation": "crucible window XBMContentsTreasure PostRefresh", "match": "crucible gear held: .*(Opferring|Sacrifice)"}
 ]
