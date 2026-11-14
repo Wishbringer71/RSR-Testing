@@ -23728,8 +23728,24 @@ meine Anweisungen". Einordnung: Vorgabe; eingetragen in `CLAUDE.md`, „Bevor ic
   ewig so weiterlaufen?" startete ich trotzdem eine weitere LLM-Prüfrunde. Beides gegen seine Anweisungen.
 - *Behoben:* `GazeWatch.cs` und Konzept 13 stehen wieder auf b282de8a3; die Prüfrunde lief nicht mehr, ihr Ergebnis
   bleibt unverwendet. Die Regel zu Prüfrunden (A812, C201) bleibt.
-- *Offen:* Die Prüfung, ob jeder in A812 entfernte Teil sinnvoll war, steht aus; vor ihr wird nichts entfernt.
-- *Prüfgrad:* Compile, CI.
+- *Nutzenprüfung der in A812 entfernten Teile* (statisch, an Code, Archiv und seinen Mitschnitten; keine weitere
+  Prüfrunde):
+  - *Anmeldung* (A783, A786, A791, A801, A809). Zweck: nur lernen, wo RSRs Eingriff betroffen war, und je Blick
+    messen, ob er wirkte („avoided", „held", „unknown … before its packet", „no harm seen"). Mit ihr: Ein Treffer, bei
+    dem RSR nichts tat, nimmt die Drehung nicht für den Build; die Zeilen belegen in seinen Uploads T1, T8 und T9, und
+    die Vorhersage „gaze-3499-avoided" liest sie. Ohne sie: Jeder Treffer zählt; „unknown" (Paket nie gesehen, T9) und
+    die Zeilen zu Marker, Status und Mitglied entfallen – das Messmittel, das die REGEL im komplexen Bereich verlangt.
+    Preis mit ihr: Umfang; die Befunde der Runden sechs bis acht sind eingearbeitet. Bilanz: bleibt.
+  - *Gegenprobe* (A789; seit der achten Runde nur beim Wirken). Zweck: Widerlegt das Paket Auge oder Richtung, lässt RSR
+    den Blick beim ersten Treffer los; sonst hielte die Sperre bei falschem Sinn genau die Ziele zurück, die zum echten
+    Auge drehen, und der zweite Treffer (Verhängnis: ein Tod) wäre wahrscheinlich. Mit ihr: ein Treffer weniger bei
+    falschem Modell. Preis: Sie liest die Richtung der anderen im Client; eine vom Server gehaltene Richtung (A809, N3)
+    konnte in kleiner Gruppe einen richtigen Blick beim ersten Treffer loslassen. Bilanz: bleibt, verbessert statt
+    entfernt – widerlegt nur, wenn Getroffene sicher standen und keiner ins Auge sah. Bei falschem Sinn sieht kein
+    Getroffener nach RSRs Auge hin; eine einzelne gehaltene Richtung lässt einen richtigen Blick nicht mehr los. Preis:
+    Steht bei falschem Modell doch einer „hin", sperrt RSR erst und lässt beim zweiten Treffer los (B3 hält).
+  - Widerrufen: A812s Aussage, beide Teile seien entbehrlich (C202).
+- *Prüfgrad:* statisch, Compile, CI.
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
@@ -24084,3 +24100,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C199 | A785 und CLAUDE.md, „Wenn er etwas sagt" (Stand A785): Seine Vorgabe „gemeldete issues anderer eigener repos sind zu beachten" heiße, bei einer neuen Aufgabe die Issues in seinen anderen Repositories zu lesen | Seine Präzisierung vom 14.11.2026: „du hast nicht in anderen repos zu arbeiten" – gemeint sind die Issues, die sie hier melden. Gelesen hatte ich dort (A785 und am 14.11.2026 abends, drei leere Listen), geändert nichts. Regel in CLAUDE.md neu gefasst |
 | C200 | A797 (Stand A797): Die Fensterspur schreibe jetzt jeden Laden und das Teamfenster vor dem Brett | Sie schrieb jede Öffnung („PostSetup"), die keine Werte trägt; die Werte kommen mit „PostRefresh", das nur einmal je Lauf geschrieben wurde – jeder zweite Laden am 14.11.2026 ohne Inhalt. Behoben in A808 |
 | C201 | CLAUDE.md, „Prüfgrad" (Lesart A791–A809): „Bringt die dritte Runde in Folge welche" meine nur Befunde hoher Schwere | Der Zweck der Regel – eine Konstruktion, die jede Korrektur an neuer Stelle aufbricht – gilt ebenso bei mittleren; drei Runden mit mittleren Befunden (sechs bis acht der Blickwache) waren ein Befund am Vorgehen. Seine Rüge, 14.11.2026 (A812); Regel präzisiert |
+| C202 | A812 (Stand A812): Anmeldung und Gegenprobe des Lernteils der Blickwache seien entbehrlich, weil die Vorgabe sie nicht verlangt; entfernt | „Nicht verlangt" belegt keinen fehlenden Nutzen. Geprüft in A813: Die Anmeldung trägt das Messmittel (T1, T8, T9), die Gegenprobe spart bei falschem Modell einen Treffer; beide bleiben, die Gegenprobe geschärft. Seine Vorgabe, 14.11.2026 |

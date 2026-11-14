@@ -740,8 +740,8 @@ internal static partial class GazeWatch
 		return landed;
 	}
 
-	// A791: whether the packet refutes RSR's eye and sense: among the others it hit, more faced the safe way as RSR places
-	// it than into it. Without others hit nothing refutes it.
+	// A791, A813: whether the packet refutes RSR's eye and sense: others it hit faced the safe way as RSR places it, and
+	// none faced into it. Without others hit nothing refutes it.
 	private static bool Refuted(ActionEffectSet set, Gazer gazer, ulong playerId)
 	{
 		int facing = 0, away = 0;
@@ -763,7 +763,9 @@ internal static partial class GazeWatch
 			}
 		}
 
-		return away > facing;
+		// A813: refuted only where none of them faced the eye as RSR places it - one facing the server held (85°, 179°, A809
+		// N3) let a small party release a right model at the first hit.
+		return away > 0 && facing == 0;
 	}
 
 	// The gaze with this key among the current, the ended and last frame's.

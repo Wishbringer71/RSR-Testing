@@ -457,7 +457,7 @@ Mainyu wurde von jedem GCD zurück ins Auge gedreht. BossModReborn nimmt nur 0 a
       den anderen Getroffenen und für Blicke aus Status, Marker und Mitglied.
   - *Folge eines Fehlschlags* (A789, A791): Das Paket, das ihn zeigt, sagt auch, ob RSRs Annahme über Auge und
     Richtung stimmt. Gezählt werden die anderen Getroffenen: wie viele nach der Annahme ins Auge sahen, wie viele weg.
-    - *Widerlegt* (mehr sahen weg als hin): RSR greift bei diesem Blick gar nicht mehr ein, also das Verhalten ohne die
+    - *Widerlegt* (Getroffene sahen weg, keiner hin; A813): RSR greift bei diesem Blick gar nicht mehr ein, also das Verhalten ohne die
       Regel. Grund: Ist das Auge oder die Richtung falsch, verhinderte die Sperre gerade die Aktion, die den Spieler zum
       echten Auge dreht.
     - *Bestätigt oder unbelegt* (sonst, auch ohne andere Getroffene): RSR dreht für diesen Blick nicht mehr und wählt
@@ -683,8 +683,11 @@ und an seinen Mitschnitten; im Spiel ist kein Teil der Blickwache beobachtet.
     Markers) gehören zu ihm. Die Stufe liest RSR aus dem Gelernten, nicht aus der Anmeldung und nicht aus dem Blick, wie
     das Spiel ihn beim Balkenende weitergab; so überschreibt ein zweiter Blick, der noch als vertraut angemeldet war,
     nichts Gelerntes (vorher drei Treffer statt zwei, sechste Prüfung M1).
-  - *Widerlegt* ist das Modell eines gewirkten Blicks, wenn unter den anderen Getroffenen des Pakets mehr sicher standen
-    als ins Auge sahen, so wie RSR das Auge setzt. Gemessen wird gegen den Blick, dessen Paket es ist, einmal je Paket;
+  - *Widerlegt* ist das Modell eines gewirkten Blicks, wenn unter den anderen Getroffenen des Pakets welche sicher standen
+    und keiner ins Auge sah, so wie RSR das Auge setzt (A813). Bis A813 genügte „mehr sicher als hin“: Eine einzige vom
+    Server gehaltene Richtung (85° und 179° getroffen, A809 N3) ließ in einer kleinen Gruppe einen richtigen Blick beim
+    ersten Treffer los, und danach drehte das Spiel bei jedem Angriff ins Auge. Bei falschem Sinn sieht kein Getroffener
+    nach RSRs Auge hin; steht dort doch einer, sperrt RSR erst und lässt beim zweiten Treffer los, innerhalb von B3. Gemessen wird gegen den Blick, dessen Paket es ist, einmal je Paket;
     nicht gegen jeden angemeldeten Blick gleichen Namens. Sonst las ein zweites Auge gleichen Namens auf der anderen Seite
     die Getroffenen als „weggesehen“ und ließ einen richtigen Blick fallen (sechste Prüfung M2). Marker, Status und
     Mitglied widerlegt kein Paket: Es ist nicht ihres, und wer darin getroffen wurde, sagt nichts über ihr Auge. Ein
