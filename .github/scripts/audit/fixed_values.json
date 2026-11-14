@@ -2462,6 +2462,36 @@
    "status": "exception",
    "loop": "A799",
    "reason": "A familiar's icon is 242000 plus its Bestiary number (Daedalus 74659a6, CrucibleTeamScreen.IconBase, recorded 24.10.2026; the owner's DefenseTrace.log of 14.11.2026, board 2: the result window XBMResult with twelve familiars: 242014 for Puk, row 14). XBMPet has no icon column (EXDSchema); not a tuned value."
+  },
+  {
+   "file": "RotationSolver/Basic/Rotations/Basic/BeastmasterCrucibleShop.cs",
+   "code": "private const int ShopStockCountValue = 2;",
+   "values": [
+    "2"
+   ],
+   "status": "exception",
+   "loop": "A806",
+   "reason": "The shop window XBMContentsItemShop as ECommons' ReaderXBMContentsItemShop reads it (StockCount at value 2, StockOffset 3, StockEntrySize 5; ECommons source, AtkReaderImplementations). The game's layout of the window, not a tuned value; RSR checks the values hold the rows before the reader reads them, so an unfilled window is skipped instead of throwing."
+  },
+  {
+   "file": "RotationSolver/Basic/Rotations/Basic/BeastmasterCrucibleShop.cs",
+   "code": "private const int ShopStockFirstValue = 3;",
+   "values": [
+    "3"
+   ],
+   "status": "exception",
+   "loop": "A806",
+   "reason": "The shop window XBMContentsItemShop as ECommons' ReaderXBMContentsItemShop reads it (StockCount at value 2, StockOffset 3, StockEntrySize 5; ECommons source, AtkReaderImplementations). The game's layout of the window, not a tuned value; RSR checks the values hold the rows before the reader reads them, so an unfilled window is skipped instead of throwing."
+  },
+  {
+   "file": "RotationSolver/Basic/Rotations/Basic/BeastmasterCrucibleShop.cs",
+   "code": "private const int ShopStockRowValues = 5;",
+   "values": [
+    "5"
+   ],
+   "status": "exception",
+   "loop": "A806",
+   "reason": "The shop window XBMContentsItemShop as ECommons' ReaderXBMContentsItemShop reads it (StockCount at value 2, StockOffset 3, StockEntrySize 5; ECommons source, AtkReaderImplementations). The game's layout of the window, not a tuned value; RSR checks the values hold the rows before the reader reads them, so an unfilled window is skipped instead of throwing."
   }
  ]
 }

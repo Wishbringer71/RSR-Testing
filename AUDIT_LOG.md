@@ -23419,6 +23419,38 @@ Vorgabe (zum Leveln keine Begleiter ab Rang 10, außer zum Auffüllen der Reserv
 - *Vorhersage:* `predictions/2026-11-14.json`, „level-core-low": Fordert er unter Level auf Brett 2 den Kader an, nennt
   „crucible team: goal Level - requested …" mindestens drei Begleiter auf Rang 6 bis 9 aus dem Spiel.
 
+### A806 · Ziel des Laufs neu gefasst: Ziele nur im Kader, eine Gefährdungsprüfung; Upload 14.11.2026 17:22 (14.11.2026)
+
+Seine Meldung mit Upload (`RotationSolver.7z`, Build fcd5c89c3, 17:22 bis 18:10; ACT-Mitschnitt): „ich musste wieder
+selbst die begleiter am anfang auswählen. das mit dem leveln funktionierte nicht korrekt." Dazu seine Vorgaben vom
+14.11.2026 (wörtlich im Konzept 21, K7 „Ziel des Laufs", Anforderungen Z2 bis Z9): Level füllt jeden Platz unter dem
+Levelcap, darüber die niedrigsten nur gegen Gefährdung, gemessen an der Summe; Safe win die niedrigsten, solange sicher;
+Score die besten, so wenige wie möglich; Kauf, Ausrüstung, Verbrauchsmittel unter jedem Ziel „immer sicher, dann die
+höchste Bonuszahl"; „du hast zu schauen, wie und ob safe win regeln in den anderen aufgehen können"; und seine Rüge:
+„das mach endlich mal in einen vernünftigen konzept im vollen loop, so dass nicht wieder zig reviews notwendig sind".
+- *Befund am Upload:* Der Build war vor A805: „crucible team: goal Level - requested Chimera 10 game, Treant 11+ game …
+  Uragnite 6 game levels, Sabotender 6 game levels" – der echte Rang wird gelesen (A803 wirkt), der Kern blieb ab Rang
+  10. Er wählte danach selbst zwölf niedrige; die Abrechnung hob sie auf Rang 8 („crucible result: true ranks learned").
+  Zweiter Fehler: Jeder Klick auf „Apply" wechselte die Empfehlung zwischen Uragnite/Sabotender und Salamander/Worm –
+  das Reihum verglich mit dem Kader im Fenster, der nach „Apply" der angeforderte ist. Jetzt mit dem Kader beim Öffnen.
+  Dritter: „exception: ArgumentOutOfRangeException in … FollowCrucibleShop (thrown in AtkReader.EnsureCount)" – RSR las
+  das Ladenfenster, bevor das Spiel seine Werte füllte; abgefangen seit A764, die Ursache blieb (seine Regel A798). Jetzt
+  liest RSR erst, wenn die Werte die Zahl der Reihen und alle Reihen halten. Sonst keine Ausnahme, kein Hook-Fehler.
+- *Vorgehen, sachlich:* A804 bis A805 bauten Code vor dem vollständigen Konzept; neun Prüfrunden fanden je die nächste
+  Lücke – die Ursache war die fehlende Anforderungstabelle, nicht die einzelnen Stellen. Der Abschnitt ist jetzt zuerst
+  vollständig geschrieben (Anforderungen mit Kriterium, Stelle und Messweg; Grundlagen; Bauart; was aufging;
+  Wechselwirkungen; Falsifikation), dann der Code daran angeglichen.
+- *Bauart:* eine Gefährdungsprüfung (`TeamEndangered`: die Begleiter, die die Hornwahl einsetzt, tragen die gemessenen
+  Verluste nicht), je Ziel eine Reihenfolge und ein Auffüllen (`LevelTeam`, Safe win, `FewestStrong`); im Brett unter
+  jedem Ziel K15. Die Größe nach Stufen (A698, `TeamSizeForScore`) ist abgelöst: Score wählt die kleinste nicht gefährdete
+  Zahl der stärksten; das Team einer Gattung wählt seine Größe ebenso.
+- *Was aufging (seine Frage):* Die eigene Regel für Safe win im Brett (A804) entfällt; was ihre Prüfrunden fanden, gilt für
+  alle Ziele (Laden fragt die Prüfungen von K8 und Weg; der letzte GCD wiegt Punkte gegen Punkte). Widerrufen in C198.
+- *Prüfgrad:* Upload, Compile, CI; Laufzeit nicht beobachtet.
+- *Vorhersage:* `predictions/2026-11-14.json`, „level-below-cap": Unter Level auf Brett 2 nennt „crucible team: goal Level -
+  requested …" keinen Begleiter ab Rang 10, solange zwölf unter dem Cap zur Wahl stehen. Nach „Apply" ändert sich die
+  Empfehlung bis zum nächsten Öffnen nicht (zweites „requested" mit anderen Begleitern ohne neues Öffnen fehlt).
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -23768,3 +23800,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C195 | A765 und Konzept 11, „Ein totes Mitglied ist kein Gegner“ (Stand A765): Das Flackern zwischen „a candidate“ und „an enemy“ am 13.11.2026 sei die Antwort von `IsEnemy` auf tote Allianzmitglieder | Nicht belegt. Die Begründung der Zeile fragte `IsTargetMoving` ein zweites Mal und schrieb für einen Toten in Bewegung „an enemy“; am 14.11.2026 stand das bei Gruppenmitgliedern, für die `IsEnemy` nicht mehr gefragt wird (A788). Die Behebung aus A765 bleibt ohne Preis. |
 | C196 | A793 (Stand A793): Die Hooks von Upstream (AutoAttack, UseAction) berühre der Fork nicht; Fork-Code in den Hooks sei mit den drei Absicherungen geschützt | Der Fork erreicht sie über ihre Aufgerufenen: `UpdateDetour` rief vor seinem `try` `CooldownDelayTweak.StartAdjustment` mit Fork-Grenze (A753), `SetAutoAttackStateDetour` `PlayerHasNoCastingStatus` mit Fork-Code (A439). Behoben als Klasse in A794 (14.11.2026) |
 | C197 | A802 (Stand A802): Die Leveln-Regel sei am 14.11.2026 nicht gelaufen – Einstellung aus oder Build vor c4824c253 | Sie lief im Build 13e4a15d0 und las jeden Rang als 0, weil die Spielfunktion vier Argumente nimmt und ClientStructs zwei deklariert (A803); die Spur „crucible team: requested Chimera 0, Treant 0+, …" zeigt es |
+| C198 | A804 und Konzept 21, „Ziel des Laufs" (Stand A804/A805): Unter Safe win entscheide im Brett jede Handlung, als gäbe es keinen Bonus („die Regel unter Safe win, geschlossen"); Safe win wähle die volle Größe gierig nach Schwächen | Seine Vorgaben vom 14.11.2026 (A806): Die Ziele unterscheiden sich nur im Kader; im Brett gilt unter jedem Ziel „immer sicher, dann die höchste Bonuszahl"; Safe win wählt die niedrigsten, solange das Bestehen sicher ist |

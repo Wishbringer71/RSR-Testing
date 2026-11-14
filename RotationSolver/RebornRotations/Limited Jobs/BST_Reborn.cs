@@ -158,20 +158,19 @@ public sealed class BST_Reborn : BeastmasterRotation
 	// the score bonuses on the board follow. It replaces "Prefer familiars that lag behind in rank" (A579, A796), whose "off"
 	// carries over as Score.
 	[RotationConfig(CombatType.PvE, Name = "Goal of a Crucible run (also the three buttons of the team window)",
-		Tooltip = "Level: every familiar in the team earns experience, on a horn or not. The familiars the board's fights need - "
-			+ "each weakness, healing and protection for the boss, an interrupter where enemies cast interruptibly, the reserve the "
-			+ "measured losses ask for - are themselves the "
-			+ "lowest in true rank at or above the rank the game recommends; one higher only where none lower carries a weakness, "
-			+ "or to fill, one below that rank only where none at it carries the role or weakness. Every other place goes to the familiars lowest in true rank, of every kin, in turns, up to the "
-			+ "board's size. Once none lags behind, as Score. On the board the "
-			+ "score bonuses are weighed as under Score - the experience follows the score.\n"
-			+ "Safe win: the full team for the board's fights; below the recommended rank, or of no known rank, only as many as "
-			+ "the others leave places, the highest first; at equal worth the higher rank. On the board every choice as if there "
-			+ "were no score bonus - items, purchases, a treasure's gear, rests, feeds; between safe ways item spaces and your HP "
-			+ "decide, not points. Only what the final fight's last GCD buys - points, no safety - still weighs the bonuses: "
-			+ "the heals to full HP and damage, TP and buff items.\n"
-			+ "Score: a smaller team and a team of one kin where the measured losses allow it; on the board a bonus stays while "
-			+ "the way to the final fight is safe without the action that would cost it.\n"
+		Tooltip = "The goals differ in the team alone. Every goal first takes two familiars that heal or protect for the boss, while "
+			+ "any is left, and an interrupter where enemies cast interruptibly. A team is endangered when the familiars the "
+			+ "horn choice sends in do not carry the losses measured on this board at their rank with one in reserve.\n"
+			+ "Level: every place to a familiar below the board's cap (its sync rank), the lowest in true rank first, in turns - "
+			+ "every familiar in the team earns experience, on a horn or not. With too few below the cap, the lowest at or above "
+			+ "it fill while the team is endangered (unmeasured counts as endangered); a full team below the cap that is "
+			+ "measured endangered takes the lowest at or above the cap for its weakest. Once none lags behind, as Score.\n"
+			+ "Safe win: the full team, the lowest in true rank, as long as passing is safe; while the team is endangered or "
+			+ "unmeasured, the strongest outside takes the place of its weakest.\n"
+			+ "Score: the strongest, as few as are not endangered (unmeasured: the full team); a team of one kin where it holds "
+			+ "the same and scores more.\n"
+			+ "On the board, under every goal: safe first, then the highest score - an item, purchase, rest or feed that would "
+			+ "cost a bonus goes only where the way is not safe without it.\n"
 			+ "In a fight: a familiar below the recommended rank goes on a horn only when fewer others live than horns.")]
 	private CrucibleGoal CrucibleGoal { get; set; } = CrucibleGoal.Level;
 

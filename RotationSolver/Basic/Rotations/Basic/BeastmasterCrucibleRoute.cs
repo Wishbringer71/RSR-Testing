@@ -209,8 +209,7 @@ public partial class BeastmasterRotation
 
 			// K15 (A689): among safe ways the one with more points, then - while the no-item bonus stands - the one safe without
 			// items, then the one with more spaces with items.
-			// A804: not under Safe win - there points do not decide between safe ways.
-			if (safeA && WeighsScore && a.Points != b.Points)
+			if (safeA && a.Points != b.Points)
 			{
 				return a.Points > b.Points;
 			}
@@ -260,7 +259,7 @@ public partial class BeastmasterRotation
 							+ "the fights up to it can cost more than you hold"
 						: $"{otherName} would bring a final healer to the final fight at ~{other.End.HealerAtFinal:P0}, not full and under one of its losses a use");
 				}
-				else if (WeighsScore && end.Points > other.End.Points)
+				else if (end.Points > other.End.Points)
 				{
 					reasons.Add($"both ways are safe up to {StopName(end.Stop)}; this one scores {end.Points - other.End.Points} more "
 						+ $"points with its fights (enemy space {EnemySpacePoints}, elite space {EliteSpacePoints})");

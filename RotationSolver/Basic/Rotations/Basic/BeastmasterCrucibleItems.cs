@@ -1487,7 +1487,7 @@ public partial class BeastmasterRotation
 			// A712: with an item bonus still standing nothing goes in this last GCD - the fight ends, and the bonus
 			// outweighs the points of full HP, whatever the way test said before. Under every goal (A804): points for
 			// points, no safety in it.
-			if (ItemBonusStands || missing <= 0f)
+			if (ItemBonusAtStake || missing <= 0f)
 			{
 				return -1;
 			}

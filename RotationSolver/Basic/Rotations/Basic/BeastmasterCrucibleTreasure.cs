@@ -180,9 +180,9 @@ public partial class BeastmasterRotation
 
 		_treasureKey = key;
 
-		// K15 (A690; not under the goal Safe win, A804): while no beast gear has come in this run and the player carries the way to the final fight, an offer
+		// K15 (A690): while no beast gear has come in this run and the player carries the way to the final fight, an offer
 		// without gear keeps the bonus Mit leeren Händen (750) - when there is one.
-		if (WeighsScore && owned.Count == 0 && CarriesToFinal(true, out var carried, out var heaviestWay))
+		if (owned.Count == 0 && CarriesToFinal(true, out var carried, out var heaviestWay))
 		{
 			var bare = offers.FindAll(offer => !gear.ContainsKey(offer.Item));
 			if (bare.Count > 0 && bare.Count < offers.Count)

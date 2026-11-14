@@ -24,5 +24,7 @@
   {"id": "team-rank-step-runs", "archive": "A803",
    "kind": "present", "situation": "crucible team: goal ", "match": "crucible team rank [1-9][0-9]? on board "},
   {"id": "level-core-low", "archive": "A805",
-   "kind": "present", "situation": "crucible team: goal Level ", "match": "crucible team: goal Level - requested (.*\\b[6-9] game){3}"}
+   "kind": "present", "situation": "crucible team: goal Level ", "match": "crucible team: goal Level - requested (.*\\b[6-9] game){3}"},
+  {"id": "level-below-cap", "archive": "A806",
+   "kind": "absent", "situation": "crucible team: goal Level ", "match": "crucible team: goal Level - requested .*\\b(1[0-9]|2[0-5])\\+? game"}
 ]

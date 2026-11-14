@@ -334,6 +334,12 @@ public partial class BeastmasterRotation
 	/// K10: every frame with the shop open - the recommendation (when <paramref name="recommend"/>), and the purchases asked
 	/// for with the window's button.
 	/// </summary>
+	// A806: the shop window's layout as ECommons' ReaderXBMContentsItemShop reads it - the stock count at value 2, the rows
+	// from value 3, five values each.
+	private const int ShopStockCountValue = 2;
+	private const int ShopStockFirstValue = 3;
+	private const int ShopStockRowValues = 5;
+
 	internal static unsafe void FollowCrucibleShop(bool recommend)
 	{
 		var shop = (AtkUnitBase*)Svc.GameGui.GetAddonByName("XBMContentsItemShop").Address;
@@ -350,6 +356,16 @@ public partial class BeastmasterRotation
 		}
 
 		CrucibleShopOpen = true;
+
+		// A806 (cause, not symptom): the window shows before the game fills its values; ECommons' reader then throws
+		// (ArgumentOutOfRangeException in AtkReader.EnsureCount, his trace of 14.11.2026, 17:30). Read only once the values
+		// hold the stock count and every row it names - the stock starts at value 3, five values a row.
+		if (shop->AtkValuesCount <= ShopStockCountValue || shop->AtkValues[ShopStockCountValue].Type != FFXIVClientStructs.FFXIV.Component.GUI.AtkValueType.UInt
+			|| shop->AtkValuesCount < ShopStockFirstValue + (shop->AtkValues[ShopStockCountValue].UInt * ShopStockRowValues))
+		{
+			return;
+		}
+
 		var reader = new ReaderXBMContentsItemShop(shop);
 		List<ReaderXBMContentsItemShop.StockEntry> stock;
 		try
@@ -535,11 +551,11 @@ public partial class BeastmasterRotation
 			}
 		}
 
-		// K15 (A690; not under the goal Safe win, A804): while no token has been spent in this run and the player carries the way to the final fight with his HP
+		// K15 (A690): while no token has been spent in this run and the player carries the way to the final fight with his HP
 		// and the healing he holds, only the cover against a status that kills whatever the HP - buying anything else ends the
 		// bonus Geizhals (500) for no danger the loads show.
 		var carries = CarriesToFinal(true, out var carried, out var heaviestWay);
-		var keepSpending = NoSpendBonusStands(boughtRows) && WeighsScore && carries;
+		var keepSpending = NoSpendBonusStands(boughtRows) && carries;
 		var picks = RankOffers(offers, budget, int.MaxValue, owned, gearSlots, heldItems, itemSlots, board, out var spent,
 			deathCoverOnly: keepSpending);
 		if (keepSpending)
@@ -1211,38 +1227,31 @@ public partial class BeastmasterRotation
 
 		// A796 (his rule of 14.11.2026, "entweder sinnvoll nutzen, oder nicht zum kauf vorschlagen"): K8 takes healing,
 		// protection and smoke bombs only below the potion line while an item bonus stands, so they are worth only the part
-		// of the way's demand that would take you below it - what you have above the line comes off first. A804: what K8 and
-		// the route do under the goal - protection only while an item bonus is at stake (without one, lost or under Safe win,
-		// K8 protects against every announced hit); healing while an item bonus is at stake.
-		// A804, seventh review: K8's and the route's own tests, not a model of them. K8 holds healing and protection back
+		// of the way's demand that would take you below it - what you have above the line comes off first. A804, seventh review: K8's and the route's own tests, not a model of them. K8 holds healing and protection back
 		// exactly while KeepsNoItemBonus; without that it protects against every announced hit and drinks every heal in the
 		// final fight that does not overheal (A664) - up to the way's whole demand.
 		var belowLine = Math.Max(0f, healable - (1f - Service.Config.UseHpPotionsPercent));
 		var k8Holds = Player is { } self && KeepsNoItemBonus(self);
 		var guardLine = k8Holds ? belowLine : float.MaxValue;
 		var healLine = k8Holds ? belowLine : healable;
-		// Smoke bombs: under Safe win the route flees between safe ways for HP; elsewhere only where the way with the fight is
-		// not safe (eighth review, A804) - the net demand (A709, CarriesToFinal without the potion line) beyond your HP, the
+		// Smoke bombs: the route flees only where the way with the fight is not safe (eighth review, A804) - the net demand (A709, CarriesToFinal without the potion line) beyond your HP, the
 		// healing held and chosen, and the fights the bombs held already spare; with a fight on the way unmeasured, by the
 		// raw demand the route falls back on.
-		var spareLine = float.MaxValue;
-		if (WeighsScore)
+		_ = CarriesToFinal(true, out var heldShare, out var wayLoad);
+		var spared = 0f;
+		for (var i = 0; i < bombsHeld && i < enemyLoads.Count; i++)
 		{
-			_ = CarriesToFinal(true, out var heldShare, out var wayLoad);
-			var spared = 0f;
-			for (var i = 0; i < bombsHeld && i < enemyLoads.Count; i++)
-			{
-				spared += enemyLoads[i];
-			}
-
-			// The healing chosen in this shop beside what the inventory holds (HealingHeldShare reads only the inventory).
-			var chosenHealing = Math.Max(0f, holding - held) + healedChosen;
-			// With a fight on the way unmeasured the route weighs it by its learned load, else the mean of an enemy fight or
-			// the heaviest (A805 review); the shop's raw demand takes the heaviest - a bomb counts at most a little too much.
-			spareLine = wayLoad is { } wayNeed
-				? Math.Max(0f, wayNeed - Service.Config.UseHpPotionsPercent - heldShare - chosenHealing - spared)
-				: Math.Max(0f, healable - 1f - spared);
+			spared += enemyLoads[i];
 		}
+
+		// The healing chosen in this shop beside what the inventory holds (HealingHeldShare reads only the inventory).
+		var chosenHealing = Math.Max(0f, holding - held) + healedChosen;
+		// With a fight on the way unmeasured the route weighs it by its learned load, else the mean of an enemy fight or
+		// the heaviest (A805 review); the shop's raw demand takes the heaviest - a bomb counts at most a little too much.
+		var spareLine = wayLoad is { } wayNeed
+			? Math.Max(0f, wayNeed - Service.Config.UseHpPotionsPercent - heldShare - chosenHealing - spared)
+			: Math.Max(0f, healable - 1f - spared);
+	
 		foreach (var (row, id, _) in offers)
 		{
 			if (gear.TryGetValue(id, out var piece))
@@ -1978,9 +1987,9 @@ public partial class BeastmasterRotation
 			return;
 		}
 
-		// K15 (A691; not under the goal Safe win, A804): while no familiar has been fed in this run and the run needs no feed, none - feeding ends the bonus
+		// K15 (A691): while no familiar has been fed in this run and the run needs no feed, none - feeding ends the bonus
 		// Heilfasten (750).
-		if (WeighsScore && NoFeedBonusStands && NeedsNoRestOrFeed(false, out var unfed))
+		if (NoFeedBonusStands && NeedsNoRestOrFeed(false, out var unfed))
 		{
 			CrucibleFeedRecommendation = picks;
 			CrucibleFeedNote = $"No feed recommended - {unfed}; feeding ends the bonus Heilfasten (750 points).";

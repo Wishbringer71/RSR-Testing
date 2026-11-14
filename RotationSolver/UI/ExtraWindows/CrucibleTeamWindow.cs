@@ -24,9 +24,9 @@ internal sealed class CrucibleTeamWindow : RecommendationWindow
 	// A804: the goals of a run, in the order of CrucibleGoal.
 	private static readonly M3Segment[] Goals =
 	[
-		new("Level", Tooltip: "Familiars that lag behind in rank fill the team; once none does, as Score."),
-		new("Safe win", Tooltip: "The full team, below the recommended rank only to fill it; on the board every choice as if there were no score bonus - items, purchases, treasures, rests, feeds, the way - but what the final fight's last GCD buys only points."),
-		new("Score", Tooltip: "A smaller team and a team of one kin where the measured losses allow it; bonuses kept while the way is safe without."),
+		new("Level", Tooltip: "Every place below the board's cap, the lowest first; above it only while the team is endangered."),
+		new("Safe win", Tooltip: "The full team, the lowest as long as passing is safe; stronger ones while it is endangered or unmeasured."),
+		new("Score", Tooltip: "The strongest, as few as are not endangered; a team of one kin where it scores more."),
 	];
 
 	protected override void DrawContent()

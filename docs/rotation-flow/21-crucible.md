@@ -382,8 +382,9 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     `XBMPetParamGrow` führt nur Konstitution) – mindestens die LP fasst, die die Begleiter auf diesem Brett in einem Lauf je verloren haben (gelernt
     je Brett, der schwerste Lauf, Datei `CrucibleFamiliarLoss.json`). Ohne gemessenen Lauf auf dem Brett bleibt die volle
     Größe (sichere Seite). Unter dem Ziel „Level" füllen Nachzügler die Plätze über den Kämpfern, solange es sie gibt
-    (K7, „Leveln", A796); die Stufe gilt dann, wo die Größe sie trifft. Unter „Safe win" bleibt die volle Größe (K7,
-    „Ziel des Laufs", A804). Das Fenster nennt Größe, Bonus und den Vergleich; übernehmen bleibst du (C).
+    (K7, „Leveln", A796); die Stufe gilt dann, wo die Größe sie trifft. Seit A806 wählt „Score" die Größe selbst: die
+    kleinste Zahl der stärksten Begleiter, die nicht gefährdet ist (K7, „Ziel des Laufs") – diese Stufenrechnung (A698)
+    ist damit abgelöst. Das Fenster nennt Größe, Bonus und den Vergleich; übernehmen bleibst du (C).
     *Gegenthese 1 – Der Verlust wächst mit weniger Begleitern:* Die Gegner teilen denselben Schaden aus, gleich wie viele
     Begleiter ihn tragen; mehr Einsätze je Begleiter verteilen ihn nur anders. Ein Begleiter, der fällt, fehlt danach;
     deshalb zählt der Vorrat einen weniger: Fällt einer, fassen die übrigen den schwersten gemessenen Verlust noch.
@@ -408,7 +409,8 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     trifft, mindestens so viele Heiler und Schützer hält, wie das gemischte für den Boss braucht, und den Unterbrecher,
     wo das Brett einen verlangt und das gemischte einen hält (nur Seelen-Begleiter unterbrechen, K4). Dann ist es so sicher wie das gemischte und
     bringt 750 Punkte mehr, dazu die Punkte seiner Größe; unter mehreren das mit den meisten Punkten. Unter dem Ziel
-    „Level" gilt es erst, wenn kein Begleiter mehr zurückliegt; unter „Safe win" nie (K7, „Ziel des Laufs", A804). *Im Kampf:* Wo
+    „Level" gilt es erst, wenn kein Begleiter mehr zurückliegt; unter „Safe win" nie (K7, „Ziel des Laufs", A806); seine
+    Größe wählt es wie „Score": die wenigsten stärksten dieser Gattung, die nicht gefährdet sind. *Im Kampf:* Wo
     eine Gattung die Schwächen nicht trägt, ändert sich nichts. *Gegenthese:* Gleiche Abdeckung heißt nicht gleicher
     Schaden – ein Begleiter, der eine Schwäche nur schwach trifft, verlängert den Kampf. Die Hornwahl wägt im Kampf nach
     gemessenem Schaden (K16); die Kaderwahl hat diese Messung je Begleiter erst nach einem Lauf. *Preis:* Ein Kampf
@@ -624,15 +626,14 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     (siebte Prüfrunde, A804). Heil- und Schutzgegenstände: solange K8 sie für einen Bonus zurückhält
     (`KeepsNoItemBonus` – ein Gegenstandsbonus steht auf dem Spiel, und der Weg ist ohne sie getragen), nur den Teil, der
     dich unter deine Trankschwelle („Use HP potions below this HP") brächte – über ihr nimmt K8 sie dann nicht. Sonst –
-    Bonus verwirkt, Weg nicht getragen oder ungemessen, oder unter dem Ziel „Safe win" – nimmt K8 Schutz gegen jeden
-    angekündigten Treffer (er zählt voll) und trinkt im Endkampf jede Heilung, die nicht überheilt (A664; sie zählt bis
-    zum ganzen Bedarf des Wegs). Rauchbomben setzt der Weg ein: unter Safe win zwischen sicheren Wegen für LP (sie zählen
-    voll), unter Level und Score nur, wo der Kampfweg unsicher ist – sie zählen den Teil des Netto-Bedarfs des Wegs
+    Bonus verwirkt, Weg nicht getragen oder ungemessen – nimmt K8 Schutz gegen jeden angekündigten Treffer (er zählt voll)
+    und trinkt im Endkampf jede Heilung, die nicht überheilt (A664; sie zählt bis zum ganzen Bedarf des Wegs).
+    Rauchbomben setzt der Weg ein, nur wo der Kampfweg unsicher ist – sie zählen den Teil des Netto-Bedarfs des Wegs
     (`CarriesToFinal`, A709), der über deine LP, die gehaltene und schon gewählte Heilung und die Kämpfe hinausgeht, die
     gehaltene Bomben schon ersparen; ist ein Kampf ungemessen, nach dem rohen Bedarf mit der schwersten Last (der Weg
     setzt einen gewöhnlichen Kampf dann mit dem Mittel an – die Bombe zählt höchstens etwas zu viel; Prüfung A805). *Preis:* Die Rast am Lager und die Wahl des besseren Wegs an einer Gabelung rechnet der
     Wegtest des Ladens nicht ein (er nimmt den schwersten Weg ohne Rast), der Weg selbst schon – vor einem Lager oder
-    einer Gabelung zählt eine Bombe unter Level und Score höchstens zu viel. Was du über der Schwelle hast, zieht RSR vom Bedarf ab: max(0, Bedarf − (deine LP jetzt − Schwelle) − gehaltene
+    einer Gabelung zählt eine Bombe höchstens zu viel. Das gilt unter jedem Ziel des Laufs (A806). Was du über der Schwelle hast, zieht RSR vom Bedarf ab: max(0, Bedarf − (deine LP jetzt − Schwelle) − gehaltene
     Heilung). Ausrüstung wirkt ohne Zutun und bleibt auf der Skala wie bisher; damit geht bleibende Ausrüstung vor
     Verbrauchsmitteln, wo der Weg dich nicht unter die Schwelle bringt. *Im Kampf (14.11.2026, Brett 2, erster Laden):*
     Ein Kampf kostete dich 4 %, sieben lagen vor dir; RSR empfahl Bestien-Heiltrank II, Bestien-Pulver II und ein Grimoire,
@@ -945,9 +946,10 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     Last ist die pessimistische Schätzung; ein Lauf, der sie trägt, ist mit hoher Wahrscheinlichkeit sicher. Wo ein
     Kampf auf dem Weg nie gemessen wurde, ist die Sicherheit unbekannt, und die Handlung geht wie bisher (sichere Seite).
     Das ist seine Spielweise auf die Punkte übertragen: Schutz, wo der Schaden wahrscheinlich ist, kein Schutz, der
-    ohne Gefahr Punkte kostet. Unter dem Ziel „Safe win" (K7, „Ziel des Laufs", A804) entscheidet jede Handlung, als gäbe
-    es keinen Bonus – außer einer, die keine Sicherheit bringen kann, weil der Endkampf vor dem nächsten GCD endet: Sie
-    wiegt Punkte gegen Punkte unter jedem Ziel.
+    ohne Gefahr Punkte kostet. Das gilt unter jedem Ziel des Laufs (seine Vorgabe vom 14.11.2026, A806: „alle anderen
+    regeln zum kauf, equipment, verbrauchsgegenständenutzung richten sich danach immer sicher zu sein und die
+    hochmöglichste bonuszahl zu bekommen"); was im letzten GCD des Endkampfs keine Sicherheit mehr bringen kann, wiegt
+    nur Punkte gegen Punkte.
   - *Woran ein leichtes Brett feststeht (A705, A706, A709; sein Auftrag vom 11.11.2026: „sobald feststeht, dass das
     aktuelle brett einfach zu lösen ist, können weniger begleiter mitgenommen werden, kann auf essen verzichtet werden,
     kann auf campen verzichtet werden"):* An dem, was er auf dem Weg wirklich verliert, Kampf für Kampf, ohne die Mittel,
@@ -1053,8 +1055,8 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
       Verluste", 1.000). Teilweise widerlegt: Fällt einer, verliert der Lauf diesen Bonus, nicht den Sieg; Preis
       benannt. Ein gefallener Begleiter kommt mit dem Horn der Rückkehr zurück.
   - *Weg (gebaut A689):* Unter sicheren Wegen der mit mehr Punkten – Gegnerfeld 250, Elitefeld 800 –, dann der, der bei erhaltenem
-    Bonus ohne Gegenstände sicher ist, dann wie bisher mehr Felder mit Gegenständen, mehr LP. Unter dem Ziel „Safe win"
-    (A804) zählen weder Punkte noch Bonus: mehr Felder mit Gegenständen, dann mehr LP. Ein Lager auf dem Weg
+    Bonus ohne Gegenstände sicher ist, dann wie bisher mehr Felder mit Gegenständen, mehr LP – unter jedem Ziel (A806).
+    Ein Lager auf dem Weg
     kostet nur, wenn gerastet wird.
   - *Woher RSR weiß, was erhalten ist:* je Lauf (`CrucibleBoard.Run`) aus dem, was es sieht – Gegenstände im
     Crucible-Inventar weniger geworden (benutzt, von RSR oder von Hand; auch weggeworfen, dann gibt RSR den Bonus auf,
@@ -2153,39 +2155,37 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
   Leveln tauschte nur eins gegen eins und nur, wo der Ersatz jede Schwäche trifft, die im Kader nur der Ersetzte trifft;
   mit dem aufgeblähten Kern trug fast jeder Gewählte eine solche. Am 11. und 14.11.2026 stand viermal derselbe Kader
   ohne einen Tausch in der Spur, Begleiter auf Rang 6 bis 8 blieben auf Brett 2 zu Hause.
-  *Regel:* Der Kader hat zwei Teile.
-  - *Kämpfer:* der Kern (jeder, der eine Schwäche neu abdeckt, die Heiler und Schützer, die B5 vor dem Boss verlangt,
-    der Unterbrecher) und die Reserve. *Der Kern aus Nachzüglern (A805; sein Hinweis und seine Vorgabe vom 14.11.2026:
-    „ich habe das brett auch mit lvl6er begleitern am anfang geschafft. also sind zum leveln keine level 10er mehr
-    notwendig, ausser zum auffüllen, falls reserve benötigt wird"):* Solange ein Begleiter zurückliegt, wählt RSR auch
-    den Kern nach Rang: zuerst die Heiler und Schützer, die B5 verlangt (solange einer verfügbar ist), und der
-    Unterbrecher, dann je Schritt wer eine
-    Schwäche neu abdeckt; darunter jeweils einer ab dem empfohlenen Rang des Bretts vor einem darunter, dann der
-    rangniedrigste, erst bei gleichem Rang der mit dem höheren Schwächenwert. Begleiter über dem Synchronrang kommen so
-    nur, wo kein Nachzügler darunter eine Schwäche trägt, und zum Auffüllen; einer unter dem empfohlenen Rang trägt eine
-    Rolle oder Schwäche nur, wo keiner ab ihm sie trägt (unabhängige Prüfung A805: ein Filter hätte bei zu wenigen ab dem
-    empfohlenen Rang den Kern ohne Heiler gelassen). *Im Kampf (sein Bild vom 14.11.2026, Brett 2):* Der Kern waren zehn Begleiter ab Rang 10 – die
-    gierige Wahl nahm bei gleichem Wert die über dem Synchronrang zuerst –, und nur Salamander und Worm (Rang 6) kamen
-    auf die zwei Reserveplätze, obwohl 42 Begleiter zurücklagen. *Gegenthese (schwächer):* Rang 6 auf Brett 2 ist die
-    Empfehlung des Spiels, und er hat das Brett damit geschafft (Hinweis); die Hornwahl (K6) setzt je Kampf die
-    stärksten ein, die gemessenen Verluste bestimmen die Reserve. *Preis:* längere Kämpfe mit schwächeren Begleitern,
-    solange die Messung der Verluste nach Rangstufe (A729) noch nichts kennt; bis dahin fallen auch die Lasten des
-    Spielers je Kampf auf die schwersten aller Läufe zurück, gemessen mit stärkeren Kadern – Bonuswahl (K15) und Wegtest
-    rechnen in den ersten Läufen auf der neuen Stufe zu günstig; die Heilung unter der Trankschwelle (K8) bleibt. Die Reserve reicht bis zu der Zahl, die die gemessenen Verluste dieses Bretts mit einem Begleiter in
-    Reserve trägt (A703, je Größe gerechnet, nicht nur auf den Stufen von In Unterzahl); ohne Messung die volle Größe.
-    Auf den Reserveplätzen gehen *Nachzügler* vor, die adäquat ersetzen – echter Rang unter 25, mindestens der
-    empfohlene Rang des Bretts –, aus jeder Gattung, der niedrigste zuerst; danach die gierige
-    Wahl (seine Vorgabe vom 14.11.2026: „am besten alle reihum bis zum höchstlevel aufsteigen lassen"). Unter gleichem
-    Rang gehen die vor, die nicht im Kader des letzten Laufs standen – so kommen sie reihum. Eine Schwäche geht auf
-    diesen Plätzen nicht verloren: Der Kern trifft jede, die ein Begleiter treffen kann.
-  - *Lernende:* Die übrigen Plätze bis zur Größe des Bretts bekommen die übrigen Nachzügler, auch unter dem empfohlenen
-    Rang, der niedrigste zuerst. Sie kämpfen nur, wenn weniger andere leben als Hörner da sind (K6, unverändert).
-  Der Kader ist so groß wie Kämpfer plus Lernende; gibt es keine Nachzügler mehr, bleibt er bei den Kämpfern und bringt
-  In Unterzahl, wo seine Größe eine Stufe trifft. *Größe gegen Punkte (Schluss, unbelegt):* Ein Lernender mehr kostet
-  höchstens eine Stufe In Unterzahl (1.250 bis 4.250 Punkte), die EP aller Begleiter folgen der Punktzahl. Bei rund 15.000
-  Punkten bringt ein Begleiter mehr bei sieben (1/7 = 14 %) mehr als die Stufe (1.250/15.000 = 8 %), bei fünf (20 % gegen
-  17 %) und drei (33 % gegen 28 %) ebenso; erst unter rund 12.500 Punkten bei fünf gewinnt die Stufe. Darum füllen
-  Nachzügler, solange es sie gibt (seine Wertung: „viele begleiter mitnehmen lohnt für das leveln").
+  *Regel (seine Vorgabe vom 14.11.2026, A806; sie fasst A579, A796 und A805 zusammen):* „beim leveln werden alle plätze
+  mit begleitern unter dem levelcap aufgefüllt. wenn nicht genug begleiter unter levelcap existieren, wird geprüft, ob
+  das erfolgreiche bestehen des brettes gefährdet ist, dann mit den niedrigsten begleitern über cap auffüllen, bis keine
+  gefährdung mehr"; dazu „bei leveln haben die niedrigsten begleiter vorrang, ausser wichtige gründe sprechen dagegen.
+  wichtig sind sie nur, wenn sonst das erfolgreiche bewältigen des brettes in frage gestellt ist" und „also die summe
+  aller niedrigen begleiter". Der Levelcap ist der Synchronrang des Bretts.
+  - *Unter dem Cap zuerst:* Jeder Platz bis zur Größe des Bretts geht an einen Begleiter mit echtem Rang unter dem Cap –
+    zuerst die Heiler und Schützer, die B5 vor dem Boss verlangt (solange einer verfügbar ist), und der Unterbrecher, wo
+    Gegner unterbrechbar zaubern; dann der rangniedrigste; bei gleichem Rang, wer eine Schwäche neu abdeckt, dann der
+    höhere Schwächenwert, dann wer nicht im Kader des letzten Laufs stand (so kommen sie reihum). Eine Schwäche ist kein
+    wichtiger Grund: Wie viel mehr Schaden sie bringt, nennt keine Quelle, und er schaffte Brett 2 mit Rang 6.
+  - *Gefährdung, gemessen an der Summe:* Ob das Brett gefährdet ist, misst die Summe des Kaders: Trägt er die gemessenen
+    Verluste der Begleiter auf diesem Brett und seiner Rangstufe mit einem in Reserve (`CarriesLosses`, A703, A729)? Es
+    zählen nur die Begleiter, die die Hornwahl einsetzt – ab dem empfohlenen Rang; einer darunter kämpft nur, wenn weniger
+    andere leben als Hörner da sind (K6). Ohne Messung gilt der Kader als gefährdet (sichere Seite).
+  - *Über dem Cap nur gegen Gefährdung:* Gibt es weniger Begleiter unter dem Cap als Plätze, füllt RSR mit den
+    rangniedrigsten am oder über dem Cap auf, einen nach dem anderen, bis der Kader nicht mehr gefährdet ist; die übrigen
+    Plätze bleiben leer (sie bringen In Unterzahl, wo die Größe eine Stufe trifft). Ist auch ein voller Kader unter dem Cap
+    gefährdet, tritt der rangniedrigste am oder über dem Cap an die Stelle des schwächsten, der weder heilt noch schützt
+    noch unterbricht, bis er es nicht mehr ist.
+  *Im Kampf (sein Bild vom 14.11.2026, Brett 2, Build vor A805):* zehn Begleiter ab Rang 10 im Kern, Salamander und Worm
+  (Rang 6) auf den zwei übrigen Plätzen, obwohl 42 zurücklagen; er wählte danach selbst zwölf niedrige und schaffte das
+  Brett (die Abrechnung hob sie auf Rang 8). *Gegenthese (schwächer im Kampf):* durch seinen Lauf widerlegt; die
+  Hornwahl (K6) setzt je Kampf die stärksten ein. *Preis:* längere Kämpfe, und bis zur ersten Messung auf der neuen
+  Rangstufe fallen die Lasten des Spielers je Kampf auf die schwersten aller Läufe zurück, gemessen mit stärkeren Kadern –
+  Bonuswahl (K15) und Wegtest rechnen dann zu günstig; die Heilung unter der Trankschwelle (K8) bleibt.
+  Gibt es keinen Begleiter unter 25 mehr, gilt die Größe nach Punkten (Score). *Größe gegen Punkte (Schluss, unbelegt):*
+  Ein Begleiter mehr kostet höchstens eine Stufe In Unterzahl (1.250 bis 4.250 Punkte), die EP aller Begleiter folgen der
+  Punktzahl; bei rund 15.000 Punkten bringt ein Begleiter mehr bei sieben (1/7 = 14 %) mehr als die Stufe (8 %), bei
+  fünf und drei ebenso – darum füllen Begleiter unter dem Cap jeden Platz (seine Wertung: „viele begleiter mitnehmen
+  lohnt für das leveln").
   *Einstellung:* das Ziel des Laufs „Level" (unten), ab Werk. Die anderen Ziele bilden den Kader ohne Nachzügler.
   *Gegenthese 1 (schwächer im Kampf):* Ein Nachzügler auf einem Reserveplatz hat weniger Werte als der Begleiter, den die
   gierige Wahl dort hätte. Teilweise widerlegt: Er steht mindestens auf der Empfehlung des Spiels, die Schwächen trägt der
@@ -2219,64 +2219,65 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
   („crucible team: requested Chimera 0, Treant 0+, …") und fand keinen Nachzügler. Das Fenster nennt den Zustand
   selbst (A802); die Spur nennt je Begleiter Rang, Quelle und Rolle („crucible team: requested Puk 14 game, … Lamb 6
   game levels").
-- *Ziel des Laufs (sein Vorschlag vom 14.11.2026, A804):* „bei der begleiterauswahl am anfang des brettes wären optionen
-  wie: leveln, sicherer sieg und bonusmaximierung evtl. sinnvoll. einen von drei buttons auswählen, und
-  begleiterauswahl basiert darauf, und die strategie innerhalb des brettes genauso." Geprüft im Loop, umgesetzt.
-  *Regel:* Das Kaderfenster trägt drei Knöpfe, „Level", „Safe win" und „Score"; der gewählte ist hervorgehoben und
-  bleibt gespeichert (Einstellung „Goal of a Crucible run (also the three buttons of the team window)", ab Werk „Level"). Kader und Verhalten im Brett folgen ihm:
-  | Ziel | Kader (K7) | Im Brett (K15 und was daran hängt) |
-  |---|---|---|
-  | Level | Kämpfer (auch der Kern aus den rangniedrigsten ab dem empfohlenen Rang, A805) und Lernende aus allen Gattungen (oben); ohne Nachzügler wie „Score" (seine Vorgabe vom 14.11.2026, „Nach dem Höchstrang") | Boni gewogen wie unter „Score": Die Begleiter-EP folgen der Punktzahl |
-  | Safe win | volle Größe, gierig nach Schwächen; unter dem empfohlenen Rang (oder ohne bekannten Rang, solange überhaupt einer bekannt ist) nur so viele, wie zum Füllen fehlen, die ranghöchsten; keine Verkleinerung, keine Gattung, keine Lernenden | jede Entscheidung, als gäbe es keinen Bonus – Gegenstände, Kauf, Schatz, Rast, Futter wie ohne K15 (K8, K10, K13), unter sicheren Wegen mehr Gegenstandsfelder, dann LP, nicht Punkte; nur was der letzte GCD des Endkampfs kauft, wiegt Punkte (unten) |
-  | Score | Größe nach Punkten (A698) und Gattung (A699), keine Lernenden | K15 wie gebaut: ein Bonus bleibt, solange der Weg ohne die Handlung sicher ist |
-  *Die Regel unter Safe win, geschlossen (nach vier Prüfrunden, A804):* Jede Entscheidung fällt, als gäbe es keinen
-  Punktebonus – Kader, Gegenstände, Laden, Schatz, Rast, Futter, Weg. Ausgenommen ist nur, was keine Sicherheit bringen
-  kann, weil der Endkampf vor dem nächsten GCD endet (`FinalFightEndsNow`): Das wiegt Punkte gegen Punkte unter jedem
-  Ziel – die Heilung auf volle LP (A712), die für „Unversehrte Bestien" (A695) und Schadens-, TP- und
-  Stärkungsgegenstände, solange ein Gegenstandsbonus steht. Vorher kürzen diese den Kampf und sparen Last (A676); sie
-  gehen. Der Laden folgt dem, was K8 und der Weg unter dem Ziel tun: Heilgegenstände zählen, solange ein
-  Gegenstandsbonus auf dem Spiel steht, nur unter der Trankschwelle (K8 heilt nur dort), sonst bis zum ganzen Bedarf
-  des Wegs (im Endkampf trinkt K8 jede Heilung, die nicht überheilt, A664); Schutzgegenstände voll, sobald kein
-  Gegenstandsbonus auf dem Spiel steht (K8 schützt dann gegen jeden angekündigten Treffer); Rauchbomben voll nur unter
-  Safe win (nur dort flieht der Weg unter sicheren Wegen für LP), unter Level und Score nur mit dem Teil des Bedarfs,
-  der über LP und gehaltene Heilung hinausgeht (dort flieht der Weg nur, wo der Kampfweg unsicher ist). Die Wahl gilt ab dem Klick,
-  auch mitten im Lauf über die Einstellung, und für alle folgenden Läufe; ein schon verlorener Bonus bleibt verloren. Die
-  Spur nennt das Ziel mit dem angeforderten Kader („crucible team: goal Level - requested …"). Unter Level gilt das Team
-  einer Gattung (A699) erst, wenn kein Begleiter mehr zurückliegt – auch keiner im Kern: Vorher schlösse es Nachzügler
-  anderer Gattungen aus (seine Vorgabe: „alle reihum").
-  *Warum eine Wahl und kein Optimum (Nachweis, dass jede Lösung einen Preis hat, den keine Konstruktion beseitigt):*
-  (1) Level gegen Score: Die Plätze des Kaders sind dieselben. In Unterzahl bringt 1.250 bis 4.250 Punkte nur mit
-  höchstens sieben Begleitern; jeder Begleiter mehr im Kader bekommt EP (sein Hinweis), höchstens 255 je Brett
-  (CrucibleSux, Werkzeugquelle). Mehr Punkte heben die EP jedes Mitgenommenen nur bis zu dieser Grenze; Reste (die
-  Belohnung) folgen der Punktzahl ohne Grenze (consolegameswiki). Wer zwölf Begleiter auf 25 bringen will, braucht die
-  Plätze; wer Reste will, die Stufe. Beides zugleich gibt kein Kader her. (2) Safe win gegen Score: K15 hält einen Bonus
-  nur, solange der Spieler den Weg mit der schwersten *gelernten* Last trägt; eine schwerere ungesehene Last – neuer
-  Grad, wenige Läufe auf dem Brett, andere Begleiter – fängt erst die Heilung unter der Trankschwelle. Diese
-  Restgefahr gegen 500 bis 1.000 Punkte je Bonus zu tauschen, ist die Abwägung, die er Spielern überlässt (seine
-  Präzisierung vom 03.11.2026: „andere Spieler können anders entscheiden") – die Wahl wird eine Option mit seiner
-  Regel als Voreinstellung.
-  *Optionen:* (0) Nullvariante: eine Automatik – Level, solange ein Begleiter zurückliegt, danach Score (sein Wunsch
-  vom 14.11.2026). Sie bleibt als Verhalten von „Level". (1) Drei Knöpfe im Kaderfenster, gespeichert (gewählt). (2)
-  Je Teilregel ein Schalter (Leveln, Größe, Gattung, je Bonus) – Stellungen, die einander widersprechen können
-  (Lernende auffüllen und zugleich auf In Unterzahl verkleinern). (3) Das Ziel aus der Messlage ableiten (unbekannte
-  Last → Safe win) – das tut K15 schon je Entscheidung (unbekannt ist die sichere Seite) und ersetzt die Vorliebe nicht.
-  (4) Zwei Achsen getrennt – Kader (Leveln, Punkte, Stärke) und Gewichtung der Boni (ja, nein): sechs Stellungen statt
-  drei. *Nicht angeboten,* mit Preis: Wer levelt und die Boni nicht gewichten will, hat keine Stellung; er wählt Level
-  (gewichtet) oder Safe win (ohne Nachzügler). Unter Level dient die Gewichtung dem Ziel selbst, solange die EP unter
-  ihrer Grenze liegen (Brett 2: 121 von 255 je Begleiter, A799) – mehr Punkte heißen dort mehr EP; darüber ist das
-  unbelegt. Die Gewichtung hält Boni nur, solange der Weg mit der schwersten gelernten Last sicher ist (K15); die Lücke
-  ist die Restgefahr einer ungesehenen Last in einem Lauf zum Leveln. Wünscht er die Stellung, ist sie ein Schalter mehr.
-  *SWOT (1):* Stärke – eine Entscheidung an der Stelle, an der der Kader entsteht, und alle Teilregeln folgen ihr
-  widerspruchsfrei. Schwäche – ein vergessener Knopf gilt im nächsten Lauf weiter; das Fenster zeigt das Ziel bei jedem
-  Öffnen. Chance – ein neuer Grad oder ein ungemessenes Brett: Safe win spart die Rast nicht und verliert den Lauf
-  seltener. Bedrohung – Safe win kostet bis zu 4.750 Punkte aus Gegenstand, zehn Gegenständen, Kauf, Schatz, Rast und
-  Futter, dazu In Unterzahl; die EP aller Begleiter sinken mit (in jedem Lauf unter Safe win; Preis benannt).
-  *Gegenthese 1 (kein Bedarf, K15 ist schon sicher):* widerlegt für eine ungesehene Last, oben (2). *Gegenthese 2
-  (Option falsch – Leveln und Punkte widersprechen sich nicht, weil EP den Punkten folgen):* widerlegt durch die
-  Grenze von 255 je Begleiter und Brett und die Plätze, oben (1). *Gegenthese 3 (ausgeliefert, und nichts ändert
-  sich):* Er klickt keinen Knopf – dann gilt Level wie bisher; der Rang wird falsch gelesen – dann findet Level keinen
-  Nachzügler, die Spur nennt je Begleiter Rang und Quelle (A803). Er sieht im Kaderfenster das Ziel und je Begleiter,
-  ob er levelt.
+- *Ziel des Laufs (A804, neu gefasst A806):* Das Kaderfenster trägt drei Knöpfe, „Level", „Safe win" und „Score"; der
+  gewählte ist hervorgehoben und bleibt gespeichert (Einstellung „Goal of a Crucible run (also the three buttons of the
+  team window)", ab Werk „Level", eine alte „Prefer familiars that lag behind" aus wird „Score"). Die Ziele unterscheiden
+  sich **nur im Kader**; im Brett gilt unter jedem dieselbe Regel.
+  *Anforderungen (seine Worte vom 14.11.2026 → prüfbares Kriterium → Stelle → Messweg):*
+  | # | Seine Angabe | Kriterium | Stelle | Messweg |
+  |---|---|---|---|---|
+  | Z1 | „einen von drei buttons auswählen, und begleiterauswahl basiert darauf" (Vorschlag) | drei Ziele im Kaderfenster | `CrucibleTeamWindow`, `CrucibleGoal` | Spur „crucible team: goal …" |
+  | Z2 | „beim leveln werden alle plätze mit begleitern unter dem levelcap aufgefüllt" | unter Level jeder Platz an einen Begleiter mit echtem Rang unter dem Synchronrang, solange es sie gibt | `LevelTeam` | Spur: Rang und „levels" je Begleiter |
+  | Z3 | „wenn nicht genug … unter levelcap …, wird geprüft, ob das erfolgreiche bestehen des brettes gefährdet ist, dann mit den niedrigsten begleitern über cap auffüllen, bis keine gefährdung mehr" | fehlen Begleiter unter dem Cap, füllen die rangniedrigsten am oder über dem Cap nur, solange der Kader gefährdet ist | `LevelTeam`, `TeamEndangered` | Fensterhinweis „… at or above it against danger" |
+  | Z4 | „die niedrigsten begleiter vorrang, ausser wichtige gründe … nur, wenn sonst das erfolgreiche bewältigen des brettes in frage gestellt ist"; „also die summe aller niedrigen begleiter" | einziger Grund gegen einen niedrigen ist die Gefährdung, gemessen am ganzen Kader | `TeamEndangered` | wie Z3 |
+  | Z5 | „bei der auswahl sicheres bestehen, werden auch immer die niedrigsten begleiter ausgewählt, solange das bestehen sicher ist" | Safe win: volle Größe, die rangniedrigsten; ein stärkerer nur, solange der Kader nicht nachweislich sicher ist | `RecommendCrucibleTeam` (Safe win) | Fensterhinweis „{n} stronger in place of low ones" |
+  | Z6 | „beim ziel maximalen bonus werden die besten begleiter ausgewählt, so dass am wenigsten begleiter genommen werden müssen, um das brett zu bestehen" | Score: die stärksten, die kleinste Zahl, die nicht gefährdet ist | `FewestStrong` | Fensterhinweis „Score: the {n} strongest …" |
+  | Z7 | „alle anderen regeln zum kauf, equipment, verbrauchsgegenständenutzung richten sich danach immer sicher zu sein und die hochmöglichste bonuszahl zu bekommen" | im Brett unter jedem Ziel K15 (sicher, dann Bonus) | K8, K10, K13, K15 | Spur „crucible score: …" |
+  | Z8 | „du hast zu schauen, wie und ob safe win regeln in den anderen aufgehen können" | keine Regel nur für ein Ziel, wo eine gemeinsame trägt | dieser Abschnitt, „Was aufging" | – |
+  | Z9 | vorher: „reihum", „nie soweit reduzieren, dass große gefahr besteht … oder dass diese durch essen gebufft werden müssen" | unter gleichem Rang zuerst, wer im letzten Lauf fehlte; keine Größe, die gefährdet ist | `ChooseTeam`, `LastRunTeam` | Spur der angeforderten Kader |
+  *Grundlagen (belegt):* Der Levelcap ist der Synchronrang des Bretts (`XBMContent`, Spalte 36: 5, 10, 15, 20, 25); wer
+  darüber steht, kämpft mit ihm, wer darunter steht, mit dem eigenen. Jeder Begleiter im Kader bekommt Erfahrung, mit
+  oder ohne Horn (sein Hinweis), höchstens 255 je Brett, der Punktzahl folgend (Wiki, CrucibleSux). Die Hornwahl (K6)
+  setzt einen Begleiter unter dem empfohlenen Rang nur ein, wenn weniger andere leben als Hörner da sind. Vor dem Boss
+  verlangt B5 zwei, die heilen oder schützen; wo Gegner unterbrechbar zaubern, verlangt K4 einen Seelen-Begleiter. Der
+  echte Rang kommt aus dem Spiel (A803) und der Abrechnung (A799). Die Verluste der Begleiter sind je Brett und Rangstufe
+  gelernt (A703, A729), die des Spielers je Kampf und Rangstufe (A706, A729).
+  *Bauart – eine Gefährdungsprüfung, je Ziel eine Reihenfolge und ein Auffüllen:* *Gefährdet* ist ein Kader, wenn die
+  Begleiter, die die Hornwahl einsetzt (über dem Cap oder mindestens auf dem empfohlenen Rang), die gemessenen Verluste
+  dieses Bretts auf ihrer Rangstufe mit einem in Reserve nicht tragen (`CarriesLosses`, A703); ohne Messung ist die
+  Gefährdung unbekannt (`TeamEndangered` null). Die Reihenfolge beginnt unter jedem Ziel mit den Rollen (zwei, die heilen
+  oder schützen, solange einer verfügbar ist; der Unterbrecher, wo das Brett ihn verlangt) – sie tragen die Sicherheit
+  vor dem Boss und sind deshalb kein „niedriger Begleiter, der weichen kann".
+  | Ziel | Reihenfolge nach den Rollen | Auffüllen | Unbekannte Gefährdung |
+  |---|---|---|---|
+  | Level | unter dem Cap zuerst, dann der niedrigste Rang; bei gleichem Rang wer eine Schwäche neu abdeckt, dann der Schwächenwert, dann wer im letzten Lauf fehlte | jeder Platz unter dem Cap; fehlen welche, die niedrigsten am oder über dem Cap, bis nicht gefährdet; ist auch ein voller Kader unter dem Cap gefährdet, tritt der niedrigste am oder über dem Cap an die Stelle des schwächsten, der weder heilt, schützt noch unterbricht | als gefährdet beim Auffüllen (volle Größe); kein Tausch eines Kaders unter dem Cap (Z2) |
+  | Safe win | der niedrigste Rang insgesamt, dann wie Level | volle Größe; solange gefährdet, tritt der stärkste außerhalb an die Stelle des schwächsten, der weder heilt, schützt noch unterbricht | als gefährdet: getauscht, bis kein stärkerer mehr da ist |
+  | Score | der stärkste nach dem Rang, mit dem er kämpft; bei gleichem wer eine Schwäche neu abdeckt, dann der Schwächenwert | die kleinste Zahl ab dem Kern (Rollen und jede Schwäche), die nicht gefährdet ist; dann ein Team einer Gattung, wo es mehr Punkte bringt und dieselben Schwächen, Rollen und Größenregel hält | volle Größe |
+  Ohne Begleiter unter Rang 25 wählt Level wie Score (seine Vorgabe: danach „weniger, so dass punktezahl erhöht werden
+  kann").
+  *Was aufging (Z8):* Im Brett hatte A804 für Safe win eine eigene Regel („jede Entscheidung, als gäbe es keinen Bonus");
+  sie entfällt, denn Z7 verlangt unter jedem Ziel „sicher, dann Bonus", und K15 hält einen Bonus nur, solange der Weg
+  ohne die Handlung sicher ist. Was die Prüfrunden zu ihr fanden, gilt jetzt für alle Ziele: der Laden fragt die
+  Prüfungen von K8 und Weg statt eines Modells (K10, „Nur was K8 benutzt"), was der letzte GCD des Endkampfs kauft, wiegt
+  nur Punkte gegen Punkte (A712, A695, K8 Schaden). Im Kader gingen die drei Ziele in eine Bauart auf; was Safe win
+  von Level unterscheidet, ist nur das Auffüllen: Safe win füllt jeden Platz und verlangt den Nachweis der Sicherheit,
+  Level füllt unter dem Cap ohne Nachweis und darüber nur gegen Gefährdung. Ein eigenes Ziel bleibt es, weil es den Preis
+  „weniger Erfahrung für mehr Reserve" anders wählt (Wahl des Spielers, seine Präzisierung vom 03.11.2026).
+  *Wechselwirkungen:* Die Hornwahl (K6) wählt je Kampf unter dem Kader – ein schwacher Kader verlängert Kämpfe, und die
+  Lasten des Spielers je Rangstufe fallen bis zur ersten Messung auf die schwersten aller Läufe zurück (A729): Bonuswahl
+  (K15) und Wegtest rechnen dann zu günstig, die Heilung unter der Trankschwelle (K8) bleibt. Die Größe nach Punkten
+  bringt In Unterzahl, wo Score oder Level ohne Nachzügler unter sieben bleibt. Das Reihum vergleicht mit dem Kader beim
+  Öffnen des Fensters (A806), nicht mit dem nach „Apply". Die Abrechnung hebt den gelernten Rang (A799).
+  *Falsifikation:* (1) *Kein Defekt:* widerlegt – am 14.11.2026 (Builds 13e4a15d0 und fcd5c89c3) blieben die Begleiter
+  unter dem Cap bis auf zwei zu Hause, er wählte selbst. (2) *Bauart falsch – die Gefährdung misst nur die Verluste der
+  Begleiter, nicht den Spieler:* Der Spieler ist im Brett durch K8, K15 und den Wegtest geschützt, die mit seinen eigenen
+  Lasten rechnen; der Kader verschiebt diese Lasten nur über die Kampfdauer (Preis oben). Eine Gefährdung des Spielers
+  durch einen schwachen Kader misst keine Quelle getrennt – sie zeigt sich als höhere Last je Rangstufe (A729), und die
+  lernt RSR. (3) *Ausgeliefert, und nichts ändert sich:* Er übernimmt nicht („Apply"); das Ziel steht nach der Übernahme
+  der alten Einstellung auf Score (das Fenster zeigt es); die Ränge lesen 0 (Spur „0 unknown", A803); keine Verluste sind
+  gemessen – dann füllt Level voll, Safe win wählt die stärksten, Score den vollen Kader, bis eine Abrechnung sie lehrt.
+  *Vorhersage:* „level-core-low" (A805) und „level-below-cap" (A806): Unter Level stehen in „crucible team: goal Level -
+  requested …" nur Begleiter unter dem Cap, solange es genug gibt.
 - *Umsetzen:* erst die Abgänge, dann die Zugänge, je ein `TogglePet`; danach wartet RSR, bis der Kader sich ändert,
   höchstens einen GCD. Nimmt das Spiel einen Zugang nicht, fällt er für diese Sitzung aus der Empfehlung, und es geht
   weiter; geht ein Abgang nicht, hört RSR auf. Jede Stufe steht in der Spur („crucible team: …"); bestätigen und

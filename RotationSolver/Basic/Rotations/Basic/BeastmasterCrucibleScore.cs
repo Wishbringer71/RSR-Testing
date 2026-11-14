@@ -21,19 +21,18 @@ public partial class BeastmasterRotation
 
 	/// <summary>
 	/// K15 (A796): whether items that do not protect - damage, TP, buffs - may go: no item bonus is at stake, or the player is
-	/// known not to carry the way to the final fight. An unknown load does not free them. Under Safe win (A804) they go as
-	/// without a bonus - they shorten the fight and spare load (A676) - except once the final fight ends within a GCD: then
-	/// they buy nothing but points, and weigh them while an item bonus stands.
+	/// known not to carry the way to the final fight. An unknown load does not free them. Once the final fight ends within a
+	/// GCD they buy nothing but points, and wait while an item bonus stands (A804).
 	/// </summary>
-	private static bool NonSafetyItemsGo(IBattleChara player) => !(ItemBonusStands && FinalFightEndsNow)
-		&& (!WeighsScore || (!KeepsNoItemBonus(player) && (!ItemBonusAtStake || _scoreShortKnown)));
+	private static bool NonSafetyItemsGo(IBattleChara player) => !(ItemBonusAtStake && FinalFightEndsNow)
+		&& !KeepsNoItemBonus(player) && (!ItemBonusAtStake || _scoreShortKnown);
 	private static DateTime _scoreKeepAt = DateTime.MinValue;
 
 	/// <summary>
 	/// K15: whether no crucible item has been used in this run - the bonus "Sparsamkeit" (Economic Ethos, XBMScoreBonus row
 	/// 15) still stands. A use by RSR or by hand shows as one item less in the board's inventory.
 	/// </summary>
-	internal static bool NoItemBonusStands => !_scoreItemUsed;
+	internal static bool NoItemBonusAtStake => !_scoreItemUsed;
 
 	/// <summary>
 	/// K15 (A695): whether a use of an item would cost "Sammelleidenschaft" (Habitual Hoarder, XBMScoreBonus row 16): the
@@ -43,20 +42,11 @@ public partial class BeastmasterRotation
 	internal static bool HoarderBonusAtStake => _scoreItemSlots > 0 && _scoreItemsHeld >= _scoreItemSlots
 		&& CrucibleBoard.BonusPoints(CrucibleBoard.ScoreBonus.HabitualHoarder) > 0;
 
-	/// <summary>
-	/// K15 (A695): whether a use of an item now would cost a bonus of the score - "Sparsamkeit" or "Sammelleidenschaft" - that
-	/// the goal of the run weighs (A804: not under Safe win).
-	/// </summary>
-	internal static bool ItemBonusAtStake => WeighsScore && ItemBonusStands;
-
-	/// <summary>
-	/// K15 (A695, A804): whether an item bonus still stands, whatever the goal - for a use that only trades points for points
-	/// (the last GCD of the final fight), which no goal frees from weighing them.
-	/// </summary>
-	private static bool ItemBonusStands => NoItemBonusStands || HoarderBonusAtStake;
+	/// <summary>K15 (A695): whether a use of an item now would cost a bonus of the score - "Sparsamkeit" or "Sammelleidenschaft".</summary>
+	internal static bool ItemBonusAtStake => NoItemBonusAtStake || HoarderBonusAtStake;
 
 	/// <summary>K15 (A695): the points a use of an item now costs - "Sparsamkeit" while it stands, "Sammelleidenschaft" while ten are held.</summary>
-	private static int ItemBonusPointsAtStake => (NoItemBonusStands ? CrucibleBoard.BonusPoints(CrucibleBoard.ScoreBonus.EconomicEthos) : 0)
+	private static int ItemBonusPointsAtStake => (NoItemBonusAtStake ? CrucibleBoard.BonusPoints(CrucibleBoard.ScoreBonus.EconomicEthos) : 0)
 		+ (HoarderBonusAtStake ? CrucibleBoard.BonusPoints(CrucibleBoard.ScoreBonus.HabitualHoarder) : 0);
 
 	/// <summary>
@@ -379,7 +369,7 @@ public partial class BeastmasterRotation
 		if (_scoreKeepTraced != keep)
 		{
 			_scoreKeepTraced = keep;
-			var bonus = NoItemBonusStands ? "the no-item bonus (Sparsamkeit)" : "the bonus for ten items held (Sammelleidenschaft)";
+			var bonus = NoItemBonusAtStake ? "the no-item bonus (Sparsamkeit)" : "the bonus for ten items held (Sammelleidenschaft)";
 			DefenseTrace.Line(keep
 				? $"crucible score: items kept for {bonus} - you at {share:P0} carry the heaviest way to the final fight, {load:P0}"
 				: load is { } need
