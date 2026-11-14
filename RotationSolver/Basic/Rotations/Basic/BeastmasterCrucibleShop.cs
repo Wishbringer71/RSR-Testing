@@ -1213,14 +1213,22 @@ public partial class BeastmasterRotation
 		// of the way's demand that would take you below it - what you have above the line comes off first. A804: what K8 and
 		// the route do under the goal - protection only while an item bonus is at stake (without one, lost or under Safe win,
 		// K8 protects against every announced hit); healing while an item bonus is at stake.
+		// A804, seventh review: K8's and the route's own tests, not a model of them. K8 holds healing and protection back
+		// exactly while KeepsNoItemBonus; without that it protects against every announced hit and drinks every heal in the
+		// final fight that does not overheal (A664) - up to the way's whole demand.
 		var belowLine = Math.Max(0f, healable - (1f - Service.Config.UseHpPotionsPercent));
-		var guardLine = ItemBonusAtStake ? belowLine : float.MaxValue;
-		// Without an item bonus at stake K8 drinks every heal in the final fight that does not overheal (A664): up to the
-		// way's whole demand.
-		var healLine = ItemBonusAtStake ? belowLine : healable;
+		var k8Holds = Player is { } self && KeepsNoItemBonus(self);
+		var guardLine = k8Holds ? belowLine : float.MaxValue;
+		var healLine = k8Holds ? belowLine : healable;
 		// Smoke bombs: under Safe win the route flees between safe ways for HP; elsewhere only where the way with the fight is
-		// not safe - the demand beyond your HP and the healing held.
-		var spareLine = WeighsScore ? Math.Max(0f, healable - 1f) : float.MaxValue;
+		// not safe - by the route's own net measure (A709, CarriesToFinal without the potion line), the demand beyond your HP
+		// and the healing held; with a fight on the way unmeasured, the part below the line as before.
+		var spareLine = float.MaxValue;
+		if (WeighsScore)
+		{
+			_ = CarriesToFinal(true, out var heldShare, out var wayLoad);
+			spareLine = wayLoad is { } wayNeed ? Math.Max(0f, wayNeed - Service.Config.UseHpPotionsPercent - heldShare) : belowLine;
+		}
 		foreach (var (row, id, _) in offers)
 		{
 			if (gear.TryGetValue(id, out var piece))

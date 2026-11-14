@@ -620,13 +620,17 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     Bestien-Heiltrank I für 35 Marken bringt 10 %, sofern du sie noch heilen kannst. Die Obergrenze verhindert das
     Gegenteil, zehn Tränke für drei Kämpfe zu 18 %. *Nur was K8 benutzt (A796, seine Vorgabe vom 14.11.2026: „entweder
     sinnvoll nutzen, oder nicht zum kauf vorschlagen"):* Ein Gegenstand zählt höchstens den Teil dieses Bedarfs, den K8
-    oder der Weg mit ihm wirklich deckt. Heil- und Schutzgegenstände: solange ein Gegenstandsbonus auf dem Spiel steht
-    (`ItemBonusAtStake`), nur den Teil, der dich unter deine Trankschwelle („Use HP potions below this HP") brächte –
-    über ihr nimmt K8 sie dann nicht. Ohne ihn – verwirkt, oder unter dem Ziel „Safe win" – nimmt K8 Schutz gegen jeden
+    oder der Weg mit ihm wirklich deckt, und der Laden fragt dafür dieselben Prüfungen, nicht ein Modell von ihnen
+    (siebte Prüfrunde, A804). Heil- und Schutzgegenstände: solange K8 sie für einen Bonus zurückhält
+    (`KeepsNoItemBonus` – ein Gegenstandsbonus steht auf dem Spiel, und der Weg ist ohne sie getragen), nur den Teil, der
+    dich unter deine Trankschwelle („Use HP potions below this HP") brächte – über ihr nimmt K8 sie dann nicht. Sonst –
+    Bonus verwirkt, Weg nicht getragen oder ungemessen, oder unter dem Ziel „Safe win" – nimmt K8 Schutz gegen jeden
     angekündigten Treffer (er zählt voll) und trinkt im Endkampf jede Heilung, die nicht überheilt (A664; sie zählt bis
     zum ganzen Bedarf des Wegs). Rauchbomben setzt der Weg ein: unter Safe win zwischen sicheren Wegen für LP (sie zählen
-    voll), unter Level und Score nur, wo der Kampfweg unsicher ist – sie zählen den Teil des Bedarfs, der über deine LP
-    und die gehaltene Heilung hinausgeht (sechste Prüfrunde, A804). Was du über der Schwelle hast, zieht RSR vom Bedarf ab: max(0, Bedarf − (deine LP jetzt − Schwelle) − gehaltene
+    voll), unter Level und Score nur, wo der Kampfweg unsicher ist – sie zählen den Teil des Netto-Bedarfs des Wegs
+    (`CarriesToFinal`, A709), der über deine LP und die gehaltene Heilung hinausgeht; ist ein Kampf ungemessen, den Teil
+    unter der Trankschwelle. *Preis:* Die Rast am Lager rechnet der Wegtest des Ladens nicht ein, der Weg selbst schon –
+    vor einem Lager zählt eine Bombe unter Level und Score höchstens zu viel. Was du über der Schwelle hast, zieht RSR vom Bedarf ab: max(0, Bedarf − (deine LP jetzt − Schwelle) − gehaltene
     Heilung). Ausrüstung wirkt ohne Zutun und bleibt auf der Skala wie bisher; damit geht bleibende Ausrüstung vor
     Verbrauchsmitteln, wo der Weg dich nicht unter die Schwelle bringt. *Im Kampf (14.11.2026, Brett 2, erster Laden):*
     Ein Kampf kostete dich 4 %, sieben lagen vor dir; RSR empfahl Bestien-Heiltrank II, Bestien-Pulver II und ein Grimoire,

@@ -23364,6 +23364,13 @@ audit, codereview und fehlerbeseitigung".
   Heilung) – bei vollen LP, 80 % Weg und keiner Heilung empfahl der Laden eine Bombe, die nie ging. Sie zählt jetzt
   diesen Teil. Konzept „Nur was K8 benutzt" neu gefasst: Jeder Gegenstand zählt, was K8 oder der Weg mit ihm deckt. Alle
   übrigen Linien, `NonSafetyItemsGo` und die Texte stimmten mit der Regel.
+- *Siebte Prüfrunde:* kein Befund hoher Schwere, zwei mittlere, beide dieselbe Ursache wie in Runde 3, 4 und 6: Der Laden
+  bildete die Entscheidung von K8 und Weg in einem eigenen Modell nach (rohe Last statt netto; `ItemBonusAtStake` statt
+  der Bedingung von K8), und jede Runde fand eine weitere Abweichung. *Zurück zur Anforderung:* Der Laden fragt jetzt
+  dieselben Prüfungen – `KeepsNoItemBonus` für Heilung und Schutz, den Netto-Wegtest `CarriesToFinal` für Rauchbomben –,
+  kein Modell. Preis benannt: Die Rast rechnet der Wegtest des Ladens nicht ein. Niedrig, nicht geändert: Der Weg nennt
+  eine Flucht nur an Gabelungen; ob eine Rauchbombe Sparsamkeit kostet, ist unbelegt; das Auffüllen im letzten GCD setzt
+  „Bonus geht vor" fest, statt Punkte zu rechnen (A712, gemessen: der Bonus wiegt mehr).
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
