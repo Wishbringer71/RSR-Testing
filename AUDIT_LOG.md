@@ -22736,6 +22736,32 @@ daraus lernen.“ Einordnung: Antwort auf Frage 1 aus A782 und Vorgabe.
   Wirkt nicht: „gaze: hit despite …“. Danach stehen für diesen Blick im Gebiet keine Zeilen „gaze: turned“ mehr.
 - *Prüfgrad:* Compile, alle CI-Schritte lokal; im Spiel nicht beobachtet.
 
+### A784 · Seine Vorgabe: im Loop entscheiden; unabhängige Prüfrunden für Konzepte über Leben und Tod (14.11.2026)
+
+Seine Angabe (14.11.2026): „im loop entscheiden, was am sinnvollsten wäre. antithese und versuch der widerlegung“, zur
+offenen Frage 2 aus A782. Einordnung: Vorgabe, die die Entscheidung an mich gibt.
+- *Optionen:*
+  - (0) Keine Prüfrunden: Eigenkontrolle, CI und das Lernen im Spiel aus A783.
+  - (1) Ein unabhängiger Prüfer für jedes Konzept.
+  - (2) Ein unabhängiger Prüfer nur für Konzepte, die über Leben und Tod eingreifen.
+  - (3) Ein streng gegliederter eigener Gegenlauf.
+- *Beleg:* Die drei Fehler, die er in dieser Sitzung fand, lagen in Prämissen, nicht im Code: A778 (Aufrufer nicht
+  gelesen), A779 (Kosten nicht gewogen), A781 (Verhalten statt Wirkung). Prüfskripte und Eigenkontrolle fanden sie
+  nicht. In KSP-MyContracts fanden unabhängige Runden nach sorgfältiger Arbeit 8, 5 und 4 Befunde hoher Schwere
+  (Konzept 07 dort).
+- *Antithesen:*
+  1. Die neuen Regeln aus A782 und A783 genügen. Widerlegt: Sie decken bekannte Klassen ab, die drei Fehler waren
+     unbekannt.
+  2. Ein Prüfer ohne Vorwissen liefert Rauschen und kostet. Nur teilweise widerlegt: Er bekommt Konzept, Code und
+     Quellen, die Befunde sind nach Schwere geordnet, und es gilt das Plateau. Die Kosten bleiben; deshalb (2) statt (1).
+  3. Dasselbe Modell hat dieselben blinden Flecken. Nur teilweise widerlegt: Ohne meinen Zwischenstand und mit dem
+     Auftrag zum Angriff ist er unvoreingenommen. Gemeinsame blinde Flecken bleiben möglich; als letzte Sicherung bleibt
+     das Lernen im Spiel.
+  4. Hilfsagenten nur auf seinen ausdrücklichen Auftrag. Seine Vorgabe, im Loop zu entscheiden, gilt als dieser
+     Auftrag für diese Klasse.
+- *Entscheidung:* (2), eingetragen in CLAUDE.md, „Prüfgrad“. Sofort angewandt auf die Blickwache (A770–A783); das
+  Ergebnis der ersten Runde folgt im nächsten Eintrag.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

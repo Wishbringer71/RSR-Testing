@@ -184,7 +184,7 @@ Gilt für jede Regel, im Code wie im Konzept (seine Vorgabe, 26.09.2026; für di
 
 **Prüfgrad**
 - Ein eingehaltener Ablauf belegt keine Ergebnisqualität.
-- Selbstkontrolle ist kein Audit.
+- Selbstkontrolle ist kein Audit. Ein Konzept, das über Leben und Tod eingreift (drehen, bewegen, Schutz zurückhalten), prüft vor der Auslieferung ein unabhängiger Prüfer: ein frischer Hilfsagent ohne meinen Zwischenstand, mit Konzept, Code und Quellen und dem Auftrag, die Prämissen anzugreifen. Die Runden gehen bis zum Plateau (→ „Loop“, Stufe 10); Befunde hoher und mittlerer Schwere arbeite ich ein. Das ist meine Entscheidung im Loop, unter seiner Vorgabe vom 14.11.2026 „im loop entscheiden, was am sinnvollsten wäre“ (A784). Grund: Die Fehler, die er in A778, A779 und A781 fand, lagen in Prämissen, die weder Prüfskripte noch meine Eigenkontrolle fanden.
 - Den Prüfgrad benenne ich — statisch, Prüfskript, Compile, Laufzeitbeobachtung —, und die Formulierung folgt ihm.
 - Ein grüner CI-Lauf belegt nur, was die Prüfungen erfassen. Konzepte werden nicht kompiliert (seine Vorgabe): Über ihren Inhalt sagt er nichts. Ihren Inhalt prüfe ich Aussage für Aussage am Code und an den Quellen. Eine Prüfung, die bei einem Konzept anschlägt, etwa auf eine verrutschte Zeilenangabe, zeigt, dass ich Code geändert habe, ohne die Konzeptstelle dazu neu zu lesen. Deshalb prüfe ich den Inhalt der Stelle, nicht nur die Angabe.
 
