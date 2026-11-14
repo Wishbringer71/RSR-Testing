@@ -34,11 +34,7 @@ Keine offenen Defekte.
 
 ## Offene Arbeit
 
-### Blickwache: Umbau der vierten Prüfrunde · N
-*Wirkung:* Die Befunde der vierten Prüfrunde (Zeitfenster von Sperre, Richtung und Lernen; Abweisen ohne sichere
-Richtung; Lernen auch misstrauter Blicke; Vorlauf) liegen ungeprüft beiseite. *Ort:* `GazeWatch`,
-`ActionTargetInfo`, `ActionManagerEx`. *Nächster Schritt:* zurück zu den Anforderungen (Konzept 13, „Blickwache:
-Anforderungen und tragende Annahmen"), jede Mechanik gegen sie prüfen, dann bauen und unabhängig prüfen. *Konzept:* 13.
+Keine offene Arbeit.
 
 ## Technische Schuld
 

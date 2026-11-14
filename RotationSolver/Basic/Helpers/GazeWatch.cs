@@ -47,6 +47,10 @@ internal static partial class GazeWatch
 	// ActionManagerEx, empirical; A778). The game's "Auto face target" turns the player straight at the target instead.
 	private const float ActionHalfAngleDegrees = 45f;
 
+	// A809: the room RSR keeps to the gaze's edge in its own facing - the edge lies between the last hit (44.2°) and the
+	// first spared (45.1°) of 117 measured targets (#3499, #44355, #48153), and ACT gives a facing to 0.57°.
+	private const float MeasuredEdgeDegrees = 1f;
+
 	private enum Kind : byte
 	{
 		None,
@@ -63,7 +67,7 @@ internal static partial class GazeWatch
 	}
 
 	// What the eye came from, kept as values so a frame builds no text; Describe writes it for the trace. Trusted is
-	// false for a gaze that hit despite RSR's facing in this zone (A786): it still holds actions over the whole cast,
+	// false for a gaze that hit despite RSR's facing in this build (A786, A809): it still holds actions over the whole cast,
 	// but RSR no longer turns or chooses a facing for it.
 	// Margin (A789) widens the gaze's half width by the angle the player's and the eye's movement makes until it resolves.
 	private readonly record struct Gazer(Vector3 Eye, ulong Key, bool Inverted, float Left, Origin From, uint Id, IGameObject? Who,
@@ -73,7 +77,7 @@ internal static partial class GazeWatch
 	// packet resolves it (the eye's caster and its cast; for a marker the cast that ends with it); Action 0 for a status
 	// or member gaze, which a packet of the eye judges until the deadline.
 	private readonly record struct Pending(ulong Key, ulong Learn, string? Name, bool Cast, ulong Source, uint Action, DateTime Due,
-		string Text);
+		string Text, bool HoldOnly = false);
 
 	// A786: a cast gaze whose bar ended: the server resolves it about 0.3 s later, so it stays due until its packet.
 	private readonly record struct Landing(Gazer Gazer, DateTime Ended);
@@ -92,6 +96,7 @@ internal static partial class GazeWatch
 	private static readonly Dictionary<uint, string> _englishNames = [];
 	private static readonly HashSet<ulong> _traced = [];
 	private static readonly HashSet<ulong> _turnTraced = [];
+	private static readonly HashSet<ulong> _refusedTraced = [];
 	private static readonly List<(float Start, float End)> _forbidden = [];
 	// A "look" or "no look" marker and the eyes it was matched to, kept after their cast ends until it resolves (A789).
 	private sealed class MarkerWatch
@@ -99,6 +104,7 @@ internal static partial class GazeWatch
 		public DateTime Seen;
 		public bool Inverted;
 		public float Duration;
+		public bool NoEyeTraced;
 		public readonly List<IBattleChara> Eyes = [];
 	}
 
@@ -112,7 +118,7 @@ internal static partial class GazeWatch
 	private static readonly List<IBattleChara> _largest = [];
 	private static long _gazersTick = long.MinValue;
 	private static readonly List<Pending> _pending = [];
-	// A789: the gazes that hit despite RSR's facing, by zone and gaze, until RSR is loaded again; true where the packet
+	// A789: the gazes that hit despite RSR's facing, by gaze (A809: no longer by zone), until RSR is loaded again; true where the packet
 	// bore out RSR's eye and sense (only the turning ends), false where it did not (RSR leaves the gaze alone).
 	private static readonly Dictionary<ulong, bool> _distrusted = [];
 	private static readonly List<Gazer> _casts = [];
@@ -157,9 +163,11 @@ internal static partial class GazeWatch
 	/// <summary>
 	/// Whether an action of <paramref name="castTime"/> seconds that faces <paramref name="towards"/> and goes off in
 	/// <paramref name="startsIn"/> seconds would still face into a gaze within the lead before it lands: looking at the eye
-	/// of a gaze, or away from the eye of an inverted one.
+	/// of a gaze, or away from the eye of an inverted one. A809: the server keeps an action's facing for
+	/// <paramref name="keeps"/> seconds after it goes off (its lock), so a gaze landing then counts too - the same while the
+	/// facing at the press is chosen and the gaze is watched.
 	/// </summary>
-	internal static bool TurnsIntoGaze(Vector3 towards, float castTime, float startsIn, bool moves = false)
+	internal static bool TurnsIntoGaze(Vector3 towards, float castTime, float startsIn, bool moves = false, float keeps = 0f)
 	{
 		var player = Player.Object;
 		if (player == null)
@@ -184,13 +192,14 @@ internal static partial class GazeWatch
 		var turning = !float.IsInfinity(lead);
 		var rotation = MathF.Atan2(facing.X, facing.Z);
 		var span = Math.Max(0f, startsIn) + Math.Max(0f, castTime);
+		var reach = lead + Math.Max(0f, keeps);
 
 		// A778: with turning on, RSR presses the action facing a safe way within the action's cone around the target
 		// (PrepareFacing), and a cast keeps a safe way within its wider limit until the game has it (TurnAway). It waits
 		// only where neither exists - above all on the eye's own caster. A786: counted from when the game runs the action,
 		// which may be a GCD or a lock later than the press.
-		var held = turning && (SafeNear(player, rotation, float.DegreesToRadians(ActionHalfAngleDegrees), Math.Max(0f, startsIn) + lead) == null
-			|| (castTime > 0f && SafeNear(player, rotation, float.DegreesToRadians(CastHalfAngleDegrees), span + lead) == null));
+		var held = turning && (SafeNear(player, rotation, float.DegreesToRadians(ActionHalfAngleDegrees), Math.Max(0f, startsIn) + reach) == null
+			|| (castTime > 0f && SafeNear(player, rotation, float.DegreesToRadians(CastHalfAngleDegrees), span + reach) == null));
 
 		foreach (var gazer in gazers)
 		{
@@ -199,7 +208,7 @@ internal static partial class GazeWatch
 			// first gaze that lands while the action needs its facing. A789: an action that moves the player keeps facing the
 			// target until it lands, so the exact direction counts until then; and after the game undid RSR's turn for a gaze,
 			// every action that faces waits until its packet, so no further turn of the game starts.
-			var due = gazer.Left - span <= (turning ? lead : float.PositiveInfinity);
+			var due = gazer.Left - span <= (turning ? reach : float.PositiveInfinity);
 			var holds = _heldFacing.Contains(gazer.Key) ? due
 				: moves ? (turning && gazer.Trusted ? due : true) && Unsafe(rotation, player, gazer)
 				: !turning || !gazer.Trusted ? Unsafe(rotation, player, gazer)
@@ -355,8 +364,9 @@ internal static partial class GazeWatch
 	/// Where the game runs an action (ActionManagerEx.UseActionLocation, A786): RSR's own press, the game's queue and the
 	/// player's own press alike. For an action that faces its target, <see cref="PrepareFacing"/>; null otherwise.
 	/// </summary>
-	internal static unsafe uint? PrepareFacingFor(uint actionId, ulong targetId, Vector3* location)
+	internal static unsafe uint? PrepareFacingFor(uint actionId, ulong targetId, Vector3* location, out bool refuse)
 	{
+		refuse = false;
 		var player = Player.Object;
 		if (player == null || !Service.Config.TurnAwayFromGazes || !DataCenter.InCombat
 			|| Service.GetSheet<Lumina.Excel.Sheets.Action>().GetRowOrDefault(actionId) is not { NeedToFaceTarget: true, Range: not 0 } action)
@@ -370,10 +380,10 @@ internal static partial class GazeWatch
 		var horizon = ActionManagerEx.CurrentLockTweak?.AbilityWindow(actionId) ?? 0f;
 		if (action.TargetArea)
 		{
-			return location == null ? null : PrepareFacing(*location, horizon);
+			return location == null ? null : PrepareFacing(*location, horizon, out refuse);
 		}
 
-		return targetId != player.GameObjectId && Svc.Objects.SearchById(targetId) is { } target ? PrepareFacing(target.Position, horizon) : null;
+		return targetId != player.GameObjectId && Svc.Objects.SearchById(targetId) is { } target ? PrepareFacing(target.Position, horizon, out refuse) : null;
 	}
 
 	/// <summary>
@@ -381,10 +391,12 @@ internal static partial class GazeWatch
 	/// orientation): the facing stays when the target lies within the action's cone and it looks into no gaze, else
 	/// RSR turns to the middle of the widest safe stretch of that cone, and where there is none it does not turn - the
 	/// game refuses a target outside the cone. Either way "Auto face target" is off for the call, so the game does not
-	/// turn the player straight at the target. Returns the option's value to put back.
+	/// turn the player straight at the target. Returns the option's value to put back. A809: where the facing now is not
+	/// safe and no safe one lies within the cone, <paramref name="refuse"/> - the action does not go.
 	/// </summary>
-	internal static unsafe uint? PrepareFacing(Vector3 towards, float horizon = 0f)
+	internal static unsafe uint? PrepareFacing(Vector3 towards, float horizon, out bool refuse)
 	{
+		refuse = false;
 		var player = Player.Object;
 		if (!Service.Config.TurnAwayFromGazes || !DataCenter.InCombat || player == null)
 		{
@@ -415,7 +427,22 @@ internal static partial class GazeWatch
 		var aim = MathF.Atan2(facing.X, facing.Z);
 		var half = float.DegreesToRadians(ActionHalfAngleDegrees);
 		var current = player.Rotation;
-		var turnTo = MathF.Abs(Difference(current, aim)) > half || !SafeFor(current, player, reach) ? SafeNear(player, aim, half, reach) : null;
+		var needsTurn = MathF.Abs(Difference(current, aim)) > half || !SafeFor(current, player, reach);
+		var turnTo = needsTurn ? SafeNear(player, aim, half, reach) : null;
+		if (needsTurn && turnTo == null)
+		{
+			refuse = true;
+			foreach (var gazer in gazers)
+			{
+				if (gazer.Trusted && gazer.Left <= reach && _refusedTraced.Add(gazer.Key))
+				{
+					DefenseTrace.Line($"gaze: refused an action - no safe facing within its cone while {Describe(gazer)} lands in {gazer.Left:F2} s");
+				}
+			}
+
+			Watch(gazers, reach);
+			return null;
+		}
 
 		var framework = Framework.Instance();
 		var option = framework == null ? null : framework->SystemConfig.GetConfigOption((uint)ConfigOption.AutoFaceTargetOnAction);
@@ -441,8 +468,25 @@ internal static partial class GazeWatch
 		}
 
 		option->Value.UInt = 0;
-		Watch(gazers, lead);
+
+		// A809: every gaze within the facing's reach is watched - the server judges by this facing (vierte Prüfung, H2).
+		Watch(gazers, reach);
 		return original;
+	}
+
+	// A809: a marker, status or member gaze that only holds after a first hit, until its deadline.
+	private static void WatchHoldOnly(Gazer gazer)
+	{
+		foreach (var pending in _pending)
+		{
+			if (pending.Key == gazer.Key)
+			{
+				return;
+			}
+		}
+
+		_pending.Add(new Pending(gazer.Key, LearnKey(gazer), null, false, gazer.Who?.GameObjectId ?? 0, 0u,
+			DateTime.Now.AddSeconds(gazer.Left), Describe(gazer), true));
 	}
 
 	// A783 (concept 13, "Im Spiel auswerten und lernen"): every gaze RSR turned for or chose the facing against waits for
@@ -477,7 +521,7 @@ internal static partial class GazeWatch
 	/// An enemy's effect packet (A783, A786). It measures how long after its bar a cast resolves, ends a gaze that waited
 	/// for it, writes who it hit, and judges every gaze RSR acted on: harm on the player from the gaze's own cast, from a
 	/// cast of the same name, or for a status or member gaze from the eye, is a failure - RSR then only holds for that gaze
-	/// in this zone, as A770; the gaze's own packet without harm is a gaze avoided.
+	/// until RSR is loaded again, as A770; the gaze's own packet without harm is a gaze avoided.
 	/// </summary>
 	internal static void ObserveLanding(ActionEffectSet set)
 	{
@@ -503,8 +547,16 @@ internal static partial class GazeWatch
 		{
 			var pending = _pending[i];
 			var resolves = pending.Action != 0 && pending.Source == sourceId && pending.Action == actionId;
-			var related = resolves || (pending.Cast && string.Equals(pending.Name, name, StringComparison.Ordinal)) || pending.Action == 0;
-			if (harmed && related)
+			var related = resolves || (pending.Cast && !string.IsNullOrEmpty(name) && string.Equals(pending.Name, name, StringComparison.Ordinal))
+				|| pending.Action == 0;
+			if (harmed && related && pending.HoldOnly)
+			{
+				// A809: a second hit while only the hold remained - for a marker, status or member gaze as for a cast (Landed).
+				_distrusted[ZoneKey(pending.Learn)] = false;
+				DefenseTrace.Line($"gaze: hit again by {pending.Text} while RSR only held actions - RSR leaves this gaze to you until it is loaded again");
+				_pending.RemoveAt(i);
+			}
+			else if (harmed && related)
 			{
 				// A789: the same packet says whether RSR's eye and sense hold - others hit while facing the eye as RSR places
 				// it, and no more hit while facing away. Then only the timing failed and the hold stays; else RSR leaves it.
@@ -691,7 +743,9 @@ internal static partial class GazeWatch
 		? (ulong)(uint)StringComparer.Ordinal.GetHashCode(ActionName(gazer.Id))
 		: (ulong)(uint)HashCode.Combine(gazer.From, gazer.Id);
 
-	private static ulong ZoneKey(ulong learn) => (ulong)(uint)HashCode.Combine(DataCenter.Territory?.Id ?? 0, learn);
+	// A809: learned per gaze for the build, not per zone - the Pilgrim's Traverse changes zone every ten floors and paid a
+	// failure again in each (B3: at most two hits per build).
+	private static ulong ZoneKey(ulong learn) => learn;
 
 	private static string ActionName(uint actionId)
 	{
@@ -759,10 +813,11 @@ internal static partial class GazeWatch
 			return !gazer.Inverted;
 		}
 
-		var half = float.DegreesToRadians(DangerHalfAngleDegrees) + (margin ? gazer.Margin : 0f);
+		var room = margin ? gazer.Margin + float.DegreesToRadians(MeasuredEdgeDegrees) : 0f;
+		var half = float.DegreesToRadians(DangerHalfAngleDegrees) + room;
 		var off = MathF.Abs(Difference(rotation, MathF.Atan2(toEye.X, toEye.Z)));
 		// An inverted gaze is safe only well within the cone: the margin narrows it.
-		return gazer.Inverted ? off > float.DegreesToRadians(DangerHalfAngleDegrees) - (margin ? gazer.Margin : 0f) : off <= half;
+		return gazer.Inverted ? off > float.DegreesToRadians(DangerHalfAngleDegrees) - room : off <= half;
 	}
 
 	// The middle of the widest safe gap among the gazes within <lead>, as BossModReborn: it keeps the most room to every
@@ -781,13 +836,14 @@ internal static partial class GazeWatch
 			var toEye = gazer.Eye - player.Position;
 			toEye.Y = 0;
 			var at = MathF.Atan2(toEye.X, toEye.Z);
+			var room = gazer.Margin + float.DegreesToRadians(MeasuredEdgeDegrees);
 			if (gazer.Inverted)
 			{
-				AddArc(at + half - gazer.Margin, at + MathF.Tau - half + gazer.Margin);
+				AddArc(at + half - room, at + MathF.Tau - half + room);
 			}
 			else
 			{
-				AddArc(at - half - gazer.Margin, at + half + gazer.Margin);
+				AddArc(at - half - room, at + half + room);
 			}
 		}
 
@@ -833,13 +889,14 @@ internal static partial class GazeWatch
 			var toEye = gazer.Eye - player.Position;
 			toEye.Y = 0;
 			var at = Difference(MathF.Atan2(toEye.X, toEye.Z), center) + MathF.PI;
+			var room = gazer.Margin + float.DegreesToRadians(MeasuredEdgeDegrees);
 			if (gazer.Inverted)
 			{
-				AddArc(at + gazeHalf - gazer.Margin, at + MathF.Tau - gazeHalf + gazer.Margin);
+				AddArc(at + gazeHalf - room, at + MathF.Tau - gazeHalf + room);
 			}
 			else
 			{
-				AddArc(at - gazeHalf - gazer.Margin, at + gazeHalf + gazer.Margin);
+				AddArc(at - gazeHalf - room, at + gazeHalf + room);
 			}
 		}
 
@@ -989,6 +1046,7 @@ internal static partial class GazeWatch
 			_castsBefore.Clear();
 			_traced.Clear();
 			_turnTraced.Clear();
+			_refusedTraced.Clear();
 			_heldFacing.Clear();
 			_markers.Clear();
 			_eyesBefore.Clear();
@@ -1023,6 +1081,13 @@ internal static partial class GazeWatch
 					if (holds)
 					{
 						_gazers[i] = _gazers[i] with { Trusted = false };
+
+						// A809: a marker, status or member gaze that only holds waits for its harm too, so a second hit ends the
+						// hold as for a cast (Landed).
+						if (_gazers[i].From != Origin.Cast)
+						{
+							WatchHoldOnly(_gazers[i]);
+						}
 					}
 					else
 					{
@@ -1272,6 +1337,13 @@ internal static partial class GazeWatch
 					marker.Eyes.AddRange(_largest);
 					DefenseTrace.Line($"gaze: marker to look {(marker.Inverted ? "at" : "away from")} {left:F1} s before it resolves - eyes: {EyeNames(marker.Eyes)}");
 				}
+			}
+
+			// A809 (T8): a marker that comes to resolve without an eye - then the game turns as without the rule.
+			if (marker.Eyes.Count == 0 && !marker.NoEyeTraced && left <= finite)
+			{
+				marker.NoEyeTraced = true;
+				DefenseTrace.Line($"gaze: marker to look {(marker.Inverted ? "at" : "away from")} {left:F1} s before it resolves - no eye found, no cast ends with it");
 			}
 
 			foreach (var eye in marker.Eyes)

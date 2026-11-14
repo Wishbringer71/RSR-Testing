@@ -242,8 +242,8 @@ Mainyu wurde von jedem GCD zurück ins Auge gedreht. BossModReborn nimmt nur 0 a
   dieser beiden. Am Blatt gemessen (xivapi v2, 13.11.2026): 230 Aktionen tragen das
   Kennzeichen, keine davon eine Spieleraktion. 77 gegnerische Wirken heißen gleich und tragen es nicht, darunter die
   Helferfassungen von „Mortal Gaze“, „Hex Eye“, „Petrifaction“ und „Evil Eye“. Die Namen liest RSR einmal im
-  Hintergrund, am englischen Blatt; bis dahin zählt das Kennzeichen. Scheitert das Lesen, versucht RSR es beim nächsten
-  Bedarf erneut, statt die Sitzung ohne Namen zu bleiben. Was BossModReborn nur in selbst gebauten Blicken führt, zählt nicht;
+  Hintergrund, am englischen Blatt; bis dahin zählt das Kennzeichen. Scheitert das Lesen, versucht RSR es nach dem nächsten
+  Gebietswechsel erneut, statt die Sitzung ohne Namen zu bleiben. Was BossModReborn nur in selbst gebauten Blicken führt, zählt nicht;
   Status, Kopfmarker und umgekehrte Namen ergänzen die Quellen (A776, „Umkehrung und Auge zur Laufzeit“).
 - *In den Blick drehen:* Mit „Auto face target“ dreht das Spiel die Figur beim Auslösen genau aufs Ziel. Liegt das Auge
   dann innerhalb von 45°, blickt die Figur es an. Mit „Turn away from gaze attacks“ ersetzt RSR dieses Drehen im
@@ -254,8 +254,8 @@ Mainyu wurde von jedem GCD zurück ins Auge gedreht. BossModReborn nimmt nur 0 a
   selbst weg und hält Aktionen nur im letzten Stück zurück.
   - *Vorlauf L:* die größte Verzögerung bis zur Antwort des Servers im Gebiet plus ein Bild (gemessen von der
     Animationssperre, A753). Bis L vor dem Blick handelt RSR wie sonst, auch auf den Wirkenden. Ab L vor dem Blick
-    nimmt eine Aktion, die dreht, kein Ziel mehr in Richtung des Blicks. Zeigt die Figur hinein, dreht RSR sie in
-    die Mitte der nächstgelegenen sicheren Lücke. Bei einem Blick heißt das genau weg vom Wirkenden; bei Blicken aus
+    nimmt eine Aktion, die dreht, kein Ziel mehr in Richtung des Blicks (eine Aktion zählt mit ihrer Sperre, A809).
+    Zeigt die Figur hinein, dreht RSR sie in die Mitte der breitesten sicheren Lücke. Bei einem Blick heißt das genau weg vom Wirkenden; bei Blicken aus
     West und Ost nach Nord oder Süd; bei einem umgekehrten Blick zum Wirkenden hin.
   - *Zauber mit Wirkzeit:* Während des Wirkens schaut die Figur zum Ziel. Ein Zauber zum Wirkenden des Blicks beginnt
     nur, wenn er vor L vor dem Blick endet.
@@ -269,7 +269,8 @@ Mainyu wurde von jedem GCD zurück ins Auge gedreht. BossModReborn nimmt nur 0 a
     Bis A786 verschwand ein Blick für RSR mit dem Balken. In diesen 0,3 s war eine Aktion auf das Auge wieder frei.
     Jetzt bleibt ein Blick fällig, bis sein Effekt-Paket kommt: vom selben Wirkenden mit derselben Aktion. Kommt keines,
     endet er mit der größten im Gebiet gemessenen Verzögerung vom Balkenende bis zum Effekt plus Vorlauf. Ein
-    abgebrochenes Wirken endet sofort. Das erkennt RSR am Rest des Balkens beim letzten Bild: mehr als ein Bild.
+    abgebrochenes Wirken endet sofort. Das erkennt RSR am Rest des Balkens bei der letzten Berechnung: mehr als der
+  Vorlauf plus der gemessene Abstand zwischen zwei Berechnungen.
   - *Drehen:* über die Spielfunktion, die eine Aktion zum Ziel dreht (`ActionManager.AutoFaceTargetPosition`), mit der
     Spieloption „Auto face target“ für diesen Aufruf eingeschaltet und danach zurückgesetzt, wie BossModReborn
     (`ActionManagerEx.FaceDirection`). BossModReborn setzt dazu `DesiredRotation` einer laufenden Drehung, sonst drehe
@@ -379,7 +380,7 @@ Mainyu wurde von jedem GCD zurück ins Auge gedreht. BossModReborn nimmt nur 0 a
     - *Wegdrehen im Vorlauf:*
       - Läuft ein eigener Zauber, den das Spiel noch nicht hat, dreht RSR innerhalb von 75° um dessen Ziel.
       - Sonst dreht es innerhalb von 45° um das aktuelle Ziel des Spielers, damit der Kampf weiterläuft.
-      - Erst wenn dort nichts sicher ist, dreht es in die nächste Lücke. Sicherheit geht vor dem Treffer.
+      - Erst wenn dort nichts sicher ist, dreht es in die breiteste Lücke. Sicherheit geht vor dem Treffer.
     - Ohne „Turn away from gaze attacks“ oder ohne Messung gilt die Sperre über das ganze Wirken, und RSR dreht nicht.
   - *Optionen:* (0) A776 lassen. (1) Wie BossModReborn mit festen 0,5 s. (2) Die Regel oben mit dem gemessenen Vorlauf.
     *Gewählt:* (2).
@@ -524,9 +525,10 @@ Mainyu wurde von jedem GCD zurück ins Auge gedreht. BossModReborn nimmt nur 0 a
 - *Gegenthese 2 (Option falsch, gleicher Name ist kein Blick):* Einige der 77 könnten Begleitaktionen ohne Blick sein.
   *Preis:* Für ein Wirken hält RSR Aktionen in einer Richtung zurück, ein bis zwei GCDs. Gewogen gegen Versteinerung
   oder Verhängnis wiegt das wenig.
-- *Gegenthese 3 (ausgeliefert, und nichts ändert sich):* Steht er schon mit Blick zum Wirkenden still, dreht RSR ihn
-  nicht weg; das kann nur er oder BossModReborn. Bodenzauber drehen zum Ort, nicht zum Ziel, und bleiben hier
-  ungeprüft.
+- *Gegenthese 3 (ausgeliefert, und nichts ändert sich):* Ohne „Turn away from gaze attacks“ oder ohne gemessenen
+  Vorlauf dreht RSR ihn nicht weg, wenn er schon mit Blick zum Wirkenden steht; das kann dann nur er oder BossModReborn.
+  Mit der Option dreht RSR im Vorlauf weg, und das Auslösen wählt die Richtung auch für Bodenzauber, zum Ort hin
+  (A774, A786).
 
 - *Umkehrung und Auge zur Laufzeit* (A776; seine Hinweise vom 13. und 14.11.2026: „Bei kefka … wird ein Fragezeichen
   beigepackt. Hinsehen ist da dann wegsehen und umgekehrt. Solche Sonderfälle gibt es auch woanders“; „beim endboss des
@@ -568,8 +570,7 @@ Mainyu wurde von jedem GCD zurück ins Auge gedreht. BossModReborn nimmt nur 0 a
       wie die Zählung der 77; im deutschen Client trennen die Namen anders.
     - *Ort des Auges:* Bei einer Aktion mit Bodenziel (`TargetArea`) der Ort des Wirkens, sonst der Wirkende. Der Client
       hält den Ort nur bei Bodenzielen (BossModReborns Kommentar oben); bei anderen Aktionen kann dort ein alter Ort
-      stehen. Am Mitschnitt vom 13.11.2026: Der Helfer von #3499 stand beim Zauberbeginn noch 4,7 Yalm neben Angra
-      Von 291 Blick-Zeilen tragen 10 ein Bodenziel. Bis A786 las RSR den Ort bei jeder Aktion. Am Mitschnitt vom
+      stehen. Von 291 Blick-Zeilen tragen 10 ein Bodenziel. Bis A786 las RSR den Ort bei jeder Aktion. Am Mitschnitt vom
       13.11.2026: Der Ort im Paket (ACT-Zeile 263) ist bei #3499, #3281, den Crucible-Blicken und Destrudo die Position
       des Wirkenden (höchstens 0,24 Yalm Abstand). Den Helfer von #3499 setzt das Spiel 45 ms vor dem Zauberbeginn auf
       Angra Mainyus Position (Zeile 271); die 4,7 Yalm Abstand, die A786 las, stammten aus dem veralteten Feld der Zeile 20.
@@ -632,11 +633,40 @@ und an seinen Mitschnitten; im Spiel ist kein Teil der Blickwache beobachtet.
 - *Drehen im Vorlauf* (B2): statt das ganze Wirken zu sperren. Preis: ein Zauber außerhalb von 75° bricht ab.
 - *Auslösen ohne „Auto face target“* (B2, B1): Ohne ihn dreht jede Aktion, auch aus der Warteschlange des Spiels, genau
   aufs Ziel. Preis: die Figur sieht bis zu 45° neben das Ziel.
-- *Horizont Vorlauf plus Sperre der Aktion* (B4): Die Richtung einer Aktion hält der Server eine Weile. Preis: keiner,
-  solange das Ziel im Kegel bleibt.
+- *Ein Zeitraum für Sperre, Richtung und Lernen: Vorlauf plus Sperre der Aktion* (B4, B3; A809): Die Richtung einer
+  Aktion hält der Server eine Weile (T1). Jeder Blick, der in diesem Zeitraum landet, zählt dreifach gleich: Die Wahl der
+  Ziele sperrt ein Ziel, für das keine sichere Richtung im Kegel bleibt; das Auslösen wählt die Richtung gegen ihn; und
+  er wird zum Lernen angemeldet, sobald RSR eine Richtung gewählt oder behalten hat. Vorher zählte die Sperre nur den
+  Vorlauf und die Anmeldung nur Blicke im Vorlauf: Eine Sofortaktion auf den Wirkenden 0,25 s vor dem Balkenende ging
+  ins Auge, und eine früh gewählte Richtung blieb ungelernt (vierte unabhängige Prüfung, H1 und H2). Preis: Auf den
+  Wirkenden wartet eine Aktion bis zu Vorlauf plus Sperre (etwa 0,6 s) vor dem Blick statt nur den Vorlauf.
+- *Abweisen ohne sichere Richtung* (B4, B1; A809): Findet das Auslösen für einen Blick in diesem Zeitraum keine sichere
+  Richtung im Kegel der Aktion, geht sie nicht – auch aus der Warteschlange des Spiels und von Hand gedrückt, wie
+  BossModReborn sperrt. Vorher drehte RSR dann nicht, schaltete „Auto face target“ aus, und die Aktion ging mit der
+  Richtung auf das Auge. Preis: Ein eigener Druck auf den Wirkenden geht in diesem Zeitraum nicht; die Spur sagt es
+  einmal je Blick („gaze: refused …“). Mit „Turn away from gaze attacks“ aus und ohne gemessenen Vorlauf weist RSR nichts ab.
+- *Rand der Messung* (B4; A809): RSR wählt seine Richtung mit 1° Abstand zur Grenze von 45°. Gemessen: der letzte
+  Getroffene 44,2°, der erste Verschonte 45,1° vom Auge (#3499, #44355, #48153, 117 Ziele, 33 getroffen), ACT führt die
+  Richtung auf 0,57° genau; die Grenze liegt also bis zu 45,4°. Die Auswertung, wer getroffen wurde, rechnet ohne ihn.
+  Preis: jede sichere Lücke 2° schmaler.
 - *Nachlauf bis zum Paket* (B4): gemessen 0,26 bis 0,30 s. Preis: Sperre bis 0,3 s länger. Das Lernen wartet bei einem
   gewirkten Blick bis zum Paket, nicht bis zu einer Frist (B3, A801).
-- *Lernen und gestufter Rückfall* (B3): Preis: nach einem falschen Fehlschlag Schaden durch Sperre.
+- *Lernen und gestufter Rückfall* (B3): Preis: nach einem falschen Fehlschlag Schaden durch Sperre. Auch ein Blick, der
+  nur noch sperrt, bleibt angemeldet, gleich welcher Herkunft (Wirken, Marker, Status, Mitglied): Ein zweiter Treffer
+  lässt ihn los (A809; vorher nur beim Wirken, M1 der vierten Prüfung). Damit gilt B3 für jede Herkunft. Ein Treffer bei
+  falschem Sinn (in Wahrheit umgekehrt) kostet in der Sperre höchstens diesen zweiten Treffer (M5 der vierten Prüfung):
+  Der Sinn ist nur bei BossModReborns Liste belegt, beim Kennzeichen und beim Namen nicht; die Sperre bleibt trotzdem,
+  weil ohne sie allein im Pilgerpfad jeder Angriff ins Auge drehte (A791, H1) und die Grenze von zwei Treffern auch so
+  hält. Gelernt wird je Blick, nicht je Gebiet (A809): Der Pilgerpfad wechselt alle zehn Ebenen das Gebiet und zahlte den
+  Fehlschlag sonst in jedem neu.
+- *BossModReborns Halt* (Wechselwirkung, A809): BossModReborn setzt bei RSR jedes Bild „NoCasting“, solange eine
+  verbotene Richtung weniger als 0,75 s voraus liegt, für den Rest der Mechanik oder 1 s (`AIHintsBuilder`, 35a908ad7,
+  Zeilen 100–122). Bei jedem Blick, den BossModReborn kennt, steht RSR so etwa 2 s still, auch wenn er richtig steht (B2).
+  RSR behält das: Über die Schnittstelle kommt nur der Zustand, nicht welche Mechanik ihn setzt, und eine verbotene
+  Richtung, die RSR nicht kennt, schützte sonst niemand. Für #3499 und Destrudo kommt der Halt nicht; dort schützt RSR selbst.
+- *Marker ohne Auge* (T8, A809): Findet ein Marker kein Wirken, das mit ihm endet, schreibt RSR das einmal („gaze: marker
+  … no eye found“); dann dreht das Spiel wie ohne die Regel. Wie das Fenster der Zuordnung liegen muss, entscheidet erst
+  ein Mitschnitt aus Windurst (M4 der vierten Prüfung, unbelegt).
 - *Marker, Status, Mitglied als Auge* (B1; seine Hinweise zu Kefka und Windurst): Preis: Ein falsch zugeordnetes Auge
   dreht falsch, bis der Rückfall greift.
 - *Abstand aus Bewegung* und *Rückdrehung* (B4): Antworten auf Prüfbefunde. Im Stand ohne Wirkung; ob sie im Spiel je

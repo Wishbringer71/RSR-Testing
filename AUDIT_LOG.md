@@ -23576,6 +23576,34 @@ gegenstand vorgeschlagen, der bereits vorhanden war").
 - *Vorhersage:* `predictions/2026-11-14.json`, „gear-held-traced": Nach einem Schatz steht „crucible gear held: …" mit
   dem Opferring; widerlegt, wenn ein Schatzfenster aufgefrischt wird und keine solche Zeile im Lauf steht.
 
+### A809 · Blickwache: vierte Prüfrunde gegen die Anforderungen eingearbeitet (14.11.2026)
+
+TODO „Blickwache: Umbau der vierten Prüfrunde". Bericht der vierten unabhängigen Runde (Stand 0bfe2eb25, BossModReborn
+35a908ad7): zwei hoch, fünf mittel, neun niedrig. Nach drei Runden mit hohen Befunden (A792) zuerst gegen die
+Anforderungen B1 bis B6 in Konzept 13 geprüft, keine Flickrunde.
+- *H1 (Sperre endet vor dem Zeitraum, in dem der Server die Richtung hält) und H2 (früh gewählte Richtung ungelernt):*
+  eine Ursache – drei Zeiträume für dieselbe Frage. Jetzt ein Zeitraum, Vorlauf plus Sperre der Aktion, für Sperre der
+  Ziele, Wahl der Richtung und Anmeldung zum Lernen. Dazu das Abweisen (B4, B1): Findet das Auslösen keine sichere
+  Richtung im Kegel, geht die Aktion nicht, auch aus der Warteschlange und von Hand, wie BossModReborn sperrt
+  (Spur „gaze: refused …").
+- *M1 (zweiter Treffer nur beim Wirken):* Marker, Status und Mitglied, die nur noch sperren, bleiben angemeldet; ein
+  zweiter Treffer lässt sie los. *M5 (Sperre bei falschem Sinn):* bleibt, mit Preis im Konzept – mit M1 hält B3 (höchstens
+  zwei Treffer) für jede Herkunft, und ohne Sperre drehte allein im Pilgerpfad jeder Angriff ins Auge (A791, H1).
+- *M2 (BossModReborns Halt):* bestätigt am Quelltext (`AIHintsBuilder` 100–122): „NoCasting" bis 0,75 s vor jeder
+  verbotenen Richtung, für den Rest der Mechanik oder 1 s. RSR behält ihn – über die Schnittstelle kommt nicht, welche
+  Mechanik ihn setzt. Im Konzept und im Optionstext genannt.
+- *M3 (keine Mindestbreite):* 1° Rand zur Grenze aus der Messung (letzter Treffer 44,2°, erster Verschonter 45,1°, ACT
+  0,57°); Ausnahme in `fixed_values.json` nicht nötig (die Prüfung lässt 1 aus).
+- *M4 (Markerfenster):* unbelegt ohne Mitschnitt aus Windurst; nur die Spur „no eye found" neu.
+- *Niedrig:* N1 Konzepttexte berichtigt; N5 ein leerer Name verbindet keine Pakete mehr; N8 gelernt je Blick für den Build
+  statt je Gebiet. N6 war seit A794 behoben. N2, N3, N4, N7, N9 ohne Änderung: N2 und N7 verlängern nur die Sperre (sichere
+  Seite), N4 ist die gewollte Sperre, N9 wäre eine neue Mechanik ohne Anforderung; N3: Die Vorhersage
+  „gaze-3499-landed-model" scheitert in 24-Mann-Inhalten auch bei richtigem Modell (Treffer bei 85° und 179° durch die
+  gehaltene Richtung) – ihr Ergebnis ist so zu lesen.
+- *Prüfgrad:* statisch, Compile, CI; im Spiel nicht beobachtet.
+- *Vorhersage:* `predictions/2026-11-14.json`, „gaze-refused-names-gaze": jede Zeile „gaze: refused" nennt den Blick und
+  seine Restzeit unter Vorlauf plus Sperre.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

@@ -183,9 +183,12 @@ public struct ActionTargetInfo(IBaseAction action)
 				? Math.Max(action.Info.CastTime, ActionManagerEx.CurrentLockTweak?.AbilityWindow(action.ID) ?? 0f)
 				: action.Info.CastTime;
 			var startsIn = GazeWatch.StartsIn(action.Info.IsRealGCD);
+
+			// A809: and the while the server keeps the facing after it goes off - its lock (a move's is in its cast time).
+			var keeps = moves ? 0f : ActionManagerEx.CurrentLockTweak?.AbilityWindow(action.ID) ?? 0f;
 			for (var i = validTargets.Count - 1; i >= 0; i--)
 			{
-				if (GazeWatch.TurnsIntoGaze(validTargets[i].Position, castTime, startsIn, moves))
+				if (GazeWatch.TurnsIntoGaze(validTargets[i].Position, castTime, startsIn, moves, keeps))
 				{
 					validTargets.RemoveAt(i);
 				}

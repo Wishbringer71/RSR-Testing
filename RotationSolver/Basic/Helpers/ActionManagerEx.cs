@@ -118,13 +118,24 @@ public sealed unsafe partial class ActionManagerEx : IDisposable
 		// A786 (concept 13, "Richtig stehen und weiter treffen"): every action the game runs passes here - RSR's press, the
 		// game's queue and the player's own press - so a gaze due gets a safe facing instead of the game's turn at the target.
 		uint? facing = null;
+		var refused = false;
 		try
 		{
-			facing = actionType == ActionType.Action && DataCenter.IsActivated() ? GazeWatch.PrepareFacingFor(actionId, targetId, location) : null;
+			if (actionType == ActionType.Action && DataCenter.IsActivated())
+			{
+				facing = GazeWatch.PrepareFacingFor(actionId, targetId, location, out refused);
+			}
 		}
 		catch (Exception ex)
 		{
 			HookFault.Report("ActionManagerEx.UseActionLocation: gaze facing", ex);
+		}
+
+		// A809 (concept 13, "Abweisen ohne sichere Richtung"): no safe facing within the action's cone for a gaze it would
+		// still face when it lands - the action does not go, as BossModReborn holds it.
+		if (refused)
+		{
+			return false;
 		}
 
 		bool result;
