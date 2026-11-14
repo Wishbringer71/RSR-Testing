@@ -21,8 +21,8 @@
   },
   {
    "repo": "awgil/ffxiv_bossmod",
-   "commit": "6a8f5f304",
-   "date": "2026-11-13",
+   "commit": "c50e67f37",
+   "date": "2026-11-14",
    "use": "BossMod (Original)"
   },
   {
@@ -33,14 +33,14 @@
   },
   {
    "repo": "dajoey/lalalazy",
-   "commit": "900c698dd",
-   "date": "2026-11-11",
+   "commit": "289e9bb82",
+   "date": "2026-11-14",
    "use": "GluttonyCombo, LazyCrucible: Crucible-Aufzeichnungen, Sanduhr, Futter (A674, A679)"
   },
   {
    "repo": "FFXIV-CombatReborn/BossmodReborn",
-   "commit": "8ad17f97f",
-   "date": "2026-11-13",
+   "commit": "35a908ad7",
+   "date": "2026-11-14",
    "use": "Crucible-Module, Mechaniken, Vertrag mit RSR (Konzept 21, Code.md), Blickliste GazeActions.g.cs (Konzept 13)"
   },
   {

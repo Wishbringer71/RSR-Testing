@@ -22509,6 +22509,13 @@ Einordnung: Hinweise.
   - „Cat's Eye“ und „Avert Your Eyes“ tragen beide Arten und zählen als keines.
 - *Prüfgrad:* Compile, Prüfskripte samt Selbsttest des Generators, Modell an den Blättern; im Spiel nicht beobachtet.
   Messmittel sind die Zeilen „gaze: …“ mit Herkunft des Auges im `DefenseTrace.log`.
+- *Quellen am Auftragsende:*
+  - BossModReborn 35a908ad7: neue Criterion- und Variant-Module, kein Blick und nicht Windurst. Die Liste ist
+    inhaltlich gleich, neu erzeugt.
+  - BossMod c50e67f37: Kommentare an der Unverwundbarkeitsliste.
+  - lalalazy 289e9bb82: nur Oberfläche; die Beastmaster-Einträge im Changelog von GluttonyCombo standen schon in
+    900c698dd.
+  - Upstream unverändert seit A775.
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
