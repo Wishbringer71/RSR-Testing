@@ -23458,6 +23458,18 @@ höchste Bonuszahl"; „du hast zu schauen, wie und ob safe win regeln in den an
   kleiner als die Brettgröße nur, wenn gemessen ungefährdet. (Mittel) Für Begleiter außerhalb des Kaders setzte die
   Prüfung die mittleren LP des Kaders an; jetzt die kleinsten gezeigten (Preis im Konzept). Niedrig: Kern über der
   Brettgröße, Zählung „below the cap", Optionstext des Wegs, Kommentare und Untertitel.
+- *Bestätigungsrunde:* kein Befund hoher Schwere; zwei mittlere – beide eine Lücke der Bauart gegenüber seiner Regel
+  „die niedrigsten Vorrang": Gegen Gefährdung kam der stärkste oder einer ab dem Cap, wo einer auf Rang 8 bis 9 unter dem
+  Cap genügte; vom Tausch war jeder Heiler und Seelen-Begleiter ausgenommen, nicht nur wer eine Rolle hält. Konzept und
+  Code: eine Tauschfunktion (`Strengthen`) für Level und Safe win – der rangniedrigste außerhalb, der stärker kämpft, für
+  den schwächsten ohne Rolle (`RoleHolders`). Niedrig eingearbeitet: Rollen im Team einer Gattung zählen nur, wenn sie
+  kämpfen; ein Kader ohne kämpfenden Begleiter ist ungemessen unbekannt, nicht gefährdet; unter Score reihum auch nach
+  dem Höchstrang.
+- *Seine Frage, warum die Kaderwahl trotz Prüfrunden durchging (14.11.2026):* Die Runden prüften den Code gegen das
+  Konzept, und das Konzept definierte Leveln falsch (A796, meine Ableitung: Kern nach Schwächen, Nachzügler nur auf die
+  übrigen Plätze); die Regel wurde nie an seinem echten Bestand durchgerechnet; der Rang 0 verdeckte es bis A803; sieben
+  von neun Runden zielten auf Laden und Safe win. Folge fürs Vorgehen: Eine Kaderregel wird vor dem Code an seinem Bestand
+  aus Spur und `CrucibleFamiliarRank.json` als Ergebnis durchgerechnet.
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

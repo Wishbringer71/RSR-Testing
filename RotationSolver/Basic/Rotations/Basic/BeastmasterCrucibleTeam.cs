@@ -184,8 +184,8 @@ public partial class BeastmasterRotation
 	/// the lowest in rank. With fewer of them than places, the lowest at or above the cap fill one by one while the team is
 	/// endangered: it does not carry the board's measured losses at its rank step with one in reserve, counted on the
 	/// familiars the horn choice sends in - at least the recommended rank (K6) - and unmeasured counts as endangered. A full
-	/// team below the cap that is measured endangered takes the lowest at or above the cap in place of its weakest that
-	/// neither heals, protects nor interrupts. Empty with no familiar behind in rank (<paramref name="laggers"/> 0).
+	/// team below the cap that is measured endangered takes, for its weakest without a role, the lowest outside that fights
+	/// stronger - below the cap first (Strengthen). Empty with no familiar behind in rank (<paramref name="laggers"/> 0).
 	/// <paramref name="learning"/> receives each familiar that lags behind: true when it fights only when too few others live.
 	/// </summary>
 	private static List<TeamCandidate> LevelTeam(uint board, int size, List<TeamCandidate> all, Dictionary<uint, int> weight,
@@ -244,25 +244,19 @@ public partial class BeastmasterRotation
 			filled++;
 		}
 
-		while (chosen.Count == size && next < above.Count && TeamEndangered(board, chosen, recommended, shown, mean) == true)
+		if (chosen.Count == size)
 		{
-			var weakest = -1;
-			for (var i = 0; i < chosen.Count; i++)
+			// The rest of the order (below the cap, then at or above it, the lowest first) - the lowest that fights stronger.
+			var outside = new List<TeamCandidate>();
+			foreach (var pick in order)
 			{
-				if (BelowCap(chosen[i]) && !chosen[i].Safe && KinOf(chosen[i].Pet) != BeastmasterKinType.Soulkin
-					&& (weakest < 0 || chosen[i].Rank < chosen[weakest].Rank))
+				if (!chosen.Contains(pick))
 				{
-					weakest = i;
+					outside.Add(pick);
 				}
 			}
 
-			if (weakest < 0)
-			{
-				break;
-			}
-
-			chosen[weakest] = above[next++];
-			swapped++;
+			swapped = Strengthen(board, chosen, outside, interrupting, sync, recommended, shown, mean, false);
 		}
 
 		var offHorns = 0;
@@ -301,7 +295,9 @@ public partial class BeastmasterRotation
 			}
 		}
 
-		var carries = fighters.Count > 0 ? CarriesLosses(board, fighters, fighters.Count, shown, mean, out _) : false;
+		// With none that fights: endangered where losses are measured, unknown where not.
+		var carries = fighters.Count > 0 ? CarriesLosses(board, fighters, fighters.Count, shown, mean, out _)
+			: CarriesLosses(board, picks, picks.Count, shown, mean, out _) == null ? null : false;
 		return carries == null ? null : !carries.Value;
 	}
 
@@ -314,7 +310,7 @@ public partial class BeastmasterRotation
 		var sync = CrucibleBoard.SyncRank(board);
 		var recommended = CrucibleBoard.RecommendedRank(board);
 		var shown = ShownHealth(out var mean);
-		var order = ChooseTeam(new List<TeamCandidate>(pool), pool.Count, weight, interrupting, team, out var roles, -Math.Max(sync, 1),
+		var order = ChooseTeam(new List<TeamCandidate>(pool), pool.Count, weight, interrupting, LastRunTeam(team), out var roles, -Math.Max(sync, 1),
 			recommended);
 		keep = Math.Min(size, order.Count);
 		for (var n = Math.Max(Math.Min(roles, keep), 1); n < keep; n++)
@@ -329,21 +325,73 @@ public partial class BeastmasterRotation
 		return order.GetRange(0, keep);
 	}
 
-	// K7 (A806): the weakest of a team by the rank it fights with that neither heals, protects nor interrupts; -1 for none.
-	private static int WeakestReplaceable(List<TeamCandidate> team, int sync)
+	// K7 (A806; his rule "die niedrigsten vorrang, ausser ... gefährdet"): while the team is endangered (with
+	// `unknownEndangers`, also while unmeasured), the first of `outside` - in its order, the lowest first - that fights
+	// stronger takes the place of the team's weakest that holds no role, one at a time; the number of such swaps.
+	private static int Strengthen(uint board, List<TeamCandidate> team, List<TeamCandidate> outside, bool interrupting, int sync,
+		int recommended, Dictionary<BeastmasterPet, uint> shown, uint least, bool unknownEndangers)
 	{
-		var weakest = -1;
-		for (var i = 0; i < team.Count; i++)
+		var swaps = 0;
+		var roles = RoleHolders(team, interrupting);
+		while (TeamEndangered(board, team, recommended, shown, least) is var danger && (danger == true || (unknownEndangers && danger == null)))
 		{
-			if (!team[i].Safe && KinOf(team[i].Pet) != BeastmasterKinType.Soulkin
-				&& (weakest < 0 || CrucibleBoard.FightingRank(team[i].Rank, team[i].OverRank, sync)
-					< CrucibleBoard.FightingRank(team[weakest].Rank, team[weakest].OverRank, sync)))
+			var weakest = -1;
+			for (var i = 0; i < team.Count; i++)
 			{
-				weakest = i;
+				if (!roles.Contains(team[i].Pet) && (weakest < 0 || Strength(team[i]) < Strength(team[weakest])))
+				{
+					weakest = i;
+				}
+			}
+
+			var stronger = -1;
+			for (var i = 0; weakest >= 0 && i < outside.Count && stronger < 0; i++)
+			{
+				if (Strength(outside[i]) > Strength(team[weakest]))
+				{
+					stronger = i;
+				}
+			}
+
+			if (stronger < 0)
+			{
+				break;
+			}
+
+			team[weakest] = outside[stronger];
+			outside.RemoveAt(stronger);
+			swaps++;
+		}
+
+		return swaps;
+
+		// What a familiar adds on the horns: the rank it fights with, none below the recommended rank (K6).
+		int Strength(TeamCandidate candidate) => candidate.OverRank || candidate.Rank >= recommended
+			? CrucibleBoard.FightingRank(candidate.Rank, candidate.OverRank, sync) : 0;
+	}
+
+	// K7 (A806): the familiars of a team that hold a role - the first two that heal or protect, and the first Soulkin where
+	// enemies cast interruptibly; a third healer or a Soulkin without interruptible enemies holds none.
+	private static HashSet<BeastmasterPet> RoleHolders(List<TeamCandidate> team, bool interrupting)
+	{
+		var roles = new HashSet<BeastmasterPet>();
+		var safe = 0;
+		var soul = false;
+		foreach (var pick in team)
+		{
+			if (pick.Safe && safe < BossSafeFamiliars)
+			{
+				safe++;
+				_ = roles.Add(pick.Pet);
+			}
+			else if (interrupting && !soul && KinOf(pick.Pet) == BeastmasterKinType.Soulkin)
+			{
+				soul = true;
+				_ = roles.Add(pick.Pet);
 			}
 		}
 
-		return weakest;
+		return roles;
 	}
 
 	// K7 (A803, A799): a familiar's true rank - the higher of the game's and the last result window's; `known` false when
@@ -507,30 +555,12 @@ public partial class BeastmasterRotation
 		if (goal == CrucibleGoal.SafeWin)
 		{
 			// The lowest first; while the team is endangered - measured not to carry the board's losses, or unmeasured - the
-			// strongest outside takes the place of its weakest that neither heals, protects nor interrupts.
+			// lowest outside that fights stronger takes the place of its weakest without a role.
 			var order = ChooseTeam(new List<TeamCandidate>(all), all.Count, weight, interrupting, LastRunTeam(team), out _, int.MaxValue,
 				recommended);
 			chosen = order.Count > size ? order.GetRange(0, size) : order;
 			var outside = order.Count > size ? order.GetRange(size, order.Count - size) : [];
-			outside.Sort((a, b) => CrucibleBoard.FightingRank(b.Rank, b.OverRank, sync).CompareTo(CrucibleBoard.FightingRank(a.Rank, a.OverRank, sync)));
-			var swapped = 0;
-			foreach (var strong in outside)
-			{
-				if (TeamEndangered(board, chosen, recommended, shown, mean) == false)
-				{
-					break;
-				}
-
-				var weakest = WeakestReplaceable(chosen, sync);
-				if (weakest < 0 || CrucibleBoard.FightingRank(strong.Rank, strong.OverRank, sync)
-					<= CrucibleBoard.FightingRank(chosen[weakest].Rank, chosen[weakest].OverRank, sync))
-				{
-					break;
-				}
-
-				chosen[weakest] = strong;
-				swapped++;
-			}
+			var swapped = Strengthen(board, chosen, outside, interrupting, sync, recommended, shown, mean, true);
 
 			CrucibleTeamSizeNote = $"Safe win: the full team, the lowest in rank as long as passing is safe; {swapped} stronger in place of "
 				+ "low ones - the low team does not carry the losses measured on this board, or none are measured yet.";
@@ -652,7 +682,8 @@ public partial class BeastmasterRotation
 				var better = highFirst
 					? best < 0 || (Strength(candidate) != Strength(candidates[best]) ? Strength(candidate) > Strength(candidates[best])
 						: covers != bestCovers ? covers
-						: worth > bestWorth || (worth == bestWorth && Before(candidate, candidates[best])))
+						: worth != bestWorth ? worth > bestWorth
+						: !team.Contains(candidate.Pet) && team.Contains(candidates[best].Pet))
 					: !lowFirst
 					? best < 0 || worth > bestWorth || (worth == bestWorth && Before(candidate, candidates[best]))
 					: best < 0 || (adequate != Adequate(candidates[best]) ? adequate
@@ -840,7 +871,7 @@ public partial class BeastmasterRotation
 			foreach (var pick in picks)
 			{
 				hits.UnionWith(pick.Hits);
-				kinSafe += pick.Safe ? 1 : 0;
+				kinSafe += pick.Safe && (pick.OverRank || pick.Rank >= CrucibleBoard.RecommendedRank(board)) ? 1 : 0;
 			}
 
 			var total = points + (keep < size ? SquadPoints(keep) : 0);

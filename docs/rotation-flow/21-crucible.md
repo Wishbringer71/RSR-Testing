@@ -2245,9 +2245,12 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
   *Bauart – eine Gefährdungsprüfung, je Ziel eine Reihenfolge und ein Auffüllen:* *Gefährdet* ist ein Kader, wenn die
   Begleiter, die die Hornwahl einsetzt (über dem Cap oder mindestens auf dem empfohlenen Rang), die gemessenen Verluste
   dieses Bretts auf ihrer Rangstufe mit einem in Reserve nicht tragen (`CarriesLosses`, A703); ohne Messung ist die
-  Gefährdung unbekannt (`TeamEndangered` null). Die Reihenfolge beginnt unter jedem Ziel mit den Rollen (zwei, die heilen
+  Gefährdung unbekannt (`TeamEndangered` null), auch wenn kein Begleiter des Kaders kämpft. Die Reihenfolge beginnt unter jedem Ziel mit den Rollen (zwei, die heilen
   oder schützen, solange einer verfügbar ist; der Unterbrecher, wo das Brett ihn verlangt) – sie tragen die Sicherheit
-  vor dem Boss und sind deshalb kein „niedriger Begleiter, der weichen kann". *Eine Rolle muss kämpfen:* Die Hornwahl
+  vor dem Boss und sind deshalb kein „niedriger Begleiter, der weichen kann"; nur wer eine Rolle hält, ist vom Tausch
+  ausgenommen – ein dritter Heiler oder ein Seelen-Begleiter ohne unterbrechbare Gegner ist ein gewöhnlicher Platz.
+  *Tausch gegen Gefährdung (Z4, „die niedrigsten Vorrang"):* immer der rangniedrigste, der den Kader stärker macht, einer
+  nach dem anderen, bis er nicht mehr gefährdet ist – nicht der stärkste. *Eine Rolle muss kämpfen:* Die Hornwahl
   setzt einen Begleiter unter dem empfohlenen Rang nur ein, wenn weniger andere leben als Hörner da sind (K6); ein
   Heiler dort fehlte vor dem Boss (unabhängige Prüfung A806, hoch). Darum nimmt jede Rolle zuerst einen Begleiter ab dem
   empfohlenen Rang – unter Level und Safe win davon den rangniedrigsten, unter Score den stärksten –, einen darunter nur,
@@ -2258,9 +2261,9 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
   gemessen sind (A729).
   | Ziel | Reihenfolge nach den Rollen | Auffüllen | Unbekannte Gefährdung |
   |---|---|---|---|
-  | Level | unter dem Cap zuerst, dann der niedrigste Rang; bei gleichem Rang wer eine Schwäche neu abdeckt, dann der Schwächenwert, dann wer im letzten Lauf fehlte | jeder Platz unter dem Cap; fehlen welche, die niedrigsten am oder über dem Cap, bis nicht gefährdet; ist auch ein voller Kader unter dem Cap gefährdet, tritt der niedrigste am oder über dem Cap an die Stelle des schwächsten, der weder heilt, schützt noch unterbricht | als gefährdet beim Auffüllen (volle Größe); kein Tausch eines Kaders unter dem Cap (Z2) |
-  | Safe win | der niedrigste Rang insgesamt, dann wie Level | volle Größe; solange gefährdet, tritt der stärkste außerhalb an die Stelle des schwächsten, der weder heilt, schützt noch unterbricht | als gefährdet: getauscht, bis kein stärkerer mehr da ist |
-  | Score | der stärkste nach dem Rang, mit dem er kämpft; bei gleichem wer eine Schwäche neu abdeckt, dann der Schwächenwert | die kleinste Zahl ab dem Kern (Rollen und jede Schwäche, höchstens die Größe des Bretts), die nicht gefährdet ist; dann ein Team einer Gattung, wo es mehr Punkte bringt, dieselben Schwächen und Rollen hält und selbst nicht gefährdet ist – kleiner als die Größe des Bretts nur, wenn gemessen ungefährdet | volle Größe; ein Team einer Gattung nur in voller Größe |
+  | Level | unter dem Cap zuerst, dann der niedrigste Rang; bei gleichem Rang wer eine Schwäche neu abdeckt, dann der Schwächenwert, dann wer im letzten Lauf fehlte | jeder Platz unter dem Cap; fehlen welche, die niedrigsten am oder über dem Cap, bis nicht gefährdet; ist auch ein voller Kader unter dem Cap gefährdet, tritt an die Stelle des schwächsten ohne Rolle der rangniedrigste außerhalb, der stärker kämpft – zuerst unter dem Cap, dann am oder über ihm –, bis nicht gefährdet | als gefährdet beim Auffüllen (volle Größe); kein Tausch eines Kaders unter dem Cap (Z2) |
+  | Safe win | der niedrigste Rang insgesamt, dann wie Level | volle Größe; solange gefährdet, tritt an die Stelle des schwächsten ohne Rolle der rangniedrigste außerhalb, der stärker kämpft | als gefährdet: getauscht, bis keiner stärker kämpft |
+  | Score | der stärkste nach dem Rang, mit dem er kämpft; bei gleichem wer eine Schwäche neu abdeckt, dann der Schwächenwert, dann wer im letzten Lauf fehlte (Z9: reihum auch nach dem Höchstrang) | die kleinste Zahl ab dem Kern (Rollen und jede Schwäche, höchstens die Größe des Bretts), die nicht gefährdet ist; dann ein Team einer Gattung, wo es mehr Punkte bringt, dieselben Schwächen und Rollen hält (Rollen nur mit Begleitern, die kämpfen) und selbst nicht gefährdet ist – kleiner als die Größe des Bretts nur, wenn gemessen ungefährdet | volle Größe; ein Team einer Gattung nur in voller Größe |
   Ohne Begleiter unter Rang 25 wählt Level wie Score (seine Vorgabe: danach „weniger, so dass punktezahl erhöht werden
   kann").
   *Was aufging (Z8):* Im Brett hatte A804 für Safe win eine eigene Regel („jede Entscheidung, als gäbe es keinen Bonus");
