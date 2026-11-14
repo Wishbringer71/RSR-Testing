@@ -23691,6 +23691,31 @@ KI (MultiLineStack, Forked Tower) umgekehrt und die Version 7.5.8.3.
   übrigen Änderungen betreffen BossMods eigene KI, die RSR nicht liest. Keine Änderung.
 - *Prüfgrad:* Quelltext beider Werkzeuge; Laufzeit nicht beobachtet.
 
+### A812 · Seine Rüge: neun Prüfrunden für einen Mechanismus – Lernteil der Blickwache auf die Vorgabe zurückgeführt (14.11.2026)
+
+Seine Rüge (14.11.2026, während der neunten unabhängigen Prüfrunde der Blickwache): „Soll das ewig so weiterlaufen?
+Prüfrunde über Prüfungen für ein Problem? Merkst du nicht, dass hier wieder was falsch läuft?" Einordnung: Rüge zu einer
+bestehenden Vorgabe (`CLAUDE.md`, „Prüfgrad"; seine Rüge vom 14.11.2026 in KSP-MyContracts, „bei vernünftiger
+vorausplanender konzeptionierung würde es nicht 10 reviewrunden benötigen").
+- *Ursache am Vorgehen:* Die Runden sechs, sieben und acht brachten je Befunde mittlerer Schwere, alle im Lernteil, und
+  ich flickte jede Runde. Die Regel „bringt die dritte Runde in Folge welche" las ich nur auf Befunde hoher Schwere – eine
+  Wortlautlücke, die die REGEL ausschließt (Zweck vor Wortlaut). Spätestens nach der achten Runde war es ein Befund am
+  Vorgehen. Widerrufen in C201. Die Regel nennt jetzt Befunde hoher oder mittlerer Schwere.
+- *Neunte Runde abgebrochen.* Zurück zur Anforderung (Loop, Stufe 1): Die Vorgabe (`code.md`, „Entscheidung zur
+  Laufzeit") verlangt zwei Stufen – nach dem ersten Fehlschlag nur, was nur Schaden kostet, nach dem zweiten das
+  Verhalten ohne Regel. Nicht verlangt: die Anmeldung jedes Blicks, für den RSR handelte (vier Aufrufstellen, offene
+  Liste, Fristen, Abschluss, Zuordnung über Namen), und die Gegenprobe an der Richtung der anderen Getroffenen (A789),
+  die nur einen schnelleren Rückfall erlaubt. Aus beiden stammten die Befunde der Runden sechs bis acht.
+- *Neu, Konzept 13 zuerst („Im Spiel auswerten und lernen", jetzt die einzige Stelle; „Lernen und gestufter Rückfall"
+  verweist dorthin):* Solange RSR läuft, ist ein schädlicher Status auf dem Spieler aus einem Paket ein Fehlschlag –
+  beim Wirken des Blicks, dessen Zeile das Paket trägt (über den Namen auch der Helfer), bei Marker, Status und Mitglied
+  jedes Paket im Zeitraum um ihre Frist. Erster Fehlschlag → Sperre, zweiter nach der ersten Mechanik → loslassen, je
+  Blick und Build. 219 Zeilen weniger. Gegen die Befunde der Runden sechs bis acht geprüft: Jeder lag in einem
+  entfallenen Teil oder ist durch den Zeitraum um die Frist gedeckt. Neuer Preis (im Konzept): Auch ein eigener
+  Stellfehler zählt als Fehlschlag; ein offensichtlich widerlegtes Modell kostet den zweiten Treffer, statt beim ersten
+  loszulassen – beides innerhalb von zwei Treffern je Blick (B3).
+- *Prüfgrad:* statisch, Compile, CI (58 Schritte); im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -24043,3 +24068,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C198 | A804 und Konzept 21, „Ziel des Laufs" (Stand A804/A805): Unter Safe win entscheide im Brett jede Handlung, als gäbe es keinen Bonus („die Regel unter Safe win, geschlossen"); Safe win wähle die volle Größe gierig nach Schwächen | Seine Vorgaben vom 14.11.2026 (A806): Die Ziele unterscheiden sich nur im Kader; im Brett gilt unter jedem Ziel „immer sicher, dann die höchste Bonuszahl"; Safe win wählt die niedrigsten, solange das Bestehen sicher ist |
 | C199 | A785 und CLAUDE.md, „Wenn er etwas sagt" (Stand A785): Seine Vorgabe „gemeldete issues anderer eigener repos sind zu beachten" heiße, bei einer neuen Aufgabe die Issues in seinen anderen Repositories zu lesen | Seine Präzisierung vom 14.11.2026: „du hast nicht in anderen repos zu arbeiten" – gemeint sind die Issues, die sie hier melden. Gelesen hatte ich dort (A785 und am 14.11.2026 abends, drei leere Listen), geändert nichts. Regel in CLAUDE.md neu gefasst |
 | C200 | A797 (Stand A797): Die Fensterspur schreibe jetzt jeden Laden und das Teamfenster vor dem Brett | Sie schrieb jede Öffnung („PostSetup"), die keine Werte trägt; die Werte kommen mit „PostRefresh", das nur einmal je Lauf geschrieben wurde – jeder zweite Laden am 14.11.2026 ohne Inhalt. Behoben in A808 |
+| C201 | CLAUDE.md, „Prüfgrad" (Lesart A791–A809): „Bringt die dritte Runde in Folge welche" meine nur Befunde hoher Schwere | Der Zweck der Regel – eine Konstruktion, die jede Korrektur an neuer Stelle aufbricht – gilt ebenso bei mittleren; drei Runden mit mittleren Befunden (sechs bis acht der Blickwache) waren ein Befund am Vorgehen. Seine Rüge, 14.11.2026 (A812); Regel präzisiert |
