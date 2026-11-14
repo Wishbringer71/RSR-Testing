@@ -23535,6 +23535,13 @@ Hinweis unter Level zählte Tausche unter dem Cap als „at or above"; Falsifika
   an, jetzt eine Spanne; der Hinweis unter Safe win nannte „0 stronger"; mehrere Bedingungen je Gebiet geben dem
   Rennen den Namen des ersten (Preis im Konzept 03, kein Leser urteilt danach).
 - *Prüfgrad nach der Runde:* Compile, CI (58 Schritte).
+- *Befund am Vorgehen (hoch nach einer Runde ohne, CLAUDE.md „Prüfgrad"):* keine weitere Runde; zurück zur Anforderung.
+  Jede Mechanik gegen Z1 bis Z9: die Gefährdungsprüfung trägt Z3 bis Z6; die LP je Begleiter trägt sie (ohne sie misst
+  sie nichts, das ein Tausch ändert); der Tausch trägt Z4 und Z5; die Rollenzählung trägt B5 und K4 vor dem Boss; die
+  Inhaltszeile ist eine Defektbehebung. Keine ist entbehrlich, keine neue entstand aus der Runde. Ursache des hohen
+  Befunds: eine Ersatzgröße (Rang für LP) ungeprüft übernommen, obwohl die Daten zur Streuung schon vorlagen (alle
+  Zeilen von `XBMPetParamGrow`). Folge fürs Vorgehen: Bevor eine Größe eine andere vertritt, ihre Streuung über alle
+  Fälle an den vorhandenen Daten messen.
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
