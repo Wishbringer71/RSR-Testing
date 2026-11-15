@@ -33,7 +33,7 @@
   },
   {
    "repo": "dajoey/lalalazy",
-   "commit": "cdd50856a",
+   "commit": "55146dbfc",
    "date": "2026-11-15",
    "use": "GluttonyCombo, LazyCrucible: Crucible-Aufzeichnungen, Sanduhr, Futter (A674, A679)"
   },
@@ -183,8 +183,8 @@
   },
   {
    "repo": "t3knical/DalamudPlugins",
-   "commit": "c1221e8c3",
-   "date": "2026-11-14",
+   "commit": "909204b9c",
+   "date": "2026-11-15",
    "use": "Tekz-BossmodReborn-Fork (Zielvorrang je Kampf), BeastMasterHelper (A667)"
   },
   {

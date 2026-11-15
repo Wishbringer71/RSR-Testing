@@ -133,6 +133,8 @@ if __name__ == "__main__":
         self_test()
     elif "--record" in sys.argv:
         i = sys.argv.index("--record")
+        if len(sys.argv) < i + 3:
+            sys.exit("usage: --record <owner/repo> <commit>")
         if not record(sys.argv[i + 1], sys.argv[i + 2]):
             sys.exit(f"{sys.argv[i + 1]} is not listed in {LIST.name}")
     else:
