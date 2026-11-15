@@ -137,6 +137,7 @@ internal static partial class ActionUpdater
 		UpdateSlots();
 		UpdateMoving(now);
 		UpdateLifetime(now);
+		BurstWatch.Frame();
 	}
 
 	private static DateTime _startCombatTime = DateTime.MinValue;
@@ -160,6 +161,8 @@ internal static partial class ActionUpdater
 			DataCenter.LastPullTerritoryId = DataCenter.Territory?.Id ?? 0;
 			// A809 (concept 13, "Kampfende"): a fight's gaze registrations end here, also with RSR off after a wipe.
 			GazeWatch.EndFight();
+			// A820 (concept 03, "Bereit, aber nicht genutzt"): which cooldowns stood ready in this fight and did not come.
+			BurstWatch.EndFight();
 			DataCenter.EnemyHitPlayerThisFight = false;
 			_startCombatTime = DateTime.MinValue;
 

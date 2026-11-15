@@ -23909,6 +23909,50 @@ wann True North".
   eine Aktion eine Zeile ohne True North mit „hit". Widerlegt, wenn nur „unknown" erscheint.
 - *Prüfgrad:* Quellen- und Codeanalyse, Compile, CI; im Spiel nicht beobachtet.
 
+### A820 · Upload vom 15.11.2026: alle Jobs an der Puppe – Weben, Regler, Mana-Brunnen, später Burst (15.11.2026)
+
+Sein Auftrag (15.11.2026): „fflogsarchive, RotationSolver analysieren, danach nach weaving prüfen, danach schauen, ob
+rotationen optimiert werden können. kritischer vollständiger loop. audit, codereview, fehlerbeseitigung".
+- *Dateien:* `DefenseTrace.log` (eine Sitzung 09:50–11:35, Build 9036b6874, also vor A816–A819), ACT-Mitschnitt des
+  15.11. 09:49–11:35 (Nebelfeld, Trainingspuppe, 21 Jobabschnitte, 4936 eigene Aktionen). Die drei Mitschnitte vom
+  14.11. sind die schon ausgewerteten Crucible-Läufe (A797, A806). Neue Crucible-Werte in den Tabellen stammen aus
+  dem Abend des 14.11.: echte Ränge 6–9 für 27 Begleiter, Lasten und Verluste je Brett – plausibel.
+- *Vorhersagen* (`evaluate_predictions.py`): bestanden hook-no-fault, exception-none, lock-cut-rises; offen alle zu
+  Blicken und Crucible (nicht gespielt); dummy-no-defence und positional-learns nicht im gespielten Build.
+- *Abwehr an der Puppe:* in allen 30 Kämpfen offen (1854 Zeilen „single defence open"), 20 Jobs warfen Abwehr –
+  das ist A818, nach diesem Build behoben. Folgen hier: GCD-Verzögerungen durch Abwehr-Weaves (siehe unten) und beim
+  Beschwörer Sol-Bahamut 40 s zu spät, weil `RadiantAegisDueBeforeDemi` jede Beschwörung hinter den fälligen Schild
+  stellte (Schimmerschild 42:15 und 42:50, Beschwörung 42:53).
+- *Weben* (Konzept 03, „Weben, Animationssperre und Latenz", gemessen): Abstand zweier Aktionen beim Server ≥ 620 ms
+  (Median 625–670 ms) bei jedem Job; Doppel-Weave kostet nichts; Dreifach-Weave 40–90 ms (Dragoon mit True North,
+  Paladin und Dunkelritter mit Abwehr an der Puppe); „GCD held back by a lock" ≤ 0,05 s je Kampf außer mit
+  Abwehr-Weaves an der Puppe (Samurai 0,78 s Tengentsu, Schwarzmagier 1,05 s Stumpfsinn, Revolverklinge 0,31 s,
+  Rotmagier 0,37/0,46 s). Kein Defekt im Weben.
+- *Regler der Sperre:* Schnitt 62 → 500 ms über die Sitzung, „zone: least 0" ab 10:34. Kein Defekt: Ohne Ablehnung
+  wächst der Regler bis zur längsten Verzögerung (so gebaut, A753), abgezogen wird je Aktion höchstens ihre eigene
+  Verzögerung (26–58 ms im Mittel). Die 0 ms kommen von einer Antwort im Frame der Anfrage; ohne Wirkung aus demselben
+  Grund. 142 Zeilen „sequence N not seen as a request" bleiben nur Messrauschen.
+- *Rotationen, Abklingzeiten je Job* (ACT, Abstand zwischen Einsätzen gegen den Recast):
+  - *Schwarzmagier – Defekt, behoben:* Mana-Brunnen 2 statt bis zu 4 Einsätze in 415 s. Die Basis führte Thunderhead
+    als `StatusProvide`; Thunderhead läuft nach jedem Feuga 30 s, also sperrte es fast jedes Verzweiflung mit 0 MP
+    (21:44–24:44 sechsmal Transposition statt Mana-Brunnen). Herkunft Upstream (bd9c156b0), Upstream unverändert;
+    RabbsBLM umging die Sperre schon. Jetzt ohne Thunderhead (Konzept 01, BLM). Klasse: alle 385 `StatusProvide`
+    der Basisrotationen durchgesehen; die übrigen sperren für den eigenen Proc derselben Aktion und sind gewollt.
+  - *Später erster Burst – Ursache nicht lesbar:* Tänzer Technischer Schritt nach 40 s (Einfaches Finale seit 0,6 s
+    vor Kampfbeginn aktiv), Maschinist Laufstabilisator und Wildfeuer nach 42 s (30 s ohne jede Ability), Rotmagier
+    Ermutigen erst im dritten Kampf. Geprüft und ausgeschlossen: Zeit bis zum Tod (Puppe 44/44 LP, unbekannt zählt als
+    erlaubt), BossMods Auszeit (ohne Modul nie), Abwehrwerte (Technischer Schritt steht nur in der Dauertabelle),
+    Burst-Schalter (Nahkämpfer und Heiler bursteten nach 6–15 s). Die Spur schreibt nur Abwehrentscheidungen, daher
+    gebaut: `BurstWatch` (Konzept 03, „Bereit, aber nicht genutzt") – je Kampf eine Zeile mit jedem Cooldown, der
+    länger als einen GCD bereit stand, Dauer und `CanUse`-Gründe oder „not asked".
+  - *Absicht, kein Defekt:* Trance wartet aufs Zwei-Minuten-Fenster (Technischer Schritt binnen 35 s), Doppelschach
+    sammelt Ladungen, Sternensturz nur im Drachenblut, Corps-a-corps, Sturmlauf, Einschreiten und Körperparade sind
+    Bewegung (seine Vorgabe zur sicheren Position), die Demi-Beschwörungen teilen ihren Zyklus.
+- *Prüfgrad:* Mitschnitt- und Spuranalyse, Code, Compile, CI; im Spiel nicht beobachtet.
+- *Vorhersagen:* `predictions/2026-11-15.json`: „manafont-every-cycle" – im Schwarzmagier-Kampf keine Zeile, die
+  Mana-Brunnen als bereit, aber nicht genutzt mit über 30 s führt; „burst-held-traced" – nach einem Kampf über 30 s die
+  Zeile „ready but unused over the fight".
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

@@ -2,5 +2,9 @@
   {"id": "dummy-no-defence", "archive": "A818",
    "kind": "absent", "situation": "targeting by danger: Trainingspuppe", "match": "single defence open"},
   {"id": "positional-learns", "archive": "A819",
-   "kind": "present", "situation": "positional: .* true north yes - hit", "match": "positional: .* true north no - hit"}
+   "kind": "present", "situation": "positional: .* true north yes - hit", "match": "positional: .* true north no - hit"},
+  {"id": "burst-held-traced", "archive": "A820",
+   "kind": "present", "situation": "combat ended after ([3-9][0-9]|[1-9][0-9]{2,}) s", "match": "ready but unused over the fight: "},
+  {"id": "manafont-every-cycle", "archive": "A820",
+   "kind": "absent", "situation": "ready but unused over the fight: ", "match": "(Manafont|Mana-Brunnen) ([3-9][0-9]|[1-9][0-9]{2,})\\.[0-9] s"}
 ]

@@ -1900,6 +1900,58 @@ gerade kürzt. So folgt sie dem Umschalten der Option, und einer Sperre im Gebie
 mit der nächsten Antwort. Rotationen fragen die Webregel viele Male je Frame; jede Frage ist ein Vergleich und eine
 Addition. Je Frame wird nichts angelegt.
 
+**Gemessen am 15.11.2026** (ACT und Spur, 21 Jobs an der Puppe, Build 9036b6874, A820):
+- *Abstand zweier Aktionen beim Server:* mindestens 620 ms, im Median 625 bis 670 ms, bei jedem Job und jedem Schnitt.
+  Der Server hält die Sperre also selbst ein. Eine Anfrage, die früher kommt, wartet bei ihm und wird nicht abgelehnt:
+  0 Anfragen ohne Antwort.
+- *Doppel-Weave* kostet bei 2,1 bis 2,5 s GCD nichts (Median der Verzögerung des nächsten GCD 0 bis 41 ms).
+- *Dreifach-Weave* verschiebt den GCD um 40 bis 90 ms. Die Fälle: Dragoon mit True North als drittem Weave, Paladin und
+  Dunkelritter mit Abwehr an der Puppe (A818).
+- *„GCD held back by a lock":* höchstens 0,05 s je Kampf, außer wo Abwehr an der Puppe den letzten Weave nahm. Das waren
+  Samurai mit Tengentsu (0,78 s), Schwarzmagier mit Stumpfsinn (1,05 s), Revolverklinge (0,31 s) und Rotmagier
+  (0,37 s und 0,46 s). Seit A818 entfällt das.
+- *Der Schnitt stieg von 62 auf 500 ms.* Ohne Ablehnung wächst der Regler bis zur längsten Verzögerung des Gebiets; so
+  ist er gebaut. Abgezogen wird je Aktion aber höchstens ihre eigene Verzögerung (`Math.Min(cut, delay)`), im Mittel 26
+  bis 58 ms. Die angezeigte Zahl ist eine Obergrenze, kein Abzug.
+- *„zone: least 0":* Eine Antwort im selben Frame wie die Anfrage zählt mit 0 ms. Weil der Abzug je Aktion an der
+  eigenen Verzögerung endet, ändert das nichts.
+
+## Bereit, aber nicht genutzt
+
+Geltender Stand (A820): Kommt ein Cooldown, der eine eigene Abklinggruppe hat, im Kampf länger als einen GCD nicht,
+obwohl er bereit ist, schreibt RSR am Kampfende je Aktion, wie lange er bereit stand, wie oft ihn die Rotation fragte
+und mit welchem Grund `CanUse` ablehnte. Das Messmittel greift nicht ein; es zeigt, wo eine Rotation Schaden liegen
+lässt.
+
+- *Anlass:* Seine Puppensitzung vom 15.11.2026 (Build 9036b6874):
+  - Der erste Burst kam bei Tänzer, Maschinist und Rotmagier 40 bis 73 s nach Kampfbeginn: Technischer Schritt nach
+    40 s, Laufstabilisator und Wildfeuer nach 42 s, Ermutigen erst im dritten Kampf.
+  - Beim Maschinisten lief 30 s lang gar keine Ability, auch nicht Doppelschach mit vollen Ladungen.
+  - Beim Beschwörer hielt die Abwehr an der Puppe Sol-Bahamut über `RadiantAegisDueBeforeDemi` 40 s zurück (A818
+    behebt das).
+  - Für die übrigen drei liest die Spur keinen Grund, denn sie schreibt nur Entscheidungen der Abwehr.
+- *Anforderung:* Ein verschobener Burst kostet den ganzen Kampf. Der Zwei-Minuten-Zyklus läuft danach neben den Buffs
+  der Gruppe, und im ersten Fenster fehlen Burst und Trank. Ob die Rotation absichtlich wartet (Ladungen sammeln,
+  Fenster abwarten) oder eine Prüfung sie sperrt, muss aus der Spur hervorgehen, ohne dass er etwas einschaltet.
+- *Was zählt:* jede Aktion der laufenden Rotation mit einer eigenen Abklinggruppe neben dem GCD (Spielblatt
+  `CooldownGroup`, `AdditionalCooldownGroup`). Dazu gehören Abilities und GCDs mit eigenem Recast wie Technischer
+  Schritt. Ausgenommen sind Abwehr (`DefensiveValues`), Bewegung und alles außerhalb des Kampfes oder ohne Gegner in
+  Reichweite.
+- *Wann gezählt wird:* solange eine Ladung bereit ist und die Aktion nicht kommt. Eine Zeile entsteht nur, wenn die Zeit
+  einen GCD übersteigt.
+- *Gründe:* Jede Ablehnung über `ActionTracer.Reject` wird je Aktion gezählt (der Grund ist eine feste Zeichenkette).
+  Fragt die Rotation die Aktion gar nicht, steht „not asked".
+- *Ort und Kosten:* `BurstWatch`, einmal je Frame im Kampf über die vorab gefilterte Liste der Rotation (einige Dutzend
+  Aktionen, je ein Abklingvergleich). Je Ablehnung kommt ein Wörterbuchzugriff hinzu. Nichts wird je Frame angelegt;
+  die Zeile entsteht einmal je Kampf.
+- *Falsifikation:*
+  - *Ausgeliefert, und nichts ändert sich – warum?* Weil es nur misst. Erst die nächste Puppensitzung zeigt die Gründe;
+    das ist der Zweck, nicht ein Ersatz für eine Regel.
+  - *Zu viele Zeilen:* eine Zeile je Kampf, die Aktionen darin nach gehaltener Zeit geordnet.
+  - *Falsche Ruhe:* Eine Aktion, die nie bereit ist, erscheint nicht – richtig so, denn sie lässt nichts liegen.
+- *Messweg:* Zeile „ready but unused over the fight: …" in `DefenseTrace.log`. Vorhersage `burst-held-traced` (A820):
+  Nach jedem Kampf von mehr als einem GCD gibt es diese Zeile oder keine Aktion, die länger bereit stand.
+
 ## Bewegungssperre beim Wirken und die KI von BossMod
 
 **Geltender Stand** (A649–A652): „Lock movement while casting" (ab Werk aus) hält die Figur, damit Bewegung keinen Zauber

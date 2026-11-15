@@ -331,7 +331,8 @@ public partial class BlackMageRotation
 
 	static partial void ModifyManafontPvE(ref ActionSetting setting)
 	{
-		setting.StatusProvide = [StatusID.Thunderhead];
+		// A820 (concept 01, BLM): Thunderhead is no reason to wait. It comes with every Fire III as well, and Manafont over
+		// a standing one only refreshes it; held for it, Manafont lost whole fire phases.
 		setting.UnlockedByQuestID = 66609;
 		setting.IsFriendly = true;
 	}

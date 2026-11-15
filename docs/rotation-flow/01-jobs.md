@@ -420,6 +420,21 @@ Fast die gesamte Logik liegt in privaten Hilfsmethoden statt in `GeneralGCD` —
 allen anderen Jobs** und der einzige Job, dessen `GeneralGCD` beim Lesen ohne
 Kommentare verständlich ist.
 
+**Mana-Brunnen (Manafont) kommt mit Thunderhead** (A820): Die Basis führte Thunderhead als `StatusProvide` von
+Mana-Brunnen. Damit lehnte RSR Mana-Brunnen ab, solange Thunderhead stand. Das sind nach jedem Feuga rund 30 s, also
+fast jedes Verzweiflung mit 0 MP.
+- *Gemessen am 15.11.2026* (ACT, Schwarzmagier an der Puppe, 7 min): Mana-Brunnen kam 2-mal statt bis zu 4-mal.
+  Zwischen 21:44 und 24:44 stand es bereit, und sechs Feuerphasen endeten mit Transposition statt mit Mana-Brunnen.
+  Bei jedem dieser Verzweiflung lief Thunderhead (Status 3870, Gewinn bei Feuga, Verlust beim Donner).
+- *Wirkung im Kampf:* Je ausgelassenem Mana-Brunnen fehlt eine Feuerphase mit Paradox, drei Feuka und Flammenstern.
+  Mana-Brunnen bei stehendem Thunderhead frischt diesen nur auf; verloren geht höchstens ein Donner, der ohnehin mit
+  dem nächsten Elementwechsel kommt.
+- *Behoben, für jede Schwarzmagier-Rotation:* Mana-Brunnen führt Thunderhead nicht mehr als `StatusProvide`
+  (`BlackMageRotation.ModifyManafontPvE`). RabbsBLM überging die Sperre schon mit `skipStatusProvideCheck`.
+- *Klasse geprüft:* alle 385 `StatusProvide` der Basisrotationen. Sonst sperrt dort ein Proc derselben Aktion, damit
+  er zuerst verbraucht wird (Feuer und Firestarter, Jolt und Dualcast, Kaskade und Silken Symmetry) – das ist gewollt.
+  Nur bei Mana-Brunnen sperrte ein häufiger, unabhängig entstehender Status die Hauptwirkung.
+
 *Hinweis:* `BLM_RP.cs` (199 LOC, 4 Configs) ist eine zweite, alternative BLM-Rotation mit eigener,
 deutlich flacherer Thunder-Level-Kette. Die Override-Matrix oben führt beide
 unter „BLM" zusammen und ist für `BLM_RP` deshalb nicht belastbar.
