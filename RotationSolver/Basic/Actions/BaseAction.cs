@@ -9,7 +9,7 @@ namespace RotationSolver.Basic.Actions;
 /// <summary>
 /// The base action for all actions.
 /// </summary>
-public class BaseAction : IBaseAction
+public partial class BaseAction : IBaseAction
 {
 	/// <summary>
 	/// Gets or sets the target to use for the action.
@@ -111,18 +111,6 @@ public class BaseAction : IBaseAction
 
 	/// <inheritdoc/>
 	public ActionSetting Setting { get; set; }
-
-	private ActionConfig? _defaultConfig;
-
-	/// <summary>
-	/// The rotation's own defaults for this action, built once. <see cref="Config"/> compares against
-	/// them on every read to carry default changes over into stored user configs, and it is read
-	/// several times per <see cref="CanUse"/> for every action the rotation evaluates each frame -
-	/// rebuilding them per read allocated an <see cref="ActionConfig"/> that was thrown away again.
-	/// Safe to keep: every <c>CreateConfig</c> in this repository returns literal values, and
-	/// <see cref="Setting"/> is assigned once during construction.
-	/// </summary>
-	private ActionConfig DefaultConfig => _defaultConfig ??= Setting.CreateConfig?.Invoke() ?? new ActionConfig();
 
 	private bool _defaultsInSync;
 
@@ -365,21 +353,6 @@ public class BaseAction : IBaseAction
 		return true;
 	}
 
-	// Whether this action, pressed now, is ready again before the next tankbuster on the player needs it: a charge left
-	// after the press, or one charge's recast over before the hit less what of the action's own duration must stand
-	// before it (pressed later than that, it would run out before the hit). Positive infinity: no tankbuster is due.
-	private bool BackBefore(float due)
-	{
-		if (float.IsPositiveInfinity(due) || Cooldown.CurrentCharges > 1)
-		{
-			return true;
-		}
-
-		var lasts = DefensiveValues.DurationOf(ID);
-		var window = lasts > 0f ? Math.Max(0f, lasts - DataCenter.DefaultGCDTotal) : 0f;
-		return Cooldown.RecastTimeOneChargeRaw <= due - window;
-	}
-
 	private bool IsTimeToKillValid()
 	{
 		// Concept 14, "Das Ende der Gruppe" (A591): until the last hostile in combat falls, not the average one.
@@ -439,14 +412,4 @@ public class BaseAction : IBaseAction
 		return Name;
 	}
 
-	// The paths that answer a safety call, and the player's own press: they may end a damage channel (A380).
-	private static bool SafetyMayEndAChannel(uint id)
-	{
-		return IBaseAction.HealPathRunning || IBaseAction.AreaDefenceRunning || IBaseAction.CommandedDefenceRunning
-			|| IBaseAction.SelfProtectionHitsMe != null
-			|| IBaseAction.TargetOverride is TargetType.Interrupt or TargetType.Dispel or TargetType.Heal or TargetType.BeAttacked
-				or TargetType.Death or TargetType.Provoke or TargetType.TankSwap
-			|| DataCenter.MergedStatus.HasFlag(AutoStatus.AntiKnockback)
-			|| DataCenter.CommandNextAction?.ID == id;
-	}
 }

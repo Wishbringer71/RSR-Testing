@@ -834,4 +834,19 @@ internal static partial class DataCenter
 	public static bool NoTankBeside => !AnyLiving(JobRole.Tank, true);
 
 	private static bool _dangerFirstAlone;
+
+	/// <summary>
+	/// Whether a healer in the party is alive, the player counted unless <paramref name="excludeSelf"/>. Without one
+	/// nothing restores what a member loses but his own heals: the heals a tank or damage dealer holds back for the
+	/// healers go (<c>CustomRotation.HoldPartyHeal</c>, <c>GcdHealsAllowed</c>), and so does the defence the player
+	/// keeps (<see cref="UnhealedUnderAttack"/>, A361). A living raiser does not count here: whether he raises, and
+	/// when, is another player's doing, and a Phoenix Down in someone's bag cannot be seen at all (the owner's note,
+	/// 25.10.2026). One definition for the three callers that carried it as their own loop.
+	/// </summary>
+	/// <param name="excludeSelf">Skip the player, for a healer asking whether another healer is there.</param>
+	/// <returns>True when a healer of the party is alive.</returns>
+	public static bool AnyLivingHealer(bool excludeSelf)
+	{
+		return AnyLiving(JobRole.Healer, excludeSelf);
+	}
 }

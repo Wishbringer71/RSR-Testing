@@ -24051,6 +24051,28 @@ ob Analyse sie ohne Daten weiterbringt.
   lösbar; kein neuer Ansatz aus Code oder Quellen.
 - *Prüfgrad:* Quelle gelesen, Mitschnitt- und Spuranalyse, Compile, CI; im Spiel nicht beobachtet.
 
+### A825 · Konzepte und Code nach den Programmierregeln: Messung, ein Klon weniger, 35 Member in Teildateien (15.11.2026)
+
+Sein Auftrag (15.11.2026): „danach alle konzepte weiter optimieren und code nach programmierregeln optimieren".
+- *Konzepte:* Prüfskripte zu Verweisen, Bezeichnern, Voreinstellungen und Gliederung grün. Die 81 Bezeichner ohne
+  Gegenstück im Baum sind Namen fremder Werkzeuge mit Quelle (BossMod, Daedalus, ClientStructs, WrathCombo), kein
+  überholter eigener Name. Überholt war Konzept 14, Schnitter „Trank im Opener": Sie beschrieb die Voreinstellung der
+  Optionen aus A775, die A780 entfernt hat – jetzt der geltende Stand (Tinkturregel aller Jobs, Zwei-Minuten-Fenster
+  nach A781). Den Release-Text des Gesamtbilds hat A823 fortgeschrieben.
+- *Code, gemessen* (Konzept 24, „Analyzer, Klone und Teildateien"): Analyzer 639 Befunde, 50 auf Fork-Zeilen, alle
+  bekannte Ausnahmen (A739). jscpd 1,34 %, 58 Klone; mit Fork-Zeilen ein echter Klon.
+- *Klon behoben:* `SurveyStuns`, `SurveyHostileOutput` und `SurveyHostileStatus` liefen je eine eigene Schleife über
+  die Gegner im Umkreis. Jetzt eine (`SurveyHostiles`) mit einem Zähler als generischer Struktur – kein Abschluss,
+  keine Anlage. Die drei geschützten Methoden bleiben mit gleichem Verhalten (gleiche Zählung, gleiche Rückgaben bei
+  leerer Liste); Leser: Dunkelritter und Weißmagier. Im Kampf ändert sich nichts; eine künftige Korrektur am Umkreis
+  gilt für alle drei Fragen.
+- *Teildateien:* 35 Fork-Member aus `DataCenter`, `ActionBasicInfo`, `BaseAction` und `IBaseAction` in Teildateien je
+  Thema; jede Codezeile genau einmal (Zeilenmenge vor und nach gleich bis auf `partial` in vier Deklarationen).
+  `fork_placement.json` 311 → 276. Folgen in Prüfmitteln: die Ausnahme der Zahlprüfung (`digits.Length / 2`) und die
+  gelistete Lesart von `CanBeHealed` samt Selbsttest zeigen auf die neuen Dateien, Konzept 12 auf die neue Zeile von
+  `IsStatusProvided`. `ActionTargetInfo` bleibt (Primärkonstruktor).
+- *Prüfgrad:* Compile, CI, Zeilenvergleich des Umzugs; Verhalten statisch gleich, im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

@@ -1191,4 +1191,81 @@ internal static partial class DataCenter
 	public static bool BMRTankbusterImminent =>
 		Service.Config.UseBmrTimeline && BMRNextTankbusterIn <= Service.Config.BMRTankbusterMitWindow
 		&& PressReachesBeforeSnapshot(BMRNextTankbusterIn);
+
+	// Kept separate from the verdict below, and called before it, for two reasons. The figure
+	// describes the incoming cast, not this rule's opinion of it - and a second reader, the healing
+	// flag, needs it whether or not the owner wants small casts mitigated. Recorded inside the
+	// verdict it sat behind SkipMitigationForSmallAreaCasts, which would have left that reader blind
+	// to every cast whenever the switch was off.
+	private static void RecordAnnouncedAreaShare(uint actionId, IBattleChara caster)
+	{
+		// A rating of 0 is a landing measured without damage (A366), and announces exactly that.
+		if (AreaShareNow(actionId, caster, out var share))
+		{
+			_announcedAreaShare = share;
+			_announcedAreaShareConfirmed = OtherConfiguration.AreaShareConfirmed(actionId);
+			_announcedAreaShareTime = DateTime.Now;
+			_lastAnnouncedAreaAction = actionId;
+		}
+	}
+
+	/// <summary>
+	/// A731 (concept 13, "Wen die Form erreicht"): the angle of a cone and the inner radius of a ring as the action's omen
+	/// names them - "gl_fan060_1bf" a cone of 60 degrees, "gl_sircle_2010bf" a ring with the figures 20 and 10, as
+	/// BossModReborn's analysis reads them. The ring's figures hold as the inner radius itself or as its share of the sheet's
+	/// range, unevenly even for one omen; the smaller is taken, so more count as hit. 0 for what the omen does not name.
+	/// </summary>
+	internal static (float Degrees, float Inner) OmenShape(Action act)
+	{
+		return _omenShapes.GetOrAdd(act.RowId, _ =>
+		{
+			var path = act.Omen.ValueNullable?.Path.ExtractText() ?? string.Empty;
+			var degrees = DigitsAfter(path, "fan", out var angle) ? angle : 0;
+			var inner = 0f;
+			foreach (var key in RingKeys)
+			{
+				if (DigitsAfter(path, key, out var figures) && figures > 0)
+				{
+					var digits = figures.ToString(System.Globalization.CultureInfo.InvariantCulture);
+					var half = digits.Length / 2;
+					if (half > 0 && int.TryParse(digits.AsSpan(0, digits.Length - half), out var outer) && int.TryParse(digits.AsSpan(digits.Length - half), out var innerFigure))
+					{
+						inner = outer > 0 ? Math.Min(innerFigure, act.EffectRange * innerFigure / (float)outer) : innerFigure;
+					}
+
+					break;
+				}
+			}
+
+			return (degrees, inner);
+		});
+	}
+
+	private static float HorizontalDistance(Vector3 a, Vector3 b)
+	{
+		var dx = a.X - b.X;
+		var dz = a.Z - b.Z;
+		return MathF.Sqrt((dx * dx) + (dz * dz));
+	}
+
+	private static bool IsAnyHostileCastingKnockback()
+	{
+		// Over the helpers too (A303): a listed knockback resolved by an untargetable helper is the knockback
+		// "Automatically use Anti-Knockback role actions" promises to answer from the list. Only one that reaches the
+		// player (A701, concept 13): the knockback is an effect on whom the action hits; Ground and Pound in a line he
+		// did not stand in took Surecast for 120 s.
+		KnockbackReachingPlayer = null;
+		var targets = AreaCasters;
+		for (var i = 0; i < targets.Count; i++)
+		{
+			var h = targets[i];
+			if (IsHostileCastingKnockback(h) && TryGetCastAction(h, out var act) && AreaCastCanReachPlayer(h, act))
+			{
+				KnockbackReachingPlayer = (h, act);
+				return true;
+			}
+		}
+
+		return false;
+	}
 }

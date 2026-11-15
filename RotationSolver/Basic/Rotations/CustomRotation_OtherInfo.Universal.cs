@@ -144,17 +144,34 @@ public partial class CustomRotation
 	protected static int SurveyStuns(float radius, out int stunnedCount, out bool allStunned,
 		out bool headroom)
 	{
-		allStunned = false;
-		headroom = false;
-		stunnedCount = 0;
+		var tally = new StunTally();
+		var inRange = SurveyHostiles(radius, ref tally);
+		allStunned = inRange > 0 && tally.Stunned == inRange;
+		stunnedCount = tally.Stunned;
+		headroom = tally.Headroom;
+		return inRange;
+	}
 
+	/// <summary>One question asked of each hostile inside the radius of <see cref="SurveyHostiles{T}"/>.</summary>
+	private interface IHostileTally
+	{
+		void Count(IBattleChara hostile);
+	}
+
+	/// <summary>
+	/// The walk the area surveys share (concept 24, A825): every hostile within <paramref name="radius"/> of the player is
+	/// counted and handed to <paramref name="tally"/>. A struct tally keeps it free of closures and allocation.
+	/// </summary>
+	/// <returns>How many hostiles were inside the radius.</returns>
+	private static int SurveyHostiles<T>(float radius, ref T tally) where T : struct, IHostileTally
+	{
 		var hostiles = DataCenter.AllHostileTargets;
-		if (hostiles == null || hostiles.Count == 0)
+		if (hostiles == null)
 		{
 			return 0;
 		}
 
-		int inRange = 0, stunned = 0;
+		var inRange = 0;
 		for (int i = 0, n = hostiles.Count; i < n; i++)
 		{
 			var hostile = hostiles[i];
@@ -164,21 +181,50 @@ public partial class CustomRotation
 			}
 
 			inRange++;
+			tally.Count(hostile);
+		}
 
+		return inRange;
+	}
+
+	private struct StunTally : IHostileTally
+	{
+		public int Stunned;
+		public bool Headroom;
+
+		public void Count(IBattleChara hostile)
+		{
 			// Any source counts: a stun applied by the tank protects just as well as our own.
 			if (hostile.HasStatus(false, StatusHelper.StunStatus))
 			{
-				stunned++;
+				Stunned++;
 			}
 			else if (StunWatch.CanStillBeStunned(hostile))
 			{
-				headroom = true;
+				Headroom = true;
 			}
 		}
+	}
 
-		allStunned = inRange > 0 && stunned == inRange;
-		stunnedCount = stunned;
-		return inRange;
+	private struct OutputTally : IHostileTally
+	{
+		public int Output;
+
+		public void Count(IBattleChara hostile) => Output += HostileOutputPercent(hostile);
+	}
+
+	private struct StatusTally(StatusID[] statuses) : IHostileTally
+	{
+		public int Carrying;
+
+		public void Count(IBattleChara hostile)
+		{
+			// Any source counts, as with stuns: what matters is the state of the enemy, not who put it there.
+			if (hostile.HasStatus(false, statuses))
+			{
+				Carrying++;
+			}
+		}
 	}
 
 	/// <summary>
@@ -291,26 +337,9 @@ public partial class CustomRotation
 	/// <returns>How many hostiles were inside the radius. Zero means the sum says nothing.</returns>
 	protected static int SurveyHostileOutput(float radius, out int output)
 	{
-		output = 0;
-		var hostiles = DataCenter.AllHostileTargets;
-		if (hostiles == null || hostiles.Count == 0)
-		{
-			return 0;
-		}
-
-		var inRange = 0;
-		for (int i = 0, n = hostiles.Count; i < n; i++)
-		{
-			var hostile = hostiles[i];
-			if (hostile == null || hostile.DistanceToPlayer() > radius)
-			{
-				continue;
-			}
-
-			inRange++;
-			output += HostileOutputPercent(hostile);
-		}
-
+		var tally = new OutputTally();
+		var inRange = SurveyHostiles(radius, ref tally);
+		output = tally.Output;
 		return inRange;
 	}
 
@@ -330,32 +359,9 @@ public partial class CustomRotation
 	/// <returns>How many hostiles were inside the radius. Zero means the count says nothing.</returns>
 	protected static int SurveyHostileStatus(float radius, StatusID[] statuses, out int carrying)
 	{
-		carrying = 0;
-		var hostiles = DataCenter.AllHostileTargets;
-		if (hostiles == null || hostiles.Count == 0)
-		{
-			return 0;
-		}
-
-		var inRange = 0;
-		for (int i = 0, n = hostiles.Count; i < n; i++)
-		{
-			var hostile = hostiles[i];
-			if (hostile == null || hostile.DistanceToPlayer() > radius)
-			{
-				continue;
-			}
-
-			inRange++;
-
-			// Any source counts, as with stuns: what matters is the state of the enemy, not who put
-			// it there.
-			if (hostile.HasStatus(false, statuses))
-			{
-				carrying++;
-			}
-		}
-
+		var tally = new StatusTally(statuses);
+		var inRange = SurveyHostiles(radius, ref tally);
+		carrying = tally.Carrying;
 		return inRange;
 	}
 

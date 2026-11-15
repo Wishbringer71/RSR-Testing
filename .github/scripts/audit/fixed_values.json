@@ -2122,7 +2122,7 @@
    "reason": "Half the cone's angle: the omen names the full angle (gl_fan060 = 60 degrees, BossModReborn AOEShapeCone(6.9, 30 degrees) for Wing Cutter), the test measures from the cone's axis. Geometry, not a tuned value (A731)."
   },
   {
-   "file": "RotationSolver/Basic/DataCenter.cs",
+   "file": "RotationSolver/Basic/DataCenter.AreaDamage.cs",
    "code": "var half = digits.Length / 2;",
    "values": [
     "2"

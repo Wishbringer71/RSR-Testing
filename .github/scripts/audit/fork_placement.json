@@ -10,46 +10,6 @@
    "member": "public static string CopyOfDefault(ITypeSymbol fieldType, string fieldTypeName, string variableName)"
   },
   {
-   "file": "RotationSolver/Basic/Actions/ActionBasicInfo.cs",
-   "member": "public readonly float NeededStatusMargin => CastTime + (IsRealGCD ? DataCenter.DefaultGCDRemain : 0f);"
-  },
-  {
-   "file": "RotationSolver/Basic/Actions/ActionBasicInfo.cs",
-   "member": "internal bool CastCouldStartNow => !NeedsCasting(false);"
-  },
-  {
-   "file": "RotationSolver/Basic/Actions/ActionBasicInfo.cs",
-   "member": "internal static bool ExceedsBossModCastLimit(float castTime, string name)"
-  },
-  {
-   "file": "RotationSolver/Basic/Actions/ActionBasicInfo.cs",
-   "member": "private static bool BossModCastLimitRefuses(float castTime)"
-  },
-  {
-   "file": "RotationSolver/Basic/Actions/ActionBasicInfo.cs",
-   "member": "internal static bool NoCastFitsNow()"
-  },
-  {
-   "file": "RotationSolver/Basic/Actions/ActionBasicInfo.cs",
-   "member": "private static DateTime _shortestCastFrame;"
-  },
-  {
-   "file": "RotationSolver/Basic/Actions/ActionBasicInfo.cs",
-   "member": "private static float ShortestCastNow()"
-  },
-  {
-   "file": "RotationSolver/Basic/Actions/ActionBasicInfo.cs",
-   "member": "internal static bool CastStartBlockedNow(bool skipCastingCheck)"
-  },
-  {
-   "file": "RotationSolver/Basic/Actions/ActionBasicInfo.cs",
-   "member": "private bool LeavesMpForRaise()"
-  },
-  {
-   "file": "RotationSolver/Basic/Actions/ActionBasicInfo.cs",
-   "member": "private bool CleanseSavesNoLife()"
-  },
-  {
    "file": "RotationSolver/Basic/Actions/ActionSetting.cs",
    "member": "public bool IsTransformationAction { get; set; }"
   },
@@ -118,68 +78,12 @@
    "member": "internal static bool HostileInFacingCone(float range)"
   },
   {
-   "file": "RotationSolver/Basic/Actions/BaseAction.cs",
-   "member": "private ActionConfig? _defaultConfig;"
-  },
-  {
-   "file": "RotationSolver/Basic/Actions/BaseAction.cs",
-   "member": "private ActionConfig DefaultConfig => _defaultConfig ??= Setting.CreateConfig?.Invoke() ?? new ActionConfig();"
-  },
-  {
-   "file": "RotationSolver/Basic/Actions/BaseAction.cs",
-   "member": "private bool BackBefore(float due)"
-  },
-  {
-   "file": "RotationSolver/Basic/Actions/BaseAction.cs",
-   "member": "private static bool SafetyMayEndAChannel(uint id)"
-  },
-  {
    "file": "RotationSolver/Basic/Actions/BaseItem.cs",
    "member": "private unsafe bool UseItem()"
   },
   {
    "file": "RotationSolver/Basic/Actions/HpPotionItem.cs",
    "member": "public bool CanUseEmergency(out IAction item)"
-  },
-  {
-   "file": "RotationSolver/Basic/Actions/IBaseAction.cs",
-   "member": "internal static float? HealRatioOverride { get; set; }"
-  },
-  {
-   "file": "RotationSolver/Basic/Actions/IBaseAction.cs",
-   "member": "internal static bool? SelfProtectionHitsMe { get; set; }"
-  },
-  {
-   "file": "RotationSolver/Basic/Actions/IBaseAction.cs",
-   "member": "internal static bool HoldDefenceOnSelf { get; set; }"
-  },
-  {
-   "file": "RotationSolver/Basic/Actions/IBaseAction.cs",
-   "member": "internal static HashSet<uint>? AllowedDefenceOnSelf { get; set; }"
-  },
-  {
-   "file": "RotationSolver/Basic/Actions/IBaseAction.cs",
-   "member": "internal static float? KeepDefenceForTankbusterIn { get; set; }"
-  },
-  {
-   "file": "RotationSolver/Basic/Actions/IBaseAction.cs",
-   "member": "internal static bool AreaDefenceRunning { get; set; }"
-  },
-  {
-   "file": "RotationSolver/Basic/Actions/IBaseAction.cs",
-   "member": "internal static bool HealPathRunning { get; set; }"
-  },
-  {
-   "file": "RotationSolver/Basic/Actions/IBaseAction.cs",
-   "member": "internal static bool LimitBreakPathRunning { get; set; }"
-  },
-  {
-   "file": "RotationSolver/Basic/Actions/IBaseAction.cs",
-   "member": "internal static bool CommandedDefenceRunning { get; set; }"
-  },
-  {
-   "file": "RotationSolver/Basic/Actions/IBaseAction.cs",
-   "member": "internal static bool ProtectivePathRunning => HealPathRunning || AreaDefenceRunning"
   },
   {
    "file": "RotationSolver/Basic/Actions/MedicineItem.cs",
@@ -388,50 +292,6 @@
   {
    "file": "RotationSolver/Basic/Data/AttackType.cs",
    "member": "internal static bool IsMagic(uint attackType)"
-  },
-  {
-   "file": "RotationSolver/Basic/DataCenter.cs",
-   "member": "public static bool AnyLivingHealer(bool excludeSelf)"
-  },
-  {
-   "file": "RotationSolver/Basic/DataCenter.cs",
-   "member": "internal static bool IsTankbusterMarkerPath(string path)"
-  },
-  {
-   "file": "RotationSolver/Basic/DataCenter.cs",
-   "member": "internal static bool MarkerLockHolds(string key, bool trace = true)"
-  },
-  {
-   "file": "RotationSolver/Basic/DataCenter.cs",
-   "member": "private static bool HitDropsBelow(float share, float threshold, bool unprotectedOnly, bool needsRoom, out string who)"
-  },
-  {
-   "file": "RotationSolver/Basic/DataCenter.cs",
-   "member": "private static void RecordAnnouncedAreaShare(uint actionId, IBattleChara caster)"
-  },
-  {
-   "file": "RotationSolver/Basic/DataCenter.cs",
-   "member": "internal static (float Degrees, float Inner) OmenShape(Action act)"
-  },
-  {
-   "file": "RotationSolver/Basic/DataCenter.cs",
-   "member": "private static bool DigitsAfter(string path, string key, out int number)"
-  },
-  {
-   "file": "RotationSolver/Basic/DataCenter.cs",
-   "member": "private static float HorizontalDistance(Vector3 a, Vector3 b)"
-  },
-  {
-   "file": "RotationSolver/Basic/DataCenter.cs",
-   "member": "internal static string DescribeDefenseSources()"
-  },
-  {
-   "file": "RotationSolver/Basic/DataCenter.cs",
-   "member": "private static bool IsOwnPartyMarker(ulong objectId)"
-  },
-  {
-   "file": "RotationSolver/Basic/DataCenter.cs",
-   "member": "private static bool IsAnyHostileCastingKnockback()"
   },
   {
    "file": "RotationSolver/Basic/Helpers/ActionHelper.cs",

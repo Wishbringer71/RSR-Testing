@@ -368,3 +368,31 @@ Sitzung mit Kampf steht keine Zeile „exception:"; steht eine, ist sie eine Urs
 - Nach jedem Kampf die Kostenzeile mit Übersetzungszeit; nach dem Laden und jedem Rotationswechsel die Zeile
   „warm-up". Ein langsamster Durchlauf über einem Frame mit wenig Übersetzungszeit ist der nächste Befund.
 - Analyzer und Klonsuche wie oben (Befehle im Archiv, A739), bei jedem Audit neu.
+
+### Analyzer, Klone und Teildateien: Stand und Entscheidungen
+
+- *Analyzer* (wie oben, gemessen am 15.11.2026 auf efa5580c5, A825): 639 Befunde, 50 auf Fork-Zeilen (Zeilen, die `upstream/main...HEAD`
+  hinzufügt). Alle sind die oben geführten Ausnahmen: CA1802 in `Configs` und den Teildateien von Einstellungen,
+  CA1819 an öffentlichen Statuslisten von `StatusHelper` (neu: `PvPGuardStatuses`, `GuardWastedStatuses`, gleiche
+  Begründung), CA1822 an `RunningSwiftGoesToRaise`, CA1508 an `Player.Object` und an einer Abwehr gegen einen
+  ungenannten Wert von `HornOrder`, CA1852 an zwei öffentlichen Klassen, die abgeleitete Rotationen erweitern dürfen.
+  Kein neuer Befund mit Wirkung.
+- *Doppelter Code* (jscpd 4.0.5, wie oben): 1.269 von 94.882 Zeilen, 1,34 %, 58 Klone. Die Zunahme seit A739 sind die
+  Köpfe der Teildateien (gleiche `using`-Zeilen in Zeile 1, kein Code). Mit Fork-Zeilen ein echter Klon:
+  `SurveyStuns`, `SurveyHostileOutput` und `SurveyHostileStatus` (`CustomRotation_OtherInfo.Universal.cs`) gehen
+  dieselbe Gegnerliste im selben Umkreis durch und unterscheiden sich nur in dem, was sie je Gegner zählen.
+  - *Entscheidung:* eine Schleife `SurveyHostiles` mit einem Zähler als Parameter (eine Struktur je Frage, über eine
+    Schnittstelle als generische Einschränkung, damit kein Abschluss und keine Anlage je Aufruf entsteht). Die drei
+    geschützten Methoden bleiben als Schnittstelle für abgeleitete Rotationen, mit gleichem Verhalten. Grund: Eine
+    Korrektur am Umkreis oder an der Liste (Helfer, Tote) gälte sonst nur für eine Kopie.
+  - *Nicht angefasst:* die Klone in Upstreams PvP-Rotationen, Konfigurationsklassen und Jobrotationen (wie oben) und
+    `DiagnosticsWindow` gegen `NextActionWindow` (Fensterrahmen, keine Wirkung im Kampf).
+- *Fork-Member in Dateien von Upstream:* 35 weitere ziehen in Teildateien je Thema, jede Codezeile genau einmal
+  (gemessen als Zeilenmenge vor und nach dem Umzug): `DataCenter` (11 nach Universal, TankProtection, HitResponse,
+  AreaDamage), `ActionBasicInfo` (10, neu `.Universal` für die Sperren des Zauberbeginns und `.Raise` für die
+  MP-Reserve der Wiederbelebung), `BaseAction` (4) und `IBaseAction` (10 statische Pfadflaggen). `fork_placement.json`:
+  311 → 276. Upstreams Dateien ändern sich dabei nur in der Typdeklaration (`partial`) und um die herausgelösten
+  Member.
+  - *Bleibt:* Einstellungen (ihre Reihenfolge ist die des Fensters), Felder mit Startwert, `OtherConfiguration`
+    (statische Felder mit Startwert) und `ActionTargetInfo`: Ein Struct mit Primärkonstruktor – sein Parameter
+    `action` gilt nur im Teil mit der Parameterliste, die Member lesen ihn alle.

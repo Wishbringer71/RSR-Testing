@@ -442,4 +442,79 @@ internal static partial class DataCenter
 
 		return hitIn - Math.Max(0f, TankbusterForecast.RoundTrip) > free;
 	}
+
+	/// <summary>Whether a VFX path is one of the tankbuster markers, before the learned exclusions.</summary>
+	internal static bool IsTankbusterMarkerPath(string path)
+	{
+		foreach (var p in TankbusterPaths)
+		{
+			if (path.StartsWith(p, PathCmp))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/// <summary>
+	/// Whether the marker entry <paramref name="key"/> is locked as "no tankbuster" in the running game version (concept
+	/// 13, "Stufe 4", 4a): a lock from an earlier version, or from before stage 4, is a hypothesis and does not hold - the
+	/// marker counts as a tankbuster until it goes without a hit again. Nothing holds while the version cannot be read.
+	/// </summary>
+	internal static bool MarkerLockHolds(string key, bool trace = true)
+	{
+		if (!OtherConfiguration.TankbusterMarkerWithoutHit.Contains(key))
+		{
+			return false;
+		}
+
+		if (OtherConfiguration.GameVersion is { } game && OtherConfiguration.TankbusterMarkerWithoutHitGame.TryGetValue(key, out var seen)
+			&& seen == game)
+		{
+			return true;
+		}
+
+		if (trace && _markerLocksTakenOver.TryAdd(key, 0))
+		{
+			DefenseTrace.Line($"tankbuster marker {key}: no hit seen in an earlier game version only - counted as a tankbuster"
+				+ " until it goes without a hit in this one");
+		}
+
+		return false;
+	}
+
+	// The number that follows <key> in <path>, digits only.
+	private static bool DigitsAfter(string path, string key, out int number)
+	{
+		number = 0;
+		var start = path.IndexOf(key, StringComparison.Ordinal);
+		if (start < 0)
+		{
+			return false;
+		}
+
+		start += key.Length;
+		var end = start;
+		while (end < path.Length && char.IsAsciiDigit(path[end]))
+		{
+			end++;
+		}
+
+		return end > start && int.TryParse(path.AsSpan(start, end - start), System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out number);
+	}
+
+	// Whether a marker sits on the player or a member of his own party, Duty Support companions
+	// included whatever the NPC party setting says: they share the stack as a player would.
+	private static bool IsOwnPartyMarker(ulong objectId)
+	{
+		var player = Player.Object;
+		if (player != null && objectId == player.GameObjectId)
+		{
+			return true;
+		}
+
+		return Svc.Objects.SearchById(objectId) is IBattleChara marked
+			&& (marked.IsParty() || marked.IsNpcPartyMember());
+	}
 }
