@@ -105,16 +105,11 @@ nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigt
 
 ## Warten auf Daten oder Fremde
 
-- **Animationssperre und Weben: der Regler an seinem nächsten Mitschnitt** (A753; seine Vorgaben vom 13.11.2026). Im
-  Kampf: Eine Fähigkeit hält die nächste kürzer zurück. Es wird gewebt, solange es vor den GCD passt, und kein GCD kommt
-  später. Auflösung: die Zeilen „action timing over the fight“ seines nächsten `DefenseTrace.log` und die Abstände der
-  eigenen Aktionen im ACT-Mitschnitt, gegen den Mitschnitt vom 11.11.2026. Zu prüfen sind GCDs, die eine Sperre
-  zurückhielt; Anfragen ohne Antwort (bleiben sie nahe r, lehnt der Server ab); Schnitt und Zuschlag; dreifaches Weben.
-  Je Abweichung Loop. Weißmagier am 13.11.2026 geprüft (A765): kein GCD später, aber 8 % Anfragen ohne Antwort und ein
-  Schnitt von 1 bis 34 ms. Offen: ein Job mit doppeltem Weben – Beschwörer oder Schnitter reichen (doppelt in 10 und 8 % der GCD-Lücken, FFLogs
-  14.11.2026) – und die Zeilen „request without an answer“, ob die 8 % Ablehnungen sind. Beastmaster am 14.11.2026 (A800): Alle 50 Lücken waren Nummern, die nie als Anfrage liefen, und
-  drückten den Schnitt auf 0 ms; sie zählen nicht mehr. Offen: der Schnitt danach. Konzept 03, „Weben, Animationssperre
-  und Latenz“.
+- **Später erster Burst bei Tänzer, Maschinist und Rotmagier** (A820). Im Kampf: Technischer Schritt, Laufstabilisator
+  mit Wildfeuer und Ermutigen kamen an der Puppe 40 bis 73 s nach Kampfbeginn, der Zwei-Minuten-Zyklus läuft danach
+  neben den Buffs der Gruppe. Ursache aus Spur und Mitschnitt nicht lesbar. Auflösung: die Zeile „ready but unused over
+  the fight“ der nächsten Sitzung mit diesen Jobs (Build ab 6992f82af), dann Loop je Grund. Konzept 03, „Bereit, aber
+  nicht genutzt“.
 
 - **Absturz einer zweiten Installation am 11.11.2026, 21:18** (A736). Das Spiel endete als Dunkelritter in der
   Azim-Steppe 0,5 s nach Kampfbeginn, ohne die Plugins zu entladen; Build b184ee7fc (08.11.2026). Das `DefenseTrace.log`
