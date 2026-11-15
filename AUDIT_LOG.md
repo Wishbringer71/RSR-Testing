@@ -23995,6 +23995,41 @@ ausser es gibt keine bretter mehr". Einordnung: Präzisierung seiner Vorgabe aus
   „level-below-cap" (A805, A806) gelten weiter; ein Begleiter auf Rang 10 erscheint unter Level auf Brett 2 mit
   „levels".
 
+### A823 · Release 7.5.8.3+wsh1 veröffentlicht, Release-Text übergeben, neuer Zweig (15.11.2026)
+
+Sein Auftrag (15.11.2026): „branch zu main, compile, release, neuer branch. danach todo im vollen loop. danach alle
+konzepte weiter optimieren und code nach programmierregeln optimieren" – die Freigabe (`CLAUDE.md`, „Grenzen und
+Löschungen").
+
+- *Vorher gemessen:* Upstream abgeglichen (0 ausstehend); `main` Vorfahr des Arbeitszweigs, 117 Commits voraus; Tag
+  `7.5.8.3+wsh1` frei auf `origin`; Versionsangaben auf 7.5.8.3+wsh1 (Fork-Version seit A775). Build und 59 CI-Schritte
+  grün. Der Release-Text war leer: geschrieben aus den Commit-Texten seit 3207d57fb, gegliedert nach Wirkung im Kampf
+  (Blicke, Animationssperre, Stabilität, alle Jobs, Jobs, PvP, Masked Carnivale, Beastmaster, Fenster), 11 925 Zeichen.
+  `check_setting_names.py` fand „Auto face target" als Beinahe-Treffer einer RSR-Einstellung; es ist die Option des
+  Spiels, umformuliert.
+- *CHANGELOG:* Abschnitt 7.5.8.3+wsh1 mit den neuen öffentlichen Membern, erhoben als Vergleich der öffentlichen
+  Signaturen von `RotationSolver/Basic` zwischen Tag und HEAD: `CustomRotation.InClearedDuty`, `LastPullTime`; das Ziel
+  des Crucible-Laufs (`CrucibleGoal` und sieben Member von `BeastmasterRotation`); `CarnivaleControl`,
+  `MaskedCarnivaleHelper.IsImmuneTo`; `StatusHelper.PvPGuardStatuses`, `GuardWastedStatuses`. Die drei entfernten
+  Einstellungen der Animationssperre lagen in der internen Klasse `Configs` und sind keine öffentliche Schnittstelle.
+- *Zweig zu `main`:* `main` auf `claude/fixes-after-7.5.8.2` (6ed0f24d2) vorgespult und gepusht.
+- *Release:* `publish.yaml` per `workflow_dispatch` auf `main` mit `7.5.8.3+wsh1`, Lauf 43717587777 erfolgreich.
+  Release auf 6ed0f24d2, `latest.zip` 3 716 648 Bytes, Digest sha256:4e2f7009…e240, Text gleich dem Release-Text.
+- *Übergabe:* `fork-changes-in-play.md` steht auf Upstream 7.5.8.3; die Einträge sind in die Themen eingearbeitet:
+  Helfer und Formrichtung bei „Party mitigation answers raidwides"; der sich bewegende Tote bei „Raising"; die Puppe
+  und Bloodwhetting bei „Mitigation and defensives"; die Blicke als eigener Unterabschnitt bei „Movement safety";
+  Animationssperre, Positionals, Mana-Brunnen, PvP und Masked Carnivale bei „Damage and rotation"; der erste Trank
+  beim Abschnitt der Tinkturen (Schnitters entfernte Optionen dort genannt); das Ziel des Laufs, der echte Rang, Kader,
+  Laden, Horn, Weg und „Team ready" ersetzen den überholten Eintrag „Familiars that lag behind level up"; Fenster,
+  BurstWatch und Ausnahmen bei „Seeing what the rules decide"; Hooks, SafeMemory und Teildateien bei „Frame time"; die
+  neuen Member bei „For rotation authors". `fork-changes-since-last-release.md` beginnt mit „Changes since
+  7.5.8.3+wsh1".
+- *Zweige:* `claude/fixes-after-7.5.8.3` von `main` nach seiner Namensvorgabe, die Übergabe darauf.
+  `claude/fixes-after-7.5.8.2` ist vollständig gemergt und ein Löschfall auf `origin`, ebenso weiter
+  `claude/fixes-after-7.5.7.15` (Ref-Löschungen sind der Sitzung gesperrt).
+
+*Prüfgrad:* Workflow-Lauf und Release-API gelesen, Prüfskripte; die Übergabe gegen den Release-Text abgeglichen.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

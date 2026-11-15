@@ -1,6 +1,6 @@
 # What this fork does differently in a fight
 
-The whole distance from upstream **7.5.8.2**, as of release `7.5.8.2+wsh1`. What a single
+The whole distance from upstream **7.5.8.3**, as of release `7.5.8.3+wsh1`. What a single
 release changed is in [`fork-changes-since-last-release.md`](fork-changes-since-last-release.md),
 which is the text of the release description; this document is the standing picture and takes
 each release's text over once it has shipped.
@@ -108,6 +108,14 @@ the low 16 bits only, and a raidwide that hit a tank harder than that could be r
   inner radius), towards the cast's target or the caster's facing. Shapes whose omen names neither stay circles. Lines
   of type 4, circles of type 5 and cones of type 3 now also reach past the caster's hitbox, as the game's shapes do;
   until now RSR measured them short.
+- **Area casts of helpers are dodged and counted.** The dodge checks, the hit window around you and the cast block
+  before a certain dodge saw only targetable enemies; many raidwides and lines come from helpers. They read every
+  casting enemy figure now, and a listed area cast blocks only where it reaches you and leaves a living member
+  outside.
+- **Cones and lines point where the game casts them.** They were turned towards the cast's target each frame and
+  counted that target as hit; they now keep the direction the game stores for the cast, and ground circles sit on the
+  cast's location instead of the caster. A same-named row without a cast time counts with its own shape where it has
+  an effect range: Claw and Tail is cast as a line ahead and hits as a cone behind.
 
 ## Healing — when it lands
 
@@ -465,6 +473,8 @@ the low 16 bits only, and a raidwide that hit a tank harder than that could be r
 - **The trace names why a dead member is not raised.** For each dead party member, `DefenseTrace.log` writes a line
   whenever the reason changes – beyond 30 y, out of sight, not targetable, moving, left to another raise, raise denied
   – with the seconds since RSR saw it dead and the distance; "a candidate" means it is the raise target.
+- **Every check sees the same answer on a dead member who is still moving.** The movement of a body was answered only
+  to the first question per frame; the raise target choice and the trace asked later and read it as standing.
 
 ## Mitigation and defensives
 
@@ -622,6 +632,10 @@ the low 16 bits only, and a raidwide that hit a tank harder than that could be r
 - **A sleep that did not go out names the first reason.** "sleep not cast …" names the first reason the rule gave
   after the sleep was chosen, and the last when it differs; "the cast ended" follows every lapsed sleep and no longer
   hides the reason the GCD went elsewhere.
+- **No defence at a training dummy.** A dummy targets you and never hits, and RSR counted that as being attacked:
+  every role kept its single-target defence open, and a tank alone pressed its mitigation on cooldown. An enemy now
+  counts as attacking only once it hit you in this fight. The Warrior's Bloodwhetting alone in the party follows the
+  same rule: on cooldown while an enemy attacks and no healer lives, never at a dummy.
 
 ## Tank self-protection
 
@@ -865,6 +879,31 @@ off.
   enemy during a channel no longer counts as a step of the AI, and a later channel in which you stood for longer than a
   GCD under the AI's steering sets the answer right again.
 
+### Gaze attacks
+
+- **RSR turns away from a gaze just before it lands.** A gaze is an action with the sheet's gaze mark, an enemy action
+  of the same name (Angra Mainyu's second Mortal Gaze in the World of Darkness comes from a helper without the mark),
+  or one of the 78 gazes BossModReborn's fight modules name (Beatrice's Death Foreseen among them, 22 without the mark,
+  3 inverted). RSR keeps fighting until the measured server delay plus a frame before the gaze lands, then turns you
+  to the middle of the widest safe stretch through the game's own facing call, as BossModReborn does. Setting
+  `Turn away from gaze attacks`, **on by default**; without a measured delay or with it off, actions that would turn
+  you into the eye wait for the whole cast instead.
+- **Where the eye is and which way is safe come from the game.** The eye sits at the cast's place for ground-targeted
+  gazes, otherwise on the caster. Inverted gazes (look at the eye) are read from their names (Kefka's Ave Maria), from
+  statuses whose text says to look at or away from an enemy (Nymeia), from "look" and "no look" markers on you (the
+  Windurst alliance raid's last boss) and from a party member whose status makes them the eye (Glassy-eyed).
+- **You keep hitting while you look away.** An action whose target lies within 45 degrees keeps your facing when it is
+  safe, or turns you within that cone; the game's own option to face the target is switched off for that one press. A
+  spell still casting turns only within 75 degrees of its target, the limit BossModReborn measured, so it lands and
+  the gaze misses. Every action the game runs passes this guard – RSR's press, the game's queue and your own press. An
+  action waits only when no safe facing reaches its target, above all on the eye's own caster. Dashes and leaps are
+  checked on the exact direction to where they land.
+- **RSR learns in the fight whether turning helped.** Each gaze is judged by its own effect packet. A harmful status
+  on you after RSR turned is a failure: from then on that gaze only holds actions back; after a second failure RSR
+  leaves it alone, per cast row and until RSR is loaded again. Where other members hit by the packet faced the safe way
+  and none faced the eye as RSR placed it, the model counts as refuted and RSR leaves the gaze at once.
+  `DefenseTrace.log` writes "gaze: avoided" and "gaze: hit despite" for each one.
+
 ## The learned lists
 
 - **The damage table measures at all.** The effect handler read the action type four bytes wide,
@@ -966,6 +1005,34 @@ off.
 
 ## Damage and rotation
 
+- **RSR replaces XivAlexander, NoClippy and BossMod's action tweaks, without a value to set.** The delay to each of
+  your own actions' answers is measured always, per zone. The animation lock is cut by the zone's lowest measured
+  round trip plus a controller's extra that rises with each answer and falls with each instant request the server
+  leaves unanswered; it never takes off more than the zone's longest delay. The weave window is the action's server
+  lock plus what the cut leaves, and abilities that still fit go after "Action ahead" too. The frame rate adjustment
+  is capped at the zone's mean frame time. BossMod's two lock tweaks are switched off while RSR runs and given back as
+  they were, NoClippy only if it was on; while XivAlexander runs, or another tool changes the lock between packet and
+  game, RSR holds its own cut until the next zone. A trace line per fight names delay, rest, cut, weave window, frame
+  time, weaves per GCD, GCDs a lock held back, idle GCD time and requests without an answer.
+- **Positionals.** While True North covers the next GCD, or the target can be hit fully from anywhere, RSR names no
+  side to BossModReborn's AI and Avarice, so they no longer walk you for nothing. RSR learns from the game's damage
+  entry which side each positional press really hit, and where the game judged against RSR's angle it keeps a band in
+  that area where True North goes only at full charges.
+- **Black Mage: Manafont no longer waits for Thunderhead.** It was refused for the 30 s Thunderhead runs after every
+  Fire III: two uses in seven minutes instead of four.
+- **PvP plays to the same optimum as PvE.** Restrictions without a technical need are lifted: the animation lock cut,
+  the frame rate adjustment, the penalty landing watch, the spiked-enemy avoidance, the stop marker filter and the
+  emergency heal ahead of the GCD apply as in PvE; guards against unattended play stay. Every job's PvP Limit Break
+  goes, with a condition per kind: finishing blows only where the stated potency kills (Marksman's Spite and
+  Meteodrive by your measured damage per potency; Zantetsuken on a target with Kuzushi), shields in danger and before
+  Guard (Phalanx, Mesotes, Sky High, Eventide), area ones by the enemies they reach; follow-up actions on the button
+  (Terminal Trigger, Sky Shatter) are left to their rotation. Guard goes on the health forecast and not where it is
+  wasted; Recuperate and Haelan keep the MP for one Purify unless you are in danger; actions that ignore, remove or
+  halve Guard may pick a guarded target; crowd control prefers targets without immunity. Leaps carry their movement
+  type and the gap closer limit; Guard, Purify, Recuperate, Elixir and Sprint pass through as you press them.
+- **Masked Carnivale: control effects go where they work.** The stage data marks enemies *immune* to a control effect,
+  and RSR read it the other way round, holding back exactly the enemies it works on. Interrupts and the Vibe Check are
+  read from the stage guides, and the set adds a filler for an enemy no damaging spell can hurt.
 - **Summoner: Searing Light stays with the burst.** It is released as soon as the summon will be
   ready by the next GCD, and the summon waits for it when it cannot go out ahead; a buff that fell
   behind is pulled back. As the only Summoner the slot ahead opens only for the burst demi (Solar
@@ -1195,7 +1262,13 @@ off.
   two-minute window, under the Bard's buffs and under Wildfire. Viper and Machinist had a switch of their own, off by
   default, and never drank one. The rotations' own tincture switches are removed: Summoner's "Use potion", "Potion
   timing" and "Only use potion during a big summon", White Mage's "Use Tincture/Gemdraught when about to use Presence
-  of Mind", Viper's "Experimental Pot Usage", Machinist's "Use burst medicine in countdown".
+  of Mind", Viper's "Experimental Pot Usage", Machinist's "Use burst medicine in countdown", and Reaper's "Use potion"
+  and "First Potion timing".
+- **The first tincture by measured damage, not by habit.** FFLogs' best pulls of all 21 jobs on three current savage
+  bosses were measured with the tincture taken out. In a duty not yet cleared, the first burst's tincture waits unless
+  the last pull there reached the second burst, so a wipe while learning costs no tincture. Reaper, Viper, Bard,
+  Dragoon and Dancer carry more damage in their two-minute burst than in the opener: their first tincture waits for it
+  where that gives as many tinctures over the expected fight.
 - **Tinctures and potions share one recast.** "Tincture usage", "Use HP potions" and "Use MP potions" now say so: a
   tincture blocks HP and MP potions for 5 minutes, an HP potion the tincture for its own recast.
 - **Potions can wait for the tincture.** New option "Hold HP and MP potions for the tincture" (per job, off by
@@ -1529,11 +1602,26 @@ off.
 - **A familiar for enemies still to come waits from the pull (Crucible).** The battle the horn screen
   named counts until the fight is told, so a familiar that only hits the weakness of enemies that
   come later is held at the pull as well.
-- **Familiars that lag behind level up (Crucible).** `Prefer familiars that lag behind in rank for
-  the Crucible team`, **on by default**: the team recommendation gives a place to the lowest-ranked
-  familiar that replaces another adequately - the same weaknesses, healing or protection where
-  needed, at least the rank the game recommends for the board. On the horn screen a familiar below
-  that rank fights only when fewer others live than horns.
+- **Goal of a run: Level, Safe win, Score (Crucible).** The team window offers the goals that hold on this board and
+  stores your choice (`Goal of a Crucible run`). Level fills every place below the board's cap, or the next board's
+  recommended rank where higher, lowest rank first; Safe win takes the lowest team that passes safely; Score the
+  strongest, as few as are not endangered. On the board every goal plays safe, then for points. Level is offered only
+  while a familiar of known rank stands below that limit, Score without a familiar on the cap only while its team is
+  measured not endangered. On the horn screen a familiar below the board's recommended rank fights only when fewer
+  others live than horns.
+- **The true rank of each familiar is read (Crucible).** RSR reads it with the game function's full set of arguments
+  and also learns each familiar's rank from the board's result window, rising only.
+- **The team (Crucible).** Roles go to familiars the horn choice sends in; against danger a swap takes the lowest
+  familiar that fights stronger, measured by HP at its fighting rank. The board's content row is found through the
+  condition that names it, so board bonuses, team rank and losses per board count on the board. With the team as
+  recommended the window shows "Team ready" instead of Apply.
+- **Shop and items: only what gets used (Crucible).** Healing and protection count only the part of the way's demand
+  that would take you below the potion line, smoke bombs only what the route would flee from; gear you already wear,
+  from any window that lists it, is not recommended. Damage, TP and buff items wait while an item bonus stands, except
+  what the final fight's last GCD buys. A fight never measured counts as the board's heaviest.
+- **The next horn comes first (Crucible)** after a familiar leaves, ahead of other abilities.
+- **The way shows when it is settled (Crucible)**: only once no window of the board is open (shop, treasure, loot
+  after a fight, campsite, result, team screen) and you can move.
 - **What to take from a treasure (Crucible).** `Recommend what to take from a Crucible treasure`, **on by
   default**: while a treasure is open, a window names the offer to take and why, in the order of the shop
   recommendation with no price - a second life, cover against a deadly status of the board, the gear that
@@ -1957,6 +2045,12 @@ off.
   with its price.
 - **The trace names every item pressed.** "item pressed: …" with its quality, beside the potion line that names only the
   choice.
+- **Recommendation windows fit the screen.** No window is taller than the screen, the action and its status stay below
+  the scrolled list, and long lists spread over columns.
+- **Cooldowns that stood ready are traced.** One line per fight names every cooldown that stood ready longer than a GCD
+  while RSR played, how long, and why the rotation refused it, or "not asked".
+- **Every exception in RSR's code is reported once per place,** caught or not, in `DefenseTrace.log` and with its
+  stack in the Dalamud log.
 
 ## Frame time
 
@@ -1983,6 +2077,12 @@ control window. RSR uses RebornMaterial 7.5.7.5, which keeps each font until the
   from 7,088 to 1,431.
 - **The cost line names the decision work the gate throws away.** After each fight: how many cycles, and how much of the
   rotation step's time, fell where nothing could be pressed anyway (a cast past the lead, the animation lock).
+- **No fault in RSR's code reaches the game.** Every hook RSR places runs only the game's original outside a guard that
+  catches every fault, and reports a fault once per place ("hook fault"). Board windows of the Crucible are read
+  through Dalamud's SafeMemory; a board whose way leads back no longer overflows the stack; taking over other tools'
+  lock functions runs on the next frame instead of inside the game's action update.
+- **More code structure.** The fork's own members of 27 more upstream classes moved into partial files per concept; no
+  signature changed.
 
 ## For rotation authors
 
@@ -2052,3 +2152,8 @@ control window. RSR uses RebornMaterial 7.5.7.5, which keeps each font until the
   generator (5.7 MB, never loaded), and a local build packed whatever earlier builds had left in its output folder, such
   as the old RotationSolver.Basic.dll. The package is now made from a fixed list - the plugin, its manifest, ECommons
   and RebornMaterial -, and a release is not published unless its zip holds exactly that.
+- `CustomRotation.InClearedDuty` and `CustomRotation.LastPullTime` say whether the duty is cleared and how long the last
+  pull in this territory lasted. `BeastmasterRotation` gains the goal of a Crucible run (`CrucibleGoal`,
+  `CrucibleGoalNow`, `CrucibleGoalPlayed`, `CrucibleGoalsOffered`, `CrucibleGoalWhyNot`, `ChooseCrucibleGoal`,
+  `CrucibleGoalSetting`, `CrucibleTeamRequestRunning`). `MaskedCarnivaleHelper.IsImmuneTo` with `CarnivaleControl`;
+  `StatusHelper.PvPGuardStatuses` and `StatusHelper.GuardWastedStatuses`.
