@@ -23841,6 +23841,9 @@ geprüft, alle Pfade, die eine Abwehr drücken können (Konzept 09, „Die Pfade
 - *Im Kampf:* Krieger allein an der Puppe: kein Urimpuls mehr ohne Schaden. Allein gegen Gegner, die ihn angreifen:
   unverändert. In der Gruppe mit Heiler: unverändert (nur reaktiv unter 70 % und in der Einzelabwehr).
 - *Prüfgrad:* statisch, Compile, CI; im Spiel nicht beobachtet.
+- *Quellen am Auftragsende (15.11.2026):* Upstream unverändert. lalalazy c7247dc7d..cdd50856a: nur LazyMarketCompanion
+  (Schaufensterpuppe liest die Menüzeile); Daedalus 2644cbe4b..8b028d777: nur zwei neue Plugins im `repo.json`
+  (Hephaestus, Demeter). Keines berührt Rotationen oder das Crucible; Stände eingetragen.
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
