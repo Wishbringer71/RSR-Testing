@@ -148,6 +148,18 @@ internal static class CrucibleBoard
 	private static uint _itemMeasuredIn;
 	private static uint _measuredIn;
 	private static double _ownDamage;
+
+	// A830: the player's own damage on the enemies since RSR loaded - all of it and its physical and magic parts by the attack
+	// type of each hit -, and per action his critical and his plain hits, for his share of the team's damage and what a
+	// critical hit adds. Until measured, his log of 15.11.2026 (ACT, Crucible, two sessions): 68 % of the team's damage was
+	// his, a critical hit dealt 1.42 times a plain one - fallbacks from measurement, not game values.
+	private static double _playerDamage, _playerPhysical, _playerMagic;
+	private static readonly Dictionary<uint, (double Crit, int Crits, double Plain, int Plains)> _critByAction = [];
+	private const float PlayerShareFallback = 0.68f;
+	private const float CritGainFallback = 0.42f;
+
+	// The game's mark of a critical hit in an effect's first parameter (ACT's effect flags 0x2000, measured 15.11.2026).
+	private const byte CriticalHitMark = 0x20;
 	private static readonly Dictionary<uint, double> _ownDamageByElement = [];
 	private static bool _bonusTraced;
 
@@ -1265,6 +1277,10 @@ internal static class CrucibleBoard
 		{
 			RecordFamiliarDamage(action, amount);
 		}
+		else
+		{
+			RecordPlayerDamage(action.RowId, entry, amount);
+		}
 
 		var elements = ElementsOfHit(entry);
 
@@ -1732,6 +1748,53 @@ internal static class CrucibleBoard
 		=> (key / HitSlots / FamiliarKeyStride, (BeastmasterPet)(key / HitSlots % FamiliarKeyStride), (HitSlot)(key % HitSlots));
 
 	// A586: a familiar's hit by its source, the familiar out being the player's current one.
+	// A830: a hit of the player's own - its kind and whether it was critical.
+	private static void RecordPlayerDamage(uint action, EffectEntry entry, uint amount)
+	{
+		_playerDamage += amount;
+		if (AttackTypeKind.IsPhysical(entry.AttackType))
+		{
+			_playerPhysical += amount;
+		}
+		else if (AttackTypeKind.IsMagic(entry.AttackType))
+		{
+			_playerMagic += amount;
+		}
+
+		var seen = _critByAction.GetValueOrDefault(action);
+		_critByAction[action] = (entry.param0 & CriticalHitMark) != 0
+			? (seen.Crit + amount, seen.Crits + 1, seen.Plain, seen.Plains)
+			: (seen.Crit, seen.Crits, seen.Plain + amount, seen.Plains + 1);
+	}
+
+	/// <summary>
+	/// A830: what the team's pace is weighed with - the player's share of the team's damage, the physical part of his own
+	/// damage, and what a critical hit of his adds over a plain one (per action, weighted by its critical hits); measured since
+	/// RSR loaded, else from his log of 15.11.2026.
+	/// </summary>
+	internal static (float Share, float Physical, float CritGain) PaceBasis
+	{
+		get
+		{
+			var familiar = _familiarAuto + _familiarTrick + _familiarRelease + _familiarOther;
+			var share = _playerDamage > 0d ? (float)(_playerDamage / (_playerDamage + familiar)) : PlayerShareFallback;
+			var typed = _playerPhysical + _playerMagic;
+			var physical = typed > 0d ? (float)(_playerPhysical / typed) : 1f;
+			double gain = 0d;
+			var weight = 0;
+			foreach (var (_, hits) in _critByAction)
+			{
+				if (hits.Crits > 0 && hits.Plains > 0 && hits.Plain > 0d)
+				{
+					gain += hits.Crits * ((hits.Crit / hits.Crits / (hits.Plain / hits.Plains)) - 1d);
+					weight += hits.Crits;
+				}
+			}
+
+			return (share, physical, weight > 0 ? (float)(gain / weight) : CritGainFallback);
+		}
+	}
+
 	private static void RecordFamiliarDamage(Lumina.Excel.Sheets.Action action, uint amount)
 	{
 		var pet = BeastmasterRotation.CurrentPet;

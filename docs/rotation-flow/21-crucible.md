@@ -1433,8 +1433,57 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
   *Gegenthese A670-2 (Bosskampf kürzer):* Dauert der Bosskampf kürzer als 150 s, bringt das Diebesgewand nichts; das
   zählt die Skala so, weil der Anteil nach 150 s dann 0 ist. Die
   übrigen Kämpfe sind die auf dem kürzesten Weg zum Endgegner, der Endgegner eingeschlossen. Was die Skala nicht misst –
-  Bewegung, Block, Hast, kritische Treffer, Schaden, Absorbieren eines Elements –, nennt das Fenster beim Angebot, statt es
-  zu verschweigen. Vor der ersten gemessenen Last zählt die Reihenfolge oben.
+  Bewegung, Block, Krit-Stärke („Critical Hit Power +35", ohne Einheit), Marken- und Beuteertrag, Stapel nach Bedingung,
+  Absorbieren eines Elements –, nennt das Fenster beim Angebot, statt es zu verschweigen. Vor der ersten gemessenen Last
+  zählt die Reihenfolge oben.
+  *Tempo: Angriffswerte auf derselben Skala (A830; seine Hinweise vom 15.11.2026: „ist ‚hast' bei den buffs nicht eine
+  beschleunigung der Angriffe und somit der angriffsstärke? … ich habe das gefühl, dass gewisse fähigkeitsboni überhaupt
+  nicht gewertet werden", „je besser die begleiter im brett werden, desto geringer ist doch die gefahr. das müsste mit
+  eingerechnet werden" und „das was nicht aufgrund externer recherche belegt werden kann, könnte doch durch einmaligen
+  ingame kauf und nutzung belegt werden"):*
+  - *Befund:* Bis A830 zählte die Skala nur Werte, die Schaden abhalten (LP, Schaden, Verwundbarkeit, Ausweichen,
+    Heilung). Schaden ausgeteilt, physischer und magischer Schaden ausgeteilt, Kritrate, Hast und Verlangsamung nannte
+    das Fenster nur. Das betrifft in `XBMItem` 21 Stücke mit „Damage Dealt", 14 mit „Physical Damage Dealt", 13 mit
+    „Critical Hit Rate", 13 mit Hast, 5 mit „Magic Damage Dealt" (Ausrüstung und Futter, gezählt 15.11.2026). Hast ist
+    im Blatt selbst erklärt: „Reduces weaponskill cast time and recast time, spell cast time and recast time, and
+    auto-attack delay" (Ninja-Gewand, Rahmkäse-Simulakrum) – deine Waffenkünste und Auto-Angriffe kommen um den Anteil
+    schneller.
+  - *Wen es trifft:* Bestienausrüstung wirkt auf dich; nur ein Stück mit „※Effects also apply to summoned familiar"
+    (Krone der Wildheit, Stab der Weisen) auch auf den Begleiter. Futter wirkt auf den Begleiter, der es frisst.
+  - *Wie viel Schaden du selbst machst (gemessen, ACT 15.11.2026, Crucible, zwei Mitschnitte):* Auf die Gegner kamen von
+    dir 369.979, von deinen Begleitern 177.261 Schaden, von anderen 12.952 – du machst rund zwei Drittel (68 %) des
+    Teamschadens, mit Schildspalter, Klingenbiss, Schmetteraxt, Schildansturm und 39.333 aus Auto-Angriffen.
+    Kritische Treffer machen das 1,42-Fache (Attacke 71 gegen 50, Klingenbiss 529 gegen 380, Schildspalter 650 gegen 455,
+    Schmetteraxt 173 gegen 120, je Median), direkte Treffer das 1,24-Fache; Krit-Rate rund 10 %.
+  - *Regel:* Ein Kampf dauert so lange, wie das Team braucht, die Gegner zu besiegen; was er dich kostet, wächst mit
+    seiner Dauer (Auto-Angriffe und jede Fähigkeit, die ein Gegner wiederholt). Schneller zu töten senkt die Last im
+    selben Verhältnis (meine Ableitung, unbelegt; die Prüfung steht unten). Das *Tempo* der getragenen Ausrüstung ist
+    der Faktor, um den das Team schneller Schaden macht: dein Anteil am Teamschaden mal deinem Faktor plus der Anteil
+    der Begleiter mal ihrem. Dein Faktor je Stück: (1 + Schaden ausgeteilt) · (1 + physischer · dein physischer Anteil)
+    · (1 + magischer · dein magischer Anteil) · (1 + Kritrate · Krit-Mehrschaden) / (1 − Hast) / (1 + Verlangsamung);
+    Stücke multiplizieren wie die Abwehr (meine Ableitung). Der Begleiterfaktor zählt nur Stücke, die auch auf ihn
+    wirken. Die Last eines Kampfs mit dieser Ausrüstung ist die gemessene geteilt durch das Tempo – auf der Skala von
+    Laden und Schatz, im Test des Wegs (K15) und an der Campsite (K10), über dieselben Faktoren der getragenen
+    Ausrüstung, mit denen RSR jede Last schon auf „ohne Ausrüstung" zurückrechnet.
+  - *Was RSR selbst misst (seine Vorgabe vom 15.11.2026, ingame belegen):* deinen Anteil am Teamschaden, deinen
+    physischen und magischen Anteil (Angriffsart jedes Treffers) und den Krit-Mehrschaden (je Aktion kritische gegen
+    gewöhnliche Treffer, Kennzeichen im Treffer) – laufend, über die Sitzung. Bis zur ersten Messung gelten die Werte
+    aus seinem Mitschnitt (68 %, 42 %; physisch: alle gemessenen Waffenkünste physisch).
+  - *Selbstkorrektur:* Jede gelernte Last wird beim Lernen mit dem Tempo von damals auf „ohne Ausrüstung" zurückgerechnet
+    und beim Lesen mit dem von jetzt angewandt. Stimmt die Annahme „Last wächst mit der Dauer" für einen Kampf nicht,
+    lernt er beim nächsten Lauf den höheren Wert (die Tafeln halten den schwersten), und die Rechnung liefert wieder das
+    Gemessene; ein Fehler kann so nur zwischen zwei Läufen mit verschiedenem Tempo bestehen. Werte aus der Zeit vor A830
+    sind ohne Tempo gelernt; trug er damals Angriffsausrüstung, unterschätzt RSR den Kampf um deren Tempo, bis ein Lauf
+    ihn neu lernt. *Preis:* bei seinen bisherigen Läufen höchstens das Tempo eines Stücks, das er damals trug; die
+    Trankschwelle und die Heilung darunter bleiben.
+  - *Und die Begleiter, die besser werden:* Ränge zählen schon (A729: die Lasten je Rang); Futter und Begleiter, die
+    stärker werden, senken die Last über die gemessenen Kämpfe, nicht über eine Annahme. Das Futter im Tempo der
+    Ausrüstung mitzurechnen, wäre derselbe Weg; er steht als offene Arbeit im TODO („Crucible: Futter im Tempo").
+  - *Gegenthesen:* (1) *Die Last wächst nicht mit der Dauer* (ein Boss mit festem Ablauf): siehe Selbstkorrektur; Preis:
+    ein Lauf. (2) *Kritrate ist ein Zuschlag in Prozentpunkten, nicht in Prozent:* Lesart Prozentpunkte (meine Ableitung,
+    unbelegt); RSR misst den Krit-Mehrschaden, nicht die Rate. (3) *Ausgeliefert, und nichts ändert sich:* Ohne
+    angebotenes Angriffsstück bleibt die Wahl gleich; sonst steht im Fenster ein Wert, wo vorher keiner stand, und die
+    Spur nennt „crucible pace: …".
   *Grund im Fenster:* Jedes Angebot steht im Fenster mit seinem Namen in der Sprache des Clients, seinem Wert auf der
   Skala und dem, was sie nicht misst; das empfohlene zuerst, mit dem Abstand zum nächstbesten.
   *Seine Lage (07.11.2026, Zahlen aus seinem Routenfenster kurz davor):* Ein Kampf kostete rund 4 %, Vorrat 36 %,
@@ -2334,7 +2383,7 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
   gewählte ist hervorgehoben und bleibt gespeichert (Einstellung „Goal of a Crucible run (also the three buttons of the
   team window)", ab Werk „Level", eine alte „Prefer familiars that lag behind" aus wird „Score"). Die Ziele unterscheiden
   sich **nur im Kader**; im Brett gilt unter jedem dieselbe Regel.
-  *Anforderungen (seine Worte vom 14.11.2026 → prüfbares Kriterium → Stelle → Messweg):*
+  *Anforderungen (seine Worte vom 14. und 15.11.2026 → prüfbares Kriterium → Stelle → Messweg):*
   | # | Seine Angabe | Kriterium | Stelle | Messweg |
   |---|---|---|---|---|
   | Z1 | „einen von drei buttons auswählen, und begleiterauswahl basiert darauf" (Vorschlag) | drei Ziele im Kaderfenster | `CrucibleTeamWindow`, `CrucibleGoal` | Spur „crucible team: goal …" |
@@ -2346,6 +2395,12 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
   | Z7 | „alle anderen regeln zum kauf, equipment, verbrauchsgegenständenutzung richten sich danach immer sicher zu sein und die hochmöglichste bonuszahl zu bekommen" | im Brett unter jedem Ziel K15 (sicher, dann Bonus) | K8, K10, K13, K15 | Spur „crucible score: …" |
   | Z8 | „du hast zu schauen, wie und ob safe win regeln in den anderen aufgehen können" | keine Regel nur für ein Ziel, wo eine gemeinsame trägt | dieser Abschnitt, „Was aufging" | – |
   | Z9 | vorher: „reihum", „nie soweit reduzieren, dass große gefahr besteht … oder dass diese durch essen gebufft werden müssen" | unter gleichem Rang zuerst, wer im letzten Lauf fehlte; keine Größe, die gefährdet ist | `ChooseTeam`, `LastRunTeam` | Spur der angeforderten Kader |
+  | Z10 | „mehrere züge im vorraus planen, theoretisch schon am anfang bis zum bosskampf. dann die planung nur an das tatsächliche ergebnis der kämpfe, des loots und des geschäfts anpassen. optimum erreichen“ (Präzisierung, 15.11.) | jede Entscheidung rechnet über den ganzen Weg bis einschließlich des Endkampfs und neu nach jedem Ergebnis; festgelegt wird nur die nächste | K10 „Weg“, K15 „Haushalt bis zum Endkampf“ | Spurzeilen je Entscheidung |
+  | Z11 | „viele verbrauchsgegenstände ungenutzt, obwohl du sie extra zum kauf vorgeschlagen hast“ (15.11.) | ohne Gegenstandsbonus geht ein Schutzgegenstand in einem geplanten Kampf, sobald ein Gegner ihn angreift | `ProtectionPlanned` (K8 Schritt 6) | Spur „crucible item: fight … is a planned fight“ |
+  | Z12 | Z7, „die hochmöglichste bonuszahl“ (meine Ableitung: Talerregen fehlte) | der Laden hält die Marken für Talerregen, solange der Weg getragen ist | `TokensToKeep`, `RankOffers(keep)` | Spur „crucible score: shop keeps … for Talerregen“ |
+  | Z13 | „ist ‚hast‘ … nicht eine beschleunigung der angriffe“, „gewisse fähigkeitsboni überhaupt nicht gewertet“ (Hinweis, 15.11.) | Schaden, physischer und magischer Schaden, Kritrate, Hast und Verlangsamung zählen über das Tempo auf derselben Skala wie Schutz | `GearFold`, `UncountedEffects` | Spur „crucible pace: …“, Wert im Fenster |
+  | Z14 | „je besser die begleiter im brett werden, desto geringer ist doch die gefahr“ (Hinweis, 15.11.) | die Last jedes Kampfs gilt mit dem Tempo von jetzt, Ränge über A729 | `WornFactors`, `BareShare` | Spur „crucible fight …: net loss …“ gegen den nächsten Lauf |
+  | Z15 | „was nicht aufgrund externer recherche belegt werden kann, könnte doch durch einmaligen ingame kauf und nutzung belegt werden“ (Vorschlag, 15.11.) | Anteil am Teamschaden, physischer Anteil und Krit-Mehrschaden misst RSR im Kampf; bis dahin Werte aus seinem Mitschnitt | `CrucibleBoard.PaceBasis` | Spur „crucible pace: … your share …“ |
   *Grundlagen (belegt):* Der Levelcap ist der Synchronrang des Bretts (`XBMContent`, Spalte 36: 5, 10, 15, 20, 25); wer
   darüber steht, kämpft mit ihm, wer darunter steht, mit dem eigenen. Jeder Begleiter im Kader bekommt Erfahrung, mit
   oder ohne Horn (sein Hinweis), höchstens 255 je Brett, der Punktzahl folgend (Wiki, CrucibleSux). Die Hornwahl (K6)

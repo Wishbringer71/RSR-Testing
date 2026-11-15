@@ -24207,6 +24207,32 @@ Absturzbericht.
   kein Nutzen hier), dajoey/lalalazy 1c70fcfee (LazyCrucible 0.1.9.19 und 0.1.9.20: nur Oberfläche und Testgerüst, keine
   Mechanik), ofnature/Daedalus 961997dcb (neues Unterprojekt Selene, kein Crucible-Bezug); eingetragen.
 
+### A830 · Crucible: Angriffswerte zählen über das Tempo des Teams (15.11.2026)
+
+- *Anlass:* Seine Hinweise (15.11.2026): Hast beschleunige die Angriffe und damit den Schaden; gewisse Boni würden gar
+  nicht gewertet; je besser die Begleiter, desto geringer die Gefahr; was keine Quelle belegt, könne ein Kauf im Spiel
+  belegen.
+- *1 Research:* `XBMItem` (xivapi v2, englisch und deutsch, 206 Zeilen): 21 Stücke mit „Damage Dealt", 14 „Physical Damage
+  Dealt", 13 „Critical Hit Rate", 13 Hast, 5 „Magic Damage Dealt"; Hast im Blatt erklärt („Reduces weaponskill cast time
+  and recast time, spell cast time and recast time, and auto-attack delay"). Bestienausrüstung wirkt auf den Spieler, mit
+  „※Effects also apply to summoned familiar" auch auf den Begleiter. ACT 15.11.2026 (Crucible, zwei Mitschnitte): Schaden
+  auf Gegner vom Spieler 369.979, von seinen Begleitern 177.261 (68 % seiner); kritische Treffer das 1,42-Fache (Median je
+  Aktion), direkte 1,24; Kennzeichen 0x2000 (Krit) und 0x4000 (direkt) im Effektfeld. Code: Die Skala von Laden und Schatz
+  (`LoadOf`, `RawLoad`, `ShopValue`) und `WornFactors` zählten nur Abwehrwerte; `UncountedEffects` nannte die übrigen.
+- *2 Optionen:* (0) nichts; (1) Angriffswerte nur im Fenster gewichten (eigene Skala); (2) Tempo des Teams als Teiler der
+  Last auf der einen Skala, Messung im Spiel, Rückfall aus dem Mitschnitt – gewählt.
+- *3 bis 6:* Konzept 21, K13 „Tempo"; Anforderungen Z13 bis Z15. Gegenthesen: Last wächst nicht mit der Dauer
+  (Selbstkorrektur über die max-gehaltenen Tafeln, Preis ein Lauf), Kritrate in Prozentpunkten (Lesart, unbelegt), alte
+  Lernwerte ohne Tempo (Preis: Unterschätzung um das Tempo eines damals getragenen Stücks, bis neu gelernt).
+- *7 Gebaut:* `GearFold` (eine Faltung für Laden, Schatz, Wegtest und Campsite statt vier gleicher Schleifen; Tempo in
+  `Taken`), Werte aus dem Text, `CrucibleBoard.PaceBasis` mit `RecordPlayerDamage`, Spur „crucible pace: …".
+- *8 Nachweis:* Compile (0 Warnungen), Prüfungen; im Spiel nicht beobachtet. Prüfgrad statisch und Compile; eine
+  unabhängige Prüfrunde für Z10 bis Z15 läuft.
+- *Vorhersage:* `DefenseTrace.log`, Crucible: nach „crucible gear held: …" eine Zeile „crucible pace: the gear held speeds
+  the team x…", mit gemessenem Anteil statt 68 % nach dem ersten eigenen Treffer; ein Angriffsstück steht im Laden mit
+  einem Wert über null. Maschinenlesbar: `pace-traced`.
+- *9 Dokumentation:* Konzept 21, K13 „Tempo", Anforderungen Z13 bis Z15; TODO „Crucible: Futter im Tempo".
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

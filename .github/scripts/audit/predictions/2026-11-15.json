@@ -14,5 +14,7 @@
   {"id": "riches-weighed", "archive": "A829",
    "kind": "present", "situation": "crucible shop: [0-9]+ tokens", "match": "crucible score: (shop keeps [0-9]+ of|Talerregen \\([0-9]+\\) not at stake)"},
   {"id": "protection-plan-traced", "archive": "A829",
-   "kind": "present", "situation": "crucible items at the start of fight", "match": "crucible item: fight [0-9]+ is (not )?a planned fight"}
+   "kind": "present", "situation": "crucible items at the start of fight", "match": "crucible item: fight [0-9]+ is (not )?a planned fight"},
+  {"id": "pace-traced", "archive": "A830",
+   "kind": "present", "situation": "crucible gear held: ", "match": "crucible pace: the gear held speeds the team x[0-9]"}
 ]

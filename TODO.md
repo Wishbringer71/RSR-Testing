@@ -19,7 +19,7 @@ auswahl und das timing der beschwörung" – je Kampf aller fünf Bretter (Gegne
 BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Zeitpunkt ihres Aufrufs im Loop prüfen
 (Beispiel seiner Beobachtung: der Raptor gegen Feuer, bevor feueranfällige Gegner da waren; A581).
 
-Keine offene Arbeit in Reihenfolge.
+1. Crucible: Futter im Tempo.
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -34,7 +34,11 @@ Keine offenen Defekte.
 
 ## Offene Arbeit
 
-Keine offene Arbeit.
+- **Crucible: Futter im Tempo** (A830; sein Hinweis vom 15.11.2026: „je besser die begleiter im brett werden, desto
+  geringer ist doch die gefahr"). Im Kampf: Futter mit „Damage Dealt", Hast oder Kritrate macht den Begleiter schneller,
+  die Last zählt es nicht; RSR schätzt sie zu hoch und hält Boni, Rast und Futter seltener. Ort:
+  `BeastmasterCrucibleShop.cs` (`GearFold`, Begleiterfaktor), Futter je Begleiter aus `XBMPetParty`. Nächster Schritt:
+  der Begleiterfaktor als Mittel über den Kader, je Begleiter sein Futter. Konzept 21, K13 „Tempo".
 
 ## Technische Schuld
 

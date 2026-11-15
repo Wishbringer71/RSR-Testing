@@ -28,7 +28,55 @@ public partial class BeastmasterRotation
 	private readonly record struct CrucibleGear(string Name, float MaxHp, float DamageTaken, float PhysicalVulnerability,
 		float MagicVulnerability, float Evasion, float Movement, float Slow, float Recovery, float Curing, bool Life,
 		bool SelfHarm, List<string> Resists, string RestItem = "", float EscapeChance = 0f, int TreasureItems = 0,
-		string KillStack = "", float KillStackTaken = 0f, int KillStackMax = 0);
+		string KillStack = "", float KillStackTaken = 0f, int KillStackMax = 0, float DamageDealt = 0f, float PhysicalDealt = 0f,
+		float MagicDealt = 0f, float CritRate = 0f, float Haste = 0f, bool AlsoFamiliar = false);
+
+	/// <summary>
+	/// What a set of gear makes of the player's defences and of the team's pace, folded piece by piece as the shop, the
+	/// treasure, the way's test and the campsite weigh them (A830): his maximum HP (1 + its raises), the damage he takes -
+	/// divided by the pace, for a faster team ends a fight sooner -, his physical and magic vulnerability with evasion, his
+	/// extra healing, and the pace itself.
+	/// </summary>
+	private struct GearFold
+	{
+		private float _player, _familiar;
+
+		public float Hp, Physical, Magic, Recovery, Curing;
+		private float _taken;
+
+		public static GearFold Start() => new() { Hp = 1f, _taken = 1f, Physical = 1f, Magic = 1f, _player = 1f, _familiar = 1f };
+
+		public void Add(CrucibleGear piece, (float Share, float Physical, float CritGain) basis)
+		{
+			Hp *= 1f + piece.MaxHp;
+			_taken *= 1f - piece.DamageTaken;
+			Physical *= (1f - piece.PhysicalVulnerability) * (1f - piece.Evasion);
+			Magic *= 1f - piece.MagicVulnerability;
+			Recovery += piece.Recovery;
+			Curing += piece.Curing;
+
+			// A830: the player's damage with this piece - damage dealt, its physical and magic parts on his shares of them,
+			// critical hit rate on what a critical hit adds, haste on his weaponskills and auto-attacks, slow against them.
+			var factor = (1f + piece.DamageDealt) * (1f + (piece.PhysicalDealt * basis.Physical))
+				* (1f + (piece.MagicDealt * (1f - basis.Physical))) * (1f + (piece.CritRate * basis.CritGain))
+				/ Math.Max(1f - piece.Haste, float.Epsilon) / (1f + piece.Slow);
+			_player *= factor;
+			if (piece.AlsoFamiliar)
+			{
+				_familiar *= factor;
+			}
+
+			_share = basis.Share;
+		}
+
+		private float _share;
+
+		/// <summary>The team's pace: his share of its damage at his factor, the familiars' at theirs; 1 without gear.</summary>
+		public readonly float Pace => _share > 0f ? (_share * _player) + ((1f - _share) * _familiar) : 1f;
+
+		/// <summary>The damage he takes, a factor, with the pace: a fight a faster team ends sooner costs him less.</summary>
+		public readonly float Taken => _taken / Math.Max(Pace, float.Epsilon);
+	}
 
 	// A677: gear that grants a stack on each kill whose effect lowers the damage you take (Demonic Armor: "Grants one stack
 	// of High Wire upon defeating an enemy. High Wire Effect: ... reduces damage taken by 5% ... Maximum Stacks: 4").
@@ -110,8 +158,10 @@ public partial class BeastmasterRotation
 	}
 
 	private static readonly Regex GearStat = new(
-		@"(?<stat>Maximum HP|Damage Taken|Physical Vulnerability|Magic Vulnerability|Evasion|Movement Speed|Slow) (?<sign>[+-])(?<share>\d+)%",
+		@"(?<stat>Maximum HP|Damage Taken|Physical Vulnerability|Magic Vulnerability|Evasion|Movement Speed|Slow|Physical Damage Dealt|Magic Damage Dealt|Damage Dealt|Critical Hit Rate|Haste) (?<sign>[+-])(?<share>\d+)%",
 		RegexOptions.CultureInvariant);
+	// A830: the mark of a piece whose effects reach the familiar too ("Crown of the Wild", "Staff of the Wise").
+	private const string AlsoFamiliarText = "Effects also apply to summoned familiar";
 	private static readonly Regex GearRecovery = new(@"Increases HP recovery via actions and crucible items by (?<share>\d+)%",
 		RegexOptions.CultureInvariant);
 	private static readonly Regex GearCuring = new(@"Recovers (?<share>\d+)% of maximum HP at the end of battles",
@@ -173,35 +223,34 @@ public partial class BeastmasterRotation
 		if (!same)
 		{
 			DefenseTrace.Line($"crucible gear held: {(gear.Count > 0 ? string.Join(", ", gear.ConvertAll(OfferName)) : "none")}");
+			TracePace(gear);
 		}
 	}
 
 	/// <summary>
 	/// K10 Campsite (A661): what the gear worn in this run makes of the player's defences - his maximum HP (1 + its raises),
-	/// the damage he takes, and his physical and magic vulnerability with evasion, each as a factor, multiplied over the
-	/// pieces as the shop weighs them; all 1 before the run shows any gear.
+	/// the damage he takes (with the team's pace, A830), and his physical and magic vulnerability with evasion, each as a
+	/// factor, multiplied over the pieces as the shop weighs them; all 1 before the run shows any gear.
 	/// </summary>
 	internal static (float Hp, float Taken, float Physical, float Magic) WornFactors()
 	{
-		float hp = 1f, taken = 1f, physical = 1f, magic = 1f;
+		var fold = GearFold.Start();
 		if (_gearSeen is not { } seen || seen.Run != CrucibleBoard.Run)
 		{
-			return (hp, taken, physical, magic);
+			return (fold.Hp, fold.Taken, fold.Physical, fold.Magic);
 		}
 
 		var gear = CrucibleGearTable;
+		var basis = CrucibleBoard.PaceBasis;
 		foreach (var id in seen.Gear)
 		{
 			if (gear.TryGetValue(id, out var piece))
 			{
-				hp *= 1f + piece.MaxHp;
-				taken *= 1f - piece.DamageTaken;
-				physical *= (1f - piece.PhysicalVulnerability) * (1f - piece.Evasion);
-				magic *= 1f - piece.MagicVulnerability;
+				fold.Add(piece, basis);
 			}
 		}
 
-		return (hp, taken, physical, magic);
+		return (fold.Hp, fold.Taken, fold.Physical, fold.Magic);
 	}
 
 	/// <summary>
@@ -1172,15 +1221,8 @@ public partial class BeastmasterRotation
 			return new ShopLoad(physical, magic, other, physical, magic, other, 0f, fights);
 		}
 
-		float hp = 1f, taken = 1f, physicalHeld = 1f, magicHeld = 1f, recovery = 0f;
-		foreach (var piece in owned)
-		{
-			hp *= 1f + piece.MaxHp;
-			taken *= 1f - piece.DamageTaken;
-			physicalHeld *= (1f - piece.PhysicalVulnerability) * (1f - piece.Evasion);
-			magicHeld *= 1f - piece.MagicVulnerability;
-			recovery += piece.Recovery;
-		}
+		var fold = Fold(owned);
+		var (hp, taken, physicalHeld, magicHeld, recovery) = (fold.Hp, fold.Taken, fold.Physical, fold.Magic, fold.Recovery);
 
 		var maxHp = (float)player.MaxHp;
 		var bare = maxHp / hp;
@@ -1501,16 +1543,8 @@ public partial class BeastmasterRotation
 	private static (float Mean, float Heavy, float HeavyPhysical, float HeavyMagic, float Recovery) RawLoad(List<CrucibleGear> gear,
 		ShopLoad load)
 	{
-		float hp = 1f, taken = 1f, physical = 1f, magic = 1f, recovery = 0f;
-		foreach (var piece in gear)
-		{
-			hp *= 1f + piece.MaxHp;
-			taken *= 1f - piece.DamageTaken;
-			physical *= (1f - piece.PhysicalVulnerability) * (1f - piece.Evasion);
-			magic *= 1f - piece.MagicVulnerability;
-			recovery += piece.Recovery;
-		}
-
+		var fold = Fold(gear);
+		var (hp, taken, physical, magic, recovery) = (fold.Hp, fold.Taken, fold.Physical, fold.Magic, fold.Recovery);
 		var heavyPhysical = taken * load.HeavyPhysical * physical / hp;
 		var heavyMagic = taken * load.HeavyMagic * magic / hp;
 		return (taken * ((load.Physical * physical) + (load.Magic * magic) + load.Other) / hp,
@@ -1518,7 +1552,7 @@ public partial class BeastmasterRotation
 	}
 
 	// What a piece of gear does that the scale does not measure, from its English effect text: a stat of its own name
-	// ("Haste +5%") other than those the scale reads, a faster pace, and an element it absorbs.
+	// ("Block Strength +50%") other than those the scale reads (A830: the pace stats it reads), and an element it absorbs.
 	private static string UncountedEffects(ushort id)
 	{
 		var text = Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.XBMItem>(ClientLanguage.English)?.GetRowOrDefault(id)?.Unknown3.ExtractText();
@@ -1531,7 +1565,8 @@ public partial class BeastmasterRotation
 		foreach (Match stat in AnyStat.Matches(text))
 		{
 			var name = stat.Groups["stat"].Value.Trim();
-			if (name is not ("Maximum HP" or "Damage Taken" or "Physical Vulnerability" or "Magic Vulnerability" or "Evasion" or "Slow")
+			if (name is not ("Maximum HP" or "Damage Taken" or "Physical Vulnerability" or "Magic Vulnerability" or "Evasion" or "Slow"
+				or "Damage Dealt" or "Physical Damage Dealt" or "Magic Damage Dealt" or "Critical Hit Rate" or "Haste")
 				&& !names.Contains(name))
 			{
 				names.Add(name);
@@ -1613,6 +1648,37 @@ public partial class BeastmasterRotation
 		return string.IsNullOrEmpty(name) ? english : name;
 	}
 
+	// A830: the pace the gear held gives the team, and what it is weighed with - for the trace, once the gear changes.
+	private static void TracePace(List<ushort> ids)
+	{
+		var table = CrucibleGearTable;
+		var pieces = new List<CrucibleGear>(ids.Count);
+		foreach (var id in ids)
+		{
+			if (table.TryGetValue(id, out var piece))
+			{
+				pieces.Add(piece);
+			}
+		}
+
+		var (share, physical, critGain) = CrucibleBoard.PaceBasis;
+		DefenseTrace.Line($"crucible pace: the gear held speeds the team x{Fold(pieces).Pace:0.00} - your share of its damage "
+			+ $"{share:P0}, physical {physical:P0}, a critical hit adds {critGain:P0}");
+	}
+
+	// A830: the factors of a set of gear, the team's pace in them.
+	private static GearFold Fold(List<CrucibleGear> gear)
+	{
+		var fold = GearFold.Start();
+		var basis = CrucibleBoard.PaceBasis;
+		foreach (var piece in gear)
+		{
+			fold.Add(piece, basis);
+		}
+
+		return fold;
+	}
+
 	// A683: the name of an offer of the shop, gear or item, as the client shows it.
 	private static string OfferName(ushort id)
 	{
@@ -1623,16 +1689,8 @@ public partial class BeastmasterRotation
 
 	private static (float Left, float Effective) ShopValue(List<CrucibleGear> gear, ShopLoad load)
 	{
-		float hp = 1f, taken = 1f, physical = 1f, magic = 1f, recovery = 0f, curing = 0f;
-		foreach (var piece in gear)
-		{
-			hp *= 1f + piece.MaxHp;
-			taken *= 1f - piece.DamageTaken;
-			physical *= (1f - piece.PhysicalVulnerability) * (1f - piece.Evasion);
-			magic *= 1f - piece.MagicVulnerability;
-			recovery += piece.Recovery;
-			curing += piece.Curing;
-		}
+		var fold = Fold(gear);
+		var (hp, taken, physical, magic, recovery, curing) = (fold.Hp, fold.Taken, fold.Physical, fold.Magic, fold.Recovery, fold.Curing);
 
 		var mean = taken * ((load.Physical * physical) + (load.Magic * magic) + load.Other) / hp;
 		var heavyBare = load.HeavyPhysical + load.HeavyMagic + load.HeavyOther;
@@ -2257,6 +2315,7 @@ public partial class BeastmasterRotation
 
 			var text = row.Unknown3.ExtractText();
 			float maxHp = 0f, taken = 0f, physical = 0f, magic = 0f, evasion = 0f, movement = 0f, slow = 0f;
+			float dealt = 0f, physicalDealt = 0f, magicDealt = 0f, crit = 0f, haste = 0f;
 			foreach (Match stat in GearStat.Matches(text))
 			{
 				var share = Percent(stat.Groups["share"].Value) * (stat.Groups["sign"].Value == "-" ? -1f : 1f);
@@ -2268,6 +2327,11 @@ public partial class BeastmasterRotation
 					case "Magic Vulnerability": magic -= share; break;
 					case "Evasion": evasion += share; break;
 					case "Movement Speed": movement += share; break;
+					case "Damage Dealt": dealt += share; break;
+					case "Physical Damage Dealt": physicalDealt += share; break;
+					case "Magic Damage Dealt": magicDealt += share; break;
+					case "Critical Hit Rate": crit += share; break;
+					case "Haste": haste += share; break;
 					default: slow += share; break;
 				}
 			}
@@ -2288,7 +2352,8 @@ public partial class BeastmasterRotation
 				GearTreasureItems.Match(text) is { Success: true } more ? CountOf(more.Groups["count"].Value) : 0,
 				kill.Success ? kill.Groups["status"].Value : string.Empty,
 				kill.Success ? Percent(kill.Groups["share"].Value) : 0f,
-				kill.Success ? CountOf(kill.Groups["max"].Value) : 0);
+				kill.Success ? CountOf(kill.Groups["max"].Value) : 0,
+				dealt, physicalDealt, magicDealt, crit, haste, text.Contains(AlsoFamiliarText, StringComparison.Ordinal));
 		}
 
 		return gear;

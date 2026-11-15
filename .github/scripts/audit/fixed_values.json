@@ -2033,6 +2033,36 @@
   },
   {
    "file": "RotationSolver/Basic/Helpers/CrucibleBoard.cs",
+   "code": "private const float PlayerShareFallback = 0.68f;",
+   "values": [
+    "0.68"
+   ],
+   "status": "exception",
+   "loop": "A830",
+   "reason": "Fallback from measurement until RSR has seen the player's own hits: his share of the team's damage on the enemies in his ACT logs of 15.11.2026 (Crucible, two sessions: 369,979 his, 177,261 his familiars'). Replaced by the measured share with his first hit (A830)."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/CrucibleBoard.cs",
+   "code": "private const float CritGainFallback = 0.42f;",
+   "values": [
+    "0.42"
+   ],
+   "status": "exception",
+   "loop": "A830",
+   "reason": "Fallback from measurement until RSR has seen a critical and a plain hit of one action: a critical hit dealt 1.42 times a plain one in his ACT logs of 15.11.2026 (medians of auto-attack, Clawbite, Shieldbreaker, Shatterhammer). Replaced by the measured gain (A830)."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/CrucibleBoard.cs",
+   "code": "private const byte CriticalHitMark = 0x20;",
+   "values": [
+    "0x20"
+   ],
+   "status": "exception",
+   "loop": "A830",
+   "reason": "The game's mark of a critical hit in an action effect's first parameter (ACT's effect flags 0x2000; damage of critical hits 1.4 times the plain ones in his logs of 15.11.2026): a bit of the game's layout, not a figure (A830)."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/CrucibleBoard.cs",
    "code": "RollingInRiches = 20,",
    "values": [
     "20"

@@ -21,6 +21,12 @@ What this release changes in the fight. For the whole distance from upstream, se
   2,000 tokens. While you carry the way to the final fight, it now keeps as many tokens as you need to end with 2,000,
   counting what the fights still ahead earn, and buys only from what is above that. Cover against a status that kills
   still comes from all your tokens.
+- **Attack stats count.** Shop and treasure weighed only what keeps damage off you; Damage Dealt, Physical and Magic
+  Damage Dealt, Critical Hit Rate, Haste and Slow were named but worth nothing. Haste speeds your weaponskills and
+  auto-attacks, and you deal about two thirds of your team's damage, so these pieces end fights sooner, and a shorter
+  fight costs you less. They now count on the same scale, through the pace they give the team: your share of its damage
+  and what a critical hit adds are measured from your own hits, and pieces that also apply to the summoned familiar
+  speed it too. The same pace lowers each fight's load in the way's test and at the campsite.
 
 ## Stability
 
