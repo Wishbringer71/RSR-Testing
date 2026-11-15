@@ -14,5 +14,11 @@
       "date": "2026-11-15",
       "requirements": "302740b2a8c3bb0e"
     }
+  ],
+  "docs/rotation-flow/23-deep-dungeons.md": [
+    {
+      "date": "2026-11-15",
+      "requirements": "92394344d55e73a4"
+    }
   ]
 }

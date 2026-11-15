@@ -53,9 +53,21 @@ public static partial class ObjectHelper
 	/// spikes that damage attackers, a stop marker while "Never attack targets with stop markers" is on, a guarded zu egg,
 	/// an enemy a kill rule holds where its fall would harm.
 	/// </summary>
+	/// <summary>
+	/// Concept 23, "Gegnerkontrolle" (A834): whether, in a deep dungeon fight with "Deep dungeons: damage doesn't pull new
+	/// enemies" on, <paramref name="battleChara"/> is not fighting yet and so no new target - the enemy pulled out of combat
+	/// fights from then on.
+	/// </summary>
+	internal static bool IsKeptOutOfDeepDungeonFight(this IBattleChara battleChara)
+	{
+		return DataCenter.InCombat && DataCenter.IsInDeepDungeons && Service.Config.DeepDungeonNoPullDamage
+			&& DataCenter.NotFightingYet(battleChara);
+	}
+
 	internal static bool MustNotBeHit(this IBattleChara battleChara, ICollection<long> stopTargets)
 	{
 		return battleChara.HasSpikes() || battleChara.IsGuardedZuEgg() || KillOrder.MustNotBeHit(battleChara)
+			|| DeepDungeonCrowd.IsHeldAsleep(battleChara)
 			|| (Service.Config.FilterStopMark2 && stopTargets.Contains((long)battleChara.GameObjectId));
 	}
 

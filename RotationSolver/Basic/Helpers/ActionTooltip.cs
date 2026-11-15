@@ -86,6 +86,35 @@ internal static class ActionTooltip
 		}
 	}
 
+	// A834: a heal in the text - "Restores own HP and the HP of nearby party members" (Assize).
+	private static readonly Regex RestoresHp = new(@"Restores [^.]*HP", RegexOptions.Compiled);
+	private static readonly Dictionary<uint, bool> _healsToo = [];
+
+	/// <summary>
+	/// A834: whether the effect text of <paramref name="actionId"/> also heals - Assize, Macrocosmos -, kept per action.
+	/// Game thread. False when the sheet has no row.
+	/// </summary>
+	public static bool HealsToo(uint actionId)
+	{
+		if (_healsToo.TryGetValue(actionId, out var heals))
+		{
+			return heals;
+		}
+
+		try
+		{
+			var sheet = Svc.Data.GetExcelSheet<ActionTransient>(ClientLanguage.English);
+			heals = sheet != null && sheet.TryGetRow(actionId, out var row) && RestoresHp.IsMatch(row.Description.ExtractText());
+		}
+		catch (Exception)
+		{
+			heals = false;
+		}
+
+		_healsToo[actionId] = heals;
+		return heals;
+	}
+
 	/// <summary>
 	/// Whether the effect text of <paramref name="actionId"/> says the action itself deals damage to the enemies around the
 	/// player, as Holy, Assize and Macrocosmos do (concept 03, "Flächen, die Gegner treffen", A826, A832). Read from the sheet's text without

@@ -16,5 +16,7 @@
   {"id": "protection-plan-traced", "archive": "A829",
    "kind": "present", "situation": "crucible items at the start of fight", "match": "crucible item: fight [0-9]+ is (not )?a planned fight"},
   {"id": "pace-traced", "archive": "A830",
-   "kind": "present", "situation": "crucible gear held: ", "match": "crucible pace: the gear held speeds the team x[0-9]"}
+   "kind": "present", "situation": "crucible gear held: ", "match": "crucible pace: the gear held speeds the team x[0-9]"},
+  {"id": "deep-dungeon-sleep", "archive": "A834",
+   "kind": "present", "situation": "deep dungeon: sleep chosen for ", "match": "deep dungeon: (sleep landed on |no sleep on )"}
 ]

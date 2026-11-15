@@ -26,12 +26,25 @@ namespace RotationSolver.Basic;
 internal static partial class DataCenter
 {
 	/// <summary>
-	/// "Don't pull new enemies with AoE" (concept 03, A826, A832, A833): whether hitting <paramref name="enemy"/> would pull it
-	/// - the setting is on and it is not fighting yet: it holds no target and its figure is not in combat (a fighting enemy
-	/// can hold no target for a moment, casting at the ground or between phases). The one test for the target choice and
-	/// the sleep rule.
+	/// Concept 03 (A833): whether <paramref name="enemy"/> is not fighting yet - it holds no target and its figure is not in
+	/// combat (a fighting enemy can hold no target for a moment, casting at the ground or between phases).
 	/// </summary>
-	internal static bool PullsIfHit(IBattleChara enemy) => Service.Config.NoNewHostiles && enemy.TargetObject == null && !enemy.InCombat();
+	internal static bool NotFightingYet(IBattleChara enemy) => enemy.TargetObject == null && !enemy.InCombat();
+
+	/// <summary>
+	/// Whether an action may not reach an enemy that is not fighting yet: "Don't pull new enemies with AoE" anywhere, and in
+	/// a deep dungeon the option for heals that also deal damage (<paramref name="healsToo"/>) or for damage (concept 23,
+	/// "Gegnerkontrolle", A834).
+	/// </summary>
+	internal static bool GuardsAgainstPull(bool healsToo)
+		=> Service.Config.NoNewHostiles || (IsInDeepDungeons && (healsToo ? Service.Config.DeepDungeonNoPullHeals : Service.Config.DeepDungeonNoPullDamage));
+
+	/// <summary>
+	/// "Don't pull new enemies" (concept 03, A826, A832, A833; concept 23, A834): whether hitting <paramref name="enemy"/> with
+	/// an action - one that also heals with <paramref name="healsToo"/> - would pull it. The one test for the target choice,
+	/// the areas and the sleep rules.
+	/// </summary>
+	internal static bool PullsIfHit(IBattleChara enemy, bool healsToo = false) => GuardsAgainstPull(healsToo) && NotFightingYet(enemy);
 
 	/// <summary>
 	/// Every figure of the enemy side casting now, listed or not: the casters of the hostile list, a targetable enemy the

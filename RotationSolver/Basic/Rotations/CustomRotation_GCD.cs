@@ -107,6 +107,12 @@ public partial class CustomRotation
 				return act;
 			}
 
+			// Concept 23 (A834): in a deep dungeon, a further enemy attacking him sleeps.
+			if (SleepFurtherAttacker(out act))
+			{
+				return act;
+			}
+
 			IBaseAction.TargetOverride = TargetType.Dispel;
 			if (DataCenter.MergedStatus.HasFlag(AutoStatus.Dispel))
 			{

@@ -171,3 +171,90 @@ Gebiets"). In Pilgers Pfad ist der Agent ohne Fenster leer – dann bleibt dort
 alles wie bisher; die Spurzeile je Stockwerk zeigt es, und ein Upload belegt die Zuordnung. In Himmelssäule und Eureka
 Orthos trägt die Spalte, solange die abgeleitete Bedeutung des Werts stimmt; stimmt sie nicht, zeigt die Spurzeile den
 Widerspruch zum Agenten.
+
+## Tiefe Gewölbe: Gegnerkontrolle – kein unnötiger Pull, Zusatzgegner schlafen
+
+**Seine Vorgabe (15.11.2026):** „Spezielle Option für Deep Dungeons erstellen, so dass regulär weiter mit aoes gepullt
+werden kann und auch geheilt, aber in Deep Dungeons zwei Optionen bestehen, einmal für heilung (mit dem damit
+verbundenen Schaden) und einmal für Schaden (z.b. beim pullen, aber auch bei laufenden Kämpfen um adds zu vermeiden)."
+Dazu sein Vorschlag: „Vielleicht ist in Deep Dungeons auch crowd Control von geaggroedent mobs durch sleep sinnvoll."
+Vorher (A833): „Gerade in Deep Dungeons ist aggrokontrolle und gegnermanagement überlebenswichtig", und für Dungeons
+und FATEs „gut, wenn alle Gegner in der Nähe schnell zusammen kommen".
+
+*Anforderungen (A834; seine Worte → prüfbares Kriterium → Stelle → Messweg):*
+| # | Seine Angabe | Kriterium | Stelle | Messweg |
+|---|---|---|---|---|
+| G1 | „regulär weiter mit aoes gepullt werden kann und auch geheilt" | außerhalb der Tiefen Gewölbe ändert keine der neuen Optionen etwas; „Don't pull new enemies with AoE" bleibt der allgemeine Schalter (ab Werk aus) | `DataCenter.PullsIfHit` | Spur: keine Zeile außerhalb der Gewölbe |
+| G2 | „einmal für heilung (mit dem damit verbundenen Schaden)" | in den Gewölben trifft eine Aktion, die heilt und dabei Gegner um dich trifft (Assise, Makrokosmos), keinen Gegner, der noch nicht kämpft | Option „heals that also deal damage", `ActionTooltip.HealsToo` | Spur „deep dungeon: … waits" |
+| G3 | „einmal für Schaden (z.b. beim pullen, aber auch bei laufenden Kämpfen um adds zu vermeiden)" | in den Gewölben trifft kein Schaden einen Gegner, der noch nicht kämpft: keine Fläche, die einen zieht; im Kampf kein neues Ziel, das noch nicht kämpft; das Ziel des Pulls selbst bleibt | Option „damage", `PullsIfHit`, `ObjectHelper.IsAttackable` | Spur je Stockwerk |
+| G4 | „crowd Control von geaggroedent mobs durch sleep" (Vorschlag) | greifen dich in den Gewölben mehrere Gegner an, die schlafen können, legt ein Heiler oder Magier die übrigen außer seinem Ziel schlafen; RSRs Flächen wecken sie nicht, und angegriffen werden sie erst, wenn kein wacher mehr steht | Option „sleep", `DeepDungeonCrowd` | Spur „deep dungeon: sleep …" |
+
+*Grundlagen:*
+- *Was zieht:* Schaden an einem Gegner, der noch nicht kämpft. Heilhass verteilt das Spiel auf die Gegner im Kampf
+  (Akhmorning, Feindschaft, Shadowbringers); Heilung allein zieht keinen ruhenden Gegner. Gegner der Gewölbe greifen auch
+  auf Sicht, Geräusch und Nähe an (consolegameswiki, „Aggression") – das ist Laufen, nicht Rotation.
+- *Wer „noch nicht kämpft":* kein Ziel und nicht im Kampf (A833, `DataCenter.NotFightingYet`).
+- *Welche Aktionen heilen und treffen:* Wirktext mit einem Satz „Deals … to all nearby enemies" (A826, A832) und einer
+  Heilung („Restores … HP"): Assise, Makrokosmos; König der Kronen trifft nur. Gelesen am Blatt wie die Einstufung.
+- *Schlaf:* Repose (Heiler), Sleep (Magier), 30 s, endet beim ersten Schaden; Bosse und viele Gegner der Gewölbe sind
+  immun (Führer je Stockwerk, icy-veins Palast der Toten 1–50 und 51–100). RSR kennt den Schlaf schon: die Schlafregel
+  gegen gegnerisches Wirken (Konzept 08, 13), mit `SleepInterruptWatch.CanStillBeSlept` (kein Boss, keine Schlafresistenz,
+  keine gelernte Sperre der Art, nicht zu oft in diesem Kampf).
+- *Was RSR heute nicht tut:* Einen schlafenden Gegner schützt keine Fläche, außer er trägt eine Stopp-Markierung („Never
+  attack targets with stop markers"); die Zielwahl greift ihn an wie jeden. Ein schlafen gelegter Zusatzgegner wacht
+  beim nächsten Flächenangriff auf. Die Zielart ab Werk („All targets when solo in duty") wählt allein in den Gewölben
+  auch im Kampf einen Gegner, der noch nicht kämpft, als neues Ziel.
+
+*Optionen:*
+- (0) Nullvariante: der allgemeine Schalter, von Hand je Inhalt umgestellt – kostet ihn in Dungeons und FATEs den
+  schnellen Zusammenzug oder in den Gewölben den Schutz.
+- (1) Der allgemeine Schalter gilt in den Gewölben von selbst – eine Option, nicht zwei; Heilung und Schaden nicht trennbar
+  (gegen G2/G3).
+- (2) Zwei Optionen nur für die Gewölbe, Heilung mit Schaden und Schaden, ab Werk an; der allgemeine Schalter bleibt
+  daneben – gewählt.
+- (3) Wie (2), dazu die Zielwahl im Kampf der Gewölbe nur unter kämpfenden Gegnern (Teil von G3) – gewählt; über die
+  Zielart „Solo Deep Dungeons" ginge das nur allein und nur mit Umstellen der Zielart, die auch außerhalb gilt.
+- (4) Zusatzgegner schlafen (G4) – mit Flächenschutz und Zurückstellen des Schlafenden in der Zielwahl; ohne beides weckt
+  RSR ihn selbst.
+- Rückbau: drei Optionen aus; nichts Gespeichertes hängt daran.
+
+*Abwägung im Kampf:*
+- (2)+(3) *Stärken:* Allein auf Stockwerk 140 der Himmelssäule kämpft er gegen einen Gegner, ein zweiter steht 15 y
+  daneben und schläft im Raum: Assise wartet, bis der erste fällt oder der zweite angreift; die Schadensflächen ebenso;
+  fällt der erste, wählt RSR den zweiten nicht von selbst, er zieht ihn, wenn er will. *Schwächen:* Ein Heiler mit
+  Assise im Kampf heilt einmal weniger, solange ein ruhender Gegner in 20 y steht; ein Tank verliert die Flächen, mit denen
+  er sammeln würde – in den Gewölben gewollt. *Bedrohung:* Gegner, die das Spiel aneinander bindet, ziehen einander auch
+  außerhalb der Reichweite nach; das erkennt RSR nicht.
+- (4) *Stärken:* Drei Gegner greifen einen Weißmagier an; zwei schlafen, er kämpft gegen einen, der Schaden sinkt auf
+  ein Drittel. *Schwächen:* je Schlaf ein GCD mit Wirkzeit; eine Fläche trifft nur die Wachen, der Kampf dauert länger;
+  ein Schlafender wacht nach 30 s oder bei jedem Schaden (Gift, eine Fläche eines Mitspielers). *Bedrohungen:* Immunität
+  ohne Status – der erste Schlaf geht ins Leere (Preis: ein GCD je Art und Sitzung, dann gelernt); in der Gruppe weckt
+  ein Mitspieler ihn – deshalb nur, wenn er selbst angegriffen wird, und ohne Schutzpflicht der anderen.
+
+*Gebaut (A834):*
+- Drei Optionen unter „Deep dungeon" (Abschnitt der Gewölbe), ab Werk an (code.md: neue Regeln werden getestet):
+  „Deep dungeons: heals that also deal damage don't pull new enemies", „Deep dungeons: damage doesn't pull new
+  enemies", „Deep dungeons: put further enemies that attack you to sleep".
+- Heilung mit Schaden: Die Prüfung „würde ziehen" (`PullsIfHit`) gilt in den Gewölben mit der ersten Option für Aktionen,
+  deren Wirktext heilt, mit der zweiten für jede andere Schadensaktion; sonst wie bisher der allgemeine Schalter.
+- Schaden, Zielwahl: Mit der zweiten Option ist im Kampf in den Gewölben ein Gegner, der noch nicht kämpft, kein Ziel.
+  Außerhalb des Kampfes bleibt die Zielart; das Ziel, das er zieht, kämpft danach.
+- Schlaf: Ein Heiler oder Magier im Kampf in den Gewölben, den mindestens zwei wache Gegner angreifen (ihr Ziel ist er),
+  legt einen davon schlafen, der nicht sein Ziel ist, nicht stirbt (`IsDying`) und schlafen kann (`CanStillBeSlept`) – nicht,
+  solange ein Gruppenmitglied in der kritischen Klasse ist (Heiler), und nicht unter Swiftcast (seine Regel: für die
+  Wiederbelebung). Wen RSR so schlafen legt, trifft keine Fläche RSRs (`MustNotBeHit`), und er wird Ziel erst, wenn kein
+  wacher Gegner mehr steht. Jeder Schlaf, ob er landet und wann der Gegner aufwacht, steht in der Spur.
+- *Nachsteuerung (code.md, „Entscheidung zur Laufzeit"):* Zeigt der Gegner einen GCD nach dem Wirken keinen Schlaf, gilt
+  seine Art für die Sitzung als nicht schlafbar, und RSR versucht es an ihr nicht wieder.
+
+*Falsifikation:*
+- (1) *Kein Defekt – der allgemeine Schalter genügt:* widerlegt; er gilt überall, und er will in Dungeons und FATEs den
+  Zusammenzug (A833).
+- (2) *Option falsch – „noch nicht kämpft" trifft im Gewölbe auch Gegner, die gleich kommen:* Ein Gegner, der dich
+  bemerkt und läuft, hat ein Ziel – er kämpft und zählt nicht als neu. Einer ohne Ziel ruht. Preis: keiner bekannt.
+- (3) *Ausgeliefert, und nichts ändert sich:* Er spielt die Gewölbe als Weißmagier oder Magier allein; ohne Gegner im
+  Radius ändert sich nichts, mit ruhendem Gegner wartet die Fläche, mit zwei Angreifern schläft einer – sichtbar in der
+  Spur. Wirkt ein Schlaf auf eine Art nie, lernt RSR es in der Sitzung.
+- *Gegenthese (Schlaf kostet mehr, als er bringt):* Gegen zwei schwache Gegner wäre eine Fläche schneller. Teilweise
+  widerlegt: Wer gleich fällt (`IsDying`), wird nicht schlafen gelegt; sonst gilt seine Spielweise – Sicherheit vor
+  Schaden, gewichtet mit der Wahrscheinlichkeit: Zwei Angreifer treffen sicher, der Schlaf halbiert den Eingang.

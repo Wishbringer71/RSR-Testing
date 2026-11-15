@@ -24317,6 +24317,31 @@ Absturzbericht.
 - *8 Nachweis:* Compile (0 Warnungen), Prüfungen; im Spiel nicht beobachtet. Prüfgrad statisch und Compile.
 - *9 Dokumentation:* Konzept 03, „Flächen, die Gegner treffen", Gegenthese 2 und „Sein Ziel".
 
+### A834 · Tiefe Gewölbe: Gegnerkontrolle – kein unnötiger Pull, Zusatzgegner schlafen (15.11.2026)
+
+- *Anlass:* Seine Vorgabe (15.11.2026): eigene Optionen für die Tiefen Gewölbe, regulär weiter mit Flächen ziehen und
+  heilen; in den Gewölben eine Option für Heilung mit Schaden und eine für Schaden (Pull und Zusatzgegner im laufenden
+  Kampf); sein Vorschlag: Schlaf gegen Gegner, die schon angreifen.
+- *1 Research:* Schalter „Don't pull new enemies with AoE" (`Configs._noNewHostiles`, ab Werk aus), Zielart ab Werk
+  „All targets when solo in duty" (wählt allein in den Gewölben auch im Kampf einen ruhenden Gegner), „Solo Deep Dungeons"
+  (im Kampf nur Gegner mit Ziel). Repose (16560, Einzelziel, 2,5 s) und Sleep (25880, 5 y um das Ziel, 2,5 s) legen Status
+  3 „Sleep"; Bosse und viele Gegner der Gewölbe sind immun (icy-veins, Palast der Toten). RSR schützte einen Schlafenden
+  vor keiner Fläche außer mit Stopp-Markierung (C209). *Lücke gefunden:* Die Fläche suchte ruhende Gegner nur unter den
+  angreifbaren (`GetTargetsByRange` → `ValidityCheck` → `IsAttackable`); mit einer Zielart, die ruhende Gegner nicht
+  angreift, sah „Don't pull new enemies" sie nie, und die Fläche traf sie.
+- *2 Optionen, 3 Abwägung, 6 Falsifikation:* Konzept 23, „Gegnerkontrolle"; Anforderungen G1 bis G4.
+- *7 Gebaut:* drei Optionen unter „Deep dungeon" (ab Werk an); `ActionTooltip.HealsToo`; `DataCenter.NotFightingYet`,
+  `GuardsAgainstPull`, `PullsIfHit(healsToo)`; `ActionTargetInfo.PullsAround` über alle Gegnerfiguren (statt der Liste
+  der Ziele) für die Fläche um dich und je Mittelpunkt; die Schlafregel gegen Wirken über dieselben Figuren;
+  `IsKeptOutOfDeepDungeonFight` in `IsAttackable`; `DeepDungeonCrowd` (gelegte Schläfer je Id, Landen, Aufwachen,
+  Fehlschlag sperrt die Art für die Sitzung), `SleepFurtherAttacker`; Schläfer in `MustNotBeHit` und in der Zielwahl
+  zurückgestellt.
+- *8 Nachweis:* Compile (0 Warnungen), Prüfungen; im Spiel nicht beobachtet. Prüfgrad statisch und Compile; eine
+  unabhängige Prüfrunde für G1 bis G4 läuft.
+- *Vorhersage:* `DefenseTrace.log` in einem Tiefen Gewölbe als Weißmagier oder Magier: „deep dungeon: sleep chosen for …",
+  danach „… sleep landed on …" oder „no sleep on … a GCD after the cast"; maschinenlesbar `deep-dungeon-sleep`.
+- *9 Dokumentation:* Konzept 23, „Gegnerkontrolle"; Konzept 03, „Flächen, die Gegner treffen" (Schlafende, C209).
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -24677,3 +24702,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C206 | A830 (Stand 1e8f89762): Das Tempo der Ausrüstung senke die Last jedes Kampfs auch im Test des Wegs und an der Campsite; ein Fehler der Annahme „Last wächst mit der Dauer" bestehe nur zwischen zwei Läufen | Unbelegt für die Senke, und die Tafeln halten den schwersten Wert: verzerrt dauerhaft oder unterschätzt, wo Schutz zurückgehalten wird; gemessen trafen ihn keine Auto-Angriffe. Das Tempo gilt nur noch auf der Skala von Laden und Schatz für den Anteil der Auto-Angriffe (A830, Prüfrunde) |
 | C207 | A830 (Stand 8acaafc5c): Auf Brett 2 trafen ihn in 152 Gegnertreffern keine Auto-Angriffe; ein Angriffsstück bringe ihm dort keine Sicherheit | Gezählt waren nur die Aktionen 7 und 8; die Auto-Angriffe der Gegner sind eigene Aktionen der Kategorie „Auto-attack": 57 % seiner und 64 % der Last seiner Begleiter (A831) |
 | C208 | A826 (Stand 3ca98a945): Unter den Spieleraktionen dieser Einstufung richten genau Assise, Makrokosmos, Holy und Holy III laut Wirktext Schaden an Gegnern um dich an | Gefiltert auf `IsPlayerAction`; dazu König der Kronen (7444), und die Textregel fing auch die Sterndetonation (8324), deren Schaden ein gelegter Stern an anderem Ort anrichtet; seit A832 nur ein Satz, der mit „Deals" beginnt |
+| C209 | A826 (Stand 3ca98a945): Assise weckt keinen schlafenden Gegner mehr; unberührbare Gegner seien „Schlaf, Stopp-Markierung" | Einen Schlafenden schützte die Fläche nur mit Stopp-Markierung; seit A834 auch, wen RSR in den Tiefen Gewölben selbst schlafen legt |

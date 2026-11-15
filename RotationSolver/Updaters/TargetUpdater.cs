@@ -138,6 +138,7 @@ internal static partial class TargetUpdater
 		List<IBattleChara> hostileTargets = new(capacity: allTargets.Count);
 		List<IBattleChara> spikedHostiles = [];
 		List<IBattleChara> parriedHostiles = [];
+		List<IBattleChara> restingHostiles = [];
 		List<IBattleChara> untouchableHostiles = [];
 		var stopTargets = Service.Config.FilterStopMark2 ? MarkingHelper.GetStopTargets() : [];
 		List<IBattleChara> outOfDutyPlayers = [];
@@ -154,6 +155,7 @@ internal static partial class TargetUpdater
 		// Concept 03, "Tötungsregeln" (A588): which enemies a kill rule holds back, from every battle character - a held
 		// one leaves the list below, so the rules cannot read it.
 		KillOrder.Update(allTargets);
+		DeepDungeonCrowd.Update();
 
 		foreach (var member in allTargets)
 		{
@@ -214,6 +216,14 @@ internal static partial class TargetUpdater
 							continue;
 						}
 
+						// Concept 23, "Gegnerkontrolle" (A834): an enemy RSR put to sleep waits while an awake one can be
+						// attacked.
+						if (DeepDungeonCrowd.IsHeldAsleep(member))
+						{
+							restingHostiles.Add(member);
+							continue;
+						}
+
 						// Concept 03, "Gegner, die deine Seite pariert" (A734): a hit from a side its Directional Parry guards
 						// deals nothing; it waits while another enemy can be attacked.
 						if (member.ParriesPlayerSide())
@@ -255,6 +265,12 @@ internal static partial class TargetUpdater
 		if (hostileTargets.Count == 0)
 		{
 			hostileTargets.AddRange(parriedHostiles);
+		}
+
+		// A834: and the sleeper RSR laid, once no awake enemy is left to attack.
+		if (hostileTargets.Count == 0)
+		{
+			hostileTargets.AddRange(restingHostiles);
 		}
 		else
 		{

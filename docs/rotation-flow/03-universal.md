@@ -1234,7 +1234,7 @@ dazu die Gruppe.
 *Ursache, am Code:*
 - RSR stuft eine Aktion als freundlich ein, wenn sie Verbündete oder die Gruppe anvisiert oder, ohne Gegnerziel, mehr
   als 5 y um dich wirkt (`CustomRotation.LoadActionSetting`). Assise und Makrokosmos (Macrocosmos, 25874) fallen darunter;
-  für freundliche Aktionen gilt „AoE usage" nicht, und unberührbare Gegner (Schlaf, Stopp-Markierung) schützt die Fläche
+  für freundliche Aktionen gilt „AoE usage" nicht, und unberührbare Gegner (Stopp-Markierung) schützt die Fläche
   nicht. Holy, Holy III und Flammenwerfer hat Upstream von Hand auf feindlich gestellt; die Klasse blieb offen. Erhoben
   am Spielblatt (ffxiv-datamining, 15.11.2026): Von den 195 Job-Aktionen dieser Einstufung richten laut Wirktext 26
   selbst Schaden an Gegnern um dich an; außerhalb des Blaumagiers und des PvP diese vier und König der Kronen (Lord of
@@ -1264,7 +1264,9 @@ dazu die Gruppe.
 *Im Kampf:* Mit „AoE usage: Off" kommen Assise und Makrokosmos nicht mehr; ein Weißmagier verliert ihre Heilung und das
 MP, ein Astrologe die gespeicherte Heilung von Makrokosmos – der Preis, den der Schalter nennt. Mit „Don't pull new
 enemies" wartet jede Fläche um dich, bis die Gegner in ihrem Wirkgebiet kämpfen; ein Tank, der mit einer Fläche
-ansammeln will, lässt den Schalter aus (ab Werk aus). Assise weckt keinen schlafenden Gegner mehr.
+ansammeln will, lässt den Schalter aus (ab Werk aus). Einen schlafenden Gegner schützt die Fläche nur, wenn er eine
+Stopp-Markierung trägt oder RSR ihn in den Tiefen Gewölben selbst schlafen gelegt hat (Konzept 23, A834); bis A834 stand
+hier, Assise wecke keinen Schlafenden mehr – das galt nur mit Markierung (C209).
 
 *Gegenthese 1 (Assise ist eine Heilung):* Ihr Heilanteil ginge mit der Sperre verloren. Nicht widerlegt, aber gewollt:
 Der Schalter fragt, ob eine Aktion Gegner trifft, nicht wozu sie gedrückt wird; eine Heilung, die einen neuen Pack

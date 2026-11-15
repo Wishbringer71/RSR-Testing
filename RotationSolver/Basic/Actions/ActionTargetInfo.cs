@@ -781,7 +781,7 @@ public partial struct ActionTargetInfo(IBaseAction action)
 			var selfAffects = GetCanAffects(skipStatusProvideCheck, skipTargetStatusNeedCheck, type, targetOverride);
 			selfAffects = FilterAffectsByFacing(selfAffects);
 			// "Don't pull new enemies with AoE" holds for an area around the player as for any other (concept 03, A826).
-			if (selfAffects.Count < Math.Max(1, required) || HitsUntouchable(Player.Object) || PullsNewHostile(selfAffects))
+			if (selfAffects.Count < Math.Max(1, required) || HitsUntouchable(Player.Object) || PullsAround(Player.Object, true))
 			{
 				return null;
 			}
@@ -1814,6 +1814,13 @@ public partial struct ActionTargetInfo(IBaseAction action)
 			return 0;
 		}
 
+		// A826, A832, A834: an attack whose area would pull an enemy that is not fighting yet does not go from this centre -
+		// but the chosen target is meant to be hit, and a friendly area pulls nothing.
+		if (PullsAround(target, false))
+		{
+			return -1;
+		}
+
 		var count = 0;
 		foreach (var t in canAffects)
 		{
@@ -1822,12 +1829,6 @@ public partial struct ActionTargetInfo(IBaseAction action)
 				continue;
 			}
 
-			// A826, A832: an attack whose area would pull an enemy that is not fighting yet does not go from this centre - but
-			// the chosen target is meant to be hit, and a friendly area pulls nothing.
-			if (t != target && !action.Setting.IsFriendly && DataCenter.PullsIfHit(t))
-			{
-				return -1;
-			}
 			count++;
 		}
 

@@ -142,6 +142,94 @@ public partial class CustomRotation
 	}
 
 	/// <summary>
+	/// Concept 23, "Gegnerkontrolle" (A834): in a deep dungeon, a healer or caster attacked by two or more awake enemies puts
+	/// one that is not his target to sleep - not one about to die, not one a sleep cannot reach - so he fights one at a time.
+	/// Not while a party member is about to die (a healer's GCD is theirs) or Swiftcast stands (his rule: kept for raises).
+	/// The sleeper is spared by RSR's areas and attacked last (DeepDungeonCrowd).
+	/// </summary>
+	private bool SleepFurtherAttacker(out IAction? act)
+	{
+		act = null;
+		var role = DataCenter.Role;
+		if (!DeepDungeonCrowd.Enabled || !DataCenter.InCombat || role is not (JobRole.Healer or JobRole.RangedMagical)
+			|| Player is not { } player || StatusHelper.PlayerHasStatus(true, StatusID.Swiftcast))
+		{
+			return false;
+		}
+
+		if (role == JobRole.Healer)
+		{
+			foreach (var member in DataCenter.PartyMembers)
+			{
+				if (member != null && !member.IsDead && member.IsInCriticalClass())
+				{
+					return false;
+				}
+			}
+		}
+
+		var sleep = role == JobRole.Healer ? ReposePvE : SleepPvE;
+		if (!sleep.EnoughLevel)
+		{
+			return false;
+		}
+
+		// The awake enemies attacking him; of those not his target, the one with the most HP left sleeps first.
+		var target = player.TargetObject as IBattleChara;
+		var awake = 0;
+		IBattleChara? chosen = null;
+		foreach (var enemy in DataCenter.AllHostileTargets)
+		{
+			if (enemy == null || enemy.IsDead || enemy.TargetObjectId != player.GameObjectId || enemy.HasStatus(false, StatusID.Sleep))
+			{
+				continue;
+			}
+
+			awake++;
+			if (enemy.GameObjectId == player.TargetObjectId || enemy.IsDying() || DeepDungeonCrowd.IsBarred(enemy)
+				|| !SleepInterruptWatch.CanStillBeSlept(enemy)
+				// A sleep with an area (the casters' Sleep) must not reach the target he fights.
+				|| (target != null && sleep.Info.EffectRange > 0f
+					&& Vector3.Distance(target.Position, enemy.Position) - target.HitboxRadius <= sleep.Info.EffectRange)
+				|| AreaReachesNewMob(enemy, sleep.Info.EffectRange))
+			{
+				continue;
+			}
+
+			if (chosen == null || enemy.CurrentHp > chosen.CurrentHp)
+			{
+				chosen = enemy;
+			}
+		}
+
+		// The chosen one and at least one more awake attacker - otherwise there is nobody to fight meanwhile.
+		if (chosen == null || awake <= 1)
+		{
+			return false;
+		}
+
+		// The target filter is swapped in for this call only, as for the stop above.
+		var setting = sleep.Setting;
+		var canTarget = setting.CanTarget;
+		var chosenId = chosen.GameObjectId;
+		setting.CanTarget = t => canTarget(t) && t.GameObjectId == chosenId;
+		try
+		{
+			if (!sleep.CanUse(out act, skipAoeCheck: true, skipTTKCheck: true))
+			{
+				return false;
+			}
+		}
+		finally
+		{
+			setting.CanTarget = canTarget;
+		}
+
+		DeepDungeonCrowd.NoteChosen(chosen, sleep.ID);
+		return true;
+	}
+
+	/// <summary>
 	/// The job's own way to stop <paramref name="enemy"/>'s cast, tried before a sleep: a stun that reaches it in time
 	/// (concept 08, "Ein gegnerisches Wirken stoppen"). Among the healers and casters only the White Mage has one.
 	/// </summary>
@@ -158,22 +246,24 @@ public partial class CustomRotation
 
 	/// <summary>
 	/// Whether an area action of <paramref name="radius"/> around <paramref name="center"/> would reach an enemy that is
-	/// not fighting yet while "Don't pull new enemies with AoE" is on - the setting's own test, a hostile without a
-	/// target. A stop is an area action like any other, and the setting says "never".
+	/// not fighting yet while "Don't pull new enemies with AoE" is on, or in a deep dungeon "Deep dungeons: damage doesn't
+	/// pull new enemies" (A834). A stop is an area action like any other, and the setting says "never".
 	/// </summary>
 	/// <param name="center">The centre of the area.</param>
 	/// <param name="radius">Its radius, zero for a single target.</param>
 	/// <returns>True when the setting forbids the action.</returns>
 	protected static bool AreaReachesNewMob(IBattleChara center, float radius)
 	{
-		if (!Service.Config.NoNewHostiles || radius <= 0f || center == null)
+		if (!DataCenter.GuardsAgainstPull(false) || radius <= 0f || center == null)
 		{
 			return false;
 		}
 
-		foreach (var hostile in DataCenter.AllHostileTargets)
+		// A834: over every enemy figure - one not fighting yet may be missing from the list of targets.
+		foreach (var hostile in DataCenter.AllTargets)
 		{
-			if (hostile != null && DataCenter.PullsIfHit(hostile)
+			if (hostile != null && hostile.GameObjectId != center.GameObjectId && hostile.IsEnemy() && !hostile.IsDead
+				&& DataCenter.PullsIfHit(hostile)
 				&& Vector3.Distance(hostile.Position, center.Position) - hostile.HitboxRadius <= radius)
 			{
 				return true;
