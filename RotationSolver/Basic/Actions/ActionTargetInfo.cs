@@ -19,7 +19,7 @@ namespace RotationSolver.Basic.Actions;
 /// The target info
 /// </summary>
 /// <param name="action">the input action.</param>
-public struct ActionTargetInfo(IBaseAction action)
+public partial struct ActionTargetInfo(IBaseAction action)
 {
 	/// <summary>
 	/// The range of this action.
@@ -780,7 +780,8 @@ public struct ActionTargetInfo(IBaseAction action)
 
 			var selfAffects = GetCanAffects(skipStatusProvideCheck, skipTargetStatusNeedCheck, type, targetOverride);
 			selfAffects = FilterAffectsByFacing(selfAffects);
-			if (selfAffects.Count < Math.Max(1, required) || HitsUntouchable(Player.Object))
+			// "Don't pull new enemies with AoE" holds for an area around the player as for any other (concept 03, A826).
+			if (selfAffects.Count < Math.Max(1, required) || HitsUntouchable(Player.Object) || PullsNewHostile(selfAffects))
 			{
 				return null;
 			}
@@ -1760,8 +1761,9 @@ public struct ActionTargetInfo(IBaseAction action)
 				continue;
 			}
 
+			// A centre whose area would pull an enemy that is not fighting yet is out, also where no count is asked for.
 			var count = GetCanTargetCount(t, canAffects);
-			if (count < bestCount)
+			if (count < 0 || count < bestCount)
 			{
 				continue;
 			}
@@ -1820,9 +1822,9 @@ public struct ActionTargetInfo(IBaseAction action)
 				continue;
 			}
 
-			if (Service.Config.NoNewHostiles && t.TargetObject == null)
+			if (PullsNewHostile(t))
 			{
-				return 0;
+				return -1;
 			}
 			count++;
 		}

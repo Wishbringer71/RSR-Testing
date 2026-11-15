@@ -394,5 +394,6 @@ Sitzung mit Kampf steht keine Zeile „exception:"; steht eine, ist sie eine Urs
   311 → 276. Upstreams Dateien ändern sich dabei nur in der Typdeklaration (`partial`) und um die herausgelösten
   Member.
   - *Bleibt:* Einstellungen (ihre Reihenfolge ist die des Fensters), Felder mit Startwert, `OtherConfiguration`
-    (statische Felder mit Startwert) und `ActionTargetInfo`: Ein Struct mit Primärkonstruktor – sein Parameter
-    `action` gilt nur im Teil mit der Parameterliste, die Member lesen ihn alle.
+    (statische Felder mit Startwert) und die Instanzmember von `ActionTargetInfo`: Ein Struct mit Primärkonstruktor –
+    sein Parameter `action` gilt nur im Teil mit der Parameterliste, und diese Member lesen ihn alle. Statische Member
+    ohne ihn können in eine Teildatei (`ActionTargetInfo.AreaDamage.cs`, A826).

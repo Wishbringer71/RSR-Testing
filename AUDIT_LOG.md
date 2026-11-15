@@ -24076,6 +24076,31 @@ Sein Auftrag (15.11.2026): „danach alle konzepte weiter optimieren und code na
   909204b9c (Downloadzähler); beide ohne Wirkung, aufgezeichnet.
 - *Prüfgrad:* Compile, CI, Zeilenvergleich des Umzugs; Verhalten statisch gleich, im Spiel nicht beobachtet.
 
+### A826 · Seine Meldung: Assise zieht neue Gegner trotz abgeschalteter Flächen (15.11.2026)
+
+Seine Meldung (15.11.2026): „assise zählt anscheinend nicht zu den aoes, die man ausschalten kann, damit keine neuen mobs
+gepullt werden"; seine Frage: „macht assise aoe schaden?" – ja: „Deals unaspected damage with a potency of 400 to all
+nearby enemies" (ActionTransient 3571), 20 y um den Spieler (Action.EffectRange). Konzept 03, „Flächen, die Gegner
+treffen, und Gegner, die noch nicht kämpfen".
+- *Ursache 1, Einstufung:* `LoadActionSetting` hält eine Aktion ohne Gegnerziel mit mehr als 5 y Wirkradius für
+  freundlich. Für freundliche Aktionen gelten „AoE type" und die Schonung unberührbarer Gegner nicht. Klasse am
+  Spielblatt (xivapi, Action und ActionTransient, 15.11.2026): 101 Spieleraktionen dieser Einstufung; Schaden an Gegnern
+  um den Spieler laut Wirktext bei Holy, Holy III, Assize, Macrocosmos (Flammenwerfer im Kegel); Holy, Holy III und
+  Flammenwerfer stellte Upstream von Hand auf feindlich, Assize und Macrocosmos nicht.
+- *Ursache 2, Schalter:* „Don't pull new enemies with AoE" (Text: „Never use an AoE action that could hit enemies that
+  aren't already hostile targets") las nur die Zählung des allgemeinen Pfads. Flächen um den Spieler prüften ihn nie –
+  jeder Job, jede solche Fläche –, und mit `skipAoeCheck` (Mindestzahl 0) ging ein Mittelpunkt mit Zählung 0 durch.
+  Der Optionstext bindet; der Code folgt ihm.
+- *Gebaut:* `ActionTooltip.DamagesEnemiesAround` liest den Rohtext des Blatts (ohne Auswertung, beim Anlegen der Aktion
+  auf jedem Thread sicher) und nimmt solche Aktionen aus der freundlichen Einstufung; der Ausdruck trifft am Rohtext
+  genau die vier und keine der übrigen 52 Kandidaten außerhalb des Blaumagiers. `PullsNewHostile` prüft den Schalter
+  im Selbstzentrum-Pfad wie im allgemeinen; die Zählung meldet einen solchen Mittelpunkt mit -1, der auch ohne
+  Mindestzahl ausscheidet.
+- *Im Kampf:* Mit „AoE type: Off" keine Assise und kein Makrokosmos mehr; mit „Don't pull new enemies" wartet jede
+  Fläche, bis die Gegner in ihr kämpfen. Assise weckt keinen schlafenden Gegner mehr. Preis: Heilung und MP von
+  Assise, die gespeicherte Heilung von Makrokosmos, solange der Spieler die Flächen sperrt.
+- *Prüfgrad:* Spielblatt, Ausdruck am Rohtext, Compile, CI; im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

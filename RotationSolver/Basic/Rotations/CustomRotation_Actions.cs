@@ -8,6 +8,13 @@ public partial class CustomRotation
 	{
 		var a = action.Action;
 		action.Setting.IsFriendly = a.CanTargetAlly || a.CanTargetParty || (!a.CanTargetHostile && action.TargetInfo.EffectRange > 5);
+
+		// An area around the player that deals damage to the enemies there is an attack, even where it heals as well
+		// (Assize, Macrocosmos): the AoE settings and the enemies no area may hit apply to it (concept 03, A826).
+		if (action.Setting.IsFriendly && !a.CanTargetAlly && !a.CanTargetParty && ActionTooltip.DamagesEnemiesAround(action.ID))
+		{
+			action.Setting.IsFriendly = false;
+		}
 	}
 
 	#region Role Actions

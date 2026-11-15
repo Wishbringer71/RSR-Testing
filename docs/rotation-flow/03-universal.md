@@ -1194,6 +1194,51 @@ Kegel steht.
 Die Liste `DataCenter.UntouchableHostiles` baut der Zielabgleich jeden Takt aus allen Gegnern in Reichweite, auch denen,
 die die Gegnerliste ausschließt.
 
+## Flächen, die Gegner treffen, und Gegner, die noch nicht kämpfen
+
+*Was gilt (A826):* Eine Aktion, die Gegner um dich trifft, ist ein Angriff, auch wenn sie dazu heilt: „AoE type: Off"
+sperrt sie, und „Don't pull new enemies with AoE" lässt sie nicht los, solange ihr Wirkgebiet einen Gegner einschließt,
+der noch nicht kämpft (kein Ziel). Beides gilt für jede Fläche – um dich, um ein Ziel, auf einem Bodenpunkt –, für jeden
+Job, auch wenn die Rotation die Mindestzahl der Fläche überspringt (`skipAoeCheck`).
+
+*Seine Meldung (15.11.2026):* „assise zählt anscheinend nicht zu den aoes, die man ausschalten kann, damit keine neuen
+mobs gepullt werden". Assise (Assize, 3571) richtet laut Wirktext Schaden an „all nearby enemies" an (20 y) und heilt
+dazu die Gruppe.
+
+*Ursache, am Code:*
+- RSR stuft eine Aktion als freundlich ein, wenn sie Verbündete oder die Gruppe anvisiert oder, ohne Gegnerziel, mehr
+  als 5 y um dich wirkt (`CustomRotation.LoadActionSetting`). Assise und Makrokosmos (Macrocosmos, 25874) fallen darunter;
+  für freundliche Aktionen gilt der AoE-Typ nicht, und unberührbare Gegner (Schlaf, Stopp-Markierung) schützt die Fläche
+  nicht. Holy, Holy III und Flammenwerfer hat Upstream von Hand auf feindlich gestellt; die Klasse blieb offen. Erhoben
+  am Spielblatt: unter den 101 Spieleraktionen dieser Einstufung richten außerhalb des Blaumagiers genau diese vier
+  laut Wirktext Schaden an Gegnern um dich an, dazu Flammenwerfer im Kegel.
+- „Don't pull new enemies with AoE" liest nur die Zählung des allgemeinen Pfads: Ein Mittelpunkt, dessen Fläche einen
+  Gegner ohne Ziel trifft, zählt 0. Die Flächen um dich prüfen den Schalter gar nicht (Überwältigen, Totale Eklipse,
+  Holy und jede andere), und mit `skipAoeCheck` ist die Mindestzahl 0 – ein Mittelpunkt mit 0 ging durch.
+
+*Gebaut:*
+- Die Einstufung liest den Wirktext: Wer laut Text Schaden an Gegnern um dich anrichtet, ist nicht freundlich. Gelesen
+  wird der Text des Blatts ohne Auswertung (`ActionTooltip.DamagesEnemiesAround`), denn die Einstufung fällt, wenn die
+  Aktion angelegt wird, und die Formulierung hängt nicht an der Stufe. Die Handkorrekturen von Upstream bleiben; sie
+  sagen dasselbe.
+- Der Schalter gilt für die Flächen um dich mit derselben Prüfung wie im allgemeinen Pfad (Gegner im Wirkgebiet ohne
+  Ziel), und ein Mittelpunkt, der einen solchen Gegner träfe, scheidet aus, statt mit 0 zu zählen.
+
+*Im Kampf:* Mit „AoE type: Off" kommen Assise und Makrokosmos nicht mehr; ein Weißmagier verliert ihre Heilung und das
+MP, ein Astrologe die gespeicherte Heilung von Makrokosmos – der Preis, den der Schalter nennt. Mit „Don't pull new
+enemies" wartet jede Fläche um dich, bis die Gegner in ihrem Wirkgebiet kämpfen; ein Tank, der mit einer Fläche
+ansammeln will, lässt den Schalter aus (ab Werk aus). Assise weckt keinen schlafenden Gegner mehr.
+
+*Gegenthese 1 (Assise ist eine Heilung):* Ihr Heilanteil ginge mit der Sperre verloren. Nicht widerlegt, aber gewollt:
+Der Schalter fragt, ob eine Aktion Gegner trifft, nicht wozu sie gedrückt wird; eine Heilung, die einen neuen Pack
+zieht, kostet mehr LP, als sie bringt.
+*Gegenthese 2 (ein Gegner ohne Ziel kämpft doch):* Ein Gegner kann im Kampf kurz kein Ziel halten (Wirken auf den
+Boden, Phasenwechsel). Dann wartet die Fläche einen Moment. Preis: Schaden eines Moments; dieselbe Prüfung gilt im
+allgemeinen Pfad seit Upstream.
+*Gegenthese 3 (ausgeliefert, und nichts ändert sich):* Der Wirktext einer betroffenen Aktion lautet anders. Widerlegt
+am Blatt für die vier genannten; ein anders formulierter Text bleibt bei der alten Einstufung – der Preis einer Lücke,
+nicht eines Fehlgriffs.
+
 ## Tötungsregeln: zuerst, gemeinsam, erst danach
 
 Manche Gegner verlangen eine Reihenfolge, die keine Gefahrenrechnung findet: einer stirbt am nächsten Treffer, zwei
