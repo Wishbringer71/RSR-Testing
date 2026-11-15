@@ -31,16 +31,19 @@ internal static class TankSwapWatch
 	/// <summary>Forgets a swap target or source that is no longer the figure of its slot (A827), at the start of each pass.</summary>
 	internal static void PruneStale()
 	{
-		if (Target != null && !Target.IsCurrent())
+		if (Target != null && !Target.IsCurrent(_targetId))
 		{
 			Target = null;
 		}
 
-		if (ReclaimSource != null && !ReclaimSource.IsCurrent())
+		if (ReclaimSource != null && !ReclaimSource.IsCurrent(_reclaimId))
 		{
 			ReclaimSource = null;
 		}
 	}
+
+	// A832: the ids of the figures above, read when they were set - a figure that takes over a freed slot keeps the address.
+	private static ulong _targetId, _reclaimId;
 
 	private sealed class Buster
 	{
@@ -550,6 +553,7 @@ internal static class TankSwapWatch
 			}
 
 			Target = best;
+			_targetId = best.GameObjectId;
 			Ratio = bestRatio;
 			Detail = $"{best.Name.TextValue} holds {bestEnmity:F0}% against your {mine:F0}%, attacked by {bestLoad}, {bestHealth:P0} HP";
 		}
@@ -584,6 +588,7 @@ internal static class TankSwapWatch
 		}
 
 		ReclaimSource = source;
+		_reclaimId = source?.GameObjectId ?? 0;
 	}
 
 	/// <summary>

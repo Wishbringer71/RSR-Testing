@@ -1284,6 +1284,7 @@ internal static class CrucibleBoard
 		if (byFamiliar)
 		{
 			RecordFamiliarDamage(action, amount);
+			_paceHits++;
 			if (AttackTypeKind.IsPhysical(entry.AttackType))
 			{
 				_familiarPhysical += amount;
@@ -1767,6 +1768,7 @@ internal static class CrucibleBoard
 	// A830: a hit of the player's own - its kind and whether it was critical.
 	private static void RecordPlayerDamage(uint action, EffectEntry entry, uint amount)
 	{
+		_paceHits++;
 		_playerDamage += amount;
 		if (AttackTypeKind.IsPhysical(entry.AttackType))
 		{
@@ -1793,25 +1795,41 @@ internal static class CrucibleBoard
 	{
 		get
 		{
-			var familiarTyped = _familiarPhysical + _familiarMagic;
-			var familiar = _familiarAuto + _familiarTrick + _familiarRelease + _familiarOther;
-			var share = _playerDamage > 0d ? (float)(_playerDamage / (_playerDamage + familiar)) : PlayerShareFallback;
-			var typed = _playerPhysical + _playerMagic;
-			var physical = typed > 0d ? (float)(_playerPhysical / typed) : 1f;
-			double gain = 0d;
-			var weight = 0;
-			foreach (var (_, hits) in _critByAction)
+			// A832: weighed again only after a hit changed what it reads.
+			if (_paceBasisAt == _paceHits)
 			{
-				if (hits.Crits > 0 && hits.Plains > 0 && hits.Plain > 0d)
-				{
-					gain += hits.Crits * ((hits.Crit / hits.Crits / (hits.Plain / hits.Plains)) - 1d);
-					weight += hits.Crits;
-				}
+				return _paceBasis;
 			}
 
-			return (share, physical, familiarTyped > 0d ? (float)(_familiarPhysical / familiarTyped) : physical,
-				weight > 0 ? (float)(gain / weight) : CritGainFallback, _takenAll > 0d ? (float)(_takenAuto / _takenAll) : AutoTakenFallback);
+			_paceBasisAt = _paceHits;
+			_paceBasis = WeighPace();
+			return _paceBasis;
 		}
+	}
+
+	private static long _paceHits, _paceBasisAt = -1;
+	private static (float Share, float Physical, float FamiliarPhysical, float CritGain, float Auto) _paceBasis;
+
+	private static (float Share, float Physical, float FamiliarPhysical, float CritGain, float Auto) WeighPace()
+	{
+		var familiarTyped = _familiarPhysical + _familiarMagic;
+		var familiar = _familiarAuto + _familiarTrick + _familiarRelease + _familiarOther;
+		var share = _playerDamage > 0d ? (float)(_playerDamage / (_playerDamage + familiar)) : PlayerShareFallback;
+		var typed = _playerPhysical + _playerMagic;
+		var physical = typed > 0d ? (float)(_playerPhysical / typed) : 1f;
+		double gain = 0d;
+		var weight = 0;
+		foreach (var (_, hits) in _critByAction)
+		{
+			if (hits.Crits > 0 && hits.Plains > 0 && hits.Plain > 0d)
+			{
+				gain += hits.Crits * ((hits.Crit / hits.Crits / (hits.Plain / hits.Plains)) - 1d);
+				weight += hits.Crits;
+			}
+		}
+
+		return (share, physical, familiarTyped > 0d ? (float)(_familiarPhysical / familiarTyped) : physical,
+			weight > 0 ? (float)(gain / weight) : CritGainFallback, _takenAll > 0d ? (float)(_takenAuto / _takenAll) : AutoTakenFallback);
 	}
 
 	private static void RecordFamiliarDamage(Lumina.Excel.Sheets.Action action, uint amount)
@@ -1925,6 +1943,7 @@ internal static class CrucibleBoard
 			return;
 		}
 
+		_paceHits++;
 		_takenAll += amount;
 		_takenAuto += autoAttack ? amount : 0u;
 

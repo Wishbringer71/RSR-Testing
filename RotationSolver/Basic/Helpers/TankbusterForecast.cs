@@ -31,8 +31,8 @@ internal static class TankbusterForecast
 	/// <summary>Drops the casts whose source is no longer the figure of its slot (A827), at the start of each pass.</summary>
 	internal static void PruneStale()
 	{
-		_ = _casts.RemoveAll(static cast => !cast.Source.IsCurrent());
-		if (SoonestMeasured is { } soonest && !soonest.Source.IsCurrent())
+		_ = _casts.RemoveAll(static cast => !cast.Source.IsCurrent(cast.SourceId));
+		if (SoonestMeasured is { } soonest && !soonest.Source.IsCurrent(soonest.SourceId))
 		{
 			SoonestMeasured = null;
 		}

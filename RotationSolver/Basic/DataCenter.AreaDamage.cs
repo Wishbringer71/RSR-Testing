@@ -26,6 +26,12 @@ namespace RotationSolver.Basic;
 internal static partial class DataCenter
 {
 	/// <summary>
+	/// "Don't pull new enemies with AoE" (concept 03, A826, A832): whether hitting <paramref name="enemy"/> would pull it - the
+	/// setting is on and it holds no target, so it is not fighting yet. The one test for the target choice and the sleep rule.
+	/// </summary>
+	internal static bool PullsIfHit(IBattleChara enemy) => Service.Config.NoNewHostiles && enemy.TargetObject == null;
+
+	/// <summary>
 	/// Every figure of the enemy side casting now, listed or not: the casters of the hostile list, a targetable enemy the
 	/// list leaves out, and every untargetable figure of the enemy side - the helpers that cast most areas of a boss fight.
 	/// Rebuilt each frame with <see cref="AreaCasters"/> in <c>TargetUpdater</c> and read within that frame. For the questions

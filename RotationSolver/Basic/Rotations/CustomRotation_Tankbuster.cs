@@ -31,7 +31,7 @@ public partial class CustomRotation
 	/// <summary>Drops a plan whose cast's source is no longer the figure of its slot (A827), at the start of each pass.</summary>
 	internal static void PruneStaleTankbusterPlan()
 	{
-		if (_tankbusterPlan is { } plan && !plan.Cast.Source.IsCurrent())
+		if (_tankbusterPlan is { } plan && !plan.Cast.Source.IsCurrent(plan.Cast.SourceId))
 		{
 			_tankbusterPlan = null;
 		}

@@ -46,7 +46,10 @@ internal static class ActionTooltip
 	private static readonly Regex StatedLevelMultiple = new(@"level must be a multiple of (?<value>\d{1,3})", RegexOptions.Compiled);
 	private static readonly Regex StatedUndeadPotency = new(@"[Pp]otency increases to (?<value>\d[\d,]*) when used against undead", RegexOptions.Compiled);
 	private const string DiminishingText = "Repeated use";
-	private static readonly Regex DamagesAllNearby = new(@"[Dd]eals [^.]*damage[^.]*to all nearby enemies", RegexOptions.Compiled);
+	// A832: a sentence that begins with "Deals" - the action itself deals the damage around the player. Not "creating a
+	// Stellar Burst that deals ...": that damage falls where a placed object is (Stellar Detonation, 8324), and the party is
+	// healed there.
+	private static readonly Regex DamagesAllNearby = new(@"(?:^|\.\s)Deals [^.]*damage[^.]*to all nearby enemies", RegexOptions.Compiled | RegexOptions.Multiline);
 
 	/// <summary>
 	/// The evaluated effect text of <paramref name="actionId"/>, empty when the sheet has no row for it or the
@@ -84,8 +87,8 @@ internal static class ActionTooltip
 	}
 
 	/// <summary>
-	/// Whether the effect text of <paramref name="actionId"/> says it deals damage to the enemies around the player, as Holy,
-	/// Assize and Macrocosmos do (concept 03, "Flächen, die Gegner treffen", A826). Read from the sheet's text without
+	/// Whether the effect text of <paramref name="actionId"/> says the action itself deals damage to the enemies around the
+	/// player, as Holy, Assize and Macrocosmos do (concept 03, "Flächen, die Gegner treffen", A826, A832). Read from the sheet's text without
 	/// evaluating it: the answer is needed when the action is created, on any thread, and the wording does not depend on
 	/// the level. False when the sheet has no row.
 	/// </summary>

@@ -1822,7 +1822,9 @@ public partial struct ActionTargetInfo(IBaseAction action)
 				continue;
 			}
 
-			if (PullsNewHostile(t))
+			// A826, A832: an attack whose area would pull an enemy that is not fighting yet does not go from this centre - but
+			// the chosen target is meant to be hit, and a friendly area pulls nothing.
+			if (t != target && !action.Setting.IsFriendly && DataCenter.PullsIfHit(t))
 			{
 				return -1;
 			}

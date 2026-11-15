@@ -173,7 +173,7 @@ public partial class CustomRotation
 
 		foreach (var hostile in DataCenter.AllHostileTargets)
 		{
-			if (hostile != null && hostile.TargetObject == null
+			if (hostile != null && DataCenter.PullsIfHit(hostile)
 				&& Vector3.Distance(hostile.Position, center.Position) - hostile.HitboxRadius <= radius)
 			{
 				return true;

@@ -24267,6 +24267,36 @@ Absturzbericht.
   Brett 2 (`pace-traced`, A830).
 - *9 Dokumentation:* Konzept 21, K13 „Tempo" (Futter, K11), K6/K7 Futterfaktor; TODO-Punkt geschlossen.
 
+### A832 · Konzepte, Audit, Code-Review seit Release 7.5.8.3+wsh1 (15.11.2026)
+
+- *Anlass:* Sein Auftrag (15.11.2026): „Konzepte kritisch im Loop prüfen, audit, codereview, Fehlerbeseitigung".
+- *Umfang:* `origin/main...HEAD` (16 Commits, A824 bis A831); Code-Review hoher Stufe (Skill), Konzepte 03, 21 und 24 an
+  den berührten Stellen, alle 59 Prüfungen.
+- *Befunde und Beseitigung (Code-Review, zehn):*
+  1. *Sterndetonation wurde zum Angriff (hoch):* Die Textregel aus A826 fing jedes „deals … to all nearby enemies", auch
+     „creating a Stellar Burst that deals …" (8324). RSR hätte die Gruppenheilung des Astrologen nur mit einem Gegner in
+     20 y um ihn und nie mit „AoE usage: Off" gewirkt. Jetzt nur ein Satz, der mit „Deals" beginnt (die Aktion selbst).
+     Meine Erhebung in A826 („genau diese vier") hatte sie übersehen; die neue Regel geprüft an acht Kandidaten (Assise,
+     Makrokosmos, Holy, Holy III, Sterndetonation, Flammenwerfer, 25873, 37029).
+  2. *Freundliche Flächen verworfen (hoch):* `GetCanTargetCount` gab −1 auch für eine Heilfläche, sobald ein
+     Gruppenmitglied in Reichweite kein Ziel hatte; mit übersprungener Mindestzahl kam sie nie. Jetzt nur für Angriffe.
+  3. *Gewähltes Ziel als Pull (mittel):* Ein Mittelpunkt schied auch wegen des Ziels selbst aus; jetzt nicht.
+  4. *Futter als Wirkung des ersten Stücks (mittel):* `GearFold` setzte Anteile und Futter erst mit dem ersten Stück;
+     jetzt mit dem Anfang, für jede Ausrüstung gleich.
+  5. *Neuer Inhaber desselben Platzes (mittel):* Der Adressvergleich hielt ihn für die alte Figur. Tankbuster-Würfe,
+     -Plan und Tankwechsel vergleichen jetzt auch die beim Halten gelesene Id (`IsCurrent(id)`).
+  6. *Zweites Leben unter Talerregen (mittel, keine Änderung):* Gewollt nach dem Grundsatz von K15 – der Rest gilt nur,
+     wenn der Weg nach den gemessenen Lasten getragen ist; im Konzept begründet.
+  7. *Zyklen in `MostAhead` (niedrig, keine Änderung):* dieselbe Sicherung wie `WorstNeedAhead`; jeder Weg der fünf
+     Bretter in `crucible_route_model.py` führt nur zu späteren Feldern (geprüft 15.11.2026), ein Rückweg tritt nicht auf.
+  8. *Anlage je Bild in `ProtectionPlanned` (mittel):* gedrosselt auf einmal je GCD, Bedingung als ein statischer
+     Delegat.
+  9. *Zwei Fassungen der Pull-Prüfung (niedrig):* eine (`DataCenter.PullsIfHit`) für Zielwahl und Schlafregel.
+  10. *`PaceBasis` je Aufruf neu (niedrig):* zwischengespeichert, neu gewogen nach einem Treffer.
+- *Konzepte:* 03 (Flächen: Satzanfang, Gegenthese 4, freundliche Flächen und Ziel; Dritte Invariante: neuer Inhaber),
+  21 (Regel 1 Drosselung, Regel 2 zweites Leben, Futter im Tempo bei leerer Ausrüstung).
+- *8 Nachweis:* Compile (0 Warnungen), 59 Prüfungen; im Spiel nicht beobachtet. Prüfgrad statisch und Compile.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -24626,3 +24656,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C205 | A632 (Stand A632): Seine Präzisierung „nicht am anfang des brettes fürs ganze brett …, ähnlich der vorausplanung beim schach" verbiete eine Rechnung über das ganze Brett; die Option „mehrere Strecken voraus" sei zu verwerfen, weil die Lasten nur gemittelt bekannt seien | Sie schließt einen festen Plan beim Betreten aus, nicht die Rechnung bis zum Endkampf mit Neuplanung nach jedem Ergebnis (seine Präzisierung vom 15.11.2026: Navi, Schach); die Lasten sind seit A661 je Kampf und seit A729 je Rang bekannt (A829) |
 | C206 | A830 (Stand 1e8f89762): Das Tempo der Ausrüstung senke die Last jedes Kampfs auch im Test des Wegs und an der Campsite; ein Fehler der Annahme „Last wächst mit der Dauer" bestehe nur zwischen zwei Läufen | Unbelegt für die Senke, und die Tafeln halten den schwersten Wert: verzerrt dauerhaft oder unterschätzt, wo Schutz zurückgehalten wird; gemessen trafen ihn keine Auto-Angriffe. Das Tempo gilt nur noch auf der Skala von Laden und Schatz für den Anteil der Auto-Angriffe (A830, Prüfrunde) |
 | C207 | A830 (Stand 8acaafc5c): Auf Brett 2 trafen ihn in 152 Gegnertreffern keine Auto-Angriffe; ein Angriffsstück bringe ihm dort keine Sicherheit | Gezählt waren nur die Aktionen 7 und 8; die Auto-Angriffe der Gegner sind eigene Aktionen der Kategorie „Auto-attack": 57 % seiner und 64 % der Last seiner Begleiter (A831) |
+| C208 | A826 (Stand 3ca98a945): Unter den Spieleraktionen dieser Einstufung richten genau Assise, Makrokosmos, Holy und Holy III laut Wirktext Schaden an Gegnern um dich an | Die Textregel fing auch die Sterndetonation (8324), deren Schaden ein gelegter Stern an anderem Ort anrichtet; seit A832 nur ein Satz, der mit „Deals" beginnt |

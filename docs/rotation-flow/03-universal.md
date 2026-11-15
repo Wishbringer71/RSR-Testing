@@ -73,7 +73,13 @@ lässt ihm die alte Adresse.
   verschwundene Figur. Gültige bleiben, die Dienste zwischen den Kämpfen arbeiten weiter wie bisher.
 - *Zwischen den Durchläufen* (Effekt-Hooks): Jede Schleife über eine Liste des letzten Durchlaufs überspringt eine
   Figur, die nicht mehr aktuell ist, bevor sie sie fragt.
-- *Kosten:* ein Adressvergleich je gehaltener Figur und Bild; keine Anlage.
+- *Neuer Inhaber desselben Platzes (Code-Review vom 15.11.2026, A832):* Der feste Speicherblock gibt einer Figur, die
+  einen frei gewordenen Platz übernimmt, dieselbe Adresse; der Adressvergleich hält sie für die alte. Abstürzen kann das
+  nicht (die Funktionstabelle ist gültig), aber ein Halter liest dann eine andere Figur – einen Tankbuster, der nicht
+  gewirkt wird, ein Tankwechselziel, das ein anderer Gegner ist. Wo die Id beim Anlegen gelesen wurde (Tankbuster:
+  `Cast.SourceId`; Tankwechsel: beim Setzen von Ziel und Rückholquelle), vergleicht die Bereinigung nach dem
+  Adressvergleich auch die Id (`IsCurrent(id)`); erst der bestandene Adressvergleich erlaubt die Frage nach ihr.
+- *Kosten:* ein Adressvergleich je gehaltener Figur und Bild, wo eine Id gehalten wird dazu ein Lesen; keine Anlage.
 - *Vorbild (BossModReborn 35a908a, `WorldStateGameSync.UpdateActors`):* BMR hält keine Figur des Spiels über ein Bild
   hinaus. Es liest jedes Bild die Objekttabelle direkt, vergleicht je Platz die `EntityId`, führt eigene Kopien
   (`Actor`, die Wirkinformation als `ActorCastInfo`) und entfernt eine Kopie, sobald ihre Figur den Platz verlässt;
@@ -1230,19 +1236,28 @@ dazu die Gruppe.
   als 5 y um dich wirkt (`CustomRotation.LoadActionSetting`). Assise und Makrokosmos (Macrocosmos, 25874) fallen darunter;
   für freundliche Aktionen gilt „AoE usage" nicht, und unberührbare Gegner (Schlaf, Stopp-Markierung) schützt die Fläche
   nicht. Holy, Holy III und Flammenwerfer hat Upstream von Hand auf feindlich gestellt; die Klasse blieb offen. Erhoben
-  am Spielblatt: unter den 101 Spieleraktionen dieser Einstufung richten außerhalb des Blaumagiers genau diese vier
-  laut Wirktext Schaden an Gegnern um dich an, dazu Flammenwerfer im Kegel.
+  am Spielblatt: unter den Spieleraktionen dieser Einstufung richten außerhalb des Blaumagiers diese vier laut Wirktext
+  selbst Schaden an Gegnern um dich an, dazu Flammenwerfer im Kegel; die Sterndetonation lässt ihn an anderem Ort
+  anrichten (unten, A832).
 - „Don't pull new enemies with AoE" liest nur die Zählung des allgemeinen Pfads: Ein Mittelpunkt, dessen Fläche einen
   Gegner ohne Ziel trifft, zählt 0. Die Flächen um dich prüfen den Schalter gar nicht (Überwältigen, Totale Eklipse,
   Holy und jede andere), und mit `skipAoeCheck` ist die Mindestzahl 0 – ein Mittelpunkt mit 0 ging durch.
 
 *Gebaut:*
-- Die Einstufung liest den Wirktext: Wer laut Text Schaden an Gegnern um dich anrichtet, ist nicht freundlich. Gelesen
-  wird der Text des Blatts ohne Auswertung (`ActionTooltip.DamagesEnemiesAround`), denn die Einstufung fällt, wenn die
-  Aktion angelegt wird, und die Formulierung hängt nicht an der Stufe. Die Handkorrekturen von Upstream bleiben; sie
-  sagen dasselbe.
+- Die Einstufung liest den Wirktext: Wer laut Text selbst Schaden an Gegnern um dich anrichtet – ein Satz, der mit
+  „Deals … damage … to all nearby enemies" beginnt –, ist nicht freundlich. Gelesen wird der Text des Blatts ohne
+  Auswertung (`ActionTooltip.DamagesEnemiesAround`), denn die Einstufung fällt, wenn die Aktion angelegt wird, und die
+  Formulierung hängt nicht an der Stufe. Die Handkorrekturen von Upstream bleiben; sie sagen dasselbe.
+- *Nicht:* eine Aktion, die etwas an anderem Ort auslöst, das dort Schaden macht. Sterndetonation (Stellar Detonation,
+  8324): „detonates the currently deployed Earthly Star, creating a Stellar Burst that deals … to all nearby enemies"
+  – der Schaden fällt um den gelegten Stern, und die Gruppe wird dort geheilt. RSR rechnet eine Fläche ohne Reichweite
+  um dich; als Angriff eingestuft, hätte sie einen Gegner in 20 y um dich verlangt und mit „AoE usage: Off" gar nicht
+  mehr geheilt. Bis zum Code-Review vom 15.11.2026 las die Einstufung jedes „deals" und nahm sie mit (A832).
 - Der Schalter gilt für die Flächen um dich mit derselben Prüfung wie im allgemeinen Pfad (Gegner im Wirkgebiet ohne
-  Ziel), und ein Mittelpunkt, der einen solchen Gegner träfe, scheidet aus, statt mit 0 zu zählen.
+  Ziel), und ein Mittelpunkt, der einen solchen Gegner träfe, scheidet aus, statt mit 0 zu zählen – für Angriffe, nicht
+  für freundliche Flächen (ein Gruppenmitglied ohne Ziel zieht nichts), und nicht wegen des gewählten Ziels selbst:
+  Wen die Rotation anvisiert, will sie treffen (A832). Die Prüfung „kämpft noch nicht" ist eine einzige
+  (`DataCenter.PullsIfHit`), für die Zielwahl und für die Schlafregel.
 
 *Im Kampf:* Mit „AoE usage: Off" kommen Assise und Makrokosmos nicht mehr; ein Weißmagier verliert ihre Heilung und das
 MP, ein Astrologe die gespeicherte Heilung von Makrokosmos – der Preis, den der Schalter nennt. Mit „Don't pull new
@@ -1258,6 +1273,10 @@ allgemeinen Pfad seit Upstream.
 *Gegenthese 3 (ausgeliefert, und nichts ändert sich):* Der Wirktext einer betroffenen Aktion lautet anders. Widerlegt
 am Blatt für die vier genannten; ein anders formulierter Text bleibt bei der alten Einstufung – der Preis einer Lücke,
 nicht eines Fehlgriffs.
+*Gegenthese 4 (eine Heilung wird zum Angriff, A832):* Eine Aktion, deren Schaden an einem gelegten Objekt entsteht,
+wäre mit dem Satzanfang „deals" eingefangen worden – so die Sterndetonation bis zum Code-Review. Widerlegt für sie mit
+der Regel „der Satz beginnt mit Deals"; geprüft an den Kandidaten Assise, Makrokosmos, Holy, Holy III,
+Sterndetonation, Flammenwerfer, Exaltation (25873) und Orakel (37029) (A832).
 
 ## Tötungsregeln: zuerst, gemeinsam, erst danach
 

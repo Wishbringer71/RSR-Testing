@@ -39,6 +39,16 @@ public static partial class ObjectHelper
 	}
 
 	/// <summary>
+	/// A832: <see cref="IsCurrent(IGameObject?)"/>, and the figure in the slot is still the one of <paramref name="id"/>, read
+	/// when it was held - a figure that takes over a freed slot of the fixed block gets the same address. The id is asked
+	/// only once the address passed, so the virtual table is valid. An id of 0 (not read) checks the address alone.
+	/// </summary>
+	public static bool IsCurrent(this IGameObject? obj, ulong id)
+	{
+		return obj.IsCurrent() && (id == 0 || obj!.GameObjectId == id);
+	}
+
+	/// <summary>
 	/// Concept 03, "Gegner, die keine Fläche treffen darf" (A572, A588): an enemy no attack may hit, not even an area one -
 	/// spikes that damage attackers, a stop marker while "Never attack targets with stop markers" is on, a guarded zu egg,
 	/// an enemy a kill rule holds where its fall would harm.

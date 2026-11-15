@@ -1645,9 +1645,18 @@ public partial class BeastmasterRotation
 			return _protectionPlanned;
 		}
 
-		// Weighed only once the fight's dip and the ways are known; until then not planned, and asked again.
-		if (battle == 0 || held == 0 || CrucibleBoard.DipLoad(battle) is not { } here
-			|| CrucibleRoute.MostAhead(other => CrucibleBoard.DipLoad(other) is not { } dip || dip > here) is not { } heavier)
+		// Weighed only once the fight's dip and the ways are known; until then not planned, and asked again at most once a GCD
+		// (A832: the search allocates, and this runs in every frame an enemy attacks him).
+		var now = DateTime.Now;
+		if (battle == 0 || held == 0 || (now - _protectionPlanAsked).TotalSeconds < DataCenter.DefaultGCDTotal
+			|| CrucibleBoard.DipLoad(battle) is not { } here)
+		{
+			return false;
+		}
+
+		_protectionPlanAsked = now;
+		_protectionPlanDip = here;
+		if (CrucibleRoute.MostAhead(HeavierThanPlanned) is not { } heavier)
 		{
 			return false;
 		}
@@ -1660,6 +1669,11 @@ public partial class BeastmasterRotation
 	}
 
 	private static (int Run, uint Battle, int Held) _protectionPlanKey;
+	private static DateTime _protectionPlanAsked = DateTime.MinValue;
+	private static float _protectionPlanDip;
+
+	// A832: a battle heavier than the fight being weighed - its learned dip above it, or never measured; one delegate.
+	private static readonly Func<uint, bool> HeavierThanPlanned = static other => CrucibleBoard.DipLoad(other) is not { } dip || dip > _protectionPlanDip;
 	private static bool _protectionPlanned;
 
 	private static unsafe int FirstOf(InstanceContentCrucibleOfTheUnbroken* crucible, CrucibleItemKind kind)

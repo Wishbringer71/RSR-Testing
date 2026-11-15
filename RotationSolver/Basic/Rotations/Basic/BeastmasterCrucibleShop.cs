@@ -49,7 +49,10 @@ public partial class BeastmasterRotation
 		/// <summary>A830: the factor the familiars' feed adds to their damage, the mean over the team; 1 without feed.</summary>
 		public float FamiliarFeed;
 
-		public static GearFold Start() => new() { Hp = 1f, Taken = 1f, Physical = 1f, Magic = 1f, _player = 1f, _familiar = 1f, FamiliarFeed = 1f };
+		// A832: the shares and the feed hold for every set, the empty one too - a piece's pace is the ratio with and without it.
+		public static GearFold Start((float Share, float Physical, float FamiliarPhysical, float CritGain, float Auto) basis, float feed = 1f)
+			=> new() { Hp = 1f, Taken = 1f, Physical = 1f, Magic = 1f, _player = 1f, _familiar = 1f, FamiliarFeed = feed,
+				_share = basis.Share, _auto = basis.Auto };
 
 		public void Add(CrucibleGear piece, (float Share, float Physical, float FamiliarPhysical, float CritGain, float Auto) basis)
 		{
@@ -71,8 +74,6 @@ public partial class BeastmasterRotation
 					* (1f + (piece.MagicDealt * (1f - basis.FamiliarPhysical)));
 			}
 
-			_share = basis.Share;
-			_auto = basis.Auto;
 		}
 
 		/// <summary>The team's pace: his share of its damage at his factor, the familiars' at theirs; 1 without gear.</summary>
@@ -241,7 +242,7 @@ public partial class BeastmasterRotation
 	/// </summary>
 	internal static (float Hp, float Taken, float Physical, float Magic) WornFactors()
 	{
-		var fold = GearFold.Start();
+		var fold = GearFold.Start(default);
 		if (_gearSeen is not { } seen || seen.Run != CrucibleBoard.Run)
 		{
 			return (fold.Hp, fold.Taken, fold.Physical, fold.Magic);
@@ -1683,7 +1684,6 @@ public partial class BeastmasterRotation
 	// A830: the factors of a set of gear, the team's pace in them.
 	private static GearFold Fold(List<CrucibleGear> gear)
 	{
-		var fold = GearFold.Start();
 		var basis = CrucibleBoard.PaceBasis;
 
 		// A830 (TODO "Tempo für Begleiter und Futter"): the familiars' feed, as the mean over the team of each one's factor.
@@ -1695,7 +1695,7 @@ public partial class BeastmasterRotation
 			pets++;
 		}
 
-		fold.FamiliarFeed = pets > 0 ? fed / pets : 1f;
+		var fold = GearFold.Start(basis, pets > 0 ? fed / pets : 1f);
 		foreach (var piece in gear)
 		{
 			fold.Add(piece, basis);

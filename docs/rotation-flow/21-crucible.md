@@ -1033,13 +1033,17 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
       schwerer ist) weniger solche Kämpfe liegen, als Schutzgegenstände gehalten werden – gezählt je Weg, nicht über alle
       Abzweige zusammen (Prüfrunde A830, Befund 4). In einem geplanten
       Kampf geht der Schutz wie bisher im Endkampf: gegen einen angekündigten Treffer auf dich und sobald ein Gegner dich
-      angreift. Ein ungemessener laufender Kampf ist nicht geplant (wie bisher). Neu gerechnet wird mit jedem Kampf.
+      angreift. Ein ungemessener laufender Kampf ist nicht geplant (wie bisher). Neu gerechnet wird mit jedem Kampf; sind
+      die Wege noch nicht gelesen, höchstens einmal je GCD (Code-Review A832: sonst legte jeder Bild im Kampf eine Suche an).
     - *Regel 2 – Talerregen im Laden:* Vergibt das Brett Talerregen, hält der Laden so viele Marken, dass du ohne weiteren
       Kauf mit 2.000 endest – deine Marken jetzt plus, was die Kämpfe bis zum Endkampf auf dem kürzesten Weg bringen (je
       Kampf der kleinste Ertrag, der zwischen zwei Läden desselben Laufs gemessen wurde – Schatz und Zufallsfelder machen
       ihn sonst zu groß; der Endkampf zählt nicht) –, solange du den Weg mit LP und
       gehaltener Heilung trägst wie bei Geizhals. Kauft der Laden, dann nur aus dem Überschuss darüber; der Schutz gegen einen
-      Zustand, der unabhängig von den LP tötet, geht wie bei Geizhals aus allen Marken. Reichen die Marken mit dem Ertrag
+      Zustand, der unabhängig von den LP tötet, geht wie bei Geizhals aus allen Marken. Ein zweites Leben (Lebensring,
+      Wiederaufstehen) kauft er unter dem Rest nur aus dem Überschuss: Es ist eine Versicherung ohne Gefahr, solange du den
+      Weg trägst – der Grundsatz oben, wie bei Geizhals (Code-Review A832: „ein zweites Leben fehlt"; geprüft und so
+      gewollt, denn der Rest gilt nur, wenn der Weg nach den gemessenen Lasten getragen ist). Reichen die Marken mit dem Ertrag
       nicht bis 2.000 oder ist der Ertrag ungemessen und die Marken jetzt unter 2.000, steht der Bonus nicht auf dem Spiel,
       und der Laden kauft wie bisher. Gemessen wird in jeder Sitzung neu.
     - *Optionen:* (0) Nullvariante: nichts ändern – Grimoires bleiben liegen, Talerregen fällt bei jedem Kauf. (1) Laden kauft
@@ -1480,7 +1484,9 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
   - *Futter im Tempo (TODO „Tempo für Begleiter und Futter", geschlossen):* Futter mit „Damage Dealt", physischem oder
     magischem Schaden, Kritrate oder Hast macht den Begleiter, der es frisst, schneller – mit demselben Faktor wie ein
     Ausrüstungsstück, auf den physischen Anteil der Begleiter. Der Begleiterfaktor im Tempo ist das Mittel über den
-    Kader, je Begleiter sein Futter (gefressen zählt, was das Begleiterfenster führt). Die Hornwahl (K6, K7) zählt den
+    Kader, je Begleiter sein Futter (gefressen zählt, was das Begleiterfenster führt). Es gilt für jede Ausrüstung
+    gleich, auch für keine: Das Tempo eines Stücks ist das Verhältnis mit und ohne es, und das Futter darf nicht als
+    Wirkung des ersten Stücks erscheinen (Code-Review A832). Die Hornwahl (K6, K7) zählt den
     Schaden eines Begleiters mit diesem Futterfaktor statt nur mit „Damage Dealt"; die Futterempfehlung bricht einen
     Gleichstand der wirksamen LP mit ihm. Bis A830 las RSR „Physical Damage Dealt +25 %" (Eier-Simulakrum) als
     „Damage Dealt" und zählte Hast und Kritrate im Futter gar nicht.
