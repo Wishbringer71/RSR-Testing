@@ -24276,8 +24276,10 @@ Absturzbericht.
   1. *Sterndetonation wurde zum Angriff (hoch):* Die Textregel aus A826 fing jedes „deals … to all nearby enemies", auch
      „creating a Stellar Burst that deals …" (8324). RSR hätte die Gruppenheilung des Astrologen nur mit einem Gegner in
      20 y um ihn und nie mit „AoE usage: Off" gewirkt. Jetzt nur ein Satz, der mit „Deals" beginnt (die Aktion selbst).
-     Meine Erhebung in A826 („genau diese vier") hatte sie übersehen; die neue Regel geprüft an acht Kandidaten (Assise,
-     Makrokosmos, Holy, Holy III, Sterndetonation, Flammenwerfer, 25873, 37029).
+     Meine Erhebung in A826 („genau diese vier") filterte auf `IsPlayerAction` und sah Sterndetonation und König der
+     Kronen (7444) nicht. Geprüft an allen 195 Job-Aktionen der Einstufung (ffxiv-datamining, Action und ActionTransient):
+     Alte und neue Regel treffen dieselben 26, die neue lässt nur 8324 aus; König der Kronen ist ein Angriff um dich und
+     bleibt eingestuft.
   2. *Freundliche Flächen verworfen (hoch):* `GetCanTargetCount` gab −1 auch für eine Heilfläche, sobald ein
      Gruppenmitglied in Reichweite kein Ziel hatte; mit übersprungener Mindestzahl kam sie nie. Jetzt nur für Angriffe.
   3. *Gewähltes Ziel als Pull (mittel):* Ein Mittelpunkt schied auch wegen des Ziels selbst aus; jetzt nicht.
@@ -24656,4 +24658,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C205 | A632 (Stand A632): Seine Präzisierung „nicht am anfang des brettes fürs ganze brett …, ähnlich der vorausplanung beim schach" verbiete eine Rechnung über das ganze Brett; die Option „mehrere Strecken voraus" sei zu verwerfen, weil die Lasten nur gemittelt bekannt seien | Sie schließt einen festen Plan beim Betreten aus, nicht die Rechnung bis zum Endkampf mit Neuplanung nach jedem Ergebnis (seine Präzisierung vom 15.11.2026: Navi, Schach); die Lasten sind seit A661 je Kampf und seit A729 je Rang bekannt (A829) |
 | C206 | A830 (Stand 1e8f89762): Das Tempo der Ausrüstung senke die Last jedes Kampfs auch im Test des Wegs und an der Campsite; ein Fehler der Annahme „Last wächst mit der Dauer" bestehe nur zwischen zwei Läufen | Unbelegt für die Senke, und die Tafeln halten den schwersten Wert: verzerrt dauerhaft oder unterschätzt, wo Schutz zurückgehalten wird; gemessen trafen ihn keine Auto-Angriffe. Das Tempo gilt nur noch auf der Skala von Laden und Schatz für den Anteil der Auto-Angriffe (A830, Prüfrunde) |
 | C207 | A830 (Stand 8acaafc5c): Auf Brett 2 trafen ihn in 152 Gegnertreffern keine Auto-Angriffe; ein Angriffsstück bringe ihm dort keine Sicherheit | Gezählt waren nur die Aktionen 7 und 8; die Auto-Angriffe der Gegner sind eigene Aktionen der Kategorie „Auto-attack": 57 % seiner und 64 % der Last seiner Begleiter (A831) |
-| C208 | A826 (Stand 3ca98a945): Unter den Spieleraktionen dieser Einstufung richten genau Assise, Makrokosmos, Holy und Holy III laut Wirktext Schaden an Gegnern um dich an | Die Textregel fing auch die Sterndetonation (8324), deren Schaden ein gelegter Stern an anderem Ort anrichtet; seit A832 nur ein Satz, der mit „Deals" beginnt |
+| C208 | A826 (Stand 3ca98a945): Unter den Spieleraktionen dieser Einstufung richten genau Assise, Makrokosmos, Holy und Holy III laut Wirktext Schaden an Gegnern um dich an | Gefiltert auf `IsPlayerAction`; dazu König der Kronen (7444), und die Textregel fing auch die Sterndetonation (8324), deren Schaden ein gelegter Stern an anderem Ort anrichtet; seit A832 nur ein Satz, der mit „Deals" beginnt |

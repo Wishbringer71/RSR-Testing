@@ -1236,9 +1236,11 @@ dazu die Gruppe.
   als 5 y um dich wirkt (`CustomRotation.LoadActionSetting`). Assise und Makrokosmos (Macrocosmos, 25874) fallen darunter;
   für freundliche Aktionen gilt „AoE usage" nicht, und unberührbare Gegner (Schlaf, Stopp-Markierung) schützt die Fläche
   nicht. Holy, Holy III und Flammenwerfer hat Upstream von Hand auf feindlich gestellt; die Klasse blieb offen. Erhoben
-  am Spielblatt: unter den Spieleraktionen dieser Einstufung richten außerhalb des Blaumagiers diese vier laut Wirktext
-  selbst Schaden an Gegnern um dich an, dazu Flammenwerfer im Kegel; die Sterndetonation lässt ihn an anderem Ort
-  anrichten (unten, A832).
+  am Spielblatt (ffxiv-datamining, 15.11.2026): Von den 195 Job-Aktionen dieser Einstufung richten laut Wirktext 26
+  selbst Schaden an Gegnern um dich an; außerhalb des Blaumagiers und des PvP diese vier und König der Kronen (Lord of
+  Crowns, 7444, Karte des Astrologen), dazu Flammenwerfer im Kegel. Die Sterndetonation lässt ihn an anderem Ort
+  anrichten (unten, A832). Ohne den Filter „Spieleraktion" gezählt: Sterndetonation und König der Kronen führt das Blatt
+  nicht als solche, RSR stuft sie trotzdem ein.
 - „Don't pull new enemies with AoE" liest nur die Zählung des allgemeinen Pfads: Ein Mittelpunkt, dessen Fläche einen
   Gegner ohne Ziel trifft, zählt 0. Die Flächen um dich prüfen den Schalter gar nicht (Überwältigen, Totale Eklipse,
   Holy und jede andere), und mit `skipAoeCheck` ist die Mindestzahl 0 – ein Mittelpunkt mit 0 ging durch.
@@ -1275,8 +1277,8 @@ am Blatt für die vier genannten; ein anders formulierter Text bleibt bei der al
 nicht eines Fehlgriffs.
 *Gegenthese 4 (eine Heilung wird zum Angriff, A832):* Eine Aktion, deren Schaden an einem gelegten Objekt entsteht,
 wäre mit dem Satzanfang „deals" eingefangen worden – so die Sterndetonation bis zum Code-Review. Widerlegt für sie mit
-der Regel „der Satz beginnt mit Deals"; geprüft an den Kandidaten Assise, Makrokosmos, Holy, Holy III,
-Sterndetonation, Flammenwerfer, Exaltation (25873) und Orakel (37029) (A832).
+der Regel „der Satz beginnt mit Deals"; geprüft an allen 195 Job-Aktionen dieser Einstufung: Beide Regeln treffen
+dieselben 26, die neue lässt nur die Sterndetonation aus (A832).
 
 ## Tötungsregeln: zuerst, gemeinsam, erst danach
 
