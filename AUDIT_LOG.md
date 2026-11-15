@@ -24169,6 +24169,41 @@ Absturzbericht.
 - *Tabellen:* Die Crucible-Tabellen je Rang füllen sich (0 → 30 bis 104 Einträge), 32 echte Ränge; plausibel.
 - *Prüfgrad:* Spur, Mitschnitt, Protokolle, Compile, CI.
 
+### A829 · Crucible: Haushalt bis zum Endkampf – Schutz nach Plan, Talerregen im Laden (15.11.2026)
+
+- *Anlass:* Seine Fragen (15.11.2026): ungenutzte Verbrauchsgegenstände nach dem Endkampf – unnützer Kauf, Kauf auf
+  Sicherheit, Sicherheitsgedanke zu ausgeprägt? Nutzung nicht ausgeprägt genug, senkt sie den Score? Dazu seine
+  Präzisierung zum Weg (Schach, Go, Navi: bis zum Endkampf planen, nach jedem Ergebnis neu) und die Frage, was inhaltlich
+  besser ist, Konzept 21 oder der Vorschlag.
+- *1 Research:* Upload 15.11.2026, Brett 2, vier Abrechnungen (`XBMResult`): Talerregen nur im Lauf ohne Kauf (2.262 Marken
+  vor dem Endkampf); im Lauf davor Kauf am ersten Laden für rund 800 Marken, vor dem Endkampf 1.680. Grimoire der
+  Unantastbarkeit in allen drei Läufen mit Kauf nach dem Endkampf übrig. Sparsamkeit fiel jeden Lauf nach dem ersten Kampf
+  (Sand der Zeit; Bedarf des Wegs 115 % gegen 100 % LP). Code: Der Laden wertet Schutz im besten Fenster des schwersten
+  Kampfs (`ProtectionValue`, `CaughtShare`), K8 Schritt 6 setzt ihn ohne Bonus nur gegen einen angekündigten Treffer auf
+  ihn ein, im Endkampf auch, solange ihn ein Gegner angreift. Talerregen (`XBMScoreBonus` 20) liest kein Code. Die Spurzeile
+  „fight 0 … never measured" stand, wo nur die Stellung auf dem Brett vor dem Hornfenster unbekannt war.
+- *2 Optionen:* (0) nichts; (1) keine Schutzgegenstände kaufen; (2) Schutz bei jedem Treffer ohne Bonus; (3) Schutz nach
+  Plan über die schwersten verbleibenden Kämpfe und Marken nach Plan für Talerregen.
+- *3 Abwägung, 5 Review, 6 Falsifikation:* Konzept 21, K15, „Haushalt bis zum Endkampf". Zur Frage Konzept gegen Vorschlag:
+  kein Widerspruch – seine Präzisierung vom 06.11. schloss einen festen Plan beim Betreten aus, nicht die Rechnung bis zum
+  Endkampf; A632 las eine Grenze der Rechentiefe hinein (C205). Gegenthesen gegen den Plan bis zum Endkampf: wachsende
+  Unsicherheit (entkräftet: schwerste Last je Kampf und Rang, schlechtester Zufallsausgang, Neuplanung je Ergebnis; Rest:
+  die Summe der schwersten Lasten macht den Brettanfang vorsichtig, beim Ein-Zug-Plan ebenso), die Rast setzt zurück
+  (gilt für LP, nicht für Gegenstände, Marken, Boni), Punkte gegen Sicherheit (widerlegt: Tragen des Wegs bleibt
+  Bedingung), Kosten (je Ereignis, nicht je Frame).
+- *7 Gebaut:* `ProtectionPlanned` (K8 Schritt 6: geplant, wenn weniger Kämpfe voraus schwerer sind als Schutzgegenstände
+  gehalten werden), `TokensToKeep` mit dem Ertrag je Kampf zwischen zwei Läden eines Laufs und der Schwelle aus dem
+  englischen Bonustext, `RankOffers(keep)` (Tod-Schutz aus allen Marken, alles andere aus dem Überschuss),
+  `CrucibleBoard.RunFights`, `ScoreBonus.RollingInRiches`; Spurtext bei unbekannter Stellung.
+- *8 Nachweis:* Compile (0 Warnungen), Prüfungen; im Spiel nicht beobachtet. Prüfgrad statisch und Compile.
+- *Vorhersage:* `DefenseTrace.log`, Crucible Brett 2 oder höher: „crucible score: shop keeps … for Talerregen" oder „…
+  not at stake" an jedem Laden; „crucible item: fight … is a planned fight" zu Beginn eines Kampfs mit gehaltenem Schutz;
+  ein Grimoire geht in einem geplanten Kampf, sobald ein Gegner ihn angreift („crucible item: Tome of …"). Widerlegt, wenn
+  ein Laden bei mehr als 2.000 Marken unter 2.000 kauft, ohne dass der Weg ungetragen ist. Maschinenlesbar:
+  `predictions/2026-11-15.json` (`riches-weighed`, `protection-plan-traced`).
+- *9 Dokumentation:* Konzept 21, K10 „Weg" (seine Präzisierung vom 15.11.2026), K15 „Haushalt bis zum Endkampf", K8
+  Schritt 6.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -24525,3 +24560,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C202 | A812 (Stand A812): Anmeldung und Gegenprobe des Lernteils der Blickwache seien entbehrlich, weil die Vorgabe sie nicht verlangt; entfernt | „Nicht verlangt" belegt keinen fehlenden Nutzen. Geprüft in A813: Die Anmeldung trägt das Messmittel (T1, T8, T9), die Gegenprobe spart bei falschem Modell einen Treffer; beide bleiben, die Gegenprobe geschärft. Seine Vorgabe, 14.11.2026 |
 | C203 | A817 (Stand A817): An der Trainingspuppe öffne die Pull-Regel nicht, „eine Puppe hält kein Ziel“; der Krieger-Fix beseitige die Abwehr an der Puppe | Unbelegt angenommen; seine Spur vom 11.11.2026 zeigt die Abwehr an der Puppe die ganze Zeit offen über „ohne Heiler“ – die Puppe hält den Spieler als Ziel. Seine Meldung vom 15.11.2026 (alle Klassen), behoben in A818 |
 | C204 | A795 (Stand A795): Eine über Bilder gehaltene Figur sei kein Absturzweg, weil der Speicherblock der Kampffiguren gültig bleibt; schlimmstenfalls lese RSR die Kennung des nächsten Bewohners | Der Speicher bleibt lesbar, die Funktionstabelle nicht: Am 15.11.2026 endete das Spiel in `IsCasting` einer gehaltenen Figur (A827). Gehalten wird nur noch die Id |
+| C205 | A632 (Stand A632): Seine Präzisierung „nicht am anfang des brettes fürs ganze brett …, ähnlich der vorausplanung beim schach" verbiete eine Rechnung über das ganze Brett; die Option „mehrere Strecken voraus" sei zu verwerfen, weil die Lasten nur gemittelt bekannt seien | Sie schließt einen festen Plan beim Betreten aus, nicht die Rechnung bis zum Endkampf mit Neuplanung nach jedem Ergebnis (seine Präzisierung vom 15.11.2026: Navi, Schach); die Lasten sind seit A661 je Kampf und seit A729 je Rang bekannt (A829) |

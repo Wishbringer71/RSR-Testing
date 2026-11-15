@@ -374,11 +374,87 @@ public partial class BeastmasterRotation
 				? $"crucible score: items kept for {bonus} - you at {share:P0} carry the heaviest way to the final fight, {load:P0}"
 				: load is { } need
 					? $"crucible score: items go again - the heaviest way to the final fight, {need:P0}, is more than your {share:P0}"
-					: $"crucible score: items go again - fight {_scoreUnmeasured} on the way, the final fight, was never measured on this board");
+					: _scoreUnmeasured != 0
+						? $"crucible score: items go again - fight {_scoreUnmeasured} on the way, the final fight, was never measured on this board"
+						: "crucible score: items go again - where the run stands on the board is not known before its first fight is told");
 		}
 
 		_scoreKeep = keep;
 		_scoreShortKnown = !keep && load != null;
 		return keep;
+	}
+
+	// K15 (A829, rule 2): the tokens the shop showed last in this run and the fights the run had ended by then; the tokens
+	// earned between two shops of one run and the fights they were earned in, summed by board over the session.
+	private static (int Run, int Tokens, int Fights) _tokensSeen = (-1, 0, 0);
+	private static readonly Dictionary<uint, (int Tokens, int Fights)> _tokenIncome = [];
+	private static int _richesKeepTraced = -1;
+
+	/// <summary>
+	/// K15 (A829, rule 2): the tokens the shop keeps for "Talerregen" (Rolling in Riches) - so many that, without another
+	/// purchase, the run ends with the bonus's tokens: <paramref name="tokens"/> now and what the fights to the final fight,
+	/// on the shortest way and the final fight not counted, earn at the measured rate. 0 while the board grants no such bonus,
+	/// the player does not carry the way (<paramref name="carries"/>), or the tokens cannot reach it as measured.
+	/// </summary>
+	private static int TokensToKeep(int tokens, bool carries)
+	{
+		var board = CrucibleBoard.CurrentBoard;
+		var run = CrucibleBoard.Run;
+		var fights = CrucibleBoard.RunFights;
+		if (_tokensSeen.Run == run && fights > _tokensSeen.Fights && tokens >= _tokensSeen.Tokens)
+		{
+			var sum = _tokenIncome.TryGetValue(board, out var known) ? known : default;
+			_tokenIncome[board] = (sum.Tokens + tokens - _tokensSeen.Tokens, sum.Fights + fights - _tokensSeen.Fights);
+			DefenseTrace.Line($"crucible tokens: {tokens - _tokensSeen.Tokens} earned in {fights - _tokensSeen.Fights} fight(s) since the last shop");
+		}
+
+		_tokensSeen = (run, tokens, fights);
+		var needed = RichesTokens;
+		if (needed <= 0 || !carries || CrucibleBoard.BonusPoints(CrucibleBoard.ScoreBonus.RollingInRiches) <= 0)
+		{
+			return 0;
+		}
+
+		var perFight = _tokenIncome.TryGetValue(board, out var income) && income.Fights > 0 ? income.Tokens / (float)income.Fights : 0f;
+		var earned = CrucibleRoute.FightsAhead() is { } ahead ? (int)(perFight * Math.Max(0, ahead.Normal + ahead.Heavy - FinalFights)) : 0;
+		var keep = tokens + earned >= needed ? Math.Max(0, needed - earned) : 0;
+		if (keep != _richesKeepTraced)
+		{
+			_richesKeepTraced = keep;
+			DefenseTrace.Line(keep > 0
+				? $"crucible score: shop keeps {keep} of {tokens} tokens for Talerregen ({needed}) - {earned} to come at {perFight:0} a fight; you carry the way"
+				: $"crucible score: Talerregen ({needed}) not at stake in the shop - {tokens} tokens and {earned} to come");
+		}
+
+		return keep;
+	}
+
+	// The final fight on the way: its tokens come with the board's end, not before it (A829: not measured, the safe side).
+	private const int FinalFights = 1;
+
+	// K15 (A829): the tokens "Talerregen" asks for, read from its English condition ("at least 2,000 territory tokens");
+	// 0 while the sheet does not name them.
+	private static int RichesTokens => _richesTokens ??= ReadRichesTokens();
+	private static int? _richesTokens;
+
+	private static int ReadRichesTokens()
+	{
+		var text = ECommons.DalamudServices.Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.XBMScoreBonus>(Dalamud.Game.ClientLanguage.English)
+			?.GetRowOrDefault((uint)CrucibleBoard.ScoreBonus.RollingInRiches)?.Unknown1.ExtractText() ?? string.Empty;
+		var start = 0;
+		while (start < text.Length && !char.IsAsciiDigit(text[start]))
+		{
+			start++;
+		}
+
+		var end = start;
+		while (end < text.Length && (char.IsAsciiDigit(text[end]) || text[end] == ','))
+		{
+			end++;
+		}
+
+		_ = int.TryParse(text.AsSpan(start, end - start).TrimEnd(','), System.Globalization.NumberStyles.AllowThousands,
+			System.Globalization.CultureInfo.InvariantCulture, out var value);
+		return value;
 	}
 }

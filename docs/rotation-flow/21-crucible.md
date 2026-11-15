@@ -718,8 +718,21 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     basierend auf gesundheit der begleiter, ausstattung, verbrauchsgegenständen, eigenen heilbedarf", „immer für den
     nächsten schritt", „die empfehlung soll sich am aktuellen stand des fortschritts ausrichten" und „den kann man halt
     nicht am anfang des brettes fürs ganze brett voraussehen, sondern für den oder die nächsten schritte. ähnlich der
-    vorausplanung beim schach" (Präzisierungen): gerechnet wird ab dem Feld, auf dem du stehst, mit dem, was der Lauf bis
-    dahin gebracht hat, einen oder wenige Züge voraus und nach jedem Feld neu – kein Plan fürs ganze Brett. Gebaut wird der Hinweis für die nächste Gabelung, nicht das Laufen: Das Brett wird gelaufen, nicht
+    vorausplanung beim schach" (Präzisierungen); dazu seine Präzisierung vom 15.11.2026: „wie bei go oder schach...
+    mehrere züge im vorraus planen, theoretisch schon am anfang bis zum bosskampf. dann die planung nur an das
+    tatsächliche ergebnis der kämpfe, des loots und des geschäfts anpassen" – „wieso soll sich planung für den nächsten
+    zug und planung für das gesamte brett mit korrektur durch ergebnisse widersprechen?" – „ein navi plant auch den
+    gesamten weg, und wenn dann ein unvorhergesehener unfall voraus dazukommt, plant es um". *Geltender Sachstand:*
+    Gerechnet wird ab dem Feld, auf dem du stehst, mit dem, was der Lauf bis dahin gebracht hat, über den ganzen
+    verbleibenden Weg bis einschließlich des Endkampfs; festgelegt und angezeigt wird nur die nächste Entscheidung
+    (Gabelung, Kauf, Gegenstand, Rast), und nach jedem Ergebnis – Kampf, Beute, Laden, Schatz, Rast – wird neu gerechnet.
+    Was nicht vorhersehbar ist (Zufallsfelder, Angebote, Beute), geht als schlechtester Ausgang oder gelernter Mittelwert
+    ein und wird durch das Ergebnis ersetzt, sobald es da ist. Die beiden Präzisierungen widersprechen sich nicht: „nicht
+    am anfang fürs ganze brett voraussehen" schließt einen festen Plan beim Betreten aus, nicht die Rechnung bis zum
+    Endkampf – Schach und Navi rechnen weit voraus und legen nur den nächsten Zug fest. A632 las daraus eine Grenze der
+    Rechentiefe; das war meine Ableitung (C205), und die verworfene Option „mehrere Strecken voraus" stand nur auf
+    gemittelten Lasten, die es seit A661 (je Kampf) und A729 (je Rang) nicht mehr sind. Wo der Lauf seine Mittel über den
+    ganzen Weg einteilt, steht unter K15, „Haushalt bis zum Endkampf". Gebaut wird der Hinweis für die nächste Gabelung, nicht das Laufen: Das Brett wird gelaufen, nicht
     geklickt (Daedalus läuft es mit vnavmesh ab), und danach hat er nicht gefragt. Die Felder und Wege liest RSR seit A631
     aus den Blättern (K14, „Der Weg aus den Blättern").
     *Wo du stehst (A632, A715):* Am Hornfenster das Feld des Kampfs (K14) – ein Feld mit diesem Kampf oder ein
@@ -987,6 +1000,63 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     regeln zum kauf, equipment, verbrauchsgegenständenutzung richten sich danach immer sicher zu sein und die
     hochmöglichste bonuszahl zu bekommen"); was im letzten GCD des Endkampfs keine Sicherheit mehr bringen kann, wiegt
     nur Punkte gegen Punkte.
+  - *Haushalt bis zum Endkampf (A829; seine Fragen vom 15.11.2026: „im crucible sind am ende nach dem bosskampf immer
+    noch viele verbrauchsgegenstände ungenutzt … also unnützer kauf? oder kauf auf sicherheit?", „oder ist die nutzung
+    nicht ausgeprägt genug … oder reduziert das den score?", und die Präzisierung zum Weg, K10):* Gegenstände, Marken und
+    Boni sind ein Budget des Laufs, eingeteilt über den ganzen verbleibenden Weg und nach jedem Ergebnis neu.
+    - *Was am Ende zählt:* Ein Gegenstand ist nach dem Endkampf nichts mehr wert, außer als einer von zehn für
+      Sammelleidenschaft (nicht Brett 1). Marken zählen nur für Geizhals (keine ausgegeben, 500) und Talerregen (mindestens
+      2.000 am Ende, 500, nicht Brett 1; `XBMScoreBonus` 20 „Rolling in Riches", deutsch „Talerregen"). Verbleibende LP
+      zählen rund 0,36 je LP (A800), volle 250 dazu.
+    - *Was der Upload vom 15.11.2026 zeigt (Brett 2, vier Abrechnungen):* Sparsamkeit fiel in jedem Lauf nach dem ersten
+      Kampf mit dem Sand der Zeit, weil die gelernten Lasten den Weg auf 115 % deiner LP schätzten (Schutz vor jedem
+      ungetragenen Weg, wie oben); danach kostete kein Gegenstand mehr Punkte, solange keine zehn gehalten wurden. Nach dem
+      Endkampf lagen in allen drei Läufen mit Kauf Grimoires der Unantastbarkeit, in einem dazu zwei Heiltränke, Asche und
+      ein Serum. Talerregen bekam nur der Lauf ohne Kauf (2.262 Marken vor dem Endkampf); im Lauf davor kaufte RSR am
+      ersten Laden für rund 800 Marken (Grimoire, Bestien-Heiltrank II, Händlerschuhe) und stand vor dem Endkampf bei
+      1.680 – ohne den Kauf rund 2.480 (meine Rechnung aus den Ladenzeilen), also 500 Punkte. Dafür brachte einer der
+      Tränke am Ende volle LP (250) und LP-Punkte.
+    - *Ursachen:* (1) Der Laden wertet einen Schutzgegenstand für das beste Fenster des schwersten Kampfs (K13,
+      `ProtectionValue`), K8 setzt ihn außerhalb des Endkampfs aber nur gegen einen angekündigten Treffer auf dich ein, im
+      Endkampf auch, sobald ein Gegner dich angreift. Dein Begleiter hält die Gegner; beides trat selten ein. Der Kauf war
+      für einen Einsatz bewertet, den die Einsatzregel nicht vorsah – unnütz, nicht zu vorsichtig. (2) Talerregen wog der
+      Laden nicht: Der Grundsatz oben verlangt jeden Bonus, den eine Empfehlung verwirkt; dieser fehlte (Defekt). (3) Die
+      Heiltränke am Ende waren Versicherung nach deiner Spielweise: Gekauft, weil der Weg ohne sie nicht getragen war;
+      dass er es im Nachhinein war, zeigt erst der Lauf. Ihr Preis sind Marken, also Talerregen, den der Laden jetzt wiegt.
+    - *Häufiger nutzen senkt die Punkte nicht, wo kein Gegenstandsbonus mehr steht:* Dann kostet ein Einsatz nichts, und ein
+      Rest am Ende ist nichts wert. Mehr Einsatz ohne Wirkung bringt aber auch nichts: Ein Grimoire, solange dich nichts
+      trifft, fängt nichts.
+    - *Regel 1 – Schutz nach Plan (K8 Schritt 6):* Steht kein Gegenstandsbonus auf dem Spiel (oder trägt er den Weg nicht),
+      gehört ein gehaltener Schutzgegenstand in die Kämpfe, in denen er am meisten fängt: den Endkampf und, mit mehreren,
+      die schwersten der verbleibenden. Ein Kampf ist geplant, wenn weniger Kämpfe auf den Wegen voraus schwerer sind
+      (gelernte tiefste Senke, A709; ungemessen gilt schwerer) als Schutzgegenstände gehalten werden. In einem geplanten
+      Kampf geht der Schutz wie bisher im Endkampf: gegen einen angekündigten Treffer auf dich und sobald ein Gegner dich
+      angreift. Ein ungemessener laufender Kampf ist nicht geplant (wie bisher). Neu gerechnet wird mit jedem Kampf.
+    - *Regel 2 – Talerregen im Laden:* Vergibt das Brett Talerregen, hält der Laden so viele Marken, dass du ohne weiteren
+      Kauf mit 2.000 endest – deine Marken jetzt plus, was die Kämpfe bis zum Endkampf auf dem kürzesten Weg bringen (je
+      Kampf gemessen zwischen zwei Läden desselben Laufs; der Endkampf zählt nicht) –, solange du den Weg mit LP und
+      gehaltener Heilung trägst wie bei Geizhals. Kauft der Laden, dann nur aus dem Überschuss darüber; der Schutz gegen einen
+      Zustand, der unabhängig von den LP tötet, geht wie bei Geizhals aus allen Marken. Reichen die Marken mit dem Ertrag
+      nicht bis 2.000 oder ist der Ertrag ungemessen und die Marken jetzt unter 2.000, steht der Bonus nicht auf dem Spiel,
+      und der Laden kauft wie bisher. Gemessen wird in jeder Sitzung neu.
+    - *Optionen:* (0) Nullvariante: nichts ändern – Grimoires bleiben liegen, Talerregen fällt bei jedem Kauf. (1) Laden kauft
+      keine Schutzgegenstände mehr – verwirft ihren Nutzen in Kämpfen, in denen dich Gegner angreifen (Entscheidung
+      kappen). (2) Schutz bei jedem Treffer auf dich, sobald kein Bonus steht – verbraucht ihn im ersten leichten Kampf und
+      fehlt im schwersten. (3) Schutz nach Plan (Regel 1) und Marken nach Plan (Regel 2) – gewählt. Rückbau: die Bedingung
+      in Schritt 6 und der Markenrest im Laden; beide hängen an keinem gespeicherten Vertrag.
+    - *Abwägung im Kampf:* (3) stärkt: Der Schutz steht im schwersten Kampf, wenn dich dort etwas angreift; der Endkampf
+      behält ihn, solange er der schwerste ist. Talerregen (500) bleibt, wo der Weg getragen ist. Schwäche: Ein geplanter
+      Kampf, in dem dich nur ein leichter Treffer trifft, verbraucht ihn – Preis: der Schutz fehlt in einem späteren
+      Kampf, der leichter gelernt war. Bedrohung: Die Lasten je Kampf sind die schwersten je gesehenen; überschätzt einer
+      seine Schwere, wartet der Schutz auf ihn. Ein Ertrag, der schwankt (Schatz, Beute), lässt Talerregen knapp verfehlen –
+      dann fehlen Kauf und Bonus; der kürzeste Weg rechnet den Ertrag eher zu klein, also eher Kauf als Halten.
+    - *Falsifikation:* (1) *Kein Defekt:* widerlegt – drei Läufe mit ungenutztem Grimoire, Talerregen nur ohne Kauf.
+      (2) *Option falsch – ein Grimoire gehört an den Begleiter:* Schritt 7 schützt ihn gegen angekündigte Treffer, wenn er
+      fiele; die Regel ändert dort nichts. (3) *Ausgeliefert, und nichts ändert sich:* Greift dich in keinem Kampf ein
+      Gegner an und ist kein Treffer auf dich angekündigt, bleibt das Grimoire liegen wie bisher; dann bewertet der Laden
+      es weiter für das Fenster des schwersten Kampfs (Preis: Marken, jetzt gegen Talerregen gewogen). Nach dem nächsten
+      Upload zeigt die Spur „crucible item: … planned fight", ob ein Schutz in einem geplanten Kampf ging, und „crucible
+      score: shop keeps … for Talerregen", ob der Laden Marken hielt.
   - *Woran ein leichtes Brett feststeht (A705, A706, A709; sein Auftrag vom 11.11.2026: „sobald feststeht, dass das
     aktuelle brett einfach zu lösen ist, können weniger begleiter mitgenommen werden, kann auf essen verzichtet werden,
     kann auf campen verzichtet werden"):* An dem, was er auf dem Weg wirklich verliert, Kampf für Kampf, ohne die Mittel,
@@ -1772,7 +1842,8 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
   5. Gegen einen Gegner mit Boss-Symbol, solange kein Auto-potion steht, die Bestien-Heiltranksammlung.
   6. Schutz für dich gegen einen angekündigten Treffer auf dich: ein bekannter Tankbuster (Liste, gelernte Tabelle,
      Markierung, BossModReborn mit dir in der Maske; `DataCenter.IsTankbusterAimedAt`) oder ein gemessener gezielter
-     Treffer, der eine Abwehr verlangt (A540). Im Endkampf auch, sobald ein Gegner dich angreift. Gegen einen
+     Treffer, der eine Abwehr verlangt (A540). Im Endkampf und in jedem nach Plan geschützten Kampf (K15, „Haushalt bis
+     zum Endkampf", Regel 1; A829) auch, sobald ein Gegner dich angreift. Gegen einen
      physischen Treffer (`AttackType` 1 bis 4) das Grimoire der Unantastbarkeit, gegen einen magischen (5) das der
      Reflexion, sonst oder wenn es fehlt das Bestien-Verhärtungsmittel; nicht, solange Tough Skin, Blink oder Reflect
      auf dir steht.

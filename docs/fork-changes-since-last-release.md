@@ -11,6 +11,17 @@ What this release changes in the fight. For the whole distance from upstream, se
   was never asked by areas around you (Overpower, Total Eclipse, Holy and every other), and a rotation that skipped the
   minimum enemy count could still pull. Now no area goes out while it would reach an enemy that is not fighting yet.
 
+## Beastmaster in the Crucible
+
+- **Protective items go where the run planned them.** A Tome of the Impervious bought for the heaviest fight stayed in the
+  bag to the end: outside the final fight it went only against a hit announced on you. With no item bonus left to keep,
+  each protective item you hold now belongs to the final fight or to one of the heaviest fights still ahead, and there it
+  goes as soon as an enemy attacks you.
+- **The shop keeps tokens for Rolling in Riches.** The shop never weighed the 500 points for ending a board with at least
+  2,000 tokens. While you carry the way to the final fight, it now keeps as many tokens as you need to end with 2,000,
+  counting what the fights still ahead earn, and buys only from what is above that. Cover against a status that kills
+  still comes from all your tokens.
+
 ## Stability
 
 - **No crash at a figure that left the game.** RSR held the caster of a gaze until the gaze resolved and then asked it

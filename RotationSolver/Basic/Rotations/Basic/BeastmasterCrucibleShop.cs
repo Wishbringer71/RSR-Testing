@@ -587,8 +587,11 @@ public partial class BeastmasterRotation
 		// bonus Geizhals (500) for no danger the loads show.
 		var carries = CarriesToFinal(true, out var carried, out var heaviestWay);
 		var keepSpending = NoSpendBonusStands(boughtRows) && carries;
+
+		// K15 (A829, rule 2): weighed, and the tokens noted for the rate a fight, at every shop - also while Geizhals keeps it.
+		var keepTokens = TokensToKeep(budget, carries);
 		var picks = RankOffers(offers, budget, int.MaxValue, owned, gearSlots, heldItems, itemSlots, board, out var spent,
-			deathCoverOnly: keepSpending);
+			deathCoverOnly: keepSpending, keep: keepSpending ? 0 : keepTokens);
 		if (keepSpending)
 		{
 			DefenseTrace.Line($"crucible score: shop kept for the no-spending bonus (Geizhals) - you carry the heaviest way to the "
@@ -624,8 +627,12 @@ public partial class BeastmasterRotation
 	/// </summary>
 	private static unsafe List<CrucibleShopPick> RankOffers(List<(int Row, ushort Item, int Price)> offers, int budget, int maxPicks,
 		List<CrucibleGear> owned, int gearSlots, List<ushort> heldItems, int itemSlots, uint board, out int spentAll, bool oneScale = false,
-		bool deathCoverOnly = false)
+		bool deathCoverOnly = false, int keep = 0)
 	{
+		// K15 (A829, rule 2): the tokens kept for "Talerregen" are spent only on the cover against a status that kills
+		// whatever the HP (step 2); every other step buys from what is above them.
+		var full = budget;
+		budget = full - keep;
 		var picks = new List<CrucibleShopPick>();
 		var gear = CrucibleGearTable;
 		var items = CrucibleItems;
@@ -694,7 +701,9 @@ public partial class BeastmasterRotation
 		}
 
 		// 2. Against each status of the board's fights that ends in death: neither HP nor mitigation help against it.
+		budget = full;
 		CoverStatuses(true);
+		budget = Math.Max(spent, full - keep);
 
 		// K15 (A690): the shop kept for the no-spending bonus recommends only that cover.
 		if (deathCoverOnly)

@@ -10,5 +10,9 @@
   {"id": "team-start-event", "archive": "A821",
    "kind": "present", "situation": "crucible window XBMPetParty PostSetup", "match": "crucible window XBMPetParty event: type ButtonClick"},
   {"id": "board-start-event", "archive": "A824",
-   "kind": "present", "situation": "crucible window XBMPetParty PostSetup", "match": "crucible window (XBM\\w+|ContentsFinderConfirm) event: type ButtonClick"}
+   "kind": "present", "situation": "crucible window XBMPetParty PostSetup", "match": "crucible window (XBM\\w+|ContentsFinderConfirm) event: type ButtonClick"},
+  {"id": "riches-weighed", "archive": "A829",
+   "kind": "present", "situation": "crucible shop: [0-9]+ tokens", "match": "crucible score: (shop keeps [0-9]+ of|Talerregen \\([0-9]+\\) not at stake)"},
+  {"id": "protection-plan-traced", "archive": "A829",
+   "kind": "present", "situation": "crucible items at the start of fight", "match": "crucible item: fight [0-9]+ is (not )?a planned fight"}
 ]

@@ -188,6 +188,11 @@ internal static class CrucibleBoard
 	/// </summary>
 	internal static int Run => _run;
 
+	/// <summary>K15 (A829): the fights ended in the run on the board - what the tokens between two shops were earned in.</summary>
+	internal static int RunFights => _runFights;
+
+	private static int _runFights;
+
 	// A661: the unit of the learned loads per fight (CrucibleFightLoads.json) - whole percent of the player's maximum HP, as
 	// the window shows them; a choice of unit, not a figure of the game.
 	internal const int PercentScale = 100;
@@ -504,6 +509,9 @@ internal static class CrucibleBoard
 
 		/// <summary>"Sammelleidenschaft" (Habitual Hoarder): ten crucible items held.</summary>
 		HabitualHoarder = 16,
+
+		/// <summary>"Talerregen" (Rolling in Riches): at least 2,000 territory tokens held (A829).</summary>
+		RollingInRiches = 20,
 	}
 
 	private static uint _boardContent;
@@ -919,6 +927,7 @@ internal static class CrucibleBoard
 			EndFight();
 			EndStretch();
 			_run++;
+			_runFights = 0;
 			_teamRank = 0;
 			_petRanks.Clear();
 			_useRunCounted.Clear();
@@ -2172,6 +2181,7 @@ internal static class CrucibleBoard
 		_fightLoad = default;
 		_fightHits.Clear();
 		_stretchFights++;
+		_runFights++;
 
 		static (int Fights, FightLoad Sum, FightLoad Heaviest) Add((int Fights, FightLoad Sum, FightLoad Heaviest) loads, FightLoad load)
 		{

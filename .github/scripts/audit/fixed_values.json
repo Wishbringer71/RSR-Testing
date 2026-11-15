@@ -2033,6 +2033,16 @@
   },
   {
    "file": "RotationSolver/Basic/Helpers/CrucibleBoard.cs",
+   "code": "RollingInRiches = 20,",
+   "values": [
+    "20"
+   ],
+   "status": "exception",
+   "loop": "A829",
+   "reason": "Row id of XBMScoreBonus (\"Rolling in Riches\") and index into XBMContent's BonusPoints: a reference into the game's sheets, not a figure; the points come from XBMContent, the tokens from the bonus's English condition (A829)."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/CrucibleBoard.cs",
    "code": "HabitualHoarder = 16,",
    "values": [
     "16"
