@@ -1,4 +1,6 @@
 [
   {"id": "dummy-no-defence", "archive": "A818",
-   "kind": "absent", "situation": "targeting by danger: Trainingspuppe", "match": "single defence open"}
+   "kind": "absent", "situation": "targeting by danger: Trainingspuppe", "match": "single defence open"},
+  {"id": "positional-learns", "archive": "A819",
+   "kind": "present", "situation": "positional: .* true north yes - hit", "match": "positional: .* true north no - hit"}
 ]

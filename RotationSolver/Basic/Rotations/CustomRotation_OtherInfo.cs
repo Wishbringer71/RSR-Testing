@@ -775,6 +775,13 @@ public partial class CustomRotation
 			return true;
 		}
 
+		// A819 (concept 02, "Positionals"): under True North that lasts to the next GCD every side hits, and the rotation's
+		// own order decides.
+		if (PositionalWatch.TrueNorthCovers(DataCenter.DefaultGCDRemain))
+		{
+			return true;
+		}
+
 		var enemy_positional = enemy.FindEnemyPositional();
 
 		return enemy_positional == positional;

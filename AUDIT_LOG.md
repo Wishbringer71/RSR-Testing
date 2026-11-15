@@ -23870,6 +23870,45 @@ und unbelegt annahm, eine Puppe halte kein Ziel (Widerruf C203). Konzept 09 neu 
   Zeile zu Recht; dann ist das Urteil nach der Zeit der Zeilen zu lesen.
 - *Prüfgrad:* Spuranalyse, Compile, CI; im Spiel nicht beobachtet.
 
+### A819 · Seine Frage: beste Stellung für Positionals, „Zittern“ an der 45°-Grenze; Randbosse und belegte Flächen (15.11.2026)
+
+Seine Frage und sein Vorschlag (15.11.2026): „wo ist bei diesen die beste position? wahrscheinlich hinten im 45 grad
+winkel. prüfen. kann man nicht durch minimales "zittern", wenn man da genau steht (43-47 grad) die position des spielers
+so anpassen, dass man für die rotation immer richtig steht? im konzept prüfen. voller kritischer loop auch wegen
+nebenwirkungen". Dazu sein Auftrag, andere Plugins zum Lernen zu recherchieren (Avarice), und sein Hinweis: Endbosse am
+Arenarand brauchen weder Positional noch True North; True North, wo der Platz durch Gefahren belegt ist. Einordnung:
+Frage, Vorschlag (geprüft, nicht als seine Regel geführt), Hinweis. Konzept 02, „Positionals: wo stehen, wer bewegt,
+wann True North".
+- *1 Grundlagen:* Geometrie in RSR, BossModReborn 35a908ad7, Avarice cbf6a9c und Resonant 8a27d1a gleich (vier
+  90°-Sektoren, Grenze hinten/Flanke 45° neben der Rückseite, von Mitte zu Mitte). Aktionsanfrage ohne Ort (BossMod
+  c50e67f3 `ClientIPC.ActionRequest`). Treffer nur als Bonusprozent im Schadenseintrag (Avarice `Memory`, xivanalysis
+  deb2253 `bonusPercent`). BossModReborn bewegt schon nach RSRs `DesiredPositional` (KI „Follow target",
+  `FollowRSRDesiredPositional` ab Werk an; Modul „Misc AI: Goes to specified positional" mit „Stand at positional
+  edges"), Sicherheit vor Positional (`NavigationDecision`); ihr KI-Pfad prüft True North nicht (`AIBehaviour`).
+  Plugins: Avarice, Positional Assistant (bbbde44), Resonant, PixelPerfect (162c07c), BossMod/BossModReborn
+  (`ShowPositionals`), WrathCombo a457838 (Dynamic True North mit Ladungsrückhalt).
+- *Sein Hinweis, am Blatt geprüft* (xivapi v2, BNpcBase, 15.11.2026): rundum markiert Zodiark 12877, Valigarmanda 16664,
+  Cloud of Darkness (Chaotic) 17950 – alle am Rand; nicht markiert Rubicante 15756, Hydaelyn 13549 – in der Mitte.
+  Stichprobe von fünf. RSR wirft dort schon kein True North (`HasPositional`).
+- *Beste Stellung:* bestätigt, die Diagonale hinten; 43–47° sind bei 5 y Abstand 0,35 y. Grenzen: Drehung des Ziels
+  kippt die Seite genau auf der Grenze; die Mechanik bestimmt den Platz.
+- *Optionen:* B1 RSR bewegt selbst – verworfen (keine Gefahrenkarte, bricht Zauber und Kanäle, gegen seine Vorgabe zur
+  sicheren Position und Konzept 13, B6). B2 BossModReborn bewegt – besteht, ist sein Vorschlag. B3 gebaut. B4 Anzeige –
+  Avarice besteht. Ladungsrückhalt für belegte Flächen: Ausgleich, kein Gewinn, nicht gebaut; True North wirft RSR dort
+  schon, weil er im letzten Webfenster nicht auf der Seite steht.
+- *7 Gebaut (B3):* `DesiredPositional` je Frame, ohne Seite unter True North bis zum nächsten GCD und vor Zielen ohne
+  Positional; `CanHitPositional` unter True North für beide Seiten; `PositionalWatch` misst beim Drücken jeder
+  positionalen Aktion (`UseActionLocationDetour`, auch seine) Seite, Abstand zur Grenze, True North, vergleicht mit dem
+  Bonus im Schadenseintrag (`Watcher.ActionFromSelf`), lernt die Trefferwerte je Aktion, Kombostand und Stufe selbst
+  (True North oder tief in der Seite: Treffer; tief in der falschen ohne True North: Fehlschlag) und führt je Gebiet ein
+  Unsicherheitsband aus Urteilen gegen RSRs Messung; im Band wirft RSR True North nur bei vollen Ladungen. Spurzeile
+  „positional: …".
+- *Preis:* B3c verbraucht eine Ladung, die sonst stünde (Puffer 2 → 1 bis zur Aufladung); ein Ausreißer weitet das Band
+  für das Gebiet. Betroffen auch fremde Rotationen über `CanHitPositional` (BeirutaNIN): unter True North gilt jede Seite.
+- *Vorhersage:* `predictions/2026-11-15.json`, „positional-learns": nach einer Zeile mit True North und „hit" folgt für
+  eine Aktion eine Zeile ohne True North mit „hit". Widerlegt, wenn nur „unknown" erscheint.
+- *Prüfgrad:* Quellen- und Codeanalyse, Compile, CI; im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

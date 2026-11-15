@@ -113,6 +113,7 @@ internal static partial class StateUpdater
 
 	private static bool ShouldAddPositional()
 	{
+		PositionalWatch.UncertainOnly = false;
 		if (DataCenter.Role == JobRole.Melee && ActionUpdater.NextGCDAction != null && Service.Config.AutoUseTrueNorth)
 		{
 			var id = ActionUpdater.NextGCDAction.ID;
@@ -143,7 +144,15 @@ internal static partial class StateUpdater
 					&& target.HasPositional())
 				{
 					var current = target.FindEnemyPositional();
-					return current != EnemyPositional.None && current != positional && !target.IsDying();
+					if (current == EnemyPositional.None || target.IsDying())
+					{
+						return false;
+					}
+
+					// A819 (concept 02, "Positionals"): on the needed side, but within the band where the game has judged
+					// against RSR's measure in this area - True North then waits for full charges.
+					PositionalWatch.UncertainOnly = current == positional && PositionalWatch.InBand(target, positional);
+					return current != positional || PositionalWatch.UncertainOnly;
 				}
 			}
 			catch

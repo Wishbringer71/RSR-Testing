@@ -195,6 +195,20 @@ public sealed unsafe partial class ActionManagerEx : IDisposable
 			HookFault.Report("ActionManagerEx.UseActionLocation: action tweaks", ex);
 		}
 
+		// A819 (concept 02, "Positionals"): where the player stood when a positional action left, RSR's press or his own,
+		// against the game's judgement when its effect arrives.
+		try
+		{
+			if (actionType == ActionType.Action)
+			{
+				PositionalWatch.Pressed(self, actionId, targetId);
+			}
+		}
+		catch (Exception ex)
+		{
+			HookFault.Report("ActionManagerEx.UseActionLocation: positional", ex);
+		}
+
 		return result;
 	}
 

@@ -231,6 +231,7 @@ public sealed partial class RotationSolverPlugin : IAsyncDalamudPlugin
 	{
 		DataCenter.ResetAllRecords();
 		DataCenter.ResetHealMeasurements();
+		PositionalWatch.AreaChanged();
 
 		if (id == 0)
 		{

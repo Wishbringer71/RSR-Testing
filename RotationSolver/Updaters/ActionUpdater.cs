@@ -74,14 +74,20 @@ internal static partial class ActionUpdater
 			return EnemyPositional.None;
 		}
 
-		if (action.Setting.EnemyPositional != EnemyPositional.None)
+		var positional = action.Setting.EnemyPositional != EnemyPositional.None
+			? action.Setting.EnemyPositional
+			: ConfigurationHelper.ActionPositional.TryGetValue((ActionID)action.ID, out var listed) ? listed : EnemyPositional.None;
+
+		// A819 (concept 02, "Positionals"): no side where a step brings nothing - True North still covers the next GCD,
+		// or its target is hit fully from anywhere. BossModReborn's AI otherwise walks there for nothing.
+		if (positional == EnemyPositional.None
+			|| PositionalWatch.TrueNorthCovers(DataCenter.DefaultGCDRemain)
+			|| action.Target.Target is { } target && !target.HasPositional())
 		{
-			return action.Setting.EnemyPositional;
+			return EnemyPositional.None;
 		}
 
-		return ConfigurationHelper.ActionPositional.TryGetValue((ActionID)action.ID, out var positional)
-			? positional
-			: EnemyPositional.None;
+		return positional;
 	}
 
 	internal static void ClearNextAction()
@@ -119,6 +125,8 @@ internal static partial class ActionUpdater
 		finally
 		{
 			ActionTracer.EndFrame(NextAction);
+			// A819: True North and the target's status change without a new GCD; the side is asked again each frame.
+			DesiredPositional = CalculateDesiredPositional();
 		}
 	}
 

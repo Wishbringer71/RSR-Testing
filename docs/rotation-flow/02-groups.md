@@ -221,6 +221,174 @@ flowchart TD
 Der Mönch führt Second Wind und Bloodbath seit 4b3c9412 in `HealSingleAbility`; `HealAreaAbility` trägt seine
 Gruppenheilungen.
 
+### Positionals: wo stehen, wer bewegt, wann True North
+
+Geltender Stand (A819): RSR wählt nach Stellung, wirft True North, wenn der nächste GCD sein Positional verfehlen
+würde oder der Spieler so knapp an der Grenze steht, dass das Spiel schon einmal anders geurteilt hat, und meldet die
+gebrauchte Seite nur, wo ein Schritt etwas bringt. Bewegen tut BossModReborn, nicht RSR.
+
+**Grundlagen**
+- *Geometrie:* Um die Mitte des Ziels liegen vier Sektoren zu 90°, bezogen auf seine Blickrichtung: vorn, zwei
+  Flanken, hinten. Die Grenze hinten/Flanke liegt 45° neben der Rückseite. Gemessen wird von der Mitte des Ziels zur
+  Mitte des Spielers. Belegt in vier Werkzeugen, übereinstimmend: RSR `FindEnemyPositional` (cos 45°), BossModReborn
+  `AIHints.GoalSingleTarget` und `GoToPositional`, Avarice `Util` (90–135° Flanke, 135–180° hinten), Resonant. Dazu
+  Gemeinschaftsquellen: Square-Enix-Forum („epicenter" des Zielkreises), akhmorning („Position = Mitte des Modells").
+  Kein Spielblatt nennt den Winkel.
+- *Wer Positionals hat (7.x):* alle sechs Nahkämpfer, jeder mit beiden Seiten
+  (`ConfigurationHelper.ActionPositional`; consolegameswiki, Kategorie „Positional actions"; Avarice
+  `PositionalPotencies`):
+
+  | Job | hinten | Flanke |
+  |---|---|---|
+  | DRG | Chaos Thrust/Chaotic Spring, Wheeling Thrust | Fang and Claw |
+  | MNK | Demolish | Snap Punch/Pouncing Coeurl |
+  | NIN | Aeolian Edge, Trick Attack | Armor Crush |
+  | RPR | Gallows, Executioner's Gallows | Gibbet, Executioner's Gibbet |
+  | SAM | Gekko | Kasha |
+  | VPR | Hindsting Strike, Hindsbane Fang, Swiftskin's Coil | Flanksting Strike, Flanksbane Fang, Hunter's Coil |
+
+  Die Regel sitzt auf der Ebene Nahkämpfer; keine Untergruppe weicht ab, Heiler, Tanks und Fernkämpfer haben keine.
+  Erfasst, nicht bearbeitet: Blaumagier (Goblin Punch, vorn) und Sonderinhalte (Lost Assassination).
+- *Kein Positional:* Gegner mit `IsOmnidirectional` (BNpcBase) und Gegner unter Directional Disregard (Status 3808)
+  werden von überall voll getroffen. So lesen es RSR (`HasPositional`), BossModReborn (`Actor.Omnidirectional`) und
+  WrathCombo (`TargetNeedsPositionals`).
+  - *Sein Hinweis (15.11.2026):* Endbosse am Rand der Arena, hinter die man nicht kommt, brauchen weder Positional
+    noch True North.
+  - Am Blatt geprüft (xivapi v2, 15.11.2026), Stichprobe von fünf:
+    - rundum markiert, alle drei am Rand: Zodiark (BNpcBase 12877), Valigarmanda (16664), Cloud of Darkness im
+      Chaotic (17950);
+    - nicht markiert, beide in der Mitte: Rubicante (15756), Hydaelyn (13549).
+  - Für einen rundum markierten Gegner wirft RSR kein True North, wählt frei und meldet keine Seite.
+- *Wann geurteilt wird:*
+  - Die Aktionsanfrage trägt Blickrichtung und Richtung zum Ziel, nicht den Ort (BossMod `ClientIPC.ActionRequest`).
+    Der Server urteilt also mit dem Ort, den der Client zuletzt gemeldet hat.
+  - Sofortige Waffenfertigkeiten urteilen beim Drücken (akhmorning, Gemeinschaftsquelle).
+  - Positionsmeldungen gehen in festen Takten; das Square-Enix-Forum nennt 0,3 s, unbestätigt.
+  - Schluss (abgeleitet): Ein Schritt muss vor dem Drücken beendet und gemeldet sein.
+- *Ob es traf:* Der Schadenseintrag trägt im dritten Parameter den Bonus in Prozent der Gesamtpotenz, Kombo und
+  Positional zusammen (Avarice `Memory`, xivanalysis `bonusPercent`). Ein eigenes Kennzeichen für das Positional gibt
+  es nicht. Avarice und xivanalysis führen die Werte je Aktion, Stufe und Buff in Tabellen von Hand.
+- *Vorbilder* (Stand je Klon, 15.11.2026):
+  - Avarice (PunishXIV, cbf6a9c): Stellungslinien, Trefferrückmeldung als Bild, Ton und Chat, Statistik. Liest die
+    Seite aus RSRs `DesiredPositionalChanged` und aus WrathCombo.
+  - Positional Assistant (VariableVixen, bbbde44): Linien um das Ziel.
+  - Resonant (aulus-asina, 8a27d1a): Sektoren, Nahkampfkreise 2,1 y und 3 y, Hitbox des Spielers.
+  - PixelPerfect (Haplo064, 162c07c): Hitbox und Ringe.
+  - BossModReborn (35a908ad7) und BossMod (c50e67f3): Stellungshinweis in der Welt (`ShowPositionals`), Bewegung durch
+    KI und Modul.
+  - WrathCombo (a457838): „Dynamic True North" mit Ladungsrückhalt (`RPR_ST_TrueNorthDynamicHoldCharge`).
+  - Splatoon zeichnet nur und ist kein Positionswerkzeug.
+- *Was RSR tut:*
+  - Wahl nach Stellung bei SAM, RPR, VPR und NIN: die Aktion, für die er gerade richtig steht, zuerst
+    (`CanHitPositional`). DRG und MNK folgen ihrer festen Folge.
+  - True North im letzten Webfenster, wenn der nächste GCD sein Positional verfehlen würde
+    (`StateUpdater.ShouldAddPositional`, Option „AutoUseTrueNorth").
+  - Die Seite des nächsten GCD geht als `DesiredPositional` über IPC hinaus.
+- *Wer sie liest:*
+  - BossModReborn bewegt den Spieler dorthin. Das tut ihre KI („Follow target", Schalter „Follow
+    RotationSolverReborn's desired positional", ab Werk an) oder ihr Modul „Misc AI: Goes to specified positional"
+    mit dem Kantenpuffer „Stand at positional edges", 0,5, 1,5 oder 3 y.
+  - Ihre Navigation stellt Sicherheit vor Uptime vor Positional (`NavigationDecision`).
+
+**Die beste Stellung**
+- *Seine Frage (15.11.2026):* „wahrscheinlich hinten im 45 grad winkel".
+- Bestätigt: auf der Diagonale hinten, der Grenze zwischen hinten und Flanke. Von dort liegt jede Seite einen
+  Bruchteil eines Schritts entfernt.
+  - Der Weg ist Abstand zur Mitte mal Winkel. Bei 5 y Abstand sind 43° bis 47° rund 0,35 y, bei 6 y/s
+    Laufgeschwindigkeit 0,06 s.
+  - Je näher an der Mitte, desto kürzer der Weg.
+- *Grenze 1:* Dreht das Ziel – Tankwechsel, der Tank zieht es –, wandert die Grenze mit. Genau auf ihr kippt jede
+  kleine Drehung die Seite.
+- *Grenze 2:* Die Mechanik bestimmt den Platz (Schweif, Rückenkegel, Verteilung); Sicherheit geht vor.
+
+**Sein Vorschlag (15.11.2026): an der Grenze minimal „zittern“, damit er für die Rotation immer richtig steht**
+
+Optionen: N (wie heute), B1 RSR bewegt selbst, B2 BossModReborn bewegt nach RSRs Seite (besteht), B3 RSR schärft
+Seite und True North und misst das Urteil des Spiels, B4 nur Anzeige. Rückbau von B3: nichts wird gespeichert; ohne
+die Teile gilt N.
+
+- *B1, RSR bewegt selbst* (die Gehrichtung ersetzen wie BossMods `MovementOverride`, oder Tasten senden):
+  - Stärke: wirkt ohne BossMod.
+  - Schwächen:
+    - RSR hat keine Gefahrenkarte. Ein Schritt über die Grenze kann in eine Fläche führen oder unter Pyretic schaden.
+    - Der Schritt bricht Zauber und Kanäle: Iaijutsu, Harpe, Communio, Ten Chi Jin, Meditate.
+    - Er kämpft gegen BossMods KI und gegen seine eigene Bewegungstaste.
+  - Bedrohung: seine Vorgabe, nichts zu empfehlen, was ihn für Schaden aus einer sicheren Position holt; Konzept 13,
+    B6 („RSR dreht, bewegt aber nie").
+  - Bilanz: verworfen. B2 leistet dasselbe mit Gefahrenkarte.
+- *B2, BossModReborn bewegt:*
+  - Stärke: genau sein Vorschlag. Mit „Stand at positional edges" geht BossMod nur über die Kante, und nur wo der
+    Platz sicher ist.
+  - Schwäche (a): Unter True North und vor einem Ziel ohne Positional meldete RSR trotzdem eine Seite.
+    - BossMods KI prüft True North nicht (`AIBehaviour`, nur das Modul prüft es) und läuft umsonst.
+    - Avarice zeigte eine Seite, die nichts bringt.
+  - Schwäche (b): Genau an der Kante kann eine kleine Drehung des Ziels zwischen Drücken und Urteil die Seite kippen.
+    Ob das vorkommt, maß niemand.
+- *B3, RSR schärft Seite und True North* – beseitigt B2(a), macht B2(b) messbar und steuert nach:
+  - *B3a:*
+    - `DesiredPositional` meldet keine Seite, solange True North den nächsten GCD noch deckt oder das Ziel kein
+      Positional hat. Der Wert wird jeden Frame neu bestimmt, nicht nur beim Wechsel des GCD.
+    - `CanHitPositional` gilt unter True North für beide Seiten; die Wahl nach Stellung folgt dann der Reihenfolge der
+      Rotation.
+  - *B3b, Urteil des Spiels* (`PositionalWatch`):
+    - Gemessen wird beim Drücken jeder positionalen Aktion, auch seiner eigenen: gebrauchte Seite, Abstand zur Grenze
+      in Grad, True North.
+    - Das wird mit dem Bonus aus dem Schadenseintrag verglichen.
+    - Die Bonuswerte lernt RSR selbst, ohne Tabelle, je Aktion, Kombostand und Stufe:
+      - Ein Wert unter True North oder tief in der richtigen Seite (näher an ihrer Mitte als an der Grenze) ist ein
+        Treffer.
+      - Ein Wert tief in der falschen Seite ohne True North ist ein Fehlschlag.
+      - Ein Wert in beiden Mengen urteilt nicht.
+  - *B3c, Unsicherheitsband:*
+    - Urteilt das Spiel gegen RSRs Messung, wächst ein Band auf diesen Abstand zur Grenze. Das gilt für einen
+      Fehlschlag mit richtiger Messung ebenso wie für einen Treffer mit falscher.
+    - Steht der Spieler für den nächsten GCD auf der richtigen Seite, aber innerhalb des Bands, wirft RSR True North
+      nur bei vollen Ladungen. Eine Ladung bleibt so für die Mechanik.
+    - Das Band gilt bis zum nächsten Gebietswechsel.
+  - Stärken: kein Lauf umsonst, Treffer werden messbar, die Kante wird sicherer.
+  - Schwäche: B3c verbraucht eine Ladung, die sonst bis zur Aufladung stehen bliebe. Der Puffer sinkt von 2 auf 1, bis
+    sie zurück ist.
+  - Bedrohung: Ein Ausreißer – das Ziel dreht genau beim Drücken – weitet das Band für das Gebiet. Preis: True North
+    bei vollen Ladungen öfter als nötig, nie die letzte Ladung.
+- *B4, nur Anzeige:* zeigt, bewegt nicht. Avarice gibt es schon und liest RSRs Seite; RSR baut keine eigene.
+- Abgleich: Sein Ziel ist „immer richtig stehen". B2 bewegt, B3 sorgt dafür, dass die Bewegung nur kommt, wo sie
+  etwas bringt, und dass ein Fehlurteil an der Kante True North auslöst. Keine stille Verengung: Ohne BossMods
+  Bewegung bleibt die Wahl nach Stellung, True North und B3c.
+
+**Sein Hinweis (15.11.2026): True North, wenn der Platz durch Gefahren belegt ist**
+- So wirkt die Regel schon. Steht er im letzten Webfenster nicht auf der Seite des nächsten GCD, wirft RSR True
+  North, solange eine Ladung da ist – ob die Fläche dort belegt ist oder aus einem anderen Grund.
+- *Gegenthese:* Ladungen für belegte Flächen aufheben und ohne Gefahr nicht werfen (wie WrathCombos Ladungsrückhalt).
+  Kampfbeispiel, DRG ohne Bewegung durch die KI:
+  - Ohne Rückhalt: einmal ohne Gefahr zu spät, True North geht von 2 auf 1. Dann belegt eine Fläche den Rücken 12 s
+    lang; True North deckt 10 s, ein GCD verfehlt.
+  - Mit Rückhalt: der erste GCD verfehlt, die Fläche wird mit zwei Ladungen gedeckt.
+  - Beide Wege kosten einen Fehlschlag. Der Rückhalt gewinnt nur bei einer Gefahr, die kurz nach einem Fehlwurf kommt
+    und länger dauert als eine Wirkdauer. Er verliert in jedem Fall, in dem keine Gefahr folgt.
+- Bilanz: Ausgleich, kein Gewinn; nicht gebaut. Mit BossMods KI gibt es den Fall ohne Gefahr kaum, weil sie ihn vor
+  dem letzten Webfenster hinstellt.
+
+**Wechselwirkungen**
+- *Bewegungssperre beim Wirken (Konzept 03):* BossMods Gehen für Positionals fällt zwischen die GCDs. Die
+  Nahkämpfer wirken kaum (Iaijutsu, Harpe); dort hält BossMod über `MaxCastTime`.
+- *Blickwache (Konzept 13):* Sie dreht und bewegt nicht. True North dreht nichts.
+- *Avarice:* liest dasselbe Signal und zeigt unter True North jetzt keine Seite mehr.
+
+**Falsifikation**
+- *Kein Defekt:* B3a widerlegt die These am Code: Die KI lief unter True North umsonst (BossModReborn
+  `AIBehaviour`). B3c ebenso: An der Kante bleibt ein Fehlurteil des Spiels ohne Antwort.
+- *Option falsch:* Das Band lerne aus Zufall. Dagegen: Nur ein Urteil des Spiels gegen RSRs Messung weitet es, und es
+  verbraucht nur Ladungen, die sonst stünden.
+- *Ausgeliefert, nichts ändert sich – warum?* Wenn nie ein Bonuswert gelernt wird, weil er nie True North nutzt und
+  nie tief in einer Seite steht. Dann bleibt das Band null und B3c wirkt nicht; B3a wirkt davon unabhängig. Die
+  Spurzeile mit „unknown" zeigt den Fall.
+
+**Messweg**
+- Je positionale Aktion eine Spurzeile „positional: <Aktion> needs <Seite> …, <Abstand>° inside …, true north
+  yes/no – hit/miss/unknown (bonus n%), band b°".
+- Vorhersage `positional-learns` (A819): Nach einer Zeile mit True North und einem Treffer folgt für dieselbe Aktion
+  eine Zeile „hit" ohne True North.
+
 ---
 
 ## Physische Fernkämpfer (BRD · MCH · DNC)

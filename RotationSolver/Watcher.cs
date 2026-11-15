@@ -738,6 +738,19 @@ public static partial class Watcher
 			DataCenter.AddActionRec(action!.Value);
 			TankbusterForecast.RecordOwnAction(action.Value.RowId, tar?.GameObjectId ?? 0);
 
+			// The game's judgement of a positional: the bonus percent in its damage entry (concept 02, "Positionals", A819).
+			if (ConfigurationHelper.ActionPositional.ContainsKey((ActionID)action.Value.RowId))
+			{
+				foreach (var effect in set.TargetEffects)
+				{
+					if (TryGetDamageEntry(effect, out var damage))
+					{
+						PositionalWatch.Landed(action.Value.RowId, effect.TargetID, damage.param2);
+						break;
+					}
+				}
+			}
+
 			// The trace writes what the defence chose; this line says that it went out.
 			DefenseTrace.Executed(action.Value.RowId, action.Value.Name.ExtractText());
 			Updaters.BlueMageSetTrace.Landed(action.Value);

@@ -200,7 +200,10 @@ public partial class CustomRotation
 		}
 
 		var trueNorthWindow = DataCenter.CommandStatus.HasFlag(AutoStatus.Positional) || WeaponRemain <= TrueNorthLastWeaveRemain;
-		if (DataCenter.MergedStatus.HasFlag(AutoStatus.Positional) && trueNorthWindow && !StatusHelper.PlayerHasStatus(true, StatusID.Mudra) && !StatusHelper.PlayerHasStatus(true, StatusID.TrueNorth) && TrueNorthPvE.Cooldown.CurrentCharges > 0 && !IsLastAbility(false, TrueNorthPvE) && TrueNorthPvE.CanUse(out act, skipComboCheck: true, usedUp: true))
+		if (DataCenter.MergedStatus.HasFlag(AutoStatus.Positional) && trueNorthWindow && !StatusHelper.PlayerHasStatus(true, StatusID.Mudra) && !StatusHelper.PlayerHasStatus(true, StatusID.TrueNorth) && TrueNorthPvE.Cooldown.CurrentCharges > 0
+			// A819: raised only for the uncertain band at the boundary, True North keeps a charge for the mechanics.
+			&& (!PositionalWatch.UncertainOnly || DataCenter.CommandStatus.HasFlag(AutoStatus.Positional) || TrueNorthPvE.Cooldown.CurrentCharges >= TrueNorthPvE.Cooldown.MaxCharges)
+			&& !IsLastAbility(false, TrueNorthPvE) && TrueNorthPvE.CanUse(out act, skipComboCheck: true, usedUp: true))
 		{
 			return true;
 		}
