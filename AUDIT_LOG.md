@@ -24071,6 +24071,9 @@ Sein Auftrag (15.11.2026): „danach alle konzepte weiter optimieren und code na
   `fork_placement.json` 311 → 276. Folgen in Prüfmitteln: die Ausnahme der Zahlprüfung (`digits.Length / 2`) und die
   gelistete Lesart von `CanBeHealed` samt Selbsttest zeigen auf die neuen Dateien, Konzept 12 auf die neue Zeile von
   `IsStatusProvided`. `ActionTargetInfo` bleibt (Primärkonstruktor).
+- *Auftragsende:* Upstream unverändert (0 ausstehend). Quellen: lalalazy cdd50856a → 55146dbfc (nur Fensternamen von
+  LazyCurrencySpender; Klasse geprüft – RSRs Fenstertitel sind eindeutig), t3knical/DalamudPlugins c1221e8c3 →
+  909204b9c (Downloadzähler); beide ohne Wirkung, aufgezeichnet.
 - *Prüfgrad:* Compile, CI, Zeilenvergleich des Umzugs; Verhalten statisch gleich, im Spiel nicht beobachtet.
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
