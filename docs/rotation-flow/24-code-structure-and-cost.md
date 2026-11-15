@@ -314,11 +314,18 @@ Sitzung mit Kampf steht keine Zeile „exception:"; steht eine, ist sie eine Urs
 - *Ereignisquellen fangen ab:* ECommons' `ProcessActionEffectDetour` je Abonnent, Dalamuds `AddonLifecycle` je Listener
   (`InvokeListenersSafely`), `Framework.Update` je Delegat (`ProfileAndInvoke`), `UiBuilder.Draw`, die IPC über
   `EzIPC` mit `SafeWrapper.AnyException`. Eine Ausnahme dort kostet RSRs Teil für dieses Ereignis, nicht das Spiel.
-- *Figuren über Bilder gehalten* (`GazeWatch`: ein Blick bis zu seinem Wirkpaket): Dalamuds `IsValid()` prüft nur,
-  ob der eigene Charakter geladen ist, nicht ob die Figur noch besteht; `GameObjectId` und `Name` rufen über die
-  virtuelle Tabelle der Spielstruktur. Kein Absturzweg: Kampffiguren liegen in einem vorab angelegten Block von 100
-  Plätzen (`CharacterManager.BattleCharaMemory`), der Platz bleibt gültig. Schlimmstenfalls liest RSR die Kennung des
-  nächsten Bewohners, und das Wirkpaket passt dann nicht; ein Blick bleibt ohne Urteil.
+- *Figuren über Bilder gehalten – ein Absturzweg (A827, widerlegt A795):* Dalamuds `IsValid()` prüft nur, ob der
+  eigene Charakter geladen ist, nicht ob die Figur noch besteht, und fast jede Eigenschaft einer Figur ruft über die
+  virtuelle Tabelle der Spielstruktur: `GameObjectId`, `Name`, `IsDead`, `IsTargetable`, `StatusList` und jede
+  Wirk-Eigenschaft über `GetCastInfo` (Platz 80; Dalamud 43b3411, ClientStructs 80cb4a7). A795 hielt das für harmlos,
+  weil der Speicherblock der Kampffiguren bestehen bleibt. Sein Absturz vom 15.11.2026, 18:54 (Build 77af8f6d6, Crucible,
+  Ahriman-Ebenbilder) widerlegt es: `GazeWatch.AddLandings` fragte eine gehaltene Figur nach `IsCasting`, zwei Sekunden
+  nach ihrem Blick; `IsDead` lief noch, der Aufruf über Platz 80 nicht – der Platz gehörte inzwischen keiner Kampffigur
+  mehr, und eine Zugriffsverletzung fängt .NET nicht ab. Der Speicher bleibt lesbar, die Funktionstabelle nicht.
+  *Regel, ohne Ausnahme:* Was über ein Bild hinaus lebt, hält die Id (beim Anlegen aus der frischen Figur gelesen) und
+  löst die Figur dort, wo es sie liest, über die Objekttabelle auf (`SearchById`); eine gehaltene Figur wird nach keiner
+  Eigenschaft gefragt, auch nicht nach ihrer Id. Konzept 03, „Dritte Invariante", führt die Regel; die Blickwache hält
+  sie jetzt typsicher ein (der Blick trägt nur noch die Id).
 - *Rekursion im Brett* (`CrucibleRoute.WorstNeedAhead`): Der Platz wurde erst nach dem Abstieg gemerkt; ein Rückweg in
   den Spieldaten (`XBMContentStageEventMap`) liefe bis zum Stapelüberlauf, den .NET nicht abfängt. Die Bretter führen
   heute nur vorwärts – darauf darf das Spiel nicht hängen. Behoben wie in den drei Suchen daneben: Der Platz zählt

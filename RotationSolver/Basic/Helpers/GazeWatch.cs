@@ -70,7 +70,9 @@ internal static partial class GazeWatch
 	// false for a gaze that hit despite RSR's facing in this build (A786, A809): it still holds actions over the whole cast,
 	// and RSR no longer turns for it - a facing chosen for another gaze still keeps clear of it.
 	// Margin (A789) widens the gaze's half width by the angle the player's and the eye's movement makes until it resolves.
-	private readonly record struct Gazer(Vector3 Eye, ulong Key, bool Inverted, float Left, Origin From, uint Id, IGameObject? Who,
+	// Who is the id of the figure the gaze comes from, read when the gaze was built (A827): a gaze outlives its frame, and
+	// a figure held past it may be gone - every property of it, the id included, then calls through a dead table.
+	private readonly record struct Gazer(Vector3 Eye, ulong Key, bool Inverted, float Left, Origin From, uint Id, ulong Who,
 		bool Trusted = true, float Margin = 0f);
 
 	// A783, A786, A809: a gaze RSR acted on, until a packet judges it (Learn). Source and Action name a cast gaze's own
@@ -104,7 +106,8 @@ internal static partial class GazeWatch
 		public bool Inverted;
 		public float Duration;
 		public bool NoEyeTraced;
-		public readonly List<IBattleChara> Eyes = [];
+		// The eyes' ids (A827): a marker outlives the frame its eyes were matched in.
+		public readonly List<ulong> Eyes = [];
 	}
 
 	private static readonly List<MarkerWatch> _markers = [];
@@ -516,7 +519,7 @@ internal static partial class GazeWatch
 		}
 
 		var cast = gazer.From == Origin.Cast;
-		_pending.Add(new Pending(gazer.Key, LearnKey(gazer), cast ? ActionName(gazer.Id) : null, gazer.Who?.GameObjectId ?? 0,
+		_pending.Add(new Pending(gazer.Key, LearnKey(gazer), cast ? ActionName(gazer.Id) : null, gazer.Who,
 			cast ? gazer.Id : 0u, DateTime.Now.AddSeconds(gazer.Left), Describe(gazer)));
 	}
 
@@ -698,7 +701,7 @@ internal static partial class GazeWatch
 		for (var i = _landing.Count - 1; i >= 0; i--)
 		{
 			var gazer = _landing[i].Gazer;
-			if (gazer.Who?.GameObjectId == sourceId && gazer.Id == actionId)
+			if (gazer.Who == sourceId && gazer.Id == actionId)
 			{
 				found = gazer;
 				_landing.RemoveAt(i);
@@ -885,10 +888,10 @@ internal static partial class GazeWatch
 
 	private static string Describe(Gazer gazer) => gazer.From switch
 	{
-		Origin.Cast => $"#{gazer.Id} of {gazer.Who?.Name}",
-		Origin.PlayerStatus => $"{gazer.Who?.Name} by status {gazer.Id} on the player",
+		Origin.Cast => $"#{gazer.Id} of {Live(gazer.Who)?.Name}",
+		Origin.PlayerStatus => $"{Live(gazer.Who)?.Name} by status {gazer.Id} on the player",
 		Origin.MemberStatus => $"a party member with status {gazer.Id}",
-		_ => $"{gazer.Who?.Name} by a marker to look {(gazer.Inverted ? "at" : "away from")}",
+		_ => $"{Live(gazer.Who)?.Name} by a marker to look {(gazer.Inverted ? "at" : "away from")}",
 	};
 
 	// Whether facing <rotation> looks into <gazer>: at its eye for a gaze, away from it for an inverted one. With
@@ -1255,7 +1258,7 @@ internal static partial class GazeWatch
 			{
 				// A786: the client keeps a cast's place only for a ground-targeted action; any other may show an old one.
 				var eye = AreaTargeted(caster.CastActionId) ? DataCenter.CastLocation(caster) ?? caster.Position : caster.Position;
-				var gazer = new Gazer(eye, (ulong)(uint)HashCode.Combine(caster.GameObjectId, caster.CastActionId), kind == Kind.Inverted, left, Origin.Cast, caster.CastActionId, caster);
+				var gazer = new Gazer(eye, (ulong)(uint)HashCode.Combine(caster.GameObjectId, caster.CastActionId), kind == Kind.Inverted, left, Origin.Cast, caster.CastActionId, caster.GameObjectId);
 				_gazers.Add(gazer);
 				_casts.Add(gazer);
 			}
@@ -1294,7 +1297,7 @@ internal static partial class GazeWatch
 		{
 			var landing = _landing[i];
 			var expired = _landingMost > 0f && (now - landing.Ended).TotalSeconds > _landingMost + (float.IsInfinity(lead) ? 0f : lead);
-			if (expired || landing.Gazer.Who is not IBattleChara who || !who.IsValid() || who.IsDead
+			if (expired || Live(landing.Gazer.Who) is not { } who || who.IsDead
 				|| (who.IsCasting && who.CastActionId != landing.Gazer.Id))
 			{
 				_landing.RemoveAt(i);
@@ -1332,7 +1335,7 @@ internal static partial class GazeWatch
 			{
 				// The text says what petrifies: looking at the enemy, so the gaze is normal; looking away, so it is inverted.
 				_gazers.Add(new Gazer(enemy.Position, (ulong)(uint)HashCode.Combine(status.StatusId, status.SourceId), gaze.Inverted, status.RemainingTime,
-					Origin.PlayerStatus, status.StatusId, enemy));
+					Origin.PlayerStatus, status.StatusId, enemy.GameObjectId));
 			}
 		}
 	}
@@ -1354,7 +1357,7 @@ internal static partial class GazeWatch
 				if (status != null && status.StatusId != 0 && texts.MemberEyes.Contains(status.StatusId))
 				{
 					_gazers.Add(new Gazer(member.Position, (ulong)(uint)HashCode.Combine(member.GameObjectId, status.StatusId), false, status.RemainingTime,
-						Origin.MemberStatus, status.StatusId, member));
+						Origin.MemberStatus, status.StatusId, member.GameObjectId));
 				}
 			}
 		}
@@ -1406,9 +1409,9 @@ internal static partial class GazeWatch
 			// ends would match - a helper with an area. They are matched anew only while none of them casts and the marker
 			// is not in that stretch yet.
 			var anyCasting = false;
-			foreach (var eye in marker.Eyes)
+			foreach (var id in marker.Eyes)
 			{
-				anyCasting |= eye.IsValid() && eye.IsCasting;
+				anyCasting |= Live(id) is { IsCasting: true };
 			}
 
 			if (marker.Eyes.Count == 0 || (!anyCasting && left > tolerance))
@@ -1437,8 +1440,12 @@ internal static partial class GazeWatch
 				if (_largest.Count > 0)
 				{
 					marker.Eyes.Clear();
-					marker.Eyes.AddRange(_largest);
-					DefenseTrace.Line($"gaze: marker to look {(marker.Inverted ? "at" : "away from")} {left:F1} s before it resolves - eyes: {EyeNames(marker.Eyes)}");
+					foreach (var eye in _largest)
+					{
+						marker.Eyes.Add(eye.GameObjectId);
+					}
+
+					DefenseTrace.Line($"gaze: marker to look {(marker.Inverted ? "at" : "away from")} {left:F1} s before it resolves - eyes: {EyeNames(_largest)}");
 				}
 			}
 
@@ -1449,16 +1456,20 @@ internal static partial class GazeWatch
 				DefenseTrace.Line($"gaze: marker to look {(marker.Inverted ? "at" : "away from")} {left:F1} s before it resolves - no eye found, no cast ends with it");
 			}
 
-			foreach (var eye in marker.Eyes)
+			foreach (var id in marker.Eyes)
 			{
-				if (eye.IsValid() && !eye.IsDead)
+				if (Live(id) is { IsDead: false } eye)
 				{
-					_gazers.Add(new Gazer(eye.Position, eye.GameObjectId ^ (ulong)marker.Seen.Ticks, marker.Inverted, left,
-						Origin.Marker, marker.Inverted ? 1u : 0u, eye));
+					_gazers.Add(new Gazer(eye.Position, id ^ (ulong)marker.Seen.Ticks, marker.Inverted, left,
+						Origin.Marker, marker.Inverted ? 1u : 0u, id));
 				}
 			}
 		}
 	}
+
+	// The figure behind an id held past its frame, from the object table; null once it is gone (A827, concept 03, "Dritte
+	// Invariante").
+	private static IBattleChara? Live(ulong id) => id == 0 ? null : Svc.Objects.SearchById(id) as IBattleChara;
 
 	private static string EyeNames(List<IBattleChara> eyes)
 	{

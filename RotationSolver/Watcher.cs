@@ -172,6 +172,9 @@ public static partial class Watcher
 	{
 		try
 		{
+			// A827 (concept 03, "Dritte Invariante"): the packet comes between passes; no figure of the last pass that left the
+			// table is read here.
+			StaleFigures.Prune();
 			DataCenter.EffectSetsReceived++;
 
 			var playerObject = Player.Object;
@@ -696,6 +699,9 @@ public static partial class Watcher
 	{
 		try
 		{
+			// A827 (concept 03, "Dritte Invariante"): the packet comes between passes; no figure of the last pass that left the
+			// table is read here.
+			StaleFigures.Prune();
 			var playerObject = Player.Object;
 			if (set.Source == null || playerObject == null)
 			{

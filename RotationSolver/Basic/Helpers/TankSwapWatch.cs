@@ -28,6 +28,20 @@ namespace RotationSolver.Basic.Helpers;
 /// </remarks>
 internal static class TankSwapWatch
 {
+	/// <summary>Forgets a swap target or source that is no longer the figure of its slot (A827), at the start of each pass.</summary>
+	internal static void PruneStale()
+	{
+		if (Target != null && !Target.IsCurrent())
+		{
+			Target = null;
+		}
+
+		if (ReclaimSource != null && !ReclaimSource.IsCurrent())
+		{
+			ReclaimSource = null;
+		}
+	}
+
 	private sealed class Buster
 	{
 		public required ulong Source { get; init; }

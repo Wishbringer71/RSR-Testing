@@ -22,6 +22,23 @@ namespace RotationSolver.Basic.Helpers;
 public static partial class ObjectHelper
 {
 	/// <summary>
+	/// Whether <paramref name="obj"/> still is the figure its object table slot holds now (concept 03, "Dritte Invariante",
+	/// A827). Compares addresses only: a figure held past its frame may be gone, and every property of it that calls
+	/// through the game's virtual table - its id, name, death, statuses, cast - can then end the game. Dalamud hands out
+	/// one wrapper per slot and leaves it the old address when the slot is empty. Game thread only.
+	/// </summary>
+	public static bool IsCurrent(this IGameObject? obj)
+	{
+		if (obj == null || obj.Address == nint.Zero)
+		{
+			return false;
+		}
+
+		// The figure's own index field lies in its memory, which stays readable for a battle figure (a fixed block).
+		return Svc.Objects.GetObjectAddress(obj.ObjectIndex) == obj.Address;
+	}
+
+	/// <summary>
 	/// Concept 03, "Gegner, die keine Fläche treffen darf" (A572, A588): an enemy no attack may hit, not even an area one -
 	/// spikes that damage attackers, a stop marker while "Never attack targets with stop markers" is on, a guarded zu egg,
 	/// an enemy a kill rule holds where its fall would harm.

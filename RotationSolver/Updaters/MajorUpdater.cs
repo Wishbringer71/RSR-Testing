@@ -46,6 +46,9 @@ internal static class MajorUpdater
 			return;
 		}
 
+		// A827 (concept 03, "Dritte Invariante"): no figure held from an earlier frame is read after it left the table.
+		Run("StaleFigures.Prune", StaleFigures.Prune);
+
 		UpdateCost.Step("teaching");
 		if (Service.Config.TeachingMode)
 		{

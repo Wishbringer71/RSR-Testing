@@ -24101,6 +24101,41 @@ treffen, und Gegner, die noch nicht kämpfen".
   Assise, die gespeicherte Heilung von Makrokosmos, solange der Spieler die Flächen sperrt.
 - *Prüfgrad:* Spielblatt, Ausdruck am Rohtext, Compile, CI; im Spiel nicht beobachtet.
 
+### A827 · Spielabsturz im Crucible: eine gehaltene Figur nach ihrem Blick gefragt (15.11.2026)
+
+Sein Upload (15.11.2026, nachmittags): Dalamud-Absturzbericht 18:54:01, Build 77af8f6d6 (A822), Crucible, Brett mit den
+Ahriman-Ebenbildern; die Spur endet 18:53:59 mit „gaze: avoided #48152" zweimal, ohne „trace ended".
+- *Fehlerbild:* Das Spiel endete mit einer Zugriffsverletzung in `BattleChara.get_IsCasting`, gerufen aus
+  `GazeWatch.AddLandings` (Stapel des Berichts). .NET fängt sie nicht ab.
+- *Ursache, am Code und an den Quellen:* `AddLandings` hielt die Figur eines Blicks bis zu seinem Wirkpaket
+  (`Gazer.Who`) und fragte sie dann `IsDead` und `IsCasting`. Dalamuds `IsValid()` prüft nur, ob der Spieler geladen
+  ist (Dalamud 43b3411). `IsCasting` ruft `GetCastInfo` über die Funktionstabelle der Spielstruktur (Platz 80,
+  ClientStructs 80cb4a7), ebenso `GameObjectId`, `Name`, `IsDead`, `StatusList`. War die Figur verschwunden, blieb ihr
+  Speicher lesbar (`IsDead` lief), der Tabellenplatz nicht. A795 hatte genau diesen Weg geprüft und für harmlos erklärt,
+  weil der Speicherblock der Kampffiguren bestehen bleibt – widerrufen (C204).
+- *Seine Frage:* „warum stürzte bmr nicht ab? hast du dir die dortigen funktionen nicht genau genug angesehen?" – Nein,
+  nicht genau genug. BossModReborn (35a908a, `WorldStateGameSync.UpdateActors`) hält keine Figur des Spiels über ein
+  Bild: Es liest jedes Bild die Objekttabelle, führt eigene Kopien (`Actor`, `ActorCastInfo`) und ruft `GetCastInfo` nur
+  an einer Figur, die im selben Bild in der Tabelle steht. Von BMR hatte ich Blickmodule und Drehung gelesen, nicht
+  dieses Fundament – dieselbe Lücke wie in A778.
+- *Klasse:* jede Figur, die RSR über ein Bild hinaus hält und dann fragt. Erhoben: die Blickwache (Blicke bis zum
+  Paket, die Augen einer Markierung), die Casts und der Plan des Tankbuster-Plans (gebaut am Ende eines Bilds, gelesen
+  im nächsten), die Ziele des Tankwechsels, die Listen von `DataCenter` samt Einzelzielen, wenn sie nicht neu gebaut
+  werden (RSR aus, übersprungener Durchlauf), und jede Lesung zwischen den Durchläufen: die Effekt-Handler, das
+  Abfangen gedrückter Aktionen, die Blickrichtung beim Ausführen einer Aktion.
+- *Gebaut* (Konzept 03, „Dritte Invariante"; Konzept 24, „Fehlertoleranz"):
+  - Die Blickwache hält nur noch Ids (`Gazer.Who`, `MarkerWatch.Eyes`) und löst die Figur beim Lesen über die
+    Objekttabelle auf – typsicher, ein Rückfall ist nicht mehr übersetzbar.
+  - `ObjectHelper.IsCurrent`: Adresse der Figur gegen die Adresse ihres Tabellenplatzes, ohne Aufruf über die
+    Funktionstabelle.
+  - `StaleFigures.Prune` entfernt jede nicht mehr aktuelle Figur aus den Listen und Einzelzielen von `DataCenter`, aus
+    den Casts und dem Plan des Tankbuster-Plans und aus dem Tankwechsel – zu Beginn jedes Durchlaufs, am Eingang der
+    Effekt-Handler, beim Abfangen einer gedrückten Aktion und beim Ausführen einer Aktion.
+- *Im Kampf:* Kein Absturz mehr an einer verschwundenen Figur. Gültige Figuren bleiben, die Dienste zwischen den
+  Kämpfen arbeiten wie bisher. Kosten: ein Adressvergleich je gehaltener Figur.
+- *Prüfgrad:* Absturzbericht, Quelltext von Dalamud, ClientStructs und BossModReborn, Compile, CI; im Spiel nicht
+  beobachtet. Bestätigt durch einen Crucible-Lauf mit Blicken ohne Absturz auf einem Build ab diesem Commit.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -24456,3 +24491,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C201 | CLAUDE.md, „Prüfgrad" (Lesart A791–A809): „Bringt die dritte Runde in Folge welche" meine nur Befunde hoher Schwere | Der Zweck der Regel – eine Konstruktion, die jede Korrektur an neuer Stelle aufbricht – gilt ebenso bei mittleren; drei Runden mit mittleren Befunden (sechs bis acht der Blickwache) waren ein Befund am Vorgehen. Seine Rüge, 14.11.2026 (A812); Regel präzisiert |
 | C202 | A812 (Stand A812): Anmeldung und Gegenprobe des Lernteils der Blickwache seien entbehrlich, weil die Vorgabe sie nicht verlangt; entfernt | „Nicht verlangt" belegt keinen fehlenden Nutzen. Geprüft in A813: Die Anmeldung trägt das Messmittel (T1, T8, T9), die Gegenprobe spart bei falschem Modell einen Treffer; beide bleiben, die Gegenprobe geschärft. Seine Vorgabe, 14.11.2026 |
 | C203 | A817 (Stand A817): An der Trainingspuppe öffne die Pull-Regel nicht, „eine Puppe hält kein Ziel“; der Krieger-Fix beseitige die Abwehr an der Puppe | Unbelegt angenommen; seine Spur vom 11.11.2026 zeigt die Abwehr an der Puppe die ganze Zeit offen über „ohne Heiler“ – die Puppe hält den Spieler als Ziel. Seine Meldung vom 15.11.2026 (alle Klassen), behoben in A818 |
+| C204 | A795 (Stand A795): Eine über Bilder gehaltene Figur sei kein Absturzweg, weil der Speicherblock der Kampffiguren gültig bleibt; schlimmstenfalls lese RSR die Kennung des nächsten Bewohners | Der Speicher bleibt lesbar, die Funktionstabelle nicht: Am 15.11.2026 endete das Spiel in `IsCasting` einer gehaltenen Figur (A827). Gehalten wird nur noch die Id |

@@ -103,6 +103,8 @@ namespace RotationSolver.Updaters
 			var intercept = false;
 			try
 			{
+				// A827 (concept 03, "Dritte Invariante"): a press comes between passes; no figure that left the table is read.
+				StaleFigures.Prune();
 				intercept = Player.Available && Service.Config.InterceptAction3 && DataCenter.State && DataCenter.InCombat;
 			}
 			catch (Exception ex)

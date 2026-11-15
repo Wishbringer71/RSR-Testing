@@ -53,16 +53,36 @@ in einem Zug, dazwischen verschwindet kein Objekt. Über einen Frame hinaus taug
 - `IsValid()` prüft nur, dass der Spieler geladen ist (`GameObject.IsValid`, Dalamud master, 15.10.2026), nicht das
   Objekt. Es schützt keine gehaltene Referenz; die 33 Prüfungen im Plugin sind Nullprüfungen mit dieser Zusatzbedingung.
 - Spieler und Kampf-NPCs liegen in einem festen Speicherblock des Spiels (`CharacterManager.BattleCharaMemory`,
-  FFXIVClientStructs). Eine veraltete Adresse liest deshalb vermutlich gültigen Speicher mit falschem Inhalt, keinen
-  freigegebenen – Schluss aus dem Strukturlayout, nicht beobachtet. Upstream nennt in Kommentaren harte Abstürze an
-  sterbenden Zielen (`6baba6a94`), ohne Beleg.
+  FFXIVClientStructs). Der Speicher einer veralteten Adresse bleibt lesbar, ihre Funktionstabelle nicht: Fast jede
+  Eigenschaft einer Figur – `GameObjectId`, `Name`, `IsDead`, `StatusList`, jede Wirk-Eigenschaft über `GetCastInfo` –
+  ruft über sie. Beobachtet am 15.11.2026 (A827): Die Blickwache fragte eine gehaltene Figur zwei Sekunden nach ihrem
+  Blick nach `IsCasting`, und das Spiel endete mit einer Zugriffsverletzung, die .NET nicht abfängt. Upstreams
+  Kommentare zu harten Abstürzen an sterbenden Zielen (`6baba6a94`) beschreiben denselben Weg.
 
-Was über Frames hinweg lebt, hält deshalb die Id und löst das Objekt im lesenden Frame aus der Tabelle auf
-(`SearchById`): der Tankwechsel (`TankSwapWatch`), die Marker-Beobachtung, der Tankbuster-Plan für den Wirkenden des
-geplanten Casts (seit A309; die Erhebung liest am Ende des Frames, der Plan im nächsten). Die Effekt-Hooks laufen zwischen
-den Durchläufen und lesen die Gruppenliste des letzten; sie vergleichen erst die Id des aktuellen Inhalts mit dem Ziel
-des Effekts und lesen nur dann LP oder Barriere – zeigt die Referenz auf einen anderen Spieler, passt die Id nicht. Die
-Fenster lesen die Listen nur zur Anzeige.
+Was über Frames hinweg lebt, hält deshalb die Id – beim Anlegen aus der frischen Figur gelesen – und löst das Objekt im
+lesenden Frame aus der Tabelle auf (`SearchById`); eine gehaltene Figur wird nach keiner Eigenschaft gefragt, auch nicht
+nach ihrer Id. So halten es der Tankwechsel (`TankSwapWatch`), die Marker-Beobachtung, der Tankbuster-Plan für den
+Wirkenden des geplanten Casts (seit A309) und seit A827 die Blickwache. Was eine Figur doch über das Bild hinaus hält,
+fängt eine Prüfung ohne Aufruf über die Funktionstabelle ab (A827): `ObjectHelper.IsCurrent` vergleicht die Adresse der
+Figur mit der, die ihr Tabellenplatz jetzt trägt – Dalamud gibt je Platz denselben Wrapper heraus, und ein leerer Platz
+lässt ihm die alte Adresse.
+- *Zu Beginn jedes Durchlaufs* (`StaleFigures.Prune`, vor allem anderen): Die Listen von `DataCenter` und die
+  Einzelziele (Unterbrechen, Provozieren, Tote, Reinigung), die Casts des Tankbuster-Plans samt Plan und die Ziele des
+  Tankwechsels verlieren jede Figur, die nicht mehr aktuell ist. Wer die Listen in diesem Durchlauf neu baut, baut sie
+  ohnehin; wer sie liest, ohne dass sie neu gebaut werden – RSR aus, ein übersprungener Durchlauf –, liest keine
+  verschwundene Figur. Gültige bleiben, die Dienste zwischen den Kämpfen arbeiten weiter wie bisher.
+- *Zwischen den Durchläufen* (Effekt-Hooks): Jede Schleife über eine Liste des letzten Durchlaufs überspringt eine
+  Figur, die nicht mehr aktuell ist, bevor sie sie fragt.
+- *Kosten:* ein Adressvergleich je gehaltener Figur und Bild; keine Anlage.
+- *Vorbild (BossModReborn 35a908a, `WorldStateGameSync.UpdateActors`):* BMR hält keine Figur des Spiels über ein Bild
+  hinaus. Es liest jedes Bild die Objekttabelle direkt, vergleicht je Platz die `EntityId`, führt eigene Kopien
+  (`Actor`, die Wirkinformation als `ActorCastInfo`) und entfernt eine Kopie, sobald ihre Figur den Platz verlässt;
+  `GetCastInfo` ruft es nur an einer Figur, die im selben Bild in der Tabelle steht. Darum stürzt es an derselben
+  Stelle nicht ab. Bei der Blickwache las ich von BMR die Blickmodule und die Drehung, nicht dieses Fundament (seine
+  Frage, 15.11.2026: „warum stürzte bmr nicht ab? hast du dir die dortigen funktionen nicht genau genug angesehen?").
+- *Preis:* Eine Figur, die ihren Platz an eine neue derselben Art abgegeben hat, besteht die Prüfung (gleiche Adresse,
+  gültige Tabelle) – kein Absturz, aber eine fremde Figur für den Rest des Bildes; die Listen sind im nächsten Durchlauf
+  wieder richtig. Die Blickwache hält dafür nur die Id.
 
 **Vierte Invariante: Dienste außerhalb des Kampfes hängen nicht am Zustand von RSR (A576).** Der Rahmen oben läuft nur,
 solange RSR an ist (`DataCenter.IsActivated`: Auto, Manuell oder Lernmodus). RSR schaltet sich ab Werk 30 s nach jedem

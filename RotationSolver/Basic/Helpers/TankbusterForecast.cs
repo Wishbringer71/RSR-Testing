@@ -28,6 +28,16 @@ namespace RotationSolver.Basic.Helpers;
 /// </remarks>
 internal static class TankbusterForecast
 {
+	/// <summary>Drops the casts whose source is no longer the figure of its slot (A827), at the start of each pass.</summary>
+	internal static void PruneStale()
+	{
+		_ = _casts.RemoveAll(static cast => !cast.Source.IsCurrent());
+		if (SoonestMeasured is { } soonest && !soonest.Source.IsCurrent())
+		{
+			SoonestMeasured = null;
+		}
+	}
+
 	/// <summary>One tankbuster being cast at the player, and the figures on it.</summary>
 	/// <param name="Predicted">Share of maximum HP the hit takes under what stands at impact; zero when
 	/// the action has not been measured.</param>

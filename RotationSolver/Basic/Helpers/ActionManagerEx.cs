@@ -121,6 +121,8 @@ public sealed unsafe partial class ActionManagerEx : IDisposable
 		var refused = false;
 		try
 		{
+			// A827 (concept 03, "Dritte Invariante"): an action runs between passes; no figure that left the table is read.
+			StaleFigures.Prune();
 			if (actionType == ActionType.Action && DataCenter.IsActivated())
 			{
 				facing = GazeWatch.PrepareFacingFor(actionId, targetId, location, out refused);

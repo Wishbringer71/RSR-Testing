@@ -27,6 +27,15 @@ public partial class CustomRotation
 	private static readonly Dictionary<uint, StatusID[]> _statusesOfAction = [];
 
 	private static TankbusterPlan? _tankbusterPlan;
+
+	/// <summary>Drops a plan whose cast's source is no longer the figure of its slot (A827), at the start of each pass.</summary>
+	internal static void PruneStaleTankbusterPlan()
+	{
+		if (_tankbusterPlan is { } plan && !plan.Cast.Source.IsCurrent())
+		{
+			_tankbusterPlan = null;
+		}
+	}
 	private static readonly HashSet<uint> _allowedNow = [];
 	// The states of concept 09, "Die Zustände je Wirken", that a plan can be in.
 	private enum PlanState
