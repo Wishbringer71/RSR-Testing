@@ -741,6 +741,27 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     Ausgang jedes Zufallsfelds: Die alte Regel stand auf den Brettern 2 bis 5 in 271 Fällen hinter einem schon
     geschlagenen Kampf und in 162 auf einem Feld, auf das der Lauf nie kam; die neue in keinem – sie steht auf den
     Brettern 4 und 5 an den mehrdeutigen Gabelungen zurück (207 Fälle), nie hinter einem Kampf (gerechnet 12.11.2026).
+    *Wann das Fenster erscheint (A821):*
+    - *Seine Vorgaben (15.11.2026):* „route erst immer dann anzeigen, wenn bewegbar und nicht noch in schatzkiste oder
+      bei händler. da ja der kauf evtl. die route verändern kann" und „erst nach einem kampf und dessen erfolgter
+      lootauswahl des spielers [ist] klar, welche weitere route genommen wird. also warum fenster vor erfolgter
+      lootauswahl?"
+    - *Regel:* Der Weg erscheint erst, wenn kein Fenster des Bretts offen ist und er sich bewegen kann. Fenster des
+      Bretts sind Laden (`XBMContentsItemShop`), Schatz (`XBMContentsTreasure`), Lootauswahl nach dem Kampf
+      (`XBMContentsBooty`), Campsite (`XBMPetParty` im Rastmodus) und Abrechnung (`XBMResult`). „Bewegen kann" heißt:
+      keine Bedingung des Spiels, die ihn festhält – Ereignis, Zwischensequenz, Gebietswechsel (ECommons
+      `GenericHelpers.IsOccupied`).
+    - *Warum:* Kauf, Schatz, Beute und Rast ändern, womit der Weg rechnet: LP, Heilgegenstände, Rauchbomben,
+      Ausrüstung mit Wirkung auf dem Weg. Vorher zeigte das Fenster schon die Rechnung mit dem Stand davor.
+    - *Was bleibt:* Der Lauf folgt den Feldern weiter in jedem Frame (das Fenster, das aufgeht, setzt ihn); nur die
+      Anzeige wartet. Der Laden und der Schatz rechnen wie bisher mit dem Weg voraus.
+    - *Wirkung:* Er sieht den Weg einmal, mit dem Stand, mit dem er losgeht, und nicht vorher eine Empfehlung, die der
+      Kauf wieder umwirft.
+    - *Falsifikation:* (1) *Kein Defekt:* Die Anzeige zeigte während Laden und Beute den Stand vor dem Kauf (Code: die
+      Bedingung prüfte nur Kampf und erledigtes Feld). (2) *Option falsch – er braucht den Weg schon für die
+      Kaufentscheidung:* Der Laden empfiehlt selbst mit dem Weg voraus (K8, K10 Laden), die Wegzeile ist dafür nicht
+      nötig. (3) *Ausgeliefert, nichts ändert sich:* Wenn ein Fenster offen bleibt (etwa ein Detailfenster) und das
+      Spiel ihn dabei laufen lässt; die Liste nennt nur die Fenster des Bretts.
     *Was gilt (A632, A656; seine Vorgaben vom 07.11.2026 zu seinem Screenshot von Brett 1: „da wäre eine empfehlung
     hilfreich. eher links oder rechts gehen" und „solche empfehlungen gehören auch ingame rein"; seine Frage dazu: „aktuell
     bei fast vollen hp und keinen toten begleiter also eher die truhe als das camp. oder ist das camp besser?"):* Hat das
@@ -2337,6 +2358,52 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
   *Vorhersage:* „level-core-low" (A805) und „level-below-cap" (A806): Unter Level stehen in „crucible team: goal Level -
   requested …" nur Begleiter unter dem Cap, solange es genug gibt. „board-familiar-loss" (A807): Nach der Abrechnung eines Bretts steht „crucible board N: the familiars
   lost …"; „team-rank-step-runs" (A803) wird damit erstmals beurteilbar: „crucible team rank …" auf jedem Brett.
+- *Angebotene Ziele (A821):* Das Kaderfenster bietet nur Ziele an, die auf diesem Brett tragen.
+  - *Seine Vorgaben (15.11.2026):* „wenn im brett alle begleiter über der maximalstufe des brettes sind, dann leveln nicht
+    mehr anbieten" und „umgekehrt, wenn im brett kein begleiter auf maximalstufe ist, dann bonus nur anzeigen, wenn
+    absolut sicher, dass dieser auch sicher erreicht werden kann".
+  - *Grundlage (belegt):* Die Maximalstufe des Bretts ist sein Levelcap, `XBMContent` Spalte 36 (5, 10, 15, 20, 25);
+    Spalte 35 ist der empfohlene Rang (3, 8, 13, 18, 23). Eine eigene Grenze für Erfahrung führt das Blatt nicht
+    (xivapi v2, 15.11.2026). Begleiter über dem Cap steigen weiter im echten Rang: Auf Brett 2 (Cap 10) stiegen am
+    14.11.2026 Begleiter von 11 auf 12 (A799).
+  - *Level* wird angeboten, solange ein Begleiter mit bekanntem Rang unter dem Cap steht. Steht keiner darunter, hat
+    Level nach Z2 keinen Platz zu füllen: Es nähme nur die Rollen und füllte gegen Gefährdung auf. Damit bekämen
+    weniger Begleiter Erfahrung als unter Safe win, der volle Größe mit den niedrigsten nimmt. Ist Level gewählt und
+    nicht angeboten, spielt RSR auf diesem Brett Safe win; stehen alle auf Rang 25, Score (seine Vorgabe nach dem
+    Höchstrang, oben).
+  - *Score* wird angeboten, wenn ein Begleiter den Cap erreicht. Steht keiner darauf, nur wenn der Score-Kader gemessen
+    ungefährdet ist (`TeamEndangered` false). „Ungemessen" oder „gefährdet" ist nicht „absolut sicher". Ist Score
+    gewählt und nicht angeboten, spielt RSR Safe win.
+  - *Safe win* wird immer angeboten.
+  - *Gespeichert bleibt seine Wahl:* Das nächste Brett bietet sie wieder an, wo sie trägt. Das Fenster hebt das
+    gespielte Ziel hervor und sagt, warum seine Wahl hier fehlt.
+  - *Falsifikation:* (1) *Kein Defekt:* Level ohne Begleiter unter dem Cap nahm einen kleinen Kader (Code `LevelTeam`:
+    Nachzügler zählten bis Rang 25, gefüllt wurde nur unter dem Cap). (2) *Option falsch – Leveln über dem Cap lohnt
+    doch:* Ja, darum spielt RSR dann Safe win, das mehr Begleiter mitnimmt; angeboten wird nur das Ziel, das dafür
+    gebaut ist. (3) *Ausgeliefert, nichts ändert sich:* Wenn kein Rang bekannt ist. Dann zählt niemand als unter dem
+    Cap, Level fehlt, und Safe win spielt; das Fenster sagt es (A804).
+- *Kader stimmt: Start statt Apply (A821):*
+  - *Seine Vorgabe (15.11.2026):* „wenn am anfang des brettes die auswahl der begleiter mit den vorgeschlagenen
+    übereinstimmt, dann nicht apply anzeigen, sondern start/spielen und bei pressen des buttons dann das brett starten."
+  - *Grundlagen (A821, Binärcode vom 13.11.2026):* `AgentXBMPetParty` verteilt die Ereignisse seines Fensters über
+    eine Sprungtabelle. Zwei Fälle mit Meldung sind Speichern und Laden eines gespeicherten Kaders (LogMessage 11486
+    „No saved team composition exists for this board.", 11490 „Unable to save. A team has not been formed.").
+    `ConfirmSelection` (ClientStructs) behandelt das Ereignis mit Wert 1 und arbeitet an der Begleiterliste. Welches
+    Ereignis das Brett startet, zeigt weder der gelesene Teil noch eine Quelle. Ein geratener Aufruf einer Spielfunktion
+    kann das Spiel beenden (A793, A794) oder etwas anderes auslösen.
+  - *Gebaut, jetzt:*
+    - Stimmt der Kader mit der Empfehlung überein (gleiche Begleiter) und läuft keine Übernahme, steht statt „Apply"
+      die Zeile „Team ready".
+    - Messmittel: Die Fensterspur schreibt jedes Ereignis des Teamfensters (`XBMPetParty`, Dalamud
+      `PreReceiveEvent`): Ereignisart, Parameter, Knoten. Ein Klick auf seinen Startknopf steht so in der nächsten Spur.
+  - *Danach, mit der Zeile:* Der Knopf heißt „Start" und löst am Fenster dasselbe Ereignis aus wie sein Klick
+    (`ReceiveEvent` des Fensters mit Art und Parameter, wie ein Klick des Spielers) – nur bei offenem Teamfenster, nur
+    bei stimmendem Kader. Kein Aufruf einer Agentenfunktion mit geratenem Argument.
+  - *Gegenthese (gleich bauen, Knopf über seinen Text suchen):* Der Text des Startknopfs steht in keinem gelesenen
+    Blatt, und der Knopf daneben kann das Brett verlassen. Ein Fehlgriff kostet den Lauf; das Warten kostet einen
+    Klick im Spiel bis zur nächsten Sitzung.
+  - *Falsifikation:* (3) *Ausgeliefert, nichts ändert sich:* Er startet das Brett über eine Taste statt mit der Maus.
+    Dann zeigt das Ereignis die Taste, nicht den Knopf; auch das wird mitgeschrieben.
 - *Umsetzen:* erst die Abgänge, dann die Zugänge, je ein `TogglePet`; danach wartet RSR, bis der Kader sich ändert,
   höchstens einen GCD. Nimmt das Spiel einen Zugang nicht, fällt er für diese Sitzung aus der Empfehlung, und es geht
   weiter; geht ein Abgang nicht, hört RSR auf. Jede Stufe steht in der Spur („crucible team: …"); bestätigen und

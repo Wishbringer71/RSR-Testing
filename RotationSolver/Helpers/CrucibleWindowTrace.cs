@@ -21,6 +21,40 @@ internal static class CrucibleWindowTrace
 	{
 		Svc.AddonLifecycle.RegisterListener(AddonEvent.PostSetup, OnWindow);
 		Svc.AddonLifecycle.RegisterListener(AddonEvent.PostRefresh, OnWindow);
+		Svc.AddonLifecycle.RegisterListener(AddonEvent.PreReceiveEvent, TeamWindow, OnTeamWindowEvent);
+	}
+
+	// K7 (A821): every event of the team window - a click on its start button among them -, so that RSR's "Start" can send
+	// the same one. No source names the button or its event; the line does. It only listens.
+	private const string TeamWindow = "XBMPetParty";
+
+	private static unsafe void OnTeamWindowEvent(AddonEvent type, AddonArgs args)
+	{
+		try
+		{
+			if (args is not AddonReceiveEventArgs received)
+			{
+				return;
+			}
+
+			// Clicks and input only: the pointer moving over the window sends events of its own every frame.
+			if ((AtkEventType)received.AtkEventType is AtkEventType.MouseOver or AtkEventType.MouseOut or AtkEventType.MouseMove
+				or AtkEventType.MouseWheel or AtkEventType.FocusStart or AtkEventType.FocusStop or AtkEventType.ListItemRollOver
+				or AtkEventType.ListItemRollOut)
+			{
+				return;
+			}
+
+			var atkEvent = (AtkEvent*)received.AtkEvent;
+			var node = atkEvent == null || atkEvent->Node == null ? 0u : atkEvent->Node->NodeId;
+			DefenseTrace.Line($"crucible window {TeamWindow} event: type {(AtkEventType)received.AtkEventType}, param {received.EventParam}, "
+				+ $"node {node}, in the board {DataCenter.IsInCrucible}");
+		}
+		catch (Exception ex)
+		{
+			// Written once per place by ExceptionTrace (A798); the game's event goes on.
+			Svc.Log.Warning($"[CrucibleWindowTrace] team window event not read: {ex.Message}");
+		}
 	}
 
 	// K7 (A799): the board's result window - per familiar of the team its rank before and after the run, not synced, read in
@@ -128,6 +162,7 @@ internal static class CrucibleWindowTrace
 	public static void Disable()
 	{
 		Svc.AddonLifecycle.UnregisterListener(OnWindow);
+		Svc.AddonLifecycle.UnregisterListener(OnTeamWindowEvent);
 	}
 
 	private static unsafe void OnWindow(AddonEvent type, AddonArgs args)

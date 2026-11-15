@@ -29,18 +29,48 @@ internal sealed class CrucibleTeamWindow : RecommendationWindow
 		new("Score", Tooltip: "The strongest, as few as are not endangered; a team of one kin where it scores more."),
 	];
 
+	// A821: the segments of the goals offered on this board, rebuilt only when the offer changes.
+	private (bool Level, bool SafeWin, bool Score) _offered;
+	private readonly List<M3Segment> _shown = [];
+	private readonly List<CrucibleGoal> _shownGoals = [];
+	private M3Segment[] _shownArray = [];
+
 	protected override void DrawContent()
 	{
 		using (Section("crucible_goal", "Goal of the runs", FontAwesomeIcon.Flag, "Kept until you change it; the team follows it, the board always plays safe, then for points"))
 		{
-			var picked = Choice("##crucible_goal", Goals, (int)BeastmasterRotation.CrucibleGoalNow);
-			if (picked >= 0 && picked != (int)BeastmasterRotation.CrucibleGoalNow && DataCenter.CurrentRotation is { } rotation
-				&& BeastmasterRotation.ChooseCrucibleGoal(rotation, (CrucibleGoal)picked))
+			// A821: only the goals that hold on this board, the one played on it marked; the chosen one stays saved.
+			var offered = BeastmasterRotation.CrucibleGoalsOffered;
+			if (offered != _offered)
+			{
+				_offered = offered;
+				_shown.Clear();
+				_shownGoals.Clear();
+				for (var i = 0; i < Goals.Length; i++)
+				{
+					if ((CrucibleGoal)i switch { CrucibleGoal.Level => offered.Level, CrucibleGoal.Score => offered.Score, _ => offered.SafeWin })
+					{
+						_shown.Add(Goals[i]);
+						_shownGoals.Add((CrucibleGoal)i);
+					}
+				}
+
+				_shownArray = [.. _shown];
+			}
+
+			var played = BeastmasterRotation.CrucibleGoalPlayed;
+			var picked = Choice("##crucible_goal", _shownArray, _shownGoals.IndexOf(played));
+			if (picked >= 0 && picked < _shownGoals.Count && _shownGoals[picked] != BeastmasterRotation.CrucibleGoalNow
+				&& DataCenter.CurrentRotation is { } rotation && BeastmasterRotation.ChooseCrucibleGoal(rotation, _shownGoals[picked]))
 			{
 				Service.Config.Save();
 			}
 
-			Note(Goals[(int)BeastmasterRotation.CrucibleGoalNow].Tooltip ?? string.Empty);
+			Note(Goals[(int)played].Tooltip ?? string.Empty);
+			if (BeastmasterRotation.CrucibleGoalWhyNot.Length > 0)
+			{
+				Note(BeastmasterRotation.CrucibleGoalWhyNot);
+			}
 		}
 
 		var picks = BeastmasterRotation.CrucibleTeamRecommendation;
@@ -82,7 +112,16 @@ internal sealed class CrucibleTeamWindow : RecommendationWindow
 		}
 
 		Footer();
-		if (Action("##crucible_team_apply", "Apply", FontAwesomeIcon.Check, picks.Count > 0))
+
+		// A821 (his rule of 15.11.2026): with the team as recommended there is nothing to apply. Starting the board from here
+		// waits until his trace shows the event the game's start button sends (concept 21, K7).
+		var ready = picks.Count > 0 && !BeastmasterRotation.CrucibleTeamRequestRunning && team.Count == wanted.Count
+			&& wanted.TrueForAll(team.Contains);
+		if (ready)
+		{
+			Line("Team ready", "start the board in the game's window", M3Severity.Success);
+		}
+		else if (Action("##crucible_team_apply", "Apply", FontAwesomeIcon.Check, picks.Count > 0))
 		{
 			BeastmasterRotation.RequestCrucibleTeam(wanted);
 		}

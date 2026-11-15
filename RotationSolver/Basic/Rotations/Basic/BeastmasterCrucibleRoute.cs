@@ -1,3 +1,4 @@
+using ECommons;
 using ECommons.DalamudServices;
 using FFXIVClientStructs.FFXIV.Client.Game.Event;
 using FFXIVClientStructs.FFXIV.Client.Game.InstanceContent;
@@ -76,9 +77,14 @@ public partial class BeastmasterRotation
 
 		_routeWindow = window;
 
+		// A821 (his rules of 15.11.2026): the way shows once no window of the board is open - shop, treasure, the loot of a
+		// fight, campsite, result - and he can move: each of them changes what it counts with.
+		var boardWindowOpen = window != Space.None || Visible("XBMContentsBooty") || Visible("XBMResult") || Visible("XBMPetParty");
+
 		// The way is chosen after the space's fight, with the HP that fight left (his rule of 07.11.2026).
 		var at = CrucibleRoute.Current;
-		if (!hint || InCombat || !CrucibleRoute.CurrentDone || CrucibleRoute.Map is not { } map || at < 0 || at >= map.Next.Length
+		if (!hint || InCombat || boardWindowOpen || GenericHelpers.IsOccupied() || !CrucibleRoute.CurrentDone
+			|| CrucibleRoute.Map is not { } map || at < 0 || at >= map.Next.Length
 			|| map.Next[at].Count <= 1 || Player is not { MaxHp: > 0 } player)
 		{
 			ClearRouteHint();

@@ -23953,6 +23953,33 @@ rotationen optimiert werden können. kritischer vollständiger loop. audit, code
   Mana-Brunnen als bereit, aber nicht genutzt mit über 30 s führt; „burst-held-traced" – nach einem Kampf über 30 s die
   Zeile „ready but unused over the fight".
 
+### A821 · Seine Vorgaben zum Crucible: Weg nach den Fenstern, nur tragende Ziele, Start statt Apply (15.11.2026)
+
+Seine Vorgaben (15.11.2026), wörtlich in Konzept 21: Weg erst, „wenn bewegbar und nicht noch in schatzkiste oder bei
+händler"; erst „nach erfolgter lootauswahl"; „wenn im brett alle begleiter über der maximalstufe des brettes sind, dann
+leveln nicht mehr anbieten"; „wenn im brett kein begleiter auf maximalstufe ist, dann bonus nur anzeigen, wenn absolut
+sicher"; „wenn … die auswahl der begleiter mit den vorgeschlagenen übereinstimmt, dann nicht apply anzeigen, sondern
+start/spielen und bei pressen des buttons dann das brett starten". Einordnung: Vorgaben. Je Punkt Loop in Konzept 21.
+- *Weg (K10, „Wann das Fenster erscheint"):* Die Bedingung prüfte nur Kampf und erledigtes Feld; der Weg stand schon im
+  Laden, an der Schatzkiste und in der Lootauswahl (`XBMContentsBooty`) mit dem Stand vor Kauf und Beute. Jetzt erst ohne
+  Fenster des Bretts (Laden, Schatz, Beute, Campsite, Abrechnung, Teamfenster) und ohne festhaltenden Spielzustand
+  (`GenericHelpers.IsOccupied`; zwischen den Feldern stand in seinen Spuren keiner, „crucible agents"-Zeilen). Die
+  Berechnung setzt nur Anzeigewerte; Laden und Rauchbombe lesen sie nicht – ohne Nebenwirkung.
+- *Ziele (K7, „Angebotene Ziele"):* Maximalstufe = Levelcap (`XBMContent` Spalte 36); eine eigene Erfahrungsgrenze
+  führt das Blatt nicht (xivapi, 15.11.2026), Begleiter über dem Cap steigen weiter (A799: Brett 2, 11 → 12). Seine
+  Vorgabe trägt trotzdem: Level füllte ohne Begleiter unter dem Cap nur Rollen und gegen Gefährdung (Nachzügler zählten
+  bis Rang 25), also weniger Begleiter mit Erfahrung als Safe win. Level jetzt nur angeboten mit einem Begleiter unter
+  dem Cap, sonst gespielt als Safe win (alle auf 25: Score); Score ohne Begleiter auf dem Cap nur bei gemessen
+  ungefährdetem Score-Kader, sonst Safe win. Die Wahl bleibt gespeichert, das Fenster nennt den Grund.
+- *Start (K7, „Kader stimmt"):* Der Binärcode (13.11.2026) zeigt in der Ereignisverteilung von `AgentXBMPetParty`
+  Speichern und Laden eines Kaders (LogMessage 11486, 11490), nicht den Start; `ConfirmSelection` behandelt die
+  Begleiterliste. Kein geratener Aufruf (A793, A794). Gebaut: „Team ready" statt „Apply" bei stimmendem Kader, und
+  die Fensterspur schreibt Klicks und Eingaben des Teamfensters (`PreReceiveEvent`, ohne Mausbewegung). Offen bis zur
+  nächsten Brettsitzung: dasselbe Ereignis vom Knopf „Start" auslösen.
+- *Prüfgrad:* Code, Blatt, Binärcode, Compile, CI, Fenstermodell; im Spiel nicht beobachtet.
+- *Vorhersage:* `predictions/2026-11-15.json`, „team-start-event": nach dem Öffnen des Teamfensters vor einem Brett eine
+  Zeile „crucible window XBMPetParty event: type ButtonClick".
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

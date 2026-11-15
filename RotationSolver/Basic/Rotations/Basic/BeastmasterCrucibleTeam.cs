@@ -10,7 +10,7 @@ namespace RotationSolver.Basic.Rotations.Basic;
 /// </summary>
 public enum CrucibleGoal : byte
 {
-	/// <summary>Every place below the board's cap, the lowest first; above it only while endangered; without a familiar behind in rank, as <see cref="Score"/>.</summary>
+	/// <summary>Every place below the board's cap, the lowest first; above it only while endangered; offered only with a familiar below the cap, else played as <see cref="SafeWin"/> (A821).</summary>
 	[Description("Level")]
 	Level,
 
@@ -68,6 +68,15 @@ public partial class BeastmasterRotation
 
 		return false;
 	}
+
+	/// <summary>K7 (A821): which goals hold on the board of the open team screen - Level, Safe win, Score.</summary>
+	public static (bool Level, bool SafeWin, bool Score) CrucibleGoalsOffered { get; private set; } = (true, true, true);
+
+	/// <summary>K7 (A821): the goal the recommendation plays on this board - the chosen one, or Safe win (Score) in its stead.</summary>
+	public static CrucibleGoal CrucibleGoalPlayed { get; private set; } = CrucibleGoal.Level;
+
+	/// <summary>K7 (A821): why the chosen goal is not offered on this board; empty when it is.</summary>
+	public static string CrucibleGoalWhyNot { get; private set; } = string.Empty;
 
 	/// <summary>K7 team size (A698): why the recommendation holds as many familiars as it does - the score's bonus for a smaller team, or why not.</summary>
 	public static string CrucibleTeamSizeNote { get; private set; } = string.Empty;
@@ -461,6 +470,9 @@ public partial class BeastmasterRotation
 	private static readonly Dictionary<BeastmasterPet, string> _rankSources = [];
 
 	private static List<BeastmasterPet>? _teamWanted;
+
+	/// <summary>K7 (A821): whether a requested team is still being set, one toggle at a time.</summary>
+	public static bool CrucibleTeamRequestRunning => _teamWanted != null;
 	private static (BeastmasterPet Pet, bool Add, DateTime At)? _teamLastToggle;
 	private static readonly HashSet<BeastmasterPet> _teamRefused = [];
 
@@ -583,6 +595,38 @@ public partial class BeastmasterRotation
 		var recommended = CrucibleBoard.RecommendedRank(board);
 		var sync = CrucibleBoard.SyncRank(board);
 		var health = ShownHealth(all, sync);
+
+		// A821 (his rules of 15.11.2026): only the goals that hold on this board are offered. Level while a familiar of known
+		// rank stands below the board's cap - else it has no place to fill, and Safe win takes more familiars along (all on
+		// the highest rank: Score). Score where one has reached the cap; with none there, only while its team is measured not
+		// endangered. A goal chosen and not offered plays as Safe win here.
+		var belowCap = false;
+		var reachedCap = false;
+		var allAtTop = candidates.Count > 0;
+		foreach (var candidate in candidates)
+		{
+			var rank = TrueRank(candidate, sync, out var known);
+			belowCap |= known && rank < sync;
+			reachedCap |= rank >= sync && (known || candidate.OverRank);
+			allAtTop &= known && rank >= CrucibleBoard.MaxRank;
+		}
+
+		var scoreOffered = reachedCap
+			|| TeamEndangered(board, FewestStrong(board, size, all, weight, interrupting, team, health, out _), recommended, health) == false;
+		CrucibleGoalsOffered = (belowCap, true, scoreOffered);
+		var chosenGoal = goal;
+		goal = goal switch
+		{
+			CrucibleGoal.Level when !belowCap => allAtTop && scoreOffered ? CrucibleGoal.Score : CrucibleGoal.SafeWin,
+			CrucibleGoal.Score when !scoreOffered => CrucibleGoal.SafeWin,
+			_ => goal,
+		};
+		CrucibleGoalPlayed = goal;
+		CrucibleGoalWhyNot = chosenGoal == goal ? string.Empty
+			: chosenGoal == CrucibleGoal.Level
+				? $"Level is not offered: no familiar of known rank stands below this board's cap of {sync}; plays as {goal}."
+				: "Score is not offered: no familiar has reached this board's cap, and its team is not measured to pass safely; plays as Safe win.";
+
 		if (goal == CrucibleGoal.Level && party != null)
 		{
 			chosen = LevelTeam(board, size, all, weight, interrupting, team, health, learning, out var levelNote, out var laggers);
