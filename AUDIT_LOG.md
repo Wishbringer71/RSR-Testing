@@ -23785,6 +23785,39 @@ der Textregel aus A814 allein nicht – die Textregel davor habe ich schon einma
 - *Prüfgrad:* Selbsttest gegen konstruierte Aufrufe (neun Fälle), Probe gegen das echte Register (Konzept 13 abgewiesen,
   Exit 2), CI.
 
+### A816 · Seine Rüge mit Bild: Teamfenster zu hoch und schmal, „Apply“ nicht erreichbar – Gerüst aller Empfehlungsfenster (15.11.2026)
+
+Seine Rüge (15.11.2026, Bild des Teamfensters vor Brett 2): „du hast meinen hinweis zur fensterhöhe nicht korrekt
+umgesetzt. zu hoch und schmal. warum nicht zwei spalten? auswahlbutton nicht erreichbar. miserable arbeit. volle prüfung
+im loop". Einordnung: Rüge zu seiner Vorgabe vom 14.11.2026 („beim begleiterauswahlfenster beachten, dass es nicht zu
+hoch wird und die bildschirmauflösung des spiels überschreitet", A797); „zwei Spalten" ist sein Vorschlag.
+- *Fehler am Vorgehen:* In A797 bestätigte ich die damalige Regel (Höhe bis zur Unterkante, darunter Bildlauf) an
+  `window_layout_model.py`, ohne sie an seiner Lage zu messen: Das Modell prüfte das Teamfenster mit 3 Begleitern und den
+  kleinen Bildschirm mit 9. Sein Kader – 12 Begleiter im Team, 11 bis 12, die gehen, je drei Zeilenhöhen – lief über die
+  ganze Bildschirmhöhe, „Apply" stand am Ende des Inhalts, erst nach dem Rollen sichtbar.
+- *Neu, Konzept 03 („Hilfsfenster") zuerst, für alle sechs Empfehlungsfenster im Gerüst `RecommendationWindow`:*
+  - nie höher als der Bildschirm; ragt das Fenster unten hinaus, rückt es nach oben (`Window.Position` setzt Dalamud in
+    absoluten Bildpunkten, `WindowHost.ApplyConditionals`, goatcorp/Dalamud 43b3411);
+  - feste Fußzeile (`Footer()`): Aktion und Status unter dem rollenden Inhalt, immer im Bild (Team, Laden, Schatz,
+    Campsite, Carnivale-Satz; im Laden steht die Futterkarte jetzt vor dem Knopf);
+  - lange Listen in Spalten (`List()`), sein Vorschlag: so viele, dass das Fenster nicht höher als breit ist, solange jede
+    Spalte 50 Zeichen hat und alle in die Breite passen; spaltenweise von oben nach unten; bei mehreren Spalten bricht
+    jeder Text an seiner lesbaren Länge um;
+  - Begleiter, die gehen, in einer Zeile.
+- *Beim Bauen gefunden und behoben (am Modell):* Die Spaltenwahl rechnete im ersten Bild mit einem 32 px breiten Fenster
+  (2375 px Inhalt) und sprang zwischen drei, zwei und einer Spalte; sie gilt jetzt nur, wenn der Platz der Liste ihre
+  Spalten trägt. Mindest- und Startbreite gelten für die gewählte Spaltenzahl, nicht für die zuletzt gezeichnete. Eine
+  Rollleiste für einen Rundungsrest ließ die Höhe zwischen zwei Werten pendeln; sie erscheint jetzt erst bei mehr als
+  einem Pixel Überlauf. Die Prüfung „Inhalt wächst: Fenster höher" galt mit Spalten nicht mehr (ein weiteres Element
+  kann die Spalten neu verteilen) und prüft jetzt, dass die Höhe dem Inhalt folgt.
+- *Gemessen (`window_layout_model.py`, Dear ImGui 1.93):* sein Fall auf 1920 × 1080 und 2560 × 1440: 970 × 763 px, zwei
+  Spalten, ganz im Bild, „Apply" ohne Rollen sichtbar, längste Zeile 74 Zeichen; auf 1280 × 720 unten geöffnet: nach oben
+  gerückt, 720 px hoch, rollt. Das kleine Teamfenster (3 Begleiter) unverändert 545 px breit, eine Spalte. Die
+  konstruierten Fehler – alte Höhe, Aktion im Bildlauf, eine Spalte – fallen je durch. Nicht gemessen: Dalamud selbst,
+  RebornMaterials Malen, die Spielschrift.
+- *Preis:* Zwei Spalten machen das Fenster rund 970 px breit; es kann Fenster des Spiels verdecken, bis er es verschiebt.
+- *Prüfgrad:* Modell, Compile, CI (60 Schritte); im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

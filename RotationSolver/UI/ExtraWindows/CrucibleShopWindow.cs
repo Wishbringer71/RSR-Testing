@@ -32,10 +32,14 @@ internal sealed class CrucibleShopWindow : RecommendationWindow
 				Note("Nothing here adds safety within your tokens and slots.");
 			}
 
-			foreach (var pick in picks)
+			using (var list = List("##crucible_shop_picks", picks.Count))
 			{
-				Line(pick.Name, $"{pick.Price}");
-				Note(pick.Why);
+				for (var i = 0; i < picks.Count; i++)
+				{
+					list.Item(i);
+					Line(picks[i].Name, $"{picks[i].Price}");
+					Note(picks[i].Why);
+				}
 			}
 
 			if (BeastmasterRotation.CrucibleShopBasis.Length > 0)
@@ -43,13 +47,6 @@ internal sealed class CrucibleShopWindow : RecommendationWindow
 				Note($"Gear weighed against {BeastmasterRotation.CrucibleShopBasis}.");
 			}
 		}
-
-		if (Action("##crucible_shop_buy", "Buy", FontAwesomeIcon.ShoppingCart, picks.Count > 0))
-		{
-			BeastmasterRotation.RequestCrucibleShop();
-		}
-
-		Note(BeastmasterRotation.CrucibleShopStatus);
 
 		// K14 (A631, A657): feed for the final fight, for the free feed slots of its plan; bought and fed by hand.
 		var feed = BeastmasterRotation.CrucibleFeedRecommendation;
@@ -67,5 +64,14 @@ internal sealed class CrucibleShopWindow : RecommendationWindow
 				Note(BeastmasterRotation.CrucibleFeedNote);
 			}
 		}
+
+		// A816: the purchase and its status below the scrolled content, always in sight.
+		Footer();
+		if (Action("##crucible_shop_buy", "Buy", FontAwesomeIcon.ShoppingCart, picks.Count > 0))
+		{
+			BeastmasterRotation.RequestCrucibleShop();
+		}
+
+		Note(BeastmasterRotation.CrucibleShopStatus);
 	}
 }

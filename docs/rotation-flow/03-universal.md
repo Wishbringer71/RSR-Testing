@@ -1636,10 +1636,28 @@ allgemeinen Regeln, nicht die Vorgaben einer Bibliothek:
   size below which the content is no longer usable"); WCAG 2.2, 1.4.4 (kein Verlust von Inhalt). Breiter darf er es
   ziehen; die Zeilen werden dann länger, und das ist seine Wahl (WCAG 1.4.8 verlangt, dass 80 Zeichen erreichbar sind,
   Technik G204).
-- *Höhe folgt dem Inhalt.* Das Fenster ist so hoch wie sein Inhalt, bis zur Unterkante des Bildschirms; ändert sich der
-  Inhalt oder die Breite, folgt die Höhe. Zieht er es kürzer, bleibt es so und rollt, bis er es wieder bis zum Inhalt
-  aufzieht; höher als der Inhalt geht nicht, dort stünde nichts. Grundlage: Windows UX Guide („Size controls to eliminate
-  unnecessary scrolling"; „If the first thing users do is resize a window […], its size is wrong").
+- *Nie höher als der Bildschirm, nie über seinen Rand* (seine Vorgabe vom 14.11.2026: „beim begleiterauswahlfenster
+  beachten, dass es nicht zu hoch wird und die bildschirmauflösung des spiels überschreitet“; seine Rüge vom 15.11.2026
+  mit Bild: „zu hoch und schmal. warum nicht zwei spalten? auswahlbutton nicht erreichbar“, A816). Das Fenster ist so
+  hoch wie sein Inhalt, höchstens so hoch wie der Bildschirm. Ragt es dabei unten hinaus, rückt es nach oben, bis es
+  ganz im Bild steht. Ändert sich der Inhalt oder die Breite, folgt die Höhe. Zieht er es kürzer, bleibt es so und rollt,
+  bis er es wieder bis zum Inhalt aufzieht; höher als der Inhalt geht nicht, dort stünde nichts. Grundlage: Windows UX
+  Guide („Size controls to eliminate unnecessary scrolling"; „If the first thing users do is resize a window […], its
+  size is wrong"). Bis A816 reichte die Höhe bis zur Unterkante des Bildschirms: Das Teamfenster mit 12 Begleitern im
+  Kader und 12, die gehen, lief auf seinem Bild über die ganze Höhe, unten abgeschnitten. Gemessen hatte ich mit 3 und 9
+  Begleitern; sein Fall kam in keiner Messung vor.
+- *Die Aktion steht immer im Bild.* Knopf und Statuszeile eines Fensters stehen in einer festen Fußzeile unter dem
+  Inhalt; gerollt wird nur der Inhalt darüber. Grundlage: ISO 9241-110, Steuerbarkeit; WCAG 2.2, 2.4.11 (nicht verdeckt).
+  Bis A816 stand „Apply“ am Ende des Inhalts und war bei langem Kader erst nach dem Rollen zu sehen.
+- *Lange Listen in Spalten* (sein Vorschlag vom 15.11.2026: „warum nicht zwei spalten?“). Eine Liste – die Begleiter des
+  Kaders, die Angebote eines Ladens – verteilt sich spaltenweise von oben nach unten auf so viele Spalten, dass das
+  Fenster nicht höher als breit ist, solange jede Spalte die Mindestbreite von 50 Zeichen behält und alle in die
+  Bildschirmbreite passen. Grund: „Hoch und schmal“ ist das Bild, das er rügte; ab der Grenze, an der das Fenster so hoch
+  wie breit ist, überwiegt keine Richtung. Jede Spalte bricht für sich nach der Regel der Zeilenlänge um. Eine kurze
+  Liste bleibt in einer Spalte, ihr Fenster ist ohnehin breiter als hoch. *Preis:* Ein Fenster mit zwei Spalten ist
+  doppelt so breit und kann Fenster des Spiels verdecken; er zieht es an den Rand oder schmaler, dann rollt es.
+- *Was nichts entscheidet, steht knapp.* Begleiter, die den Kader verlassen, stehen in einer Zeile mit ihren Namen statt
+  je einer eigenen Zeile; sie haben keinen eigenen Grund (Grund steht bei dem, der kommt).
 - *Grund und Wiedererkennen.* Jede Empfehlung nennt im Fenster ihren Grund gegen die Alternativen – was die andere Wahl
   gebracht hätte, in derselben Einheit –, die Dinge mit den Namen, die das Spiel zeigt (Sprache des Clients), und das,
   woran man die Wahl im Spiel findet (Richtung auf dem Brett, Name im Fenster des Spiels) statt einer inneren Nummer
@@ -1676,8 +1694,10 @@ allgemeinen Regeln, nicht die Vorgaben einer Bibliothek:
 Zeile, und das Fenster ist beim ersten Erscheinen lesbar, ohne dass er es zieht. *Universell zuerst:* Das Gerüst sitzt
 einmal; ein neues Fenster erbt Größe, Satz und Messung, statt sie zu kopieren. *Messmittel:* `window_layout_model.py`
 spielt das Gerüst in einer echten Dear ImGui (imgui-bundle, ImGui 1.93) Bild für Bild durch: Startgröße, Mindestgröße,
-gespeicherte Altgröße, kürzer gezogene und wieder aufgezogene Höhe, wachsender Inhalt, doppelte Textgröße; es zeigt
-auch den alten Fehler (Teamfenster 116 × 664 px, Titel abgeschnitten). Es misst die Logik in ImGui, nicht Dalamud und
+gespeicherte Altgröße, kürzer gezogene und wieder aufgezogene Höhe, wachsender Inhalt, doppelte Textgröße, und seit
+A816 sein Fall: ein Kader mit 12 Begleitern und 12, die gehen, auf 1920 × 1080 und 2560 × 1440, unten am Bildschirm
+geöffnet – das Fenster steht ganz im Bild, nicht höher als breit, die Aktion ohne Rollen sichtbar. Es zeigt auch den
+alten Fehler (Teamfenster 116 × 664 px, Titel abgeschnitten). Es misst die Logik in ImGui, nicht Dalamud und
 nicht RebornMaterial; Schrift ist dort eine Ersatzschrift. `check_window_layout.py` weist in der CI jedes Fenster und
 jeden Tooltip ab, der den Auto-Größenmodus mit Umbruch am eigenen Rand verbindet. *Unbelegt:* der Zeilenabstand innerhalb eines umbrochenen
 Absatzes. ImGui setzt Zeilen im Abstand der Schrifthöhe, wie die Voreinstellung „normal" der Browser. Die 1,5-fache

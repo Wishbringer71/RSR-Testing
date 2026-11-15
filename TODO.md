@@ -30,7 +30,11 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
 
 ## Defekte
 
-Keine offenen Defekte.
+### Tank setzt Defensivfähigkeiten ein, ohne angegriffen zu werden · N
+Seine Meldung (15.11.2026): „warum nutzt ein tank defensivskills, wenn er gar nicht attackiert wird (also selbst keinen
+schaden bekommt)? z.b. bei einer trainingspuppe?" Im Kampf: Minderungen und Unverwundbarkeit gehen ohne eingehenden
+Schaden verloren und fehlen, wenn ein Treffer kommt. *Nächster Schritt:* Ursache am Code und an seinen Spuren belegen
+(welche Regel löst aus, woran sie die Wahrscheinlichkeit eines Treffers misst), dann Loop. *Konzept:* 09.
 
 ## Offene Arbeit
 

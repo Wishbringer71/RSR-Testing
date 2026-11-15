@@ -48,19 +48,31 @@ internal sealed class CrucibleTeamWindow : RecommendationWindow
 		var wanted = new List<BeastmasterPet>();
 		using (Section("crucible_team", "Team for this board", FontAwesomeIcon.Users, $"{picks.Count} familiars"))
 		{
-			foreach (var pick in picks)
+			using (var list = List("##crucible_team_picks", picks.Count))
 			{
-				wanted.Add(pick.Pet);
-				Line($"{pick.Pet}", pick.InTeam ? "in team" : "joins", pick.InTeam ? M3Severity.Info : M3Severity.Success);
-				Note(pick.Why);
+				for (var i = 0; i < picks.Count; i++)
+				{
+					list.Item(i);
+					var pick = picks[i];
+					wanted.Add(pick.Pet);
+					Line($"{pick.Pet}", pick.InTeam ? "in team" : "joins", pick.InTeam ? M3Severity.Info : M3Severity.Success);
+					Note(pick.Why);
+				}
 			}
 
+			// A816: who leaves has no reason of its own (the reason stands with who joins) - one line for all of them.
+			var leaving = new List<string>();
 			foreach (var member in team)
 			{
 				if (!wanted.Contains(member))
 				{
-					Line($"{member}", "leaves", M3Severity.Warning);
+					leaving.Add($"{member}");
 				}
+			}
+
+			if (leaving.Count > 0)
+			{
+				Line(string.Join(", ", leaving), "leaves", M3Severity.Warning);
 			}
 
 			if (BeastmasterRotation.CrucibleTeamSizeNote.Length > 0)
@@ -69,6 +81,7 @@ internal sealed class CrucibleTeamWindow : RecommendationWindow
 			}
 		}
 
+		Footer();
 		if (Action("##crucible_team_apply", "Apply", FontAwesomeIcon.Check, picks.Count > 0))
 		{
 			BeastmasterRotation.RequestCrucibleTeam(wanted);

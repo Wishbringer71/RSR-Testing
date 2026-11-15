@@ -31,25 +31,31 @@ internal sealed class CrucibleTreasureWindow : RecommendationWindow
 			}
 
 			// A656: every offer with its reason, the recommended one first and marked.
-			foreach (var offer in BeastmasterRotation.CrucibleTreasureOffers)
+			var offers = BeastmasterRotation.CrucibleTreasureOffers;
+			using var list = List("##crucible_treasure_offers", offers.Count);
+			var index = 0;
+			foreach (var offer in offers)
 			{
 				if (offer.Recommended)
 				{
+					list.Item(index++);
 					Line(offer.Name, "take");
 					Note(offer.Verdict);
 				}
 			}
 
-			foreach (var offer in BeastmasterRotation.CrucibleTreasureOffers)
+			foreach (var offer in offers)
 			{
 				if (!offer.Recommended)
 				{
+					list.Item(index++);
 					Line(offer.Name, $"offer {offer.Row + 1}", M3Severity.Neutral);
 					Note(offer.Verdict);
 				}
 			}
 		}
 
+		Footer();
 		if (Action("##crucible_treasure_take", "Take", FontAwesomeIcon.HandHolding, pick != null))
 		{
 			BeastmasterRotation.RequestCrucibleTreasure();

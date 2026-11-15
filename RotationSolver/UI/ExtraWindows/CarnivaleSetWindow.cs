@@ -44,14 +44,18 @@ internal sealed class CarnivaleSetWindow : RecommendationWindow
 				Note("Blue Academy's guide names no spell for this stage.");
 			}
 
-			foreach (var pick in picks)
+			using var list = List("##carnivale_picks", picks.Count);
+			for (var i = 0; i < picks.Count; i++)
 			{
+				list.Item(i);
+				var pick = picks[i];
 				Line(pick.Text, pick.Spell == 0 ? "not learned" : pick.InSet ? "in set" : "adds",
 					pick.Spell == 0 ? M3Severity.Warning : pick.InSet ? M3Severity.Info : M3Severity.Success);
 				Note(pick.Required ? "required" : "recommended");
 			}
 		}
 
+		Footer();
 		if (Action("##carnivale_apply", "Apply", FontAwesomeIcon.Check, picks.Count > 0 && !BlueMageRotation.CarnivaleApplying))
 		{
 			BlueMageRotation.RequestCarnivaleSet();

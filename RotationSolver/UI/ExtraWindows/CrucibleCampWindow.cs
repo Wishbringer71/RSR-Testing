@@ -47,15 +47,20 @@ internal sealed class CrucibleCampWindow : RecommendationWindow
 
 		using (Section("crucible_camp_final", "Rest for the final fight", FontAwesomeIcon.Bed, "last campsite before it"))
 		{
-			foreach (var pick in picks)
+			using (var list = List("##crucible_camp_picks", picks.Count))
 			{
-				Line(BeastmasterRotation.FamiliarName(pick.Pet), $"{pick.Share:P0}", M3Severity.Info);
-				Note(pick.Why);
+				for (var i = 0; i < picks.Count; i++)
+				{
+					list.Item(i);
+					Line(BeastmasterRotation.FamiliarName(picks[i].Pet), $"{picks[i].Share:P0}", M3Severity.Info);
+					Note(picks[i].Why);
+				}
 			}
 
 			Note(BeastmasterRotation.CrucibleCampOutcome);
 		}
 
+		Footer();
 		if (Action("##crucible_camp_apply", "Apply", FontAwesomeIcon.Check))
 		{
 			BeastmasterRotation.RequestCrucibleCamp();

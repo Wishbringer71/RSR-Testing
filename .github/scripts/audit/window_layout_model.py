@@ -14,6 +14,10 @@ model runs the frame of RecommendationWindow - the sizing, the measuring helpers
 - its height is its content's, down to the bottom of the screen, follows a change of content or width, and stays where
   the player drags it shorter until the player drags it back;
 - a width saved by the old auto-size mode (116 px) is replaced by the start width on the first frame;
+- A816, his case (12 familiars in the team, 11 leaving; 1920 x 1080, 2560 x 1440, 1280 x 720; opened low): the window
+  stands within the screen, as high as its content or the screen, moved up where needed; no taller than wide, the list
+  in two columns; Apply in sight without scrolling; no line over 75 characters. Constructed defects: the old height down
+  to the screen's bottom, the action scrolling with the content, the list in one column - each must fail a check.
 - at twice the text size, and on a small screen, the same holds;
 - a tooltip (ImguiTooltips: auto-size, 150 to 1200 px) breaks a long description at the same line length and shows all
   of it, where the old one ran it on in one line past its 1200 px.
@@ -136,7 +140,11 @@ class Context:
 class Recommendation:
     """RecommendationWindow: the frame (sizing and measuring) the six windows share."""
 
-    def __init__(self, name, content, legacy=False, no_minimum=False, no_follow=False, no_replace=False):
+    def __init__(self, name, content, legacy=False, no_minimum=False, no_follow=False, no_replace=False, old_height=False,
+                 no_footer=False, no_columns=False):
+        self.old_height = old_height  # constructed defect: height down to the bottom of the screen (before A816)
+        self.no_footer = no_footer  # constructed defect: the action scrolls with the content (before A816)
+        self.no_columns = no_columns  # constructed defect: lists in one column (before A816)
         self.name = name
         self.content = content
         self.legacy = legacy
@@ -156,6 +164,34 @@ class Recommendation:
         self.screen_width = 0.0
         self.screen_bottom = 0.0
         self.fit = 0.0
+        # A816: body, footer, columns, the screen's height and the window's left edge
+        self.left = 0.0
+        self.screen_height = 0.0
+        self.origin = (0.0, 0.0)
+        self.body_top = 0.0
+        self.body_need = 0.0
+        self.footer_height = 0.0
+        self.footer_start = -1.0
+        self.body_scroll = 0.0
+        self.columns = 1
+        self.drawn_columns = 1
+        self.list_left = 0.0
+        self.list_room = 0.0
+        self.list_span = 0.0
+        self.list_total = 0.0
+        self.column_need = 0.0
+        self.column_min = 0.0
+        self.other_start = 0.0
+        self.other_min = 0.0
+        self.in_list = False
+        self.list_count = 0
+        self.per_column = 1
+        self.cell_left = 0.0
+        self.cell_top = 0.0
+        self.cell_tallest = 0.0
+        self.tabled = False
+        self.footer_rect = None
+        self.body_bottom = 0.0
         # card state
         self.in_card = False
         self.card_has_item = False
@@ -176,16 +212,30 @@ class Recommendation:
         imgui.push_style_var(imgui.StyleVar_.scrollbar_size, SCROLLBAR)
         if self.legacy or not self.measured:
             return
-        min_width = min(self.min_width, self.screen_width)
-        start_width = max(min_width, min(self.start_width, self.screen_width))
-        self.fit = max(min(self.height, self.screen_bottom - self.top), imgui.get_style().window_min_size.y)
+        padding = imgui.get_style().cell_padding.x * 2.0 if self.drawn_columns > 1 else 0.0
+        at_measure = self.list_room >= self.drawn_columns * (self.column_need + padding) - 1.0
+        columns = self.choose_columns() if self.sized and at_measure else self.columns
+        changed = columns != self.columns
+        self.columns = columns
+        listed = self.list_total > 0.0
+        min_width = min(max(self.other_min, self.list_width(columns, self.column_min)) if listed else self.min_width,
+                        self.screen_width)
+        start_width = max(min_width, min(self.projected_width(columns) if listed else self.start_width, self.screen_width))
+        if self.old_height:
+            self.fit = max(min(self.height, self.screen_bottom - self.top), imgui.get_style().window_min_size.y)
+        else:
+            self.fit = max(min(self.height, self.screen_height), imgui.get_style().window_min_size.y)
+            shown = min(self.size[1], self.fit)
+            if self.top + shown > self.screen_bottom + 0.5:
+                imgui.set_next_window_pos(imgui.ImVec2(self.left, self.screen_bottom - shown), imgui.Cond_.always.value)
         imgui.set_next_window_size_constraints(
             imgui.ImVec2(0.0 if self.no_minimum else min_width, 0.0),
             imgui.ImVec2(sys.float_info.max, self.fit))
-        if not self.sized:
+        if not self.sized or changed:
             self.sized = True
-            if self.size[0] < min_width and not self.no_replace:
-                imgui.set_next_window_size(imgui.ImVec2(start_width, self.fit), imgui.Cond_.always.value)
+            if (self.size[0] < min_width and not self.no_replace) or changed:
+                height = self.fit if self.glued or not changed else min(self.size[1], self.fit)
+                imgui.set_next_window_size(imgui.ImVec2(start_width, height), imgui.Cond_.always.value)
                 return
         if self.glued and abs(self.size[1] - self.fit) >= 1.0 and not self.no_follow:
             imgui.set_next_window_size(imgui.ImVec2(self.size[0], self.fit), imgui.Cond_.always.value)
@@ -196,6 +246,8 @@ class Recommendation:
         flags = imgui.WindowFlags_.no_collapse.value
         if self.legacy:
             flags |= imgui.WindowFlags_.always_auto_resize.value
+        else:
+            flags |= imgui.WindowFlags_.no_scrollbar.value | imgui.WindowFlags_.no_scroll_with_mouse.value
         imgui.begin(self.name, None, flags)
         self.draw()
         imgui.end()
@@ -205,26 +257,88 @@ class Recommendation:
     def draw(self):
         self.min_width = 0.0
         self.start_width = 0.0
+        self.other_start = 0.0
+        self.other_min = 0.0
+        self.list_span = 0.0
+        self.list_total = 0.0
+        self.column_need = 0.0
+        self.column_min = 0.0
         self.in_card = False
         self.extents = []
         self.lines = []
         self.cut = []
-        self.content(self)
+        self.footer_rect = None
         style = imgui.get_style()
-        self.height = float(int(imgui.get_cursor_pos_y() - style.item_spacing.y + style.window_padding.y + 0.999))
         size = imgui.get_window_size()
+        self.origin = (imgui.get_window_pos().x, imgui.get_window_pos().y)
+        self.drawn_columns = 1 if self.no_columns else self.columns
+        if self.legacy:
+            self.content(self)
+            self.height = float(int(imgui.get_cursor_pos_y() - style.item_spacing.y + style.window_padding.y + 0.999))
+            self.body_scroll = imgui.get_scroll_max_y()
+        else:
+            self.footer_start = -1.0
+            self.body_top = imgui.get_cursor_pos_y()
+            body_height = max(1.0, imgui.get_content_region_avail().y - self.footer_height)
+            body_flags = imgui.WindowFlags_.no_scrollbar.value if self.body_need <= body_height + 1.0 else 0
+            imgui.begin_child("##recommendation_body", imgui.ImVec2(0.0, body_height), 0, body_flags)
+            self.content(self)
+            self.end_body()
+            end = imgui.get_cursor_pos_y()
+            self.footer_height = 0.0 if self.footer_start < 0.0 else end - self.footer_start
+            self.height = float(int(self.body_top + self.body_need + self.footer_height + style.window_padding.y + 0.999))
         if self.measured:
             self.glued = size.y >= self.fit - 1.0
         self.size = (size.x, size.y)
+        self.left = imgui.get_window_pos().x
         self.top = imgui.get_window_pos().y
         viewport = imgui.get_window_viewport()
         self.screen_width = viewport.work_size.x
+        self.screen_height = viewport.work_size.y
         self.screen_bottom = viewport.work_pos.y + viewport.work_size.y
         self.pos = (imgui.get_window_pos().x, imgui.get_window_pos().y)
-        self.scroll = imgui.get_scroll_max_y()
+        self.scroll = self.body_scroll
         edge = size.x - style.window_padding.x - (style.scrollbar_size if self.scroll > 0.0 else 0.0) + 0.5
         self.cut += [e for e in self.extents if e > edge]
         self.measured = True
+
+    # ---- A816: the scrolled body ends at the footer; the footer stays in sight
+    def end_body(self):
+        if self.footer_start >= 0.0:
+            return
+        self.body_need = max(0.0, imgui.get_cursor_pos_y() - imgui.get_style().item_spacing.y)
+        self.body_scroll = imgui.get_scroll_max_y()
+        self.body_bottom = imgui.get_window_pos().y + imgui.get_window_size().y
+        imgui.end_child()
+        self.footer_start = imgui.get_cursor_pos_y()
+
+    def footer(self):
+        if self.legacy or self.no_footer:
+            return
+        self.end_body()
+
+    # ---- A816: a list over the columns chosen before the frame
+    def projected_width(self, columns):
+        return max(self.other_start, self.list_width(columns, self.column_need))
+
+    def list_width(self, columns, column):
+        padding = imgui.get_style().cell_padding.x * 2.0 if columns > 1 else 0.0
+        return self.list_left + columns * (column + padding) + imgui.get_style().window_padding.x + CARD_RIGHT
+
+    def choose_columns(self):
+        if self.no_columns or self.list_total <= 0.0 or self.column_need <= 0.0:
+            return 1
+        rest = self.height - self.list_span
+        padding = imgui.get_style().cell_padding.x * 2.0
+        room = self.screen_width - self.list_left - imgui.get_style().window_padding.x - CARD_RIGHT
+        most = max(1, min(self.list_count, int(room / (self.column_min + padding))))
+        for columns in range(1, most + 1):
+            if min(rest + self.list_total / columns, self.screen_height) <= self.projected_width(columns):
+                return columns
+        return most
+
+    def list(self, count):
+        return ListScope(self, count)
 
     # ---- the helpers of RecommendationWindow
     def inset_right(self):
@@ -235,27 +349,45 @@ class Recommendation:
         return right
 
     def extent(self):
-        right = imgui.get_item_rect_max().x - imgui.get_window_pos().x
+        right = imgui.get_item_rect_max().x - self.origin[0]
         self.extents.append(right)
         if self.legacy:
             return
+        if self.in_list:
+            self.column_min = max(self.column_min, right - self.cell_left)
+            self.column_need = max(self.column_need, right - self.cell_left)
+            return
         self.min_width = max(self.min_width, right + self.inset_right())
         self.start_width = max(self.start_width, right + self.inset_right())
+        self.other_start = max(self.other_start, right + self.inset_right())
+        self.other_min = max(self.other_min, right + self.inset_right())
 
     def text(self, text):
-        start = imgui.get_cursor_pos_x()
+        start = imgui.get_cursor_screen_pos().x - self.origin[0]
         if not self.legacy:
             shortest = readable_column(text, SHORTEST_LINE, SHORTEST_LINE)
             opening = readable_column(text)
-            self.min_width = max(self.min_width, start + shortest + self.inset_right())
-            self.start_width = max(self.start_width, start + opening + self.inset_right())
+            if self.in_list:
+                self.column_min = max(self.column_min, start - self.cell_left + shortest)
+                self.column_need = max(self.column_need, start - self.cell_left + opening)
+            else:
+                self.min_width = max(self.min_width, start + shortest + self.inset_right())
+                self.start_width = max(self.start_width, start + opening + self.inset_right())
+                self.other_start = max(self.other_start, start + opening + self.inset_right())
+                self.other_min = max(self.other_min, start + shortest + self.inset_right())
         wraps = self.in_card or not self.legacy
-        wrap = imgui.get_content_region_avail().x - (CARD_RIGHT if self.in_card else 0.0) if wraps else 1e9
+        inset = 0.0 if self.tabled else (CARD_RIGHT if self.in_card else 0.0)
+        wrap = imgui.get_content_region_avail().x - inset if wraps else 1e9
+        capped = not self.legacy and self.drawn_columns > 1
+        if capped:
+            wrap = max(1.0, min(wrap, readable_column(text)))
         self.record_lines(text, max(1.0, wrap))
-        if wraps and not self.in_card:
+        if capped:
+            imgui.push_text_wrap_pos(imgui.get_cursor_pos_x() + wrap)
+        elif wraps and not self.in_card:
             imgui.push_text_wrap_pos(0.0)
         imgui.text_unformatted(text)
-        if wraps and not self.in_card:
+        if capped or (wraps and not self.in_card):
             imgui.pop_text_wrap_pos()
 
     def record_lines(self, text, wrap):
@@ -346,11 +478,77 @@ class Recommendation:
         self.extent()
         self.last_was_line = False
 
+    def footer_action(self, label):
+        """The footer's action (A816): its rectangle in screen coordinates, for the check that it is in sight."""
+        self.action(label)
+        self.footer_rect = (imgui.get_item_rect_min().y, imgui.get_item_rect_max().y)
+
     def action(self, label):
         width = max((BUTTON_SIDE * 2 + ICON) * self.scale + imgui.calc_text_size(label).x, BUTTON_MIN_WIDTH * self.scale)
         imgui.button(label, imgui.ImVec2(width, max(BUTTON_HEIGHT * self.scale, imgui.get_frame_height())))
         self.extent()
         self.last_was_line = False
+
+
+class ListScope:
+    """RecommendationWindow.List (A816): the items spread top to bottom over the window's columns."""
+
+    def __init__(self, window, count):
+        self.w = window
+        w = window
+        w.in_list = True
+        w.list_count = count
+        w.list_left = imgui.get_cursor_screen_pos().x - w.origin[0]
+        w.list_room = imgui.get_content_region_avail().x - (CARD_RIGHT if w.in_card else 0.0)
+        w.per_column = max(1, (count + w.drawn_columns - 1) // w.drawn_columns)
+        w.cell_tallest = 0.0
+        w.tabled = w.drawn_columns > 1 and imgui.begin_table(
+            "##list", w.drawn_columns, imgui.TableFlags_.sizing_stretch_same.value,
+            imgui.ImVec2(max(1.0, imgui.get_content_region_avail().x - (CARD_RIGHT if w.in_card else 0.0)), 0.0))
+        if w.tabled:
+            self.next_cell()
+        else:
+            w.cell_left = w.list_left
+            w.cell_top = imgui.get_cursor_pos_y()
+
+    def next_cell(self):
+        w = self.w
+        imgui.table_next_column()
+        imgui.push_text_wrap_pos(0.0)
+        w.cell_left = imgui.get_cursor_screen_pos().x - w.origin[0]
+        w.cell_top = imgui.get_cursor_pos_y()
+
+    def end_cell(self):
+        w = self.w
+        height = imgui.get_cursor_pos_y() - w.cell_top
+        w.cell_tallest = max(w.cell_tallest, height)
+        w.list_total += height
+        if w.tabled:
+            imgui.pop_text_wrap_pos()
+
+    def item(self, index):
+        w = self.w
+        if w.tabled and index > 0 and index % w.per_column == 0:
+            self.end_cell()
+            self.next_cell()
+            w.card_has_item = False
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        w = self.w
+        self.end_cell()
+        if w.tabled:
+            imgui.end_table()
+        w.in_list = False
+        w.tabled = False
+        w.list_span += w.cell_tallest
+        right = w.inset_right()
+        padding = imgui.get_style().cell_padding.x * 2.0 if w.drawn_columns > 1 else 0.0
+        w.min_width = max(w.min_width, w.list_left + w.drawn_columns * (w.column_min + padding) + right)
+        w.start_width = max(w.start_width, w.list_left + w.drawn_columns * (w.column_need + padding) + right)
+        return False
 
 
 class Card:
@@ -396,18 +594,23 @@ PICKS = [
 ]
 
 
-def team_content(picks, status="Team set: 3 familiars. Confirm it on the screen."):
+def team_content(picks, status="Team set: 3 familiars. Confirm it on the screen.", leaving=("Bomb",), size_note=""):
     """The status line is empty until the player presses Apply - the state in which the window first appears."""
     def content(w):
         with w.section("Goal of the runs", "Kept until you change it; the team follows it, the board always plays safe, then for points"):
             w.choice(["Level", "Safe win", "Score"])
             w.note("Familiars that lag behind in rank fill the team; once none does, as Score.")
         with w.section("Team for this board", f"{len(picks)} familiars"):
-            for pet, chip, why in picks:
-                w.line(pet, chip)
-                w.note(why)
-            w.line("Bomb", "leaves")
-        w.action("Apply")
+            with w.list(len(picks)) as items:
+                for i, (pet, chip, why) in enumerate(picks):
+                    items.item(i)
+                    w.line(pet, chip)
+                    w.note(why)
+            w.line(", ".join(leaving), "leaves")
+            if size_note:
+                w.note(size_note)
+        w.footer()
+        w.footer_action("Apply")
         w.note(status)
     return content
 
@@ -430,7 +633,8 @@ def treasure_content(offers):
             for name, chip, verdict in offers:
                 w.line(name, chip)
                 w.note(verdict)
-        w.action("Take")
+        w.footer()
+        w.footer_action("Take")
         w.note("")
     return content
 
@@ -466,7 +670,8 @@ def camp_content(w):
             w.line(pet, chip)
             w.note(why)
         w.note(FINAL_OUTCOME)
-    w.action("Apply")
+    w.footer()
+    w.footer_action("Apply")
     w.note("")
 
 
@@ -644,8 +849,10 @@ def scenario_resize(failures, **defect):
     window.content = team_content(PICKS + [("Gnath", "joins", "hits Earth (2)")])
     ctx.frames([window], 4)
     m5 = measure(window, ctx)
-    check("content grows: height follows", abs(m5["height"] - m5["need"]) <= 1.0 and m5["height"] > m4["height"],
-          f"{m4['height']:.0f} -> {m5['height']:.0f} px", failures)
+    # A816: with a list in columns one more item can leave the height as it is or shorten it (the columns rebalance);
+    # what must hold is that the height is the content's.
+    check("content grows: height follows", abs(m5["height"] - m5["need"]) <= 1.0,
+          f"{m4['height']:.0f} -> {m5['height']:.0f} px, content {m5['need']:.0f}", failures)
     # drag the right edge wider, then far narrower
     w = window.size[0]
     ctx.drag([window], (x0 + w - 1, y0 + 60), (x0 + w + 200, y0 + 60))
@@ -656,6 +863,47 @@ def scenario_resize(failures, **defect):
     m7 = checks_open(window, ctx, failures, "dragged narrow")
     check("narrowing stops at 50 characters", m7["longest"] >= SHORTEST_LINE - 6, f"longest line {m7['longest']}", failures)
     check("narrow: height follows", abs(m7["height"] - m7["need"]) <= 1.0, "", failures)
+
+
+# ---- his case (A816, his picture of 15.11.2026): 12 familiars in the team, 12 leaving, the texts RSR wrote there
+HIS_PICKS = [
+    ("Cobra", "in team", "heals or protects; hits Piercing (1); below the board's rank; levels in reserve, rank 6"),
+    ("Squirrel", "joins", "heals or protects; hits Fire (2); below the board's rank; levels in reserve, rank 8"),
+    ("Dullahan", "joins", "hits Slashing (1); below the board's rank; levels in reserve, rank 8"),
+    ("Uragnite", "joins", "hits Ice (3); below the board's rank; levels in reserve, rank 8"),
+    ("Lamb", "joins", "heals or protects; hits Blunt (1); below the board's rank; levels in reserve, rank 8"),
+    ("Megalocrab", "joins", "hits Water (1); below the board's rank; levels in reserve, rank 8"),
+    ("Vulture", "joins", "hits Wind (1); below the board's rank; levels in reserve, rank 8"),
+    ("Drake", "joins", "heals or protects; hits Fire (2); below the board's rank; levels in reserve, rank 8"),
+    ("Antling", "joins", "hits Piercing (1), Slashing (1); below the board's rank; levels in reserve, rank 8"),
+    ("Opoopo", "joins", "heals or protects; hits Blunt (1); below the board's rank; levels in reserve, rank 8"),
+    ("Crab", "joins", "hits Water (1); below the board's rank; levels in reserve, rank 8"),
+    ("Ghost", "joins", "hits Wind (1); below the board's rank; levels in reserve, rank 8"),
+]
+HIS_LEAVING = ("Morbol", "Pugil", "Wespe", "Ziz", "Adamantoise", "Buffalo", "Worm", "Goobbue", "Geshunpest", "Salamander",
+               "Colibri")
+HIS_NOTE = ("12 below the board's cap (10) level; 0 below the recommended rank (6) fight only when too few others live.")
+
+
+def scenario_his_case(failures, **defect):
+    for width, height in ((1920.0, 1080.0), (2560.0, 1440.0), (1280.0, 720.0)):
+        print(f"his case: 12 familiars, 11 leaving, {width:.0f} x {height:.0f}, opened low on the screen")
+        ctx = Context(width=width, height=height)
+        window = Recommendation("team", team_content(HIS_PICKS, status="", leaving=HIS_LEAVING, size_note=HIS_NOTE), **defect)
+        imgui.set_next_window_pos(imgui.ImVec2(110.0, height * 0.6), imgui.Cond_.first_use_ever.value)
+        ctx.frames([window], 12)
+        m = checks_open(window, ctx, failures, "opens at")
+        top, bottom = window.pos[1], window.pos[1] + m["height"]
+        print(f"  at y {top:.0f} to {bottom:.0f}, {window.drawn_columns} column(s)")
+        check("the window stands within the screen", top >= -0.5 and bottom <= height + 1.0, f"{top:.0f}..{bottom:.0f}", failures)
+        check("as high as its content or the screen, moved up where needed",
+              abs(m["height"] - min(m["need"], height)) <= 1.0, f"{m['height']:.0f} vs {min(m['need'], height):.0f}", failures)
+        if m["need"] <= height:
+            check("no taller than wide", m["height"] <= m["width"] + 1.0, f"{m['width']:.0f} x {m['height']:.0f}", failures)
+        rect = window.footer_rect
+        visible = rect is not None and rect[1] <= top + m["height"] + 0.5 and rect[0] >= window.body_bottom - 0.5
+        check("Apply in sight without scrolling", visible,
+              "" if rect is None else f"button {rect[0]:.0f}..{rect[1]:.0f}, body ends {window.body_bottom:.0f}", failures)
 
 
 def scenario_scale_and_screen(failures):
@@ -679,7 +927,8 @@ def self_test():
     print("self-test: constructed defects must each fail a check")
     ok = True
     for defect, scenario in (("no_minimum", scenario_resize), ("no_follow", scenario_resize),
-                             ("no_replace", scenario_saved_old_width)):
+                             ("no_replace", scenario_saved_old_width), ("old_height", scenario_his_case),
+                             ("no_footer", scenario_his_case), ("no_columns", scenario_his_case)):
         failures = []
         print(f"- {defect}")
         scenario(failures, **{defect: True})
@@ -747,6 +996,7 @@ def main():
     scenario_saved_old_width(failures)
     scenario_resize(failures)
     scenario_scale_and_screen(failures)
+    scenario_his_case(failures)
     scenario_tooltip(failures)
     scenario_treasure(failures)
     scenario_camp(failures)
