@@ -24136,6 +24136,39 @@ Ahriman-Ebenbildern; die Spur endet 18:53:59 mit „gaze: avoided #48152" zweima
 - *Prüfgrad:* Absturzbericht, Quelltext von Dalamud, ClientStructs und BossModReborn, Compile, CI; im Spiel nicht
   beobachtet. Bestätigt durch einen Crucible-Lauf mit Blicken ohne Absturz auf einem Build ab diesem Commit.
 
+### A828 · Upload vom 15.11.2026, nachmittags: Absturz, Taurus, Tode in den Gewölben, Messmittel (15.11.2026)
+
+Sein Upload (ohne Frage): `DefenseTrace.log` mit drei neuen Sitzungen (11:42 Build e2e51c6e5, Blaumagier im Masked
+Carnivale und Gelehrter; 12:10 Build a91cbba43, Beastmaster im Crucible, zehn Kämpfe; 14:17 Build 77af8f6d6, 247 Kämpfe:
+Weißmagier im Pilgerpfad, danach Crucible bis zum Absturz), zwei neue ACT-Mitschnitte, Dalamud-Protokolle und der
+Absturzbericht.
+- *Absturz 18:54:* A827.
+- *Vorhersagen* (`evaluate_predictions.py`): bestanden hook-no-fault, exception-none, result-ranks-read, lock-cut-rises,
+  die Rang-Vorhersagen A803, level-core-low, board-familiar-loss, crucible-synced, gear-held-traced, burst-held-traced,
+  manafont-every-cycle, raise-no-enemy-label. Gescheitert:
+  - *team-start-event (A821):* kein Klick im Teamfenster vor dem Betreten des Bretts. Bestätigt die Gegenthese aus
+    A824 (Start in Brettwahl oder Inhaltsbestätigung); deren Spur ist erst ab A824 gebaut.
+  - *gaze-no-hit-after-turn (A783):* „Tödlicher Strahl" des Taurus (#48143) legte „Verhängnis" (Doom, 25 s) auch nach
+    einer Drehung um 180° (12:53:39) und ebenso zugewandt (13:13:19); einmal blieb er aus (12:54:17). Das Spielblatt
+    führt ihn ohne Blickzeichen (VFX 24) als Kreis mit 60 y, BMRs Vorhersage als Raidwide; RSR nimmt ihn über die
+    Namensregel (A770). Ob er im Crucible ein Blick ist, entscheiden drei Fälle nicht: Der Spieler stand jedes Mal
+    0,3 bis 2,6 y an der Figur. Die Lernregel wirkte wie gebaut (erster Treffer: nur halten, zweiter: dem Spieler
+    lassen); „Verhängnis" tötete nie, die Kämpfe endeten vorher. Kein Eingriff.
+  - *level-below-cap (A806):* Brett 2, elf Begleiter auf Rang 9 und Golem „11+". Prämisse überholt (A822: Rang 10
+    levelt auf Brett 2; über der Grenze kommt ein Rollenträger oder einer gegen Gefahr); die Spurzeile nannte den Grund
+    nicht. Seither „protects" je Begleiter, der heilt oder schützt (Konzept 21).
+- *Tode* (Weißmagier, Pilgerpfad): viermal, jedes Mal ein Einschlag mit dem Vier- bis Fünffachen der LP („Gebläse" des
+  gerufenen Hunbaba nach 1,2 s Wirkzeit, „Frontsalve" der Geläuterten Korruption, zweimal „Blitzschlag" des gerufenen
+  Cerberus), zweimal die ganze Gruppe. Kein Schild und keine Heilung trägt das; ausweichen ist Sache des Spielers und
+  von BossModReborns KI. Kein Defekt von RSR.
+- *Defekt am Messmittel, behoben:* `BurstWatch` nannte beim Weißmagier Rollenaktionen anderer Rollen (Interject,
+  Peloton …) als „not asked" – die Rotation führt die Rollenaktionen aller Rollen. Jetzt nur, was der Job hat
+  (`IsInJob`, Konzept 03).
+- *Später erster Burst (TODO):* Tänzer, Maschinist und Rotmagier nicht gespielt; wartet weiter.
+- *Dalamud-Protokoll:* eine Ausnahme aus RSR am 14.11. um 17:30 (`FollowCrucibleShop`, vor A806 behoben), am 15.11. keine.
+- *Tabellen:* Die Crucible-Tabellen je Rang füllen sich (0 → 30 bis 104 Einträge), 32 echte Ränge; plausibel.
+- *Prüfgrad:* Spur, Mitschnitt, Protokolle, Compile, CI.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

@@ -160,8 +160,9 @@ internal static class BurstWatch
 
 		foreach (var action in rotation.AllBaseActions)
 		{
+			// A828: only what the job has - the rotation carries the role actions of every role.
 			var row = action.Action;
-			if (row.CooldownGroup == ActionHelper.GCDCooldownGroup
+			if (!row.IsInJob() || row.CooldownGroup == ActionHelper.GCDCooldownGroup
 				|| DefensiveValues.For(action.ID) != default
 				|| action.Setting.SpecialType is not (SpecialActionType.None or SpecialActionType.MeleeRangedAttack)
 				|| _byId.ContainsKey(action.ID))

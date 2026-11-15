@@ -2005,8 +2005,10 @@ lässt.
 - *Anforderung:* Ein verschobener Burst kostet den ganzen Kampf. Der Zwei-Minuten-Zyklus läuft danach neben den Buffs
   der Gruppe, und im ersten Fenster fehlen Burst und Trank. Ob die Rotation absichtlich wartet (Ladungen sammeln,
   Fenster abwarten) oder eine Prüfung sie sperrt, muss aus der Spur hervorgehen, ohne dass er etwas einschaltet.
-- *Was zählt:* jede Aktion der laufenden Rotation mit einer eigenen Abklinggruppe neben dem GCD (Spielblatt
-  `CooldownGroup`, `AdditionalCooldownGroup`). Dazu gehören Abilities und GCDs mit eigenem Recast wie Technischer
+- *Was zählt:* jede Aktion der laufenden Rotation, die der Job hat (Jobkategorie des Spielblatts, `IsInJob`), mit einer
+  eigenen Abklinggruppe neben dem GCD (Spielblatt `CooldownGroup`, `AdditionalCooldownGroup`). Ohne die Jobkategorie
+  nannte die Zeile beim Weißmagier Rollenaktionen anderer Rollen als „not asked" (Interject, Peloton; Upload vom
+  15.11.2026 nachmittags, A828), denn die Rotation führt die Rollenaktionen aller Rollen. Dazu gehören Abilities und GCDs mit eigenem Recast wie Technischer
   Schritt. Ausgenommen sind Abwehr (`DefensiveValues`), Bewegung und alles außerhalb des Kampfes oder ohne Gegner in
   Reichweite.
 - *Nur solange RSR spielt:* Spielt er selbst, ruht die Zählung (`DataCenter.IsActivated`). Ein Cooldown, den er

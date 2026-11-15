@@ -724,7 +724,9 @@ public partial class BeastmasterRotation
 					: string.Empty);
 			picks.Add(new CrucibleTeamPick(pick.Pet, why, team.Contains(pick.Pet)));
 			_teamRanks[pick.Pet] = $"{pick.Rank}{(pick.OverRank ? "+" : string.Empty)} {_rankSources.GetValueOrDefault(pick.Pet, "unknown")}"
-				+ (learning.ContainsKey(pick.Pet) ? " levels" : string.Empty);
+				+ (learning.ContainsKey(pick.Pet) ? " levels" : string.Empty)
+				// A828: why one above the level limit came - a role holder heals or protects.
+				+ (pick.Safe ? " protects" : string.Empty);
 		}
 
 		return picks;

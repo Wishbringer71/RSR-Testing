@@ -2356,7 +2356,11 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
   leer). Seit A807 lehrt der erste Endkampf je Brett ihn; bis dahin gilt der Kader als ungemessen (Preis: ein Lauf je
   Brett ohne Größe nach Punkten unter Score, unter Safe win der stärkste Kader).
   *Vorhersage:* „level-core-low" (A805) und „level-below-cap" (A806): Unter Level stehen in „crucible team: goal Level -
-  requested …" nur Begleiter unter dem Cap, solange es genug gibt. „board-familiar-loss" (A807): Nach der Abrechnung eines Bretts steht „crucible board N: the familiars
+  requested …" nur Begleiter unter dem Cap, solange es genug gibt. *Beurteilt am 15.11.2026 (A828):* „level-below-cap"
+  schlug auf 77af8f6d6 an – Brett 2, elf Begleiter auf Rang 9 und Golem „11+". Ihre Prämisse ist überholt: Seit A822
+  levelt auch ein Begleiter unter dem Mindestrang des nächsten Bretts (Rang 10 auf Brett 2), und ein Begleiter über der
+  Grenze darf als Rollenträger oder gegen Gefahr kommen. Welches davon Golem holte, schrieb die Zeile nicht; sie nennt
+  seither je Begleiter auch „protects", wenn er heilt oder schützt (A828). „board-familiar-loss" (A807): Nach der Abrechnung eines Bretts steht „crucible board N: the familiars
   lost …"; „team-rank-step-runs" (A803) wird damit erstmals beurteilbar: „crucible team rank …" auf jedem Brett.
 - *Angebotene Ziele (A821):* Das Kaderfenster bietet nur Ziele an, die auf diesem Brett tragen.
   - *Seine Vorgaben (15.11.2026):* „wenn im brett alle begleiter über der maximalstufe des brettes sind, dann leveln nicht

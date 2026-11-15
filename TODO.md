@@ -108,7 +108,9 @@ nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigt
 - **Crucible: „Start" startet das Brett** (A821; seine Vorgabe vom 15.11.2026). Im Kampf: Stimmt der Kader, startet ein
   Klick in RSRs Fenster das Brett; bis dahin steht dort „Team ready". Auflösung: die Zeilen „crucible window … event:
   …" seines Starts in der nächsten Brettsitzung (Build ab A824: Teamfenster, Brettwahl und Inhaltsbestätigung), dann
-  der Knopf mit dem Ereignis, nach dem er das Brett betritt.
+  der Knopf mit dem Ereignis, nach dem er das Brett betritt. Upload vom 15.11. nachmittags (Build 77af8f6d6, vor A824):
+  kein Klick im Teamfenster vor dem Betreten („team-start-event" gescheitert) – der Start liegt anderswo, wie A824
+  vermutet.
   Konzept 21, K7 „Kader stimmt".
 
 - **Später erster Burst bei Tänzer, Maschinist und Rotmagier** (A820). Im Kampf: Technischer Schritt, Laufstabilisator
