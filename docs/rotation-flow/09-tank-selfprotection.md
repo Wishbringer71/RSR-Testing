@@ -662,7 +662,9 @@ Blitzga und Blitzbogen, die danach gemessen wurden.
 
 **Sachstand.** Die Einzelabwehr öffnet im Pull nach der Gegnerzahl: mindestens „Use tank mitigation when this many
 enemies target you" (ab Werk 2) Gegner in 3 Yalm, die ihn anvisieren, mindestens einen davon hat er selbst
-angegriffen, und seine Gesundheit liegt höchstens bei „Use tank mitigation below this HP" (ab Werk 100 %, also immer).
+angegriffen, ein Gegner hat ihn in diesem Kampf getroffen (A818, wie unter „Ohne Heiler“: zwei Trainingspuppen halten ihn
+als Ziel und treffen nie), und seine Gesundheit liegt höchstens bei „Use tank mitigation below this HP" (ab Werk 100 %,
+also immer).
 Wie viele Gegner sonst in der Nähe stehen, zählt nicht (A393). Kurze Minderung,
 Abtausch und Reflexion fallen sofort. Die große Minderung – Guardian oder Sentinel, Damnation oder Vengeance, Shadowed
 Vigil oder Shadow Wall, Great Nebula oder Nebula – und Schutzwall warten, bis seine Gesundheit beim gemessenen
@@ -747,9 +749,16 @@ statisch, Compile; im Spiel nicht beobachtet. Messmittel ist die Selbstkorrektur
 ist), gilt mit der Option „Without a living healer, spend your defence to stay alive longer" (ab Werk an), für jede
 Rolle:
 
-1. *Die Einzelabwehr öffnet*, sobald ein Gegner den Spieler als Ziel hat (`StateUpdater.ShouldAddDefenseSingle`,
-   `DataCenter.UnhealedUnderAttack`) – nicht erst bei einem Tankbuster oder ab der Pull-Zahl. Die übrigen Quellen
-   bleiben, wie sie sind.
+1. *Die Einzelabwehr öffnet*, sobald ein Gegner den Spieler als Ziel hat und ihn in diesem Kampf ein Gegner getroffen hat
+   (`StateUpdater.ShouldAddDefenseSingle`, `DataCenter.UnhealedUnderAttack`, `DataCenter.EnemyHitPlayerThisFight`, A818)
+   – nicht erst bei einem Tankbuster oder ab der Pull-Zahl. Die übrigen Quellen bleiben, wie sie sind. Bis A818 genügte
+   das Ziel: Eine Trainingspuppe hält den Spieler als Ziel und trifft nie; allein an ihr öffnete die Abwehr für jede
+   Rolle, und RSR drückte Schimmerschild, Taktiker und jede andere Selbstabwehr ins Leere (seine Meldung vom 15.11.2026:
+   „auch alle anderen klassen nutzen an der trainingspuppe defensiveskills. beschwörer schimmerschild, maschinist
+   tactican nur als beispiele“; seine Spur vom 11.11.2026: 70 s an der Puppe, die Abwehr die ganze Zeit offen, „no healer
+   alive, an enemy attacks you“). Getroffen heißt: ein Effekt-Paket eines Gegners mit Schaden auf ihm, Auto-Angriffe
+   eingeschlossen (`Watcher.ActionFromEnemy`); es gilt bis zum Kampfende. *Preis:* Der erste Treffer eines Kampfs ohne
+   Heiler kommt ohne Minderung – meist ein Auto-Angriff; ein Tankbuster öffnet die Abwehr unabhängig davon.
 2. *Eine Minderung auf ihn geht, sobald sie bis zum nächsten fälligen Tankbuster wieder bereit ist*: eine Ladung bleibt
    übrig, oder die Abklingzeit einer Ladung ist vorbei, bevor ihr Fenster vor dem Treffer beginnt (Wirkdauer weniger ein
    GCD). Sonst wartet sie (`BaseAction`, Ablehnung „KeptForTheNextTankbuster"). Fällig ist der nächste Tankbuster nach
@@ -930,13 +939,12 @@ braucht, trägt deshalb keinen Grund, Nascent Flash zurückzuhalten.
   - im allgemeinen Pfad reaktiv unter „Bloodwhetting/Raw intuition heal threshold" (0,7);
   - im allgemeinen Pfad bei jeder Abklingzeit, solange kein Heiler lebt und ein Gegner ihn angreift
     (`DataCenter.UnhealedUnderAttack`, mit „Without a living healer, spend your defence to stay alive longer", Abschnitt „Ohne Heiler: den eigenen Tod
-    hinauszögern"; A817). Upstream (5afb824d4, 25.04.2026) fragte dort „allein in der Gruppe und ein Gegner in
-    Reichweite“: Allein an der Trainingspuppe, die nicht angreift, drückte RSR Urimpuls bei jeder Abklingzeit, ohne dass
-    er Schaden nahm (seine Meldung vom 15.11.2026: „warum nutzt ein tank defensivskills, wenn er gar nicht attackiert
-    wird … z.b. bei einer trainingspuppe?“). Der Zweck der Upstream-Bedingung – allein heilt ihn niemand – ist genau der
-    Fall „ohne Heiler“; ersetzt, nicht gestrichen: Allein gegen Gegner, die ihn angreifen, geht Urimpuls weiter bei
-    jeder Abklingzeit, auch mit „single enemies“ aus. Andere Tanks haben keine solche Abkürzung (Suche über alle
-    Rotationen, 15.11.2026).
+    hinauszögern"; A817, A818). Upstream (5afb824d4, 25.04.2026) fragte dort „allein in der Gruppe und ein Gegner in
+    Reichweite“ (seine Meldung vom 15.11.2026: Defensive an der Trainingspuppe). Der Zweck der Upstream-Bedingung –
+    allein heilt ihn niemand – ist der Fall „ohne Heiler“; ersetzt, nicht gestrichen: Allein gegen Gegner, die ihn
+    angreifen, geht Urimpuls weiter bei jeder Abklingzeit, auch mit „single enemies“ aus. An der Puppe hielt das erst mit
+    A818: „angreifen“ hieß bis dahin nur „als Ziel halten“, und die Puppe hält ihn als Ziel. Andere Tanks haben keine
+    solche Abkürzung (Suche über alle Rotationen, 15.11.2026).
 - *Holy Sheltron bei voller Eid-Leiste* (Paladin, `WhenToSheltron`, ab Werk 100) geht auch ohne Angriff: Die Leiste
   füllt sich mit jedem Auto-Angriff, auch an der Puppe, und über 100 verfällt jeder weitere Punkt. Der Druck kostet nur
   die 50 Punkte, die sonst verfielen; 50 bleiben für einen Tankbuster. Kein Defekt (A817).

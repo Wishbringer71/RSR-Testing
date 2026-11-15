@@ -985,6 +985,7 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 	public float BMRKnockbackWindow { get; set; } = 3f;
 
 	[UI("Use tank mitigation when this many enemies target you", Parent = nameof(UseDefenseAbility), Order = 1,
+		Description = "Counted once an enemy has hit you in this fight: a training dummy holds you as its target and never hits.",
 		PvEFilter = JobFilterType.Tank)]
 	[Range(1, 8, ConfigUnitType.None, 0.05f)]
 	public int AutoDefenseNumber { get; set; } = 2;
@@ -1029,7 +1030,7 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 	// against one without (A361). Every role, as the rule holds for whoever is attacked. On by default: the owner's rule
 	// for new rules (29.09.2026).
 	[ConditionBool, UI("Without a living healer, spend your defence to stay alive longer",
-		Description = "When no healer in the party is alive, your single-target defence opens while an enemy attacks you, "
+		Description = "When no healer in the party is alive, your single-target defence opens while an enemy attacks you - holds you as its target and has hit you in this fight, which a training dummy never does -, "
 			+ "not only for a tankbuster or a pull. A mitigation on yourself then goes as soon as it will be ready again "
 			+ "before the next tankbuster on you is due - by BossModReborn's prediction, otherwise by the spacing of the "
 			+ "tankbusters on you in this fight; with none seen yet, at once. As a tank, the big mitigation and Rampart no "

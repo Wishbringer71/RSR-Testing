@@ -23845,6 +23845,31 @@ geprüft, alle Pfade, die eine Abwehr drücken können (Konzept 09, „Die Pfade
   (Schaufensterpuppe liest die Menüzeile); Daedalus 2644cbe4b..8b028d777: nur zwei neue Plugins im `repo.json`
   (Hephaestus, Demeter). Keines berührt Rotationen oder das Crucible; Stände eingetragen.
 
+### A818 · Seine Meldung: jede Klasse setzt an der Trainingspuppe Abwehr ein – „angegriffen“ hieß nur „als Ziel gehalten“ (15.11.2026)
+
+Seine Meldung (15.11.2026): „auch alle anderen klassen nutzen an der trainingspuppe defensiveskills. beschwörer
+schimmerschild, maschinist tactican nur als beispiele". Einordnung: Defekt; widerlegt A817, das nur die Tank-Pfade prüfte
+und unbelegt annahm, eine Puppe halte kein Ziel (Widerruf C203). Konzept 09 neu geprüft, alle Rollen.
+- *Beleg (seine Spur vom 11.11.2026, Beastmaster allein an der Puppe, 70 s):* alle 2,4 s „single defence open … flags
+  DefenseSingle … no healer alive, an enemy attacks you". Die Puppe hält den Spieler als Ziel und trifft nie; die Regel
+  „ohne Heiler" (A361, `UnhealedUnderAttack`) zählte das Ziel als Angriff und öffnete für jede Rolle die Einzelabwehr.
+  Taktiker sitzt nur in `DefenseSingleAbility`/`DefenseAreaAbility`, Schimmerschild ebenso (oder vor einem
+  BossModReborn-Raidwide); BossModReborn hat kein Puppenmodul (35a908ad7). Dieselbe Lesart in der Pull-Regel der Tanks:
+  zwei Puppen in 3 Yalm erreichen die Gegnerzahl 2.
+- *Behoben, für jede Rolle:* „angegriffen" heißt jetzt zusätzlich „in diesem Kampf von einem Gegner getroffen"
+  (`DataCenter.EnemyHitPlayerThisFight`, gesetzt in `Watcher.ActionFromEnemy` aus einem Paket eines Gegners mit Schaden
+  auf ihm, Auto-Angriffe eingeschlossen; gelöscht bei Kampfbeginn und -ende). Es gilt für „ohne Heiler" und die
+  Pull-Regel; die Optionstexte nennen es. Damit hält auch der Krieger-Fix aus A817 an der Puppe.
+- *Klasse geprüft:* Die übrigen Abwehrquellen verlangen ein Wirken auf ihn oder eine Vorhersage; der Sustain von
+  Addle/Feint/Reprisal braucht vier Gegner in Reichweite und sitzt in den Abwehrpfaden.
+- *Im Kampf:* Allein an der Puppe bleibt jede Abwehr zu. Allein gegen echte Gegner öffnet sie mit dem ersten Treffer,
+  im Pull ebenso. *Preis:* dieser erste Treffer – meist ein Auto-Angriff – kommt ohne Minderung; ein Tankbuster öffnet die
+  Abwehr unabhängig davon.
+- *Vorhersage:* `predictions/2026-11-15.json`, „dummy-no-defence": nach „targeting by danger: Trainingspuppe" keine
+  Zeile „single defence open". Grenze: Spielt er in derselben Sitzung danach allein gegen echte Gegner, erscheint die
+  Zeile zu Recht; dann ist das Urteil nach der Zeit der Zeilen zu lesen.
+- *Prüfgrad:* Spuranalyse, Compile, CI; im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -24199,3 +24224,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C200 | A797 (Stand A797): Die Fensterspur schreibe jetzt jeden Laden und das Teamfenster vor dem Brett | Sie schrieb jede Öffnung („PostSetup"), die keine Werte trägt; die Werte kommen mit „PostRefresh", das nur einmal je Lauf geschrieben wurde – jeder zweite Laden am 14.11.2026 ohne Inhalt. Behoben in A808 |
 | C201 | CLAUDE.md, „Prüfgrad" (Lesart A791–A809): „Bringt die dritte Runde in Folge welche" meine nur Befunde hoher Schwere | Der Zweck der Regel – eine Konstruktion, die jede Korrektur an neuer Stelle aufbricht – gilt ebenso bei mittleren; drei Runden mit mittleren Befunden (sechs bis acht der Blickwache) waren ein Befund am Vorgehen. Seine Rüge, 14.11.2026 (A812); Regel präzisiert |
 | C202 | A812 (Stand A812): Anmeldung und Gegenprobe des Lernteils der Blickwache seien entbehrlich, weil die Vorgabe sie nicht verlangt; entfernt | „Nicht verlangt" belegt keinen fehlenden Nutzen. Geprüft in A813: Die Anmeldung trägt das Messmittel (T1, T8, T9), die Gegenprobe spart bei falschem Modell einen Treffer; beide bleiben, die Gegenprobe geschärft. Seine Vorgabe, 14.11.2026 |
+| C203 | A817 (Stand A817): An der Trainingspuppe öffne die Pull-Regel nicht, „eine Puppe hält kein Ziel“; der Krieger-Fix beseitige die Abwehr an der Puppe | Unbelegt angenommen; seine Spur vom 11.11.2026 zeigt die Abwehr an der Puppe die ganze Zeit offen über „ohne Heiler“ – die Puppe hält den Spieler als Ziel. Seine Meldung vom 15.11.2026 (alle Klassen), behoben in A818 |

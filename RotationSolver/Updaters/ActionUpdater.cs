@@ -140,6 +140,7 @@ internal static partial class ActionUpdater
 		if (!lastInCombat && DataCenter.InCombat)
 		{
 			_startCombatTime = now;
+			DataCenter.EnemyHitPlayerThisFight = false;
 			// Every combat in the trace, independent of the paths that write in it: a session without these lines did not
 			// write at all, one with them and nothing else wrote nothing on its paths (A417).
 			DefenseTrace.Line("combat started");
@@ -151,6 +152,7 @@ internal static partial class ActionUpdater
 			DataCenter.LastPullTerritoryId = DataCenter.Territory?.Id ?? 0;
 			// A809 (concept 13, "Kampfende"): a fight's gaze registrations end here, also with RSR off after a wipe.
 			GazeWatch.EndFight();
+			DataCenter.EnemyHitPlayerThisFight = false;
 			_startCombatTime = DateTime.MinValue;
 
 			if (DataCenter.AutoOffAfterCombatEnabled && !DataCenter.IsHenched && !DataCenter.IsAutoDuty)

@@ -196,6 +196,7 @@ public static partial class Watcher
 			}
 
 			TraceHitFromUnreadSource(set, playerObject);
+			NoteHitOnPlayer(set, playerObject);
 
 			// Healing by anyone but the player and his objects, for the rule that breaks off a single heal it made needless.
 			RecordHealsByOthers(set, playerObject);

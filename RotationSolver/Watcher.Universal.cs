@@ -111,6 +111,24 @@ public static partial class Watcher
 	// second: it never reaches the party. Read as untargetable combatants only, the parts and helpers of other
 	// kinds went unread everywhere below (trace of 18.10.2026, A327); without the helper kind, the helpers of trials
 	// and raids still did (A334).
+	// A818: whether an enemy's packet dealt damage to the player - the fight's proof that he is attacked, not only held.
+	private static void NoteHitOnPlayer(ActionEffectSet set, IBattleChara player)
+	{
+		if (DataCenter.EnemyHitPlayerThisFight || !DataCenter.InCombat || !IsHostileSource(set))
+		{
+			return;
+		}
+
+		foreach (var effect in set.TargetEffects)
+		{
+			if (effect.TargetID == player.GameObjectId && TryGetDamageEntry(effect, out _))
+			{
+				DataCenter.EnemyHitPlayerThisFight = true;
+				return;
+			}
+		}
+	}
+
 	private static bool IsHostileSource(ActionEffectSet set)
 	{
 		return set.Source is IBattleChara source

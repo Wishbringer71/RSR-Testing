@@ -198,6 +198,13 @@ internal static partial class DataCenter
 	public static bool UnhealedUnderAttack { get; set; }
 
 	/// <summary>
+	/// An enemy's effect packet dealt damage to the player in this fight, auto-attacks included (A818): what "attacks
+	/// him" needs beyond holding him as its target - a training dummy holds him and never hits. Cleared at each fight's
+	/// start and end (ActionUpdater).
+	/// </summary>
+	public static bool EnemyHitPlayerThisFight { get; set; }
+
+	/// <summary>
 	/// A tankbuster, or the player, opens the single-target defence this frame: his command, a listed tankbuster cast
 	/// at him, BossModReborn's imminent one, or for a tank a known tankbuster aimed at either tank. What the defence
 	/// spends then is for that hit; the pull rule and an attack on an unhealed player are the other sources.

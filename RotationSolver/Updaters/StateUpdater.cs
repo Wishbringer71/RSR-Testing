@@ -223,8 +223,9 @@ internal static partial class StateUpdater
 		// and the time he stays alive is the time left for a Phoenix Down or a raise (the owner's note, 25.10.2026) -
 		// within this fight; a dead player can return to the start only once nobody is in combat. Asked before the
 		// other sources, which stay as they are, so that the pull rule and the hold reader see it too (A361).
+		// A818: attacked means hit in this fight as well - a training dummy holds the player as its target and never hits.
 		DataCenter.UnhealedUnderAttack = Service.Config.SpendDefenceWithoutHealer && !DataCenter.AnyLivingHealer(false)
-			&& EnemyAttacksPlayer();
+			&& EnemyAttacksPlayer() && DataCenter.EnemyHitPlayerThisFight;
 
 		// A measured cast aimed at the player, a non-tank, that calls for a defence; for a healer also one aimed at another
 		// member who is no tank - his help goes to that member (concept 13, "Auf einen Nicht-Tank gezielt", A540).
@@ -298,7 +299,7 @@ internal static partial class StateUpdater
 
 			if (tarOnMeCount >= Service.Config.AutoDefenseNumber
 				&& ObjectHelper.GetPlayerHealthRatio() <= Service.Config.HealthForAutoDefense
-				&& attacked)
+				&& attacked && DataCenter.EnemyHitPlayerThisFight)
 			{
 				DataCenter.TankPullOnPlayer = true;
 				return true;
