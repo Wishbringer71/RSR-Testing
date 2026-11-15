@@ -25,8 +25,11 @@ What this release changes in the fight. For the whole distance from upstream, se
   give a piece its pace: how much faster the team deals damage, from your share of it and what a critical hit adds,
   both measured from your own hits. The shop and treasure window names that pace for every piece. On the safety scale
   it counts for what it provably spares you: enemy auto-attacks come at a fixed delay, so a faster team takes fewer of
-  them. Where enemies hit you only with abilities, as on board 2, an attack piece still adds no safety, and the window
-  says so instead of inventing it.
+  them. On board 2 they made up more than half of the damage you took, so an attack piece now weighs about like the
+  matching cut in damage taken.
+- **Feed counts its haste and critical hits.** A feed's Damage Dealt, Physical and Magic Damage Dealt, Critical Hit
+  Rate and Haste now make up how much faster its familiar fights - in the horn choice, in the feed the shop recommends,
+  and in the team's pace. Physical Damage Dealt on a feed no longer reads as damage of every kind.
 - **Protective items are planned along one way.** A fight is planned for a protective item when the way ahead with the
   most heavier fights holds fewer of them than you carry items, not when all branches together do.
 

@@ -1342,8 +1342,8 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     anderen Kampf (wie bisher nur mit „Set the battlehorns between fights", denn ohne sie wählt RSR die Hörner nicht).
     „Übersteht den Einsatz" zählt im Plan mit den LP von jetzt erst, wenn keine Campsite mehr kommen kann: Davor zählen
     alle als überstehend, weil eine Rast ihre LP noch hebt und der Plan sagt, wen sie heben soll (K11: ein knapper
-    Endkampf-Heiler ruht zuerst); danach sind die LP von jetzt die im Endkampf. Futter zählt in jeder Hornwahl auf dem Brett (K6): Ein Begleiter mit „Damage Dealt +x %" bringt
-    entsprechend mehr Schaden, einer mit „Damage Taken −x %" übersteht einen Einsatz, wenn seine LP über dem größten
+    Endkampf-Heiler ruht zuerst); danach sind die LP von jetzt die im Endkampf. Futter zählt in jeder Hornwahl auf dem Brett (K6): Ein Begleiter mit „Damage Dealt +x %", Hast oder
+    Kritrate bringt entsprechend mehr Schaden (Futterfaktor, K13 „Tempo"), einer mit „Damage Taken −x %" übersteht einen Einsatz, wenn seine LP über dem größten
     Verlust je Einsatz mal dem verbleibenden Anteil liegen. Damit hebt Futter nur den Wert dessen, der es frisst: Ein
     Plan, der ihn enthielt, bleibt der beste oder wird von einem anderen mit ihm geschlagen – das Futter geht nicht an
     einen, den die Hornwahl danach liegen lässt. *Im Kampf vorher:* Der Plan stammte vom Hornfenster vor dem Elitekampf,
@@ -1460,10 +1460,12 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     Teamschadens, mit Schildspalter, Klingenbiss, Schmetteraxt, Schildansturm und 39.333 aus Auto-Angriffen.
     Kritische Treffer machen das 1,42-Fache (Attacke 71 gegen 50, Klingenbiss 529 gegen 380, Schildspalter 650 gegen 455,
     Schmetteraxt 173 gegen 120, je Median), direkte Treffer das 1,24-Fache; Krit-Rate rund 10 %.
-  - *Was davon dich schützt (gemessen, ACT 15.11.2026, Brett 2, drei Mitschnitte):* Auf dich kamen aus Gegnertreffern
-    5.631 Schaden in 152 Treffern, keiner davon ein Auto-Angriff – alle waren Fähigkeiten der Gegner. Dein Begleiter hält
-    die Gegner. Belegt ist nur: Ein Gegner greift automatisch in festem Takt an („auto-attack delay", das Hast verkürzt),
-    ein Kampf, den das Team schneller beendet, hat also im selben Verhältnis weniger Auto-Angriffe. Ob er auch weniger
+  - *Was davon dich schützt (gemessen, ACT 15.11.2026, Brett 2, zwei Mitschnitte):* Auf dich kamen aus Gegnertreffern
+    5.631 Schaden, davon 3.239 (57 %) aus Auto-Angriffen; auf deine Begleiter 12.899, davon 8.215 (64 %). Die
+    Auto-Angriffe der Gegner tragen im Crucible eigene Aktionen (`Action` 50784, 49680, 50216: Kategorie „Auto-attack",
+    ohne Namen), nicht 7 und 8 – RSR liest die Kategorie aus dem Blatt. Belegt ist: Ein Gegner greift automatisch in
+    festem Takt an („auto-attack delay", das Hast verkürzt), ein Kampf, den das Team schneller beendet, hat also im
+    selben Verhältnis weniger Auto-Angriffe. Ob er auch weniger
     Fähigkeiten auf dich bringt, belegt keine Quelle und kein Mitschnitt (Bosse wechseln an LP-Schwellen, und jede
     Mechanik kommt trotzdem).
   - *Regel:* Das *Tempo* der Ausrüstung ist der Faktor, um den das Team schneller Schaden macht: dein Anteil am
@@ -1472,30 +1474,42 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     Krit-Mehrschaden) / (1 − Hast) / (1 + Verlangsamung); Stücke multiplizieren wie die Abwehr (meine Ableitung). Der
     Begleiterfaktor zählt nur Stücke, die auch auf ihn wirken, mit seinem eigenen physischen Anteil. Auf der Skala von
     Laden und Schatz senkt das Tempo nur den Teil deiner gemessenen Last, der aus Auto-Angriffen kommt (gemessen je
-    Sitzung; vor der ersten Messung null): Last mal (1 − Anteil + Anteil / Tempo). Bei seinen Kämpfen ist dieser Anteil
-    null – ein Angriffsstück bringt ihm dort keine Sicherheit, und die Skala sagt das, statt es zu erfinden. Das Fenster
-    nennt bei jedem Angriffsstück sein Tempo.
+    Sitzung; vor der ersten Messung 57 % aus seinem Mitschnitt): Last mal (1 − Anteil + Anteil / Tempo). Beispiel:
+    Tempo 1,1 bei 57 % senkt die Last um 5 %, so viel wie „Damage Taken −5 %". Das Fenster nennt bei jedem
+    Angriffsstück sein Tempo.
+  - *Futter im Tempo (TODO „Tempo für Begleiter und Futter", geschlossen):* Futter mit „Damage Dealt", physischem oder
+    magischem Schaden, Kritrate oder Hast macht den Begleiter, der es frisst, schneller – mit demselben Faktor wie ein
+    Ausrüstungsstück, auf den physischen Anteil der Begleiter. Der Begleiterfaktor im Tempo ist das Mittel über den
+    Kader, je Begleiter sein Futter (gefressen zählt, was das Begleiterfenster führt). Die Hornwahl (K6, K7) zählt den
+    Schaden eines Begleiters mit diesem Futterfaktor statt nur mit „Damage Dealt"; die Futterempfehlung bricht einen
+    Gleichstand der wirksamen LP mit ihm. Bis A830 las RSR „Physical Damage Dealt +25 %" (Eier-Simulakrum) als
+    „Damage Dealt" und zählte Hast und Kritrate im Futter gar nicht.
   - *Nicht im Test des Wegs, an der Campsite und in den gelernten Lasten:* Diese Rechnungen halten Schutz, Rast, Futter
     und Käufe zurück (K15). Sie rechnen mit den gemessenen Lasten je Kampf und Rang (A729) – stärkere Begleiter senken die
     Gefahr dort über die Messung, nicht über eine Annahme.
   - *Was RSR selbst misst (Z15):* deinen Anteil am Teamschaden, deinen und den physischen Anteil der Begleiter (Angriffsart
     jedes Treffers), den Krit-Mehrschaden (je Aktion kritische gegen gewöhnliche Treffer, Kennzeichen im Treffer) und den
     Anteil der Auto-Angriffe an deiner Last – laufend, über die Sitzung. Bis zur ersten Messung gelten die Werte aus
-    seinem Mitschnitt (68 %, 42 %; physisch: alle gemessenen Waffenkünste physisch; Auto-Angriffe: null).
+    seinem Mitschnitt (68 %, 42 %; physisch: alle gemessenen Waffenkünste physisch; Auto-Angriffe 57 %).
   - *Verworfen (A830, Prüfrunde vom 15.11.2026):* Das Tempo als Teiler jeder Last, auch im Test des Wegs und beim Lernen.
     Die Annahme „Last wächst mit der Dauer" ist für die Senke nicht belegt, und die Tafeln halten den schwersten Wert:
     Ein schneller Lauf hätte die Last dauerhaft verzerrt, ein noch schnellerer sie unterschätzt. Der Weg galt dann als
     getragen, und Sparsamkeit, Geizhals, Rast und Futter hielten Schutz zurück, den er brauchen konnte (C206).
-  - *Offen, mit Preis:* Die Begleiter nehmen die Auto-Angriffe; was das Tempo ihren Verlusten (K11) und „Keine Verluste"
-    erspart, rechnet RSR noch nicht (TODO „Crucible: Tempo für Begleiter und Futter"). Der Anteil am Teamschaden ist mit
+  - *Nicht in den Verlusten der Begleiter (K11):* Sie halten einen Begleiter für den Endkampf zurück und lernen den
+    größten Verlust je Einsatz (Tafeln mit dem schwersten Wert) – dieselbe Lage wie der Test des Wegs; ein Einsatz
+    dauerte am 15.11.2026 14 bis 61 s (Quartile, 62 Einsätze), ein schnelleres Team kürzt ihn nur, wo die Gegner vorher
+    fallen. Stärkere Begleiter zählen dort über die Verluste je Rangstufe (A703, A729). *Preis:* Die Reserve hält eher
+    zu oft zurück als zu selten.
+  - *Offen, mit Preis:* Der Anteil am Teamschaden ist mit
     der getragenen Ausrüstung gemessen (wenig zu hoch, Wirkung nur auf der Skala). Der Krit-Mehrschaden ist früh in der
     Sitzung verrauscht (Mittel der Verhältnisse, direkte Treffer und Schwächen darin). Hast wirkt laut Blatt nicht auf
     oGCDs; die Formel nimmt sie für deinen ganzen Schaden (höchstens Hast mal Anteil der oGCDs). Kritrate als
     Prozentpunkte ist meine Lesart.
-  - *Gegenthesen:* (1) *Angriffswerte schützen dich doch:* nur über Auto-Angriffe belegt; sonst unbelegt, siehe oben.
-    (2) *Ausgeliefert, und nichts ändert sich:* Bei seinen Kämpfen bleibt die Wahl im Laden gleich, weil dich keine
-    Auto-Angriffe treffen; das Fenster nennt nun das Tempo jedes Angriffsstücks, und die Spur „crucible pace: …" zeigt
-    Anteil, Krit-Mehrschaden und Auto-Anteil.
+  - *Gegenthesen:* (1) *Angriffswerte schützen dich auch über die Fähigkeiten der Gegner:* unbelegt, siehe oben; gezählt
+    wird nur der Anteil der Auto-Angriffe. (2) *Ausgeliefert, und nichts ändert sich:* Ohne Angriffsstück im Angebot
+    bleibt die Wahl gleich; sonst steht es mit einem Wert und seinem Tempo im Fenster, und die Spur „crucible pace: …"
+    zeigt Anteil, Krit-Mehrschaden und Auto-Anteil. Prüfung des eigenen Nullbefunds (konzepte.md, „Quellen"): Eine erste
+    Zählung nur über die Aktionen 7 und 8 ergab „keine Auto-Angriffe" und stand als Sachstand in A830 (C207).
   *Grund im Fenster:* Jedes Angebot steht im Fenster mit seinem Namen in der Sprache des Clients, seinem Wert auf der
   Skala und dem, was sie nicht misst; das empfohlene zuerst, mit dem Abstand zum nächstbesten.
   *Seine Lage (07.11.2026, Zahlen aus seinem Routenfenster kurz davor):* Ein Kampf kostete rund 4 %, Vorrat 36 %,
@@ -2230,7 +2244,8 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
   Hörnern, der Beastmaster tankte und fiel), danach die Summe der synchronisierten Ränge (A579: der stärkere bei
   sonst gleicher Wahl); außerhalb des Crucible sind beide stets gleich, B5 ändert sich dort nicht. Ein Begleiter unter
   dem empfohlenen Rang des Bretts kommt nur in Frage, wenn weniger andere leben als Hörner da sind (A579, K7 „Leveln").
-  Futter zählt (A662): Schaden mal (1 + „Damage Dealt" seines Futters), und er übersteht den Einsatz, wenn seine LP über
+  Futter zählt (A662): Schaden mal seinem Futterfaktor – „Damage Dealt", physischer und magischer Schaden, Kritrate
+  und Hast wie im Tempo (K13, A830) –, und er übersteht den Einsatz, wenn seine LP über
   dem größten Verlust je Einsatz mal (1 − „Damage Taken" seines Futters) liegen; jedes Futter multipliziert wie bei
   Ausrüstung (meine Ableitung). Der Plan des Endkampfs ist dieselbe Wahl (K14).
   Spurzeile „Crucible horn screen: horns set for battle …".

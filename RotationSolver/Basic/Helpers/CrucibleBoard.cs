@@ -162,6 +162,10 @@ internal static class CrucibleBoard
 	private const float PlayerShareFallback = 0.68f;
 	private const float CritGainFallback = 0.42f;
 
+	// A830: until measured, the share of his damage taken that came from enemy auto-attacks in his log of 15.11.2026 (ACT,
+	// board 2: 3,239 of 5,631) - a fallback from measurement, not a game value.
+	private const float AutoTakenFallback = 0.57f;
+
 	// The game's mark of a critical hit in an effect's first parameter (ACT's effect flags 0x2000, measured 15.11.2026).
 	private const byte CriticalHitMark = 0x20;
 	private static readonly Dictionary<uint, double> _ownDamageByElement = [];
@@ -1783,7 +1787,7 @@ internal static class CrucibleBoard
 	/// A830: what the team's pace is weighed with - the player's share of the team's damage, the physical part of his own
 	/// damage and of the familiars', what a critical hit of his adds over a plain one (per action, weighted by its critical
 	/// hits), and the share of his damage taken that came from enemy auto-attacks; measured since RSR loaded, else from his
-	/// log of 15.11.2026 (the auto-attack share 0 until measured).
+	/// log of 15.11.2026.
 	/// </summary>
 	internal static (float Share, float Physical, float FamiliarPhysical, float CritGain, float Auto) PaceBasis
 	{
@@ -1806,7 +1810,7 @@ internal static class CrucibleBoard
 			}
 
 			return (share, physical, familiarTyped > 0d ? (float)(_familiarPhysical / familiarTyped) : physical,
-				weight > 0 ? (float)(gain / weight) : CritGainFallback, _takenAll > 0d ? (float)(_takenAuto / _takenAll) : 0f);
+				weight > 0 ? (float)(gain / weight) : CritGainFallback, _takenAll > 0d ? (float)(_takenAuto / _takenAll) : AutoTakenFallback);
 		}
 	}
 

@@ -2558,8 +2558,9 @@ public sealed class BST_Reborn : BeastmasterRotation
 	}
 
 	// K6, K14 (A662): a familiar as the horn choice weighs it on a board - its share of HP, synced rank, whether its HP
-	// outlast the largest loss of a use on this board, and its feed: damage times (1 + its Damage Dealt), the loss times
-	// (1 - its Damage Taken). The same for the battle about to start and for the final fight's plan.
+	// outlast the largest loss of a use on this board, and its feed: damage times its feed's pace (damage dealt, haste,
+	// critical hit rate; A830), the loss times (1 - its Damage Taken). The same for the battle about to start and for the
+	// final fight's plan.
 	private HornOption BoardOption(BeastmasterPet pet, HornOrder horn, bool boss, int pack, CrucibleBoard.Enemy[] enemies,
 		uint hp, uint full, int rank, uint battle = 0)
 	{

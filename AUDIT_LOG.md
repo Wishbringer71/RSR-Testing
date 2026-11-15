@@ -24245,6 +24245,28 @@ Absturzbericht.
 - *9 Dokumentation:* Konzept 21, K13 „Tempo", Anforderungen Z13 bis Z15; TODO „Crucible: Tempo für Begleiter und
   Futter".
 
+### A831 · Crucible: Futter im Tempo; die Auto-Angriffe richtig gezählt (15.11.2026)
+
+- *Anlass:* Sein Auftrag (15.11.2026): „Weiter im todo im vollen Loop" – TODO „Crucible: Tempo für Begleiter und Futter"
+  (A830).
+- *1 Research:* ACT 15.11.2026, Brett 2, zwei Mitschnitte. Einsätze der Begleiter: 62, Dauer 14 bis 61 s (Quartile),
+  höchstens 84 s. Gegnertreffer nach Aktion: Die häufigsten Aktionen ohne Namen (50784, 49680, 50216) sind laut `Action`
+  Kategorie „Auto-attack" – auf ihn 3.239 von 5.631 Schaden (57 %), auf seine Begleiter 8.215 von 12.899 (64 %). Die Zählung
+  in A830 („keine Auto-Angriffe") hatte nur die Aktionen 7 und 8 gesucht und den Nullbefund nicht an einem bekannten Fall
+  geprüft (konzepte.md, „Quellen"; C207). Der Code liest die Kategorie aus dem Blatt (`GetActionCate`) und misst richtig.
+  Futter: `FeedDamage` las „Physical Damage Dealt +25 %" (Eier-Simulakrum) als „Damage Dealt"; Hast und Kritrate im Futter
+  zählte RSR nicht.
+- *2 Optionen:* (0) nichts; (1) Tempo auch in den Verlusten der Begleiter (K11); (2) Futter im Tempo und in der Hornwahl,
+  K11 bei den gemessenen Verlusten je Rang – gewählt. (1) verworfen: K11 hält Begleiter zurück und lernt den größten
+  Verlust (Tafeln mit dem schwersten Wert) – dieselbe Lage wie der Test des Wegs (C206).
+- *7 Gebaut:* `FeedGain` (Futterfaktor wie ein Ausrüstungsstück, auf den physischen Anteil der Begleiter), `FeedFactors`
+  und damit die Hornwahl und die Futterempfehlung mit ihm, `GearFold.FamiliarFeed` (Mittel über den Kader),
+  Futterwerte über `GearStat` (ganze Werte), `AutoTakenFallback` 57 %.
+- *8 Nachweis:* Compile (0 Warnungen), Prüfungen; im Spiel nicht beobachtet. Prüfgrad statisch und Compile.
+- *Vorhersage:* „crucible pace: … of your damage taken came from auto-attacks" mit einem gemessenen Anteil über null auf
+  Brett 2 (`pace-traced`, A830).
+- *9 Dokumentation:* Konzept 21, K13 „Tempo" (Futter, K11), K6/K7 Futterfaktor; TODO-Punkt geschlossen.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -24603,3 +24625,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C204 | A795 (Stand A795): Eine über Bilder gehaltene Figur sei kein Absturzweg, weil der Speicherblock der Kampffiguren gültig bleibt; schlimmstenfalls lese RSR die Kennung des nächsten Bewohners | Der Speicher bleibt lesbar, die Funktionstabelle nicht: Am 15.11.2026 endete das Spiel in `IsCasting` einer gehaltenen Figur (A827). Gehalten wird nur noch die Id |
 | C205 | A632 (Stand A632): Seine Präzisierung „nicht am anfang des brettes fürs ganze brett …, ähnlich der vorausplanung beim schach" verbiete eine Rechnung über das ganze Brett; die Option „mehrere Strecken voraus" sei zu verwerfen, weil die Lasten nur gemittelt bekannt seien | Sie schließt einen festen Plan beim Betreten aus, nicht die Rechnung bis zum Endkampf mit Neuplanung nach jedem Ergebnis (seine Präzisierung vom 15.11.2026: Navi, Schach); die Lasten sind seit A661 je Kampf und seit A729 je Rang bekannt (A829) |
 | C206 | A830 (Stand 1e8f89762): Das Tempo der Ausrüstung senke die Last jedes Kampfs auch im Test des Wegs und an der Campsite; ein Fehler der Annahme „Last wächst mit der Dauer" bestehe nur zwischen zwei Läufen | Unbelegt für die Senke, und die Tafeln halten den schwersten Wert: verzerrt dauerhaft oder unterschätzt, wo Schutz zurückgehalten wird; gemessen trafen ihn keine Auto-Angriffe. Das Tempo gilt nur noch auf der Skala von Laden und Schatz für den Anteil der Auto-Angriffe (A830, Prüfrunde) |
+| C207 | A830 (Stand 8acaafc5c): Auf Brett 2 trafen ihn in 152 Gegnertreffern keine Auto-Angriffe; ein Angriffsstück bringe ihm dort keine Sicherheit | Gezählt waren nur die Aktionen 7 und 8; die Auto-Angriffe der Gegner sind eigene Aktionen der Kategorie „Auto-attack": 57 % seiner und 64 % der Last seiner Begleiter (A831) |

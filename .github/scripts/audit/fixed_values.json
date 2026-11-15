@@ -2063,6 +2063,16 @@
   },
   {
    "file": "RotationSolver/Basic/Helpers/CrucibleBoard.cs",
+   "code": "private const float AutoTakenFallback = 0.57f;",
+   "values": [
+    "0.57"
+   ],
+   "status": "exception",
+   "loop": "A830",
+   "reason": "Fallback from measurement until RSR has seen a hit on the player: the share of his damage taken in the Crucible that came from enemy auto-attacks (ActionCategory Auto-attack) in his ACT logs of 15.11.2026, board 2: 3,239 of 5,631. Replaced by the measured share (A830)."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/CrucibleBoard.cs",
    "code": "RollingInRiches = 20,",
    "values": [
     "20"

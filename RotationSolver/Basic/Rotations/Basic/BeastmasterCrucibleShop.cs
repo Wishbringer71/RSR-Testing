@@ -46,7 +46,10 @@ public partial class BeastmasterRotation
 		/// <summary>The damage he takes, a factor, by his defences alone.</summary>
 		public float Taken;
 
-		public static GearFold Start() => new() { Hp = 1f, Taken = 1f, Physical = 1f, Magic = 1f, _player = 1f, _familiar = 1f };
+		/// <summary>A830: the factor the familiars' feed adds to their damage, the mean over the team; 1 without feed.</summary>
+		public float FamiliarFeed;
+
+		public static GearFold Start() => new() { Hp = 1f, Taken = 1f, Physical = 1f, Magic = 1f, _player = 1f, _familiar = 1f, FamiliarFeed = 1f };
 
 		public void Add(CrucibleGear piece, (float Share, float Physical, float FamiliarPhysical, float CritGain, float Auto) basis)
 		{
@@ -73,7 +76,7 @@ public partial class BeastmasterRotation
 		}
 
 		/// <summary>The team's pace: his share of its damage at his factor, the familiars' at theirs; 1 without gear.</summary>
-		public readonly float Pace => _share > 0f ? (_share * _player) + ((1f - _share) * _familiar) : 1f;
+		public readonly float Pace => _share > 0f ? (_share * _player) + ((1f - _share) * _familiar * FamiliarFeed) : 1f;
 
 		/// <summary>
 		/// The damage he takes on the shop's scale: his defences, and the pace on the part of his load from enemy auto-attacks -
@@ -1682,6 +1685,17 @@ public partial class BeastmasterRotation
 	{
 		var fold = GearFold.Start();
 		var basis = CrucibleBoard.PaceBasis;
+
+		// A830 (TODO "Tempo für Begleiter und Futter"): the familiars' feed, as the mean over the team of each one's factor.
+		float fed = 0f;
+		var pets = 0;
+		foreach (var pet in _feedSlots.Keys)
+		{
+			fed += FeedFactors(pet).Dealt;
+			pets++;
+		}
+
+		fold.FamiliarFeed = pets > 0 ? fed / pets : 1f;
 		foreach (var piece in gear)
 		{
 			fold.Add(piece, basis);
@@ -1727,7 +1741,20 @@ public partial class BeastmasterRotation
 	// it suits ("[Suitable for beastkin, ... and ashkin.]").
 	private readonly record struct CrucibleFeed(string Name, float MaxHp, float DamageTaken, float PhysicalVulnerability,
 		float MagicVulnerability, float Evasion, float Restore, float Damage, bool SelfHarm, bool Preserves, HashSet<string> Kins,
-		bool FillsAtRest = false);
+		bool FillsAtRest = false, float PhysicalDealt = 0f, float MagicDealt = 0f, float CritRate = 0f, float Haste = 0f);
+
+	/// <summary>
+	/// K13 "Tempo" (A830): how much faster a feed makes its eater deal damage - damage dealt, its physical and magic parts on
+	/// the familiars' measured shares, critical hit rate on what a critical hit adds, haste on its actions and auto-attacks;
+	/// less one, so a feed without such a stat gains 0.
+	/// </summary>
+	private static float FeedGain(CrucibleFeed feed)
+	{
+		var basis = CrucibleBoard.PaceBasis;
+		return ((1f + feed.Damage) * (1f + (feed.PhysicalDealt * basis.FamiliarPhysical))
+			* (1f + (feed.MagicDealt * (1f - basis.FamiliarPhysical))) * (1f + (feed.CritRate * basis.CritGain))
+			/ Math.Max(1f - feed.Haste, float.Epsilon)) - 1f;
+	}
 
 	// A669: a feed after which a rest at a campsite fills its eater's HP instead of the shared share (Lassi Simular).
 	private const string FeedFillsAtRestText = "Completely restores HP at campsites";
@@ -1764,7 +1791,6 @@ public partial class BeastmasterRotation
 	}
 
 	private static readonly Regex FeedRestore = new(@"Restores (?<share>\d+)% of HP upon consumption", RegexOptions.CultureInvariant);
-	private static readonly Regex FeedDamage = new(@"Damage Dealt \+(?<share>\d+)%", RegexOptions.CultureInvariant);
 	private static readonly Regex FeedKins = new(@"Suitable for (?<kins>[^\]]+)", RegexOptions.CultureInvariant);
 	private const string FeedPreservesText = "Preserves the effects of feed";
 
@@ -1951,8 +1977,8 @@ public partial class BeastmasterRotation
 
 	/// <summary>
 	/// K6, K14 (A662): what the feed <paramref name="pet"/> carries in this run makes of it - its damage as a factor
-	/// (1 + each Damage Dealt) and the damage it takes as one (1 - each Damage Taken), multiplied over its feed; 1 and 1
-	/// without feed or outside a board.
+	/// (1 + each feed's gain in pace, A830: damage dealt, haste, critical hit rate) and the damage it takes as one
+	/// (1 - each Damage Taken), multiplied over its feed; 1 and 1 without feed or outside a board.
 	/// </summary>
 	internal static (float Dealt, float Taken) FeedFactors(BeastmasterPet pet)
 	{
@@ -1964,7 +1990,7 @@ public partial class BeastmasterRotation
 
 		foreach (var feed in SlotsOf(pet).Eaten)
 		{
-			dealt *= 1f + feed.Damage;
+			dealt *= 1f + FeedGain(feed);
 			taken *= 1f - feed.DamageTaken;
 		}
 
@@ -1994,7 +2020,7 @@ public partial class BeastmasterRotation
 					continue;
 				}
 
-				if (best is not { } b || (damageOnly ? feeds[fit.Item].Damage > feeds[b.Fit.Item].Damage : fit.Gain > b.Fit.Gain))
+				if (best is not { } b || (damageOnly ? FeedGain(feeds[fit.Item]) > FeedGain(feeds[b.Fit.Item]) : fit.Gain > b.Fit.Gain))
 				{
 					best = (pet, fit);
 				}
@@ -2053,16 +2079,16 @@ public partial class BeastmasterRotation
 			}
 
 			var gain = Survival(feed, eaten, share, context) - bare;
-			if (damageOnly ? gain > 0f || feed.Damage <= 0f : gain <= 0f)
+			if (damageOnly ? gain > 0f || FeedGain(feed) <= 0f : gain <= 0f)
 			{
 				continue;
 			}
 
-			if (best is not { } b || gain > b.Gain || (gain == b.Gain && (feed.Damage > bestDamage
-				|| (feed.Damage == bestDamage && price < b.Price))))
+			if (best is not { } b || gain > b.Gain || (gain == b.Gain && (FeedGain(feed) > bestDamage
+				|| (FeedGain(feed) == bestDamage && price < b.Price))))
 			{
 				best = (row, item, price, gain, bare);
-				bestDamage = feed.Damage;
+				bestDamage = FeedGain(feed);
 			}
 		}
 
@@ -2142,7 +2168,7 @@ public partial class BeastmasterRotation
 				var slot = held.Known ? $"feed slot {held.Slots.Max - held.Free + 1} of {held.Slots.Max}" : "its feed slots not seen yet";
 				picks.Add(new CrucibleFeedPick(chosen.Row, ClientItemName(chosen.Item, eaten.Name), pet, chosen.Price, affordable,
 					$"{(FinalHealers.Contains(pet) ? "heals or protects" : "fights")} in the final: {effect}"
-					+ (eaten.Damage > 0f ? $", damage +{eaten.Damage:P0}" : string.Empty) + $"; {slot}"));
+					+ (FeedGain(eaten) > 0f ? $", damage +{FeedGain(eaten):P0}" : string.Empty) + $"; {slot}"));
 			}
 		}
 
@@ -2208,7 +2234,7 @@ public partial class BeastmasterRotation
 				var (pet, fit) = next;
 				var held = slots[pet];
 				var hp = context.Health.TryGetValue(pet, out var shown) ? shown : "unread";
-				var effect = fit.Gain > 0f ? $"effective HP +{fit.Gain / fit.Bare:P0} at {hp} HP" : $"damage +{feed.Damage:P0}, no HP";
+				var effect = fit.Gain > 0f ? $"effective HP +{fit.Gain / fit.Bare:P0} at {hp} HP" : $"damage +{FeedGain(feed):P0}, no HP";
 				var slot = held.Known ? $"slot {held.Slots.Max - held.Free + 1} of {held.Slots.Max}" : "its feed slots not seen yet";
 				return $"Feed {name}: give it to {Shown(pet, context)} ({(FinalHealers.Contains(pet) ? "heals or protects" : "fights")} in the final; {effect}; {slot}).";
 			}
@@ -2247,6 +2273,7 @@ public partial class BeastmasterRotation
 
 			var text = row.Unknown3.ExtractText();
 			float maxHp = 0f, taken = 0f, physical = 0f, magic = 0f, evasion = 0f, damage = 0f;
+			float physicalDealt = 0f, magicDealt = 0f, crit = 0f, haste = 0f;
 			foreach (Match stat in GearStat.Matches(text))
 			{
 				var share = Percent(stat.Groups["share"].Value) * (stat.Groups["sign"].Value == "-" ? -1f : 1f);
@@ -2257,13 +2284,15 @@ public partial class BeastmasterRotation
 					case "Physical Vulnerability": physical -= share; break;
 					case "Magic Vulnerability": magic -= share; break;
 					case "Evasion": evasion += share; break;
+
+					// A830: whole words only - "Physical Damage Dealt +25%" (Egg Simular) is no "Damage Dealt".
+					case "Damage Dealt": damage += share; break;
+					case "Physical Damage Dealt": physicalDealt += share; break;
+					case "Magic Damage Dealt": magicDealt += share; break;
+					case "Critical Hit Rate": crit += share; break;
+					case "Haste": haste += share; break;
 					default: break;
 				}
-			}
-
-			foreach (Match dealt in FeedDamage.Matches(text))
-			{
-				damage += Percent(dealt.Groups["share"].Value);
 			}
 
 			var kins = new HashSet<string>();
@@ -2283,7 +2312,7 @@ public partial class BeastmasterRotation
 				FeedRestore.Match(text) is { Success: true } restore ? Percent(restore.Groups["share"].Value) : 0f, damage,
 				GearSelfHarm.IsMatch(text) || text.Contains("on self", StringComparison.Ordinal),
 				text.Contains(FeedPreservesText, StringComparison.Ordinal), kins,
-				text.Contains(FeedFillsAtRestText, StringComparison.Ordinal));
+				text.Contains(FeedFillsAtRestText, StringComparison.Ordinal), physicalDealt, magicDealt, crit, haste);
 		}
 
 		return feeds;
