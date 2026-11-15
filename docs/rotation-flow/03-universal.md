@@ -1270,8 +1270,25 @@ ansammeln will, lässt den Schalter aus (ab Werk aus). Assise weckt keinen schla
 Der Schalter fragt, ob eine Aktion Gegner trifft, nicht wozu sie gedrückt wird; eine Heilung, die einen neuen Pack
 zieht, kostet mehr LP, als sie bringt.
 *Gegenthese 2 (ein Gegner ohne Ziel kämpft doch):* Ein Gegner kann im Kampf kurz kein Ziel halten (Wirken auf den
-Boden, Phasenwechsel). Dann wartet die Fläche einen Moment. Preis: Schaden eines Moments; dieselbe Prüfung gilt im
-allgemeinen Pfad seit Upstream.
+Boden, Phasenwechsel). Bis A833 wartete die Fläche dann. *Widerlegt seit A833:* Als „kämpft noch nicht" gilt ein Gegner
+nur, wenn er weder ein Ziel hält noch im Kampf steht (das Kampfkennzeichen seiner Figur, `ObjectHelper.InCombat`) – für
+die Flächen, die Zielwahl und die Schlafregel gleich (`DataCenter.PullsIfHit`).
+*Sein Ziel (15.11.2026, A833):* „dass bei schwierigen Kämpfen in Deep Dungeons nicht unnötig weitere Gegner durch assiese
+gepullt werden … Gerade in Deep Dungeons ist aggrokontrolle und gegnermanagement überlebenswichtig. … Vielleicht die
+jetzt gewählte Lösung übervorsichtig." *Geprüft:*
+- *Was zieht:* der Schadensteil – Assise trifft jeden Gegner in 20 y um dich (`EffectRange` 20), und ein getroffener
+  Gegner kämpft. Heilhass verteilt das Spiel auf die Gegner, die schon mit euch kämpfen (Akhmorning, Feindschaft,
+  Shadowbringers: Heilhass geteilt durch die Zahl der Gegner im Kampf); einen ruhenden Gegner zieht die Heilung nicht.
+  In den Tiefen Gewölben nicht eigens gemessen.
+- *Was RSR prüft:* genau diesen Fall – „Don't pull new enemies with AoE" lässt Assise warten, solange ein Gegner in
+  ihren 20 y nicht kämpft; sonst geht sie wie bisher (Weißmagier: als Angriffsfähigkeit im Kampf). Kein Gegner im
+  Radius: Assise geht nicht, weil sie als Angriff mindestens einen Gegner verlangt – sie wird in RSRs Rotation nur als
+  Angriff gedrückt, die Heilung entgeht nicht.
+- *Übervorsichtig war:* ein kämpfender Gegner ohne Ziel (Gegenthese 2, behoben).
+- *Nicht übervorsichtig:* „AoE usage: Off" sperrt Assise ganz – das fragte seine Meldung („zählt nicht zu den aoes, die
+  man ausschalten kann"). Für die Gegnerkontrolle trifft „Don't pull new enemies" genau den Fall; „AoE usage: Off"
+  verzichtet auf jede Fläche. Gegner, die das Spiel aneinander bindet (sie greifen gemeinsam an), zieht ein Treffer auf
+  einen von ihnen mit, auch außerhalb der 20 y – das erkennt RSR nicht.
 *Gegenthese 3 (ausgeliefert, und nichts ändert sich):* Der Wirktext einer betroffenen Aktion lautet anders. Widerlegt
 am Blatt für die vier genannten; ein anders formulierter Text bleibt bei der alten Einstufung – der Preis einer Lücke,
 nicht eines Fehlgriffs.

@@ -24299,6 +24299,24 @@ Absturzbericht.
   21 (Regel 1 Drosselung, Regel 2 zweites Leben, Futter im Tempo bei leerer Ausrüstung).
 - *8 Nachweis:* Compile (0 Warnungen), 59 Prüfungen; im Spiel nicht beobachtet. Prüfgrad statisch und Compile.
 
+### A833 · Assise in den Tiefen Gewölben: Pull-Sperre geprüft, ein kämpfender Gegner ohne Ziel zieht nicht (15.11.2026)
+
+- *Anlass:* Sein Ziel (15.11.2026): in schweren Kämpfen der Tiefen Gewölbe keine weiteren Gegner durch Assise ziehen; die
+  gewählte Lösung (A826, A832) vielleicht übervorsichtig.
+- *1 Research:* Assise 3571: Schaden an allen Gegnern in 20 y (`EffectRange` 20, `Range` 0), Heilung der Gruppe, 40 s
+  (ffxiv-datamining). Heilhass auf die Gegner im Kampf verteilt (Akhmorning, Feindschaft Shadowbringers); einen ruhenden
+  Gegner zieht der Schadensteil. RSRs Weißmagier drückt Assise nur als Angriff im Kampf (`WHM_Reborn.AttackAbility`,
+  `skipAoeCheck`). Die Sperre (`PullsIfHit`) galt jedem Gegner ohne Ziel, auch einem kämpfenden, der kurz keines hält.
+- *2 Optionen:* (0) wie A832; (1) Sperre nur bei Gegnern ohne Kampfkennzeichen; (2) Ziel oder Kampfkennzeichen –
+  gewählt: nur wer keines von beiden hat, kämpft noch nicht. (1) allein ließe einen Gegner mit Ziel, dessen Kennzeichen
+  ein Bild nachhängt, als neu gelten.
+- *6 Falsifikation:* Kein Defekt? Ein Boss, der auf den Boden wirkt, hält kein Ziel – Assise wartete. Option falsch? Ein
+  Gegner, der dich bemerkt, aber noch nicht kämpft, hat weder Ziel noch Kennzeichen und zählt weiter als neu. Ausgeliefert,
+  nichts ändert sich? Ohne „Don't pull new enemies" wirkt die Sperre gar nicht (ab Werk aus).
+- *7 Gebaut:* `DataCenter.PullsIfHit`: Schalter an, kein Ziel und nicht im Kampf (`ObjectHelper.InCombat`).
+- *8 Nachweis:* Compile (0 Warnungen), Prüfungen; im Spiel nicht beobachtet. Prüfgrad statisch und Compile.
+- *9 Dokumentation:* Konzept 03, „Flächen, die Gegner treffen", Gegenthese 2 und „Sein Ziel".
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

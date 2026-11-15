@@ -26,10 +26,12 @@ namespace RotationSolver.Basic;
 internal static partial class DataCenter
 {
 	/// <summary>
-	/// "Don't pull new enemies with AoE" (concept 03, A826, A832): whether hitting <paramref name="enemy"/> would pull it - the
-	/// setting is on and it holds no target, so it is not fighting yet. The one test for the target choice and the sleep rule.
+	/// "Don't pull new enemies with AoE" (concept 03, A826, A832, A833): whether hitting <paramref name="enemy"/> would pull it
+	/// - the setting is on and it is not fighting yet: it holds no target and its figure is not in combat (a fighting enemy
+	/// can hold no target for a moment, casting at the ground or between phases). The one test for the target choice and
+	/// the sleep rule.
 	/// </summary>
-	internal static bool PullsIfHit(IBattleChara enemy) => Service.Config.NoNewHostiles && enemy.TargetObject == null;
+	internal static bool PullsIfHit(IBattleChara enemy) => Service.Config.NoNewHostiles && enemy.TargetObject == null && !enemy.InCombat();
 
 	/// <summary>
 	/// Every figure of the enemy side casting now, listed or not: the casters of the hostile list, a targetable enemy the
