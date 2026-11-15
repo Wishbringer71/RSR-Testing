@@ -23,11 +23,27 @@ are not reconstructed here.
 
 ## Unreleased
 
+## 7.5.8.3+wsh1
+
 ### Addition to RotationSolver: whether the duty is cleared
 
 New public members of `CustomRotation`: `InClearedDuty`, whether the player has cleared the instanced duty they are in,
 as the game keeps it (`UIState.IsInstanceContentCompleted`), false outside an instanced duty; and `LastPullTime`, the
 seconds the last combat in this territory lasted, 0 when it was elsewhere. Nothing existing changes.
+
+### Addition to RotationSolver: the goal of a Crucible run
+
+New public enum `CrucibleGoal` (`Level`, `SafeWin`, `Score`) and new members of `BeastmasterRotation`:
+`CrucibleGoalSetting`, the name of the stored setting; `CrucibleGoalNow`, the goal chosen; `CrucibleGoalPlayed`, the goal
+played on this board; `CrucibleGoalsOffered`, which goals hold on it; `CrucibleGoalWhyNot`, why the chosen one is not
+played; `ChooseCrucibleGoal(rotation, goal)`, which stores a choice; and `CrucibleTeamRequestRunning`, whether a team
+request is being applied. Nothing existing changes.
+
+### Addition to RotationSolver: Masked Carnivale and PvP Guard
+
+New public enum `CarnivaleControl` and `MaskedCarnivaleHelper.IsImmuneTo(target, control)`, whether a Carnivale enemy
+is immune to a control effect; `StatusHelper.PvPGuardStatuses` and `StatusHelper.GuardWastedStatuses`, the status rows
+of PvP Guard and those under which Guard is wasted. Nothing existing changes.
 
 ## 7.5.8.2+wsh1
 
