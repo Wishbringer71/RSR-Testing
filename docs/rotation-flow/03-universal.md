@@ -1933,10 +1933,12 @@ lässt.
 - *Anforderung:* Ein verschobener Burst kostet den ganzen Kampf. Der Zwei-Minuten-Zyklus läuft danach neben den Buffs
   der Gruppe, und im ersten Fenster fehlen Burst und Trank. Ob die Rotation absichtlich wartet (Ladungen sammeln,
   Fenster abwarten) oder eine Prüfung sie sperrt, muss aus der Spur hervorgehen, ohne dass er etwas einschaltet.
-- *Was zählt:* solange RSR spielt, jede Aktion der laufenden Rotation mit einer eigenen Abklinggruppe neben dem GCD (Spielblatt
+- *Was zählt:* jede Aktion der laufenden Rotation mit einer eigenen Abklinggruppe neben dem GCD (Spielblatt
   `CooldownGroup`, `AdditionalCooldownGroup`). Dazu gehören Abilities und GCDs mit eigenem Recast wie Technischer
   Schritt. Ausgenommen sind Abwehr (`DefensiveValues`), Bewegung und alles außerhalb des Kampfes oder ohne Gegner in
   Reichweite.
+- *Nur solange RSR spielt:* Spielt er selbst, ruht die Zählung (`DataCenter.IsActivated`). Ein Cooldown, den er
+  liegen lässt, ist nicht der Rotation anzulasten, und die Zeile nennte ihn sonst als ihren.
 - *Wann gezählt wird:* solange eine Ladung bereit ist und die Aktion nicht kommt. Eine Zeile entsteht nur, wenn die Zeit
   einen GCD übersteigt.
 - *Gründe:* Jede Ablehnung über `ActionTracer.Reject` wird je Aktion gezählt (der Grund ist eine feste Zeichenkette).

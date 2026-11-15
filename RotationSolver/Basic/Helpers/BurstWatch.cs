@@ -56,7 +56,8 @@ internal static class BurstWatch
 			Rebuild(rotation);
 		}
 
-		if (!DataCenter.InCombat || Player.Object is not { IsDead: false } || delta <= 0f)
+		// Only while RSR plays: a cooldown the player himself leaves is not the rotation's.
+		if (!DataCenter.InCombat || !DataCenter.IsActivated() || Player.Object is not { IsDead: false } || delta <= 0f)
 		{
 			return;
 		}
