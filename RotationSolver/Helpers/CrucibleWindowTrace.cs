@@ -21,12 +21,23 @@ internal static class CrucibleWindowTrace
 	{
 		Svc.AddonLifecycle.RegisterListener(AddonEvent.PostSetup, OnWindow);
 		Svc.AddonLifecycle.RegisterListener(AddonEvent.PostRefresh, OnWindow);
-		Svc.AddonLifecycle.RegisterListener(AddonEvent.PreReceiveEvent, TeamWindow, OnTeamWindowEvent);
+		Svc.AddonLifecycle.RegisterListener(AddonEvent.PreReceiveEvent, StartWindows, OnTeamWindowEvent);
+		Svc.ClientState.TerritoryChanged += OnTerritoryChanged;
 	}
 
-	// K7 (A821): every event of the team window - a click on its start button among them -, so that RSR's "Start" can send
-	// the same one. No source names the button or its event; the line does. It only listens.
-	private const string TeamWindow = "XBMPetParty";
+	// K7 (A821, A824): every click and input of the windows that may start a board - the team window, the board choice and
+	// the duty confirmation -, so that RSR's "Start" can send the one that does. No source names it: LazyCrucible lists
+	// "challenge = [8]" on the board choice and "commence" on the confirmation as inputs it never sends. It only listens.
+	private const string ConfirmWindow = "ContentsFinderConfirm";
+	private static readonly string[] StartWindows = ["XBMPetParty", "XBMStageList", "XBMStageDetailList", "XBMStageMap", ConfirmWindow];
+
+	// The duty confirmation shows for every duty; it counts only after a Crucible window had an event in this territory.
+	private static bool _crucibleEventSeen;
+
+	private static void OnTerritoryChanged(uint territory)
+	{
+		_crucibleEventSeen = false;
+	}
 
 	private static unsafe void OnTeamWindowEvent(AddonEvent type, AddonArgs args)
 	{
@@ -45,15 +56,22 @@ internal static class CrucibleWindowTrace
 				return;
 			}
 
+			var confirm = args.AddonName == ConfirmWindow;
+			if (confirm && !_crucibleEventSeen)
+			{
+				return;
+			}
+
+			_crucibleEventSeen |= !confirm;
 			var atkEvent = (AtkEvent*)received.AtkEvent;
 			var node = atkEvent == null || atkEvent->Node == null ? 0u : atkEvent->Node->NodeId;
-			DefenseTrace.Line($"crucible window {TeamWindow} event: type {(AtkEventType)received.AtkEventType}, param {received.EventParam}, "
+			DefenseTrace.Line($"crucible window {args.AddonName} event: type {(AtkEventType)received.AtkEventType}, param {received.EventParam}, "
 				+ $"node {node}, in the board {DataCenter.IsInCrucible}");
 		}
 		catch (Exception ex)
 		{
 			// Written once per place by ExceptionTrace (A798); the game's event goes on.
-			Svc.Log.Warning($"[CrucibleWindowTrace] team window event not read: {ex.Message}");
+			Svc.Log.Warning($"[CrucibleWindowTrace] start window event not read: {ex.Message}");
 		}
 	}
 
@@ -163,6 +181,7 @@ internal static class CrucibleWindowTrace
 	{
 		Svc.AddonLifecycle.UnregisterListener(OnWindow);
 		Svc.AddonLifecycle.UnregisterListener(OnTeamWindowEvent);
+		Svc.ClientState.TerritoryChanged -= OnTerritoryChanged;
 	}
 
 	private static unsafe void OnWindow(AddonEvent type, AddonArgs args)

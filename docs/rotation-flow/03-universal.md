@@ -1930,6 +1930,13 @@ lässt.
   - Beim Beschwörer hielt die Abwehr an der Puppe Sol-Bahamut über `RadiantAegisDueBeforeDemi` 40 s zurück (A818
     behebt das).
   - Für die übrigen drei liest die Spur keinen Grund, denn sie schreibt nur Entscheidungen der Abwehr.
+  - *Eingegrenzt (A824), Maschinist am Mitschnitt:* Die Eröffnung lief normal (Luftanker, Justieren, Doppelschach
+    zweimal, Bohrer, Kreissäge, Exkavator, Dame bis 10 s). Danach kam 30 s lang keine Ability, obwohl Schachmatt nie
+    lief, Doppelschach eine Ladung hielt und der Laufstabilisator bereit stand; die GCDs liefen weiter. Laufstabilisator,
+    Wildfeuer und Schachmatt kamen direkt nach dem zweiten Luftanker. Ausgeschlossen sind das Weben im Ganzen (88
+    Abilities in 77 GCDs über den Kampf) und die offene Abwehrflagge: Nach „single defence open, nothing chosen" läuft
+    die Wahl weiter zu `AttackAbility`. Offen bleibt, welche Prüfung in `CanUse` die Abilities ablehnte; genau das
+    schreibt die Zeile unten.
 - *Anforderung:* Ein verschobener Burst kostet den ganzen Kampf. Der Zwei-Minuten-Zyklus läuft danach neben den Buffs
   der Gruppe, und im ersten Fenster fehlen Burst und Trank. Ob die Rotation absichtlich wartet (Ladungen sammeln,
   Fenster abwarten) oder eine Prüfung sie sperrt, muss aus der Spur hervorgehen, ohne dass er etwas einschaltet.

@@ -24030,6 +24030,27 @@ Löschungen").
 
 *Prüfgrad:* Workflow-Lauf und Release-API gelesen, Prüfskripte; die Übergabe gegen den Release-Text abgeglichen.
 
+### A824 · TODO nach dem Release: Startereignis außerhalb des Teamfensters, später Burst eingegrenzt (15.11.2026)
+
+Sein Auftrag (15.11.2026): „danach todo im vollen loop". Offen sind nur Punkte, die auf Daten warten; je Punkt geprüft,
+ob Analyse sie ohne Daten weiterbringt.
+- *Crucible „Start" (A821):* Quelle LazyCrucible (lalalazy cdd5085, 14.11.2026, `ActuationGuard`): Es zählt die
+  Eingaben auf, die es nie sendet, darunter „challenge = [8]" in `XBMStageDetailList` und „commence" in
+  `ContentsFinderConfirm`. Gegenthese zum gebauten Messmittel: Liegt der Start dort, schriebe die Spur, die nur
+  `XBMPetParty` hörte, seinen Klick nie – der Punkt wartete vergeblich. Erweitert: Die Spur hört Klicks und Eingaben
+  von Teamfenster, Brettwahl (`XBMStageList`, `XBMStageDetailList`, `XBMStageMap`) und Inhaltsbestätigung, diese nur
+  nach einem Ereignis eines Crucible-Fensters im selben Gebiet. Konzept 21, K7 „Kader stimmt"; Vorhersage
+  `board-start-event`. Kein Eingriff ins Spiel.
+- *Später erster Burst (A820):* am Mitschnitt des 15.11. eingegrenzt. Beim Maschinisten lief die Eröffnung normal; von
+  10 s bis zum zweiten Luftanker bei 42 s kam keine Ability, obwohl Schachmatt, eine Ladung Doppelschach und der
+  Laufstabilisator bereit standen. Ausgeschlossen: das Weben im Ganzen (88 Abilities in 77 GCDs) und die offene
+  Abwehrflagge (die Wahl läuft nach „nothing chosen" weiter zu `AttackAbility`). Welche Prüfung ablehnte, zeigt erst
+  die Zeile „ready but unused" (Build ab 6992f82af). Konzept 03.
+- *Übrige Warte-Punkte:* Absturz der zweiten Installation, Flucht und Zauberbücher, Bretter 3 bis 5, Teraflare,
+  1000 Nadeln, Samurai-Meldung, Treffer ohne Objekt, FATE-Modul, Schlaf – je nur mit Spur oder fremdem Eingriff
+  lösbar; kein neuer Ansatz aus Code oder Quellen.
+- *Prüfgrad:* Quelle gelesen, Mitschnitt- und Spuranalyse, Compile, CI; im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

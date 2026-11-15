@@ -106,13 +106,15 @@ nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigt
 ## Warten auf Daten oder Fremde
 
 - **Crucible: „Start" startet das Brett** (A821; seine Vorgabe vom 15.11.2026). Im Kampf: Stimmt der Kader, startet ein
-  Klick in RSRs Fenster das Brett; bis dahin steht dort „Team ready". Auflösung: die Zeile „crucible window XBMPetParty
-  event: …" seines Starts in der nächsten Brettsitzung (Build ab A821), dann der Knopf mit genau diesem Ereignis.
+  Klick in RSRs Fenster das Brett; bis dahin steht dort „Team ready". Auflösung: die Zeilen „crucible window … event:
+  …" seines Starts in der nächsten Brettsitzung (Build ab A824: Teamfenster, Brettwahl und Inhaltsbestätigung), dann
+  der Knopf mit dem Ereignis, nach dem er das Brett betritt.
   Konzept 21, K7 „Kader stimmt".
 
 - **Später erster Burst bei Tänzer, Maschinist und Rotmagier** (A820). Im Kampf: Technischer Schritt, Laufstabilisator
   mit Wildfeuer und Ermutigen kamen an der Puppe 40 bis 73 s nach Kampfbeginn, der Zwei-Minuten-Zyklus läuft danach
-  neben den Buffs der Gruppe. Ursache aus Spur und Mitschnitt nicht lesbar. Auflösung: die Zeile „ready but unused over
+  neben den Buffs der Gruppe. Eingegrenzt (A824): beim Maschinisten von 10 s bis zum zweiten Luftanker keine Ability,
+  obwohl Schachmatt, Doppelschach und Laufstabilisator bereit waren; Weben und Abwehrflagge ausgeschlossen. Auflösung: die Zeile „ready but unused over
   the fight“ der nächsten Sitzung mit diesen Jobs (Build ab 6992f82af), dann Loop je Grund. Konzept 03, „Bereit, aber
   nicht genutzt“.
 

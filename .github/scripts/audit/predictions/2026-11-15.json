@@ -8,5 +8,7 @@
   {"id": "manafont-every-cycle", "archive": "A820",
    "kind": "absent", "situation": "ready but unused over the fight: ", "match": "(Manafont|Mana-Brunnen) ([3-9][0-9]|[1-9][0-9]{2,})\\.[0-9] s"},
   {"id": "team-start-event", "archive": "A821",
-   "kind": "present", "situation": "crucible window XBMPetParty PostSetup", "match": "crucible window XBMPetParty event: type ButtonClick"}
+   "kind": "present", "situation": "crucible window XBMPetParty PostSetup", "match": "crucible window XBMPetParty event: type ButtonClick"},
+  {"id": "board-start-event", "archive": "A824",
+   "kind": "present", "situation": "crucible window XBMPetParty PostSetup", "match": "crucible window (XBM\\w+|ContentsFinderConfirm) event: type ButtonClick"}
 ]

@@ -2416,6 +2416,15 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
     Klick im Spiel bis zur nächsten Sitzung.
   - *Falsifikation:* (3) *Ausgeliefert, nichts ändert sich:* Er startet das Brett über eine Taste statt mit der Maus.
     Dann zeigt das Ereignis die Taste, nicht den Knopf; auch das wird mitgeschrieben.
+  - *Falsifikation (A824): Der Start liegt gar nicht im Teamfenster.* LazyCrucible (lalalazy cdd5085, 14.11.2026,
+    `ActuationGuard`) zählt die Eingaben auf, die es nie sendet, darunter „board select, challenge = [8]" im Fenster
+    `XBMStageDetailList` und „commence" in `ContentsFinderConfirm`. Liegt der Startknopf dort oder folgt auf das
+    Teamfenster noch eine Bestätigung, schriebe die Spur nur `XBMPetParty` mit, und sein Klick fehlte in jeder Sitzung –
+    der Punkt wartete vergeblich. Deshalb schreibt sie die Klicks und Eingaben des Teamfensters, der Brettwahl
+    (`XBMStageList`, `XBMStageDetailList`, `XBMStageMap`) und von `ContentsFinderConfirm`, dieses nur, solange eines
+    der Crucible-Fenster seit dem letzten Gebietswechsel ein Ereignis hatte – sonst stünde jede Inhaltsbestätigung im
+    Spiel in der Spur. Kosten: Dalamud ruft die Spur nur für diese fünf Fenster; Mausbewegungen bleiben draußen. Die Reihenfolge der Zeilen zeigt dann, ob
+    Teamfenster, Brettwahl oder Bestätigung das Brett startet, und der Knopf nimmt das letzte Ereignis vor dem Betreten.
 - *Umsetzen:* erst die Abgänge, dann die Zugänge, je ein `TogglePet`; danach wartet RSR, bis der Kader sich ändert,
   höchstens einen GCD. Nimmt das Spiel einen Zugang nicht, fällt er für diese Sitzung aus der Empfehlung, und es geht
   weiter; geht ein Abgang nicht, hört RSR auf. Jede Stufe steht in der Spur („crucible team: …"); bestätigen und
