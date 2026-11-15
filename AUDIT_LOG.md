@@ -23818,6 +23818,30 @@ hoch wird und die bildschirmauflösung des spiels überschreitet", A797); „zwe
 - *Preis:* Zwei Spalten machen das Fenster rund 970 px breit; es kann Fenster des Spiels verdecken, bis er es verschiebt.
 - *Prüfgrad:* Modell, Compile, CI (60 Schritte); im Spiel nicht beobachtet.
 
+### A817 · Seine Meldung: Tank setzt Defensivfähigkeiten an der Trainingspuppe ein (15.11.2026)
+
+Seine Meldung (15.11.2026): „warum nutzt ein tank defensivskills, wenn er gar nicht attackiert wird (also selbst keinen
+schaden bekommt)? z.b. bei einer trainingspuppe?" Einordnung: Defekt (Verhalten weicht vom Konzept ab: Schutz nach
+der Wahrscheinlichkeit eines Treffers). Kein Tank-Mitschnitt an einer Puppe in seinen Uploads (nur Beastmaster); am Code
+geprüft, alle Pfade, die eine Abwehr drücken können (Konzept 09, „Die Pfade“).
+- *Ausgeschlossen:* Die Pull-Regel braucht einen Gegner, der ihn als Ziel hält und in 3 Yalm steht – eine Puppe hält
+  kein Ziel; Tankbuster-Plan, Einzelabwehr und Flächenabwehr brauchen ein Wirken, eine Vorhersage oder einen Angriff;
+  die Armlänge der Basisklasse hängt an einem erkannten Rückstoß; Dunkelritter (The Blackest Night nach Strategie) und
+  Revolverklinge haben keinen ungebundenen Pfad.
+- *Ursache, Krieger:* `WAR_Reborn.GeneralAbility` drückte Urimpuls bzw. Urinstinkt bei jeder Abklingzeit, wenn er allein
+  in der Gruppe war und ein Gegner in Reichweite stand (Upstream 5afb824d4, 25.04.2026) – an der Puppe also ständig.
+  Zweck der Bedingung: allein heilt ihn niemand. Diesen Fall führt der Fork schon für jede Rolle
+  (`DataCenter.UnhealedUnderAttack`: kein Heiler lebt, ein Gegner greift ihn an, mit „Without a living healer, spend
+  your defence to stay alive longer“, A361). Ersetzt, nicht gestrichen (Nutzen geprüft, `CLAUDE.md`, „Bevor ich etwas
+  Gebautes entferne“): Allein gegen angreifende Gegner geht Urimpuls weiter bei jeder Abklingzeit, auch mit „Use
+  Bloodwhetting/Raw intuition on single enemies“ aus; an der Puppe nicht mehr. Die Klasse: dieselbe Abkürzung in keiner
+  anderen Rotation (Suche über alle, 15.11.2026).
+- *Paladin, kein Defekt:* Holy Sheltron bei voller Eid-Leiste (`WhenToSheltron`, 100) geht auch an der Puppe – die Leiste
+  füllt sich mit jedem Auto-Angriff und verfällt über 100; es kostet nur, was sonst verfiele, 50 bleiben.
+- *Im Kampf:* Krieger allein an der Puppe: kein Urimpuls mehr ohne Schaden. Allein gegen Gegner, die ihn angreifen:
+  unverändert. In der Gruppe mit Heiler: unverändert (nur reaktiv unter 70 % und in der Einzelabwehr).
+- *Prüfgrad:* statisch, Compile, CI; im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

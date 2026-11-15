@@ -227,13 +227,9 @@ public sealed partial class WAR_Reborn : WarriorRotation
 
 	protected override bool GeneralAbility(IAction nextGCD, out IAction? act)
 	{
-		var _partyCount = 0;
-		foreach (var _ in PartyMembers)
-		{
-			_partyCount++;
-		}
-
-		if ((InCombat && Player?.GetForecastHealthRatio(true) < HealIntuition && NumberOfHostilesInRange > 0) || (InCombat && _partyCount == 1 && NumberOfHostilesInRange > 0))
+		// A817: alone, on every cooldown only while an enemy attacks him and no healer lives (DataCenter.UnhealedUnderAttack) -
+		// "alone with an enemy in range" pressed it at a training dummy that never attacks.
+		if ((InCombat && Player?.GetForecastHealthRatio(true) < HealIntuition && NumberOfHostilesInRange > 0) || (InCombat && DataCenter.UnhealedUnderAttack))
 		{
 			if (BloodwhettingPvE.CanUse(out act))
 			{

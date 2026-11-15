@@ -927,7 +927,19 @@ braucht, trägt deshalb keinen Grund, Nascent Flash zurückzuhalten.
 - Bloodwhetting fällt für sich
   - in der Einzelabwehr (Tankbuster, Beschuss) mit „Use Bloodwhetting/Raw intuition on single enemies" oder
     bei mehr als zwei Gegnern in Reichweite, und nur, solange der Gegner den Krieger anvisiert;
-  - im allgemeinen Pfad reaktiv unter „Bloodwhetting/Raw intuition heal threshold" (0,7).
+  - im allgemeinen Pfad reaktiv unter „Bloodwhetting/Raw intuition heal threshold" (0,7);
+  - im allgemeinen Pfad bei jeder Abklingzeit, solange kein Heiler lebt und ein Gegner ihn angreift
+    (`DataCenter.UnhealedUnderAttack`, mit „Without a living healer, spend your defence to stay alive longer", Abschnitt „Ohne Heiler: den eigenen Tod
+    hinauszögern"; A817). Upstream (5afb824d4, 25.04.2026) fragte dort „allein in der Gruppe und ein Gegner in
+    Reichweite“: Allein an der Trainingspuppe, die nicht angreift, drückte RSR Urimpuls bei jeder Abklingzeit, ohne dass
+    er Schaden nahm (seine Meldung vom 15.11.2026: „warum nutzt ein tank defensivskills, wenn er gar nicht attackiert
+    wird … z.b. bei einer trainingspuppe?“). Der Zweck der Upstream-Bedingung – allein heilt ihn niemand – ist genau der
+    Fall „ohne Heiler“; ersetzt, nicht gestrichen: Allein gegen Gegner, die ihn angreifen, geht Urimpuls weiter bei
+    jeder Abklingzeit, auch mit „single enemies“ aus. Andere Tanks haben keine solche Abkürzung (Suche über alle
+    Rotationen, 15.11.2026).
+- *Holy Sheltron bei voller Eid-Leiste* (Paladin, `WhenToSheltron`, ab Werk 100) geht auch ohne Angriff: Die Leiste
+  füllt sich mit jedem Auto-Angriff, auch an der Puppe, und über 100 verfällt jeder weitere Punkt. Der Druck kostet nur
+  die 50 Punkte, die sonst verfielen; 50 bleiben für einen Tankbuster. Kein Defekt (A817).
   „single enemies" steht ab Werk **an** (A237, seine Regel für Voreinstellungen); bis dahin stand es aus, und vor
   einem Boss-Tankbuster fiel Bloodwhetting gar nicht, erst danach reaktiv. Mit der Einstellung aus gilt das weiter.
 
