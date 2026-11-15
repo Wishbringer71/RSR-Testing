@@ -61,6 +61,9 @@ def load(path=LIST):
 
 
 def record(repo, commit, path=LIST):
+    # A commit is a hash; on 15.11.2026 a second repository name given after the first was stored as its commit.
+    if not all(c in "0123456789abcdef" for c in commit.lower()) or not 7 <= len(commit) <= 40:
+        return False
     data = load(path)
     for entry in data["sources"]:
         if entry["repo"] == repo:
@@ -116,6 +119,7 @@ def self_test():
         listing.write_text(json.dumps({"sources": entries[:1]}), encoding="utf-8")
         assert record("t/moved", second, listing) and load(listing)["sources"][0]["commit"] == second
         assert not record("t/none", second, listing)
+        assert not record("t/moved", "other/repo", listing), "a repository name is no commit"
 
     data = load()
     for entry in data["sources"]:

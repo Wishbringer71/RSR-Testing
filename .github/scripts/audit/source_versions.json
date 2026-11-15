@@ -33,7 +33,7 @@
   },
   {
    "repo": "dajoey/lalalazy",
-   "commit": "ofnature/Daedalus",
+   "commit": "cdd50856a",
    "date": "2026-11-15",
    "use": "GluttonyCombo, LazyCrucible: Crucible-Aufzeichnungen, Sanduhr, Futter (A674, A679)"
   },
@@ -117,8 +117,8 @@
   },
   {
    "repo": "ofnature/Daedalus",
-   "commit": "2644cbe4b0f6f72d8ae9aca172bff796e2fff329",
-   "date": "2026-11-06",
+   "commit": "8b028d777",
+   "date": "2026-11-15",
    "use": "Feldnotizen, Rotationen aller Jobs, Crucible (A600, A660)"
   },
   {
