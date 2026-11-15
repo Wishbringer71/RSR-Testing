@@ -24203,6 +24203,9 @@ Absturzbericht.
   `predictions/2026-11-15.json` (`riches-weighed`, `protection-plan-traced`).
 - *9 Dokumentation:* Konzept 21, K10 „Weg" (seine Präzisierung vom 15.11.2026), K15 „Haushalt bis zum Endkampf", K8
   Schritt 6.
+- *Quellen am Auftragsende:* awgil/ffxiv_bossmod ee5b04a4a (Module für Pandæmonium normal; RSR liest BossModReborn,
+  kein Nutzen hier), dajoey/lalalazy 1c70fcfee (LazyCrucible 0.1.9.19 und 0.1.9.20: nur Oberfläche und Testgerüst, keine
+  Mechanik), ofnature/Daedalus 961997dcb (neues Unterprojekt Selene, kein Crucible-Bezug); eingetragen.
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

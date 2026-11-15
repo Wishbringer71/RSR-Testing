@@ -21,8 +21,8 @@
   },
   {
    "repo": "awgil/ffxiv_bossmod",
-   "commit": "26b68ea4a",
-   "date": "2026-11-14",
+   "commit": "ee5b04a4a",
+   "date": "2026-11-15",
    "use": "BossMod (Original)"
   },
   {
@@ -33,7 +33,7 @@
   },
   {
    "repo": "dajoey/lalalazy",
-   "commit": "55146dbfc",
+   "commit": "1c70fcfee",
    "date": "2026-11-15",
    "use": "GluttonyCombo, LazyCrucible: Crucible-Aufzeichnungen, Sanduhr, Futter (A674, A679)"
   },
@@ -117,7 +117,7 @@
   },
   {
    "repo": "ofnature/Daedalus",
-   "commit": "8b028d777",
+   "commit": "961997dcb",
    "date": "2026-11-15",
    "use": "Feldnotizen, Rotationen aller Jobs, Crucible (A600, A660)"
   },
