@@ -2366,11 +2366,23 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
     Spalte 35 ist der empfohlene Rang (3, 8, 13, 18, 23). Eine eigene Grenze für Erfahrung führt das Blatt nicht
     (xivapi v2, 15.11.2026). Begleiter über dem Cap steigen weiter im echten Rang: Auf Brett 2 (Cap 10) stiegen am
     14.11.2026 Begleiter von 11 auf 12 (A799).
-  - *Level* wird angeboten, solange ein Begleiter mit bekanntem Rang unter dem Cap steht. Steht keiner darunter, hat
-    Level nach Z2 keinen Platz zu füllen: Es nähme nur die Rollen und füllte gegen Gefährdung auf. Damit bekämen
-    weniger Begleiter Erfahrung als unter Safe win, der volle Größe mit den niedrigsten nimmt. Ist Level gewählt und
-    nicht angeboten, spielt RSR auf diesem Brett Safe win; stehen alle auf Rang 25, Score (seine Vorgabe nach dem
-    Höchstrang, oben).
+  - *Level* wird angeboten, solange ein Begleiter mit bekanntem Rang unter der *Levelgrenze* steht. Die Levelgrenze ist
+    der Cap des Bretts, und gibt es ein nächstes Brett, dessen Mindestrang, wenn der höher liegt.
+    - *Sein Nachtrag (15.11.2026):* „level auch noch, wenn begleiter unterhalb des mindestlevels des darauffolgenden
+      brettes, ausser es gibt keine bretter mehr".
+    - *Mindestrang* ist der empfohlene Rang, den das Spiel am Brett zeigt: `XBMContent` Spalte 35 minus 2 (Brett 2
+      zeigt 6, Brett 3 zeigt 11; `CrucibleBoard.RecommendedRank`, A579). Darunter setzt die Hornwahl einen Begleiter
+      nur ein, wenn zu wenige andere leben (K6). Wer unter dem Mindestrang des nächsten Bretts steht, sitzt dort also auf
+      der Bank; hier gelevelt, kämpft er dort mit.
+    - *Beispiel:* Brett 2 (Cap 10), Brett 3 zeigt Mindestrang 11. Ein Begleiter auf Rang 10 kämpft auf Brett 2 voll,
+      wäre auf Brett 3 aber nur Ersatz. Level nimmt ihn mit, und die Levelgrenze auf Brett 2 ist 11. Auf Brett 5 gibt es
+      kein nächstes Brett; die Grenze bleibt der Cap 25.
+    - *Füllen (Z2):* Unter Level füllen zuerst Begleiter unter der Levelgrenze jeden Platz, die niedrigsten zuerst.
+      Wer zwischen Cap und Grenze steht, kämpft mit dem Cap, also voll; der Kader wird dadurch nicht schwächer.
+    - Steht keiner unter der Grenze, hat Level nach Z2 keinen Platz zu füllen: Es nähme nur die Rollen und füllte gegen
+      Gefährdung auf. Damit bekämen weniger Begleiter Erfahrung als unter Safe win, der volle Größe mit den
+      niedrigsten nimmt. Ist Level gewählt und nicht angeboten, spielt RSR auf diesem Brett Safe win; stehen alle auf
+      Rang 25, Score (seine Vorgabe nach dem Höchstrang, oben).
   - *Score* wird angeboten, wenn ein Begleiter den Cap erreicht. Steht keiner darauf, nur wenn der Score-Kader gemessen
     ungefährdet ist (`TeamEndangered` false). „Ungemessen" oder „gefährdet" ist nicht „absolut sicher". Ist Score
     gewählt und nicht angeboten, spielt RSR Safe win.

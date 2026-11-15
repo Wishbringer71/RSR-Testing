@@ -10,7 +10,7 @@ namespace RotationSolver.Basic.Rotations.Basic;
 /// </summary>
 public enum CrucibleGoal : byte
 {
-	/// <summary>Every place below the board's cap, the lowest first; above it only while endangered; offered only with a familiar below the cap, else played as <see cref="SafeWin"/> (A821).</summary>
+	/// <summary>Every place below the level limit - the board's cap, or the next board's recommended rank where higher (A822) -, the lowest first; above it only while endangered; offered only with a familiar below the limit, else played as <see cref="SafeWin"/> (A821).</summary>
 	[Description("Level")]
 	Level,
 
@@ -218,6 +218,33 @@ public partial class BeastmasterRotation
 	/// stronger - below the cap first (Strengthen). Empty with no familiar behind in rank (<paramref name="laggers"/> 0).
 	/// <paramref name="learning"/> receives each familiar that lags behind: true when it fights only when too few others live.
 	/// </summary>
+	/// <summary>
+	/// K7 (A822, his rule of 15.11.2026): the rank Level levels up to on <paramref name="board"/> - its cap, and where a next
+	/// board follows, that board's recommended rank when it lies higher: below it a familiar fights there only when too few
+	/// others live (K6).
+	/// </summary>
+	private static int LevelLimit(uint board)
+	{
+		var sync = CrucibleBoard.SyncRank(board);
+		var next = board + 1;
+		return CrucibleBoard.SyncRank(next) > 0 ? Math.Max(sync, CrucibleBoard.RecommendedRank(next)) : sync;
+	}
+
+	// K7 (A822): the familiars of known rank below the level limit.
+	private static HashSet<BeastmasterPet> BelowLimit(List<TeamCandidate> all, int sync, int limit)
+	{
+		var below = new HashSet<BeastmasterPet>();
+		foreach (var candidate in all)
+		{
+			if (TrueRank(candidate, sync, out var known) is var rank && known && rank < limit)
+			{
+				_ = below.Add(candidate.Pet);
+			}
+		}
+
+		return below;
+	}
+
 	private static List<TeamCandidate> LevelTeam(uint board, int size, List<TeamCandidate> all, Dictionary<uint, int> weight,
 		bool interrupting, List<BeastmasterPet> team, TeamHealth health, Dictionary<BeastmasterPet, bool> learning, out string note,
 		out int laggers)
@@ -238,8 +265,12 @@ public partial class BeastmasterRotation
 			return [];
 		}
 
-		// In order: below the cap - the roles, then the lowest -, then at or above it, the lowest first.
-		var order = ChooseTeam(new List<TeamCandidate>(all), all.Count, weight, interrupting, LastRunTeam(team), out _, sync, recommended);
+		// In order: below the level limit - the roles, then the lowest -, then at or above it, the lowest first (A822: the
+		// limit is the cap, or the next board's recommended rank where that lies higher).
+		var limit = LevelLimit(board);
+		var belowLimit = BelowLimit(all, sync, limit);
+		var order = ChooseTeam(new List<TeamCandidate>(all), all.Count, weight, interrupting, LastRunTeam(team), out _, sync, recommended,
+			belowLimit);
 		var chosen = new List<TeamCandidate>(size);
 		var above = new List<TeamCandidate>();
 		var roles = RoleHolders(order, interrupting);
@@ -298,15 +329,15 @@ public partial class BeastmasterRotation
 		}
 
 		var squad = SquadPoints(board, chosen.Count);
-		note = $"{below} below the board's cap ({sync}) level"
+		note = $"{below} below {(limit > sync ? $"the next board's recommended rank ({limit})" : $"the board's cap ({sync})")} level"
 			+ (filled > 0 ? $"; {filled} at or above it fill places" : string.Empty)
 			+ (swapped > 0 ? $"; {swapped} stronger in place of weaker ones" : string.Empty)
-			+ (filled + swapped > 0 ? " - against danger: the team below the cap does not carry the losses measured on this board, or none are measured yet" : string.Empty)
+			+ (filled + swapped > 0 ? " - against danger: the team below the limit does not carry the losses measured on this board, or none are measured yet" : string.Empty)
 			+ $"; {offHorns} below the recommended rank ({recommended}) fight only when too few others live"
 			+ (chosen.Count < size && squad > 0 ? $"; {chosen.Count} familiars bring {squad} points for a small team." : ".");
 		return chosen;
 
-		bool BelowCap(TeamCandidate candidate) => !candidate.OverRank && candidate.Rank > 0 && candidate.Rank < sync;
+		bool BelowCap(TeamCandidate candidate) => belowLimit.Contains(candidate.Pet);
 	}
 
 	// K7 (A806): the one danger check of every goal - whether the familiars the horn choice sends in (over the sync or at
@@ -597,16 +628,17 @@ public partial class BeastmasterRotation
 		var health = ShownHealth(all, sync);
 
 		// A821 (his rules of 15.11.2026): only the goals that hold on this board are offered. Level while a familiar of known
-		// rank stands below the board's cap - else it has no place to fill, and Safe win takes more familiars along (all on
+		// rank stands below the level limit (A822: the cap, or the next board's recommended rank) - else it has no place to fill, and Safe win takes more familiars along (all on
 		// the highest rank: Score). Score where one has reached the cap; with none there, only while its team is measured not
 		// endangered. A goal chosen and not offered plays as Safe win here.
 		var belowCap = false;
 		var reachedCap = false;
 		var allAtTop = candidates.Count > 0;
+		var levelLimit = LevelLimit(board);
 		foreach (var candidate in candidates)
 		{
 			var rank = TrueRank(candidate, sync, out var known);
-			belowCap |= known && rank < sync;
+			belowCap |= known && rank < levelLimit;
 			reachedCap |= rank >= sync && (known || candidate.OverRank);
 			allAtTop &= known && rank >= CrucibleBoard.MaxRank;
 		}
@@ -624,7 +656,7 @@ public partial class BeastmasterRotation
 		CrucibleGoalPlayed = goal;
 		CrucibleGoalWhyNot = chosenGoal == goal ? string.Empty
 			: chosenGoal == CrucibleGoal.Level
-				? $"Level is not offered: no familiar of known rank stands below this board's cap of {sync}; plays as {goal}."
+				? $"Level is not offered: no familiar of known rank stands below {levelLimit}, this board's cap or the next board's recommended rank; plays as {goal}."
 				: "Score is not offered: no familiar has reached this board's cap, and its team is not measured to pass safely; plays as Safe win.";
 
 		if (goal == CrucibleGoal.Level && party != null)
@@ -704,7 +736,8 @@ public partial class BeastmasterRotation
 	// at equal worth one above the board's rank first, then below it the higher rank, then one in the team already. `core`
 	// counts up to the last pick that covers a weakness anew or is needed as a healer or interrupter (A698).
 	private static List<TeamCandidate> ChooseTeam(List<TeamCandidate> candidates, int size, Dictionary<uint, int> weight,
-		bool interrupting, List<BeastmasterPet> team, out int core, int lowFirstFrom = 0, int fightsFrom = 0)
+		bool interrupting, List<BeastmasterPet> team, out int core, int lowFirstFrom = 0, int fightsFrom = 0,
+		HashSet<BeastmasterPet>? levelFirst = null)
 	{
 		var lowFirst = lowFirstFrom > 0;
 
@@ -840,7 +873,9 @@ public partial class BeastmasterRotation
 		static int LevelRank(TeamCandidate candidate) => candidate.Rank > 0 ? candidate.Rank : int.MaxValue;
 
 		// A806: preferred for leveling - a known rank below the cap.
-		bool Adequate(TeamCandidate candidate) => !candidate.OverRank && candidate.Rank > 0 && candidate.Rank < lowFirstFrom;
+		// A822: Level names them - below its level limit, which may lie above the cap.
+		bool Adequate(TeamCandidate candidate) => levelFirst?.Contains(candidate.Pet)
+			?? (!candidate.OverRank && candidate.Rank > 0 && candidate.Rank < lowFirstFrom);
 
 		// Two above the sync fight at the sync - equally strong.
 		bool Before(TeamCandidate a, TeamCandidate b)

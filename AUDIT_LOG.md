@@ -23980,6 +23980,21 @@ start/spielen und bei pressen des buttons dann das brett starten". Einordnung: V
 - *Vorhersage:* `predictions/2026-11-15.json`, „team-start-event": nach dem Öffnen des Teamfensters vor einem Brett eine
   Zeile „crucible window XBMPetParty event: type ButtonClick".
 
+### A822 · Sein Nachtrag: Level auch unter dem Mindestrang des nächsten Bretts (15.11.2026)
+
+Sein Nachtrag (15.11.2026): „level auch noch, wenn begleiter unterhalb des mindestlevels des darauffolgenden brettes,
+ausser es gibt keine bretter mehr". Einordnung: Präzisierung seiner Vorgabe aus A821. Konzept 21, K7 „Angebotene Ziele".
+- *Grundlage:* Mindestrang = der empfohlene Rang, den das Spiel am Brett zeigt (`XBMContent` Spalte 35 minus 2,
+  `CrucibleBoard.RecommendedRank`, A579); darunter setzt die Hornwahl einen Begleiter nur ein, wenn zu wenige andere
+  leben (K6). Wer darunter steht, sitzt auf dem nächsten Brett auf der Bank.
+- *Gebaut:* Levelgrenze = Cap des Bretts, mit nächstem Brett dessen Mindestrang, wo höher (`LevelLimit`). Level wird
+  angeboten mit einem Begleiter bekannten Rangs unter ihr und füllt zuerst mit ihnen (`LevelTeam`, `ChooseTeam` mit der
+  Menge der Begleiter unter der Grenze). Wer zwischen Cap und Grenze steht, kämpft mit dem Cap – voll.
+- *Beispiel:* Brett 2 (Cap 10), Brett 3 zeigt 11 – Grenze 11; Brett 5 ohne Nachfolger – Grenze 25.
+- *Prüfgrad:* Code, Compile, CI; im Spiel nicht beobachtet. Vorhersage: die bestehenden „level-core-low" und
+  „level-below-cap" (A805, A806) gelten weiter; ein Begleiter auf Rang 10 erscheint unter Level auf Brett 2 mit
+  „levels".
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
