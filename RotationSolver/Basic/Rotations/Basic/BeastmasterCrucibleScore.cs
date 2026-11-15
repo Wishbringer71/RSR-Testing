@@ -384,16 +384,16 @@ public partial class BeastmasterRotation
 		return keep;
 	}
 
-	// K15 (A829, rule 2): the tokens the shop showed last in this run and the fights the run had ended by then; the tokens
-	// earned between two shops of one run and the fights they were earned in, summed by board over the session.
+	// K15 (A829, rule 2): the tokens the shop showed last in this run and the fights the run had ended by then; by board, the
+	// least tokens a fight earned between two shops of one run over the session.
 	private static (int Run, int Tokens, int Fights) _tokensSeen = (-1, 0, 0);
-	private static readonly Dictionary<uint, (int Tokens, int Fights)> _tokenIncome = [];
+	private static readonly Dictionary<uint, float> _tokenIncome = [];
 	private static int _richesKeepTraced = -1;
 
 	/// <summary>
 	/// K15 (A829, rule 2): the tokens the shop keeps for "Talerregen" (Rolling in Riches) - so many that, without another
 	/// purchase, the run ends with the bonus's tokens: <paramref name="tokens"/> now and what the fights to the final fight,
-	/// on the shortest way and the final fight not counted, earn at the measured rate. 0 while the board grants no such bonus,
+	/// on the shortest way and the final fight not counted, earn at the least rate measured. 0 while the board grants no such bonus,
 	/// the player does not carry the way (<paramref name="carries"/>), or the tokens cannot reach it as measured.
 	/// </summary>
 	private static int TokensToKeep(int tokens, bool carries)
@@ -403,8 +403,9 @@ public partial class BeastmasterRotation
 		var fights = CrucibleBoard.RunFights;
 		if (_tokensSeen.Run == run && fights > _tokensSeen.Fights && tokens >= _tokensSeen.Tokens)
 		{
-			var sum = _tokenIncome.TryGetValue(board, out var known) ? known : default;
-			_tokenIncome[board] = (sum.Tokens + tokens - _tokensSeen.Tokens, sum.Fights + fights - _tokensSeen.Fights);
+			// Review A830: the least earned a fight between two shops - treasure and random spaces make the mean too large.
+			var each = (tokens - _tokensSeen.Tokens) / (float)(fights - _tokensSeen.Fights);
+			_tokenIncome[board] = _tokenIncome.TryGetValue(board, out var known) ? Math.Min(known, each) : each;
 			DefenseTrace.Line($"crucible tokens: {tokens - _tokensSeen.Tokens} earned in {fights - _tokensSeen.Fights} fight(s) since the last shop");
 		}
 
@@ -415,7 +416,7 @@ public partial class BeastmasterRotation
 			return 0;
 		}
 
-		var perFight = _tokenIncome.TryGetValue(board, out var income) && income.Fights > 0 ? income.Tokens / (float)income.Fights : 0f;
+		var perFight = _tokenIncome.TryGetValue(board, out var income) ? income : 0f;
 		var earned = CrucibleRoute.FightsAhead() is { } ahead ? (int)(perFight * Math.Max(0, ahead.Normal + ahead.Heavy - FinalFights)) : 0;
 		var keep = tokens + earned >= needed ? Math.Max(0, needed - earned) : 0;
 		if (keep != _richesKeepTraced)

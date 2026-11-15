@@ -154,6 +154,10 @@ internal static class CrucibleBoard
 	// critical hit adds. Until measured, his log of 15.11.2026 (ACT, Crucible, two sessions): 68 % of the team's damage was
 	// his, a critical hit dealt 1.42 times a plain one - fallbacks from measurement, not game values.
 	private static double _playerDamage, _playerPhysical, _playerMagic;
+
+	// Review A830: the familiars' damage by its kind, and the player's damage taken in all and from enemy auto-attacks - the
+	// one part of his load a faster team provably shortens - since RSR loaded.
+	private static double _familiarPhysical, _familiarMagic, _takenAll, _takenAuto;
 	private static readonly Dictionary<uint, (double Crit, int Crits, double Plain, int Plains)> _critByAction = [];
 	private const float PlayerShareFallback = 0.68f;
 	private const float CritGainFallback = 0.42f;
@@ -1276,6 +1280,14 @@ internal static class CrucibleBoard
 		if (byFamiliar)
 		{
 			RecordFamiliarDamage(action, amount);
+			if (AttackTypeKind.IsPhysical(entry.AttackType))
+			{
+				_familiarPhysical += amount;
+			}
+			else if (AttackTypeKind.IsMagic(entry.AttackType))
+			{
+				_familiarMagic += amount;
+			}
 		}
 		else
 		{
@@ -1769,13 +1781,15 @@ internal static class CrucibleBoard
 
 	/// <summary>
 	/// A830: what the team's pace is weighed with - the player's share of the team's damage, the physical part of his own
-	/// damage, and what a critical hit of his adds over a plain one (per action, weighted by its critical hits); measured since
-	/// RSR loaded, else from his log of 15.11.2026.
+	/// damage and of the familiars', what a critical hit of his adds over a plain one (per action, weighted by its critical
+	/// hits), and the share of his damage taken that came from enemy auto-attacks; measured since RSR loaded, else from his
+	/// log of 15.11.2026 (the auto-attack share 0 until measured).
 	/// </summary>
-	internal static (float Share, float Physical, float CritGain) PaceBasis
+	internal static (float Share, float Physical, float FamiliarPhysical, float CritGain, float Auto) PaceBasis
 	{
 		get
 		{
+			var familiarTyped = _familiarPhysical + _familiarMagic;
 			var familiar = _familiarAuto + _familiarTrick + _familiarRelease + _familiarOther;
 			var share = _playerDamage > 0d ? (float)(_playerDamage / (_playerDamage + familiar)) : PlayerShareFallback;
 			var typed = _playerPhysical + _playerMagic;
@@ -1791,7 +1805,8 @@ internal static class CrucibleBoard
 				}
 			}
 
-			return (share, physical, weight > 0 ? (float)(gain / weight) : CritGainFallback);
+			return (share, physical, familiarTyped > 0d ? (float)(_familiarPhysical / familiarTyped) : physical,
+				weight > 0 ? (float)(gain / weight) : CritGainFallback, _takenAll > 0d ? (float)(_takenAuto / _takenAll) : 0f);
 		}
 	}
 
@@ -1899,12 +1914,15 @@ internal static class CrucibleBoard
 	/// K10 shop (A569): a hit of an enemy on the player in a fight of the Crucible, <paramref name="amount"/> damage of an
 	/// action of <paramref name="attackType"/> (the action sheet's AttackType). Effect handler, game thread.
 	/// </summary>
-	internal static void RecordTaken(uint attackType, uint amount)
+	internal static void RecordTaken(uint attackType, uint amount, bool autoAttack = false)
 	{
 		if (_fight == 0 || amount == 0)
 		{
 			return;
 		}
+
+		_takenAll += amount;
+		_takenAuto += autoAttack ? amount : 0u;
 
 		var kind = AttackTypeKind.IsPhysical(attackType) ? HitKind.Physical
 			: AttackTypeKind.IsMagic(attackType) ? HitKind.Magic

@@ -1028,13 +1028,16 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
       trifft, fängt nichts.
     - *Regel 1 – Schutz nach Plan (K8 Schritt 6):* Steht kein Gegenstandsbonus auf dem Spiel (oder trägt er den Weg nicht),
       gehört ein gehaltener Schutzgegenstand in die Kämpfe, in denen er am meisten fängt: den Endkampf und, mit mehreren,
-      die schwersten der verbleibenden. Ein Kampf ist geplant, wenn weniger Kämpfe auf den Wegen voraus schwerer sind
-      (gelernte tiefste Senke, A709; ungemessen gilt schwerer) als Schutzgegenstände gehalten werden. In einem geplanten
+      die schwersten der verbleibenden. Ein Kampf ist geplant, wenn auf dem Weg voraus mit den meisten schwereren Kämpfen
+      (gelernte tiefste Senke, A709; ungemessen gilt schwerer; ein Zufallsfeld zählt einmal, wenn einer seiner Kämpfe
+      schwerer ist) weniger solche Kämpfe liegen, als Schutzgegenstände gehalten werden – gezählt je Weg, nicht über alle
+      Abzweige zusammen (Prüfrunde A830, Befund 4). In einem geplanten
       Kampf geht der Schutz wie bisher im Endkampf: gegen einen angekündigten Treffer auf dich und sobald ein Gegner dich
       angreift. Ein ungemessener laufender Kampf ist nicht geplant (wie bisher). Neu gerechnet wird mit jedem Kampf.
     - *Regel 2 – Talerregen im Laden:* Vergibt das Brett Talerregen, hält der Laden so viele Marken, dass du ohne weiteren
       Kauf mit 2.000 endest – deine Marken jetzt plus, was die Kämpfe bis zum Endkampf auf dem kürzesten Weg bringen (je
-      Kampf gemessen zwischen zwei Läden desselben Laufs; der Endkampf zählt nicht) –, solange du den Weg mit LP und
+      Kampf der kleinste Ertrag, der zwischen zwei Läden desselben Laufs gemessen wurde – Schatz und Zufallsfelder machen
+      ihn sonst zu groß; der Endkampf zählt nicht) –, solange du den Weg mit LP und
       gehaltener Heilung trägst wie bei Geizhals. Kauft der Laden, dann nur aus dem Überschuss darüber; der Schutz gegen einen
       Zustand, der unabhängig von den LP tötet, geht wie bei Geizhals aus allen Marken. Reichen die Marken mit dem Ertrag
       nicht bis 2.000 oder ist der Ertrag ungemessen und die Marken jetzt unter 2.000, steht der Bonus nicht auf dem Spiel,
@@ -1049,7 +1052,9 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
       Kampf, in dem dich nur ein leichter Treffer trifft, verbraucht ihn – Preis: der Schutz fehlt in einem späteren
       Kampf, der leichter gelernt war. Bedrohung: Die Lasten je Kampf sind die schwersten je gesehenen; überschätzt einer
       seine Schwere, wartet der Schutz auf ihn. Ein Ertrag, der schwankt (Schatz, Beute), lässt Talerregen knapp verfehlen –
-      dann fehlen Kauf und Bonus; der kürzeste Weg rechnet den Ertrag eher zu klein, also eher Kauf als Halten.
+      dann fehlen Kauf und Bonus; der kleinste gemessene Ertrag je Kampf rechnet eher zu wenig, also eher Halten als Kauf,
+      solange der Weg getragen ist. Im ersten Lauf einer Sitzung ist der Ertrag ungemessen: Dann hält der Laden nur, wenn
+      die Marken schon 2.000 erreichen (Preis: Talerregen im ersten Lauf, wenn der Ertrag ihn erst bringen würde).
     - *Falsifikation:* (1) *Kein Defekt:* widerlegt – drei Läufe mit ungenutztem Grimoire, Talerregen nur ohne Kauf.
       (2) *Option falsch – ein Grimoire gehört an den Begleiter:* Schritt 7 schützt ihn gegen angekündigte Treffer, wenn er
       fiele; die Regel ändert dort nichts. (3) *Ausgeliefert, und nichts ändert sich:* Greift dich in keinem Kampf ein
@@ -1455,35 +1460,42 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     Teamschadens, mit Schildspalter, Klingenbiss, Schmetteraxt, Schildansturm und 39.333 aus Auto-Angriffen.
     Kritische Treffer machen das 1,42-Fache (Attacke 71 gegen 50, Klingenbiss 529 gegen 380, Schildspalter 650 gegen 455,
     Schmetteraxt 173 gegen 120, je Median), direkte Treffer das 1,24-Fache; Krit-Rate rund 10 %.
-  - *Regel:* Ein Kampf dauert so lange, wie das Team braucht, die Gegner zu besiegen; was er dich kostet, wächst mit
-    seiner Dauer (Auto-Angriffe und jede Fähigkeit, die ein Gegner wiederholt). Schneller zu töten senkt die Last im
-    selben Verhältnis (meine Ableitung, unbelegt; die Prüfung steht unten). Das *Tempo* der getragenen Ausrüstung ist
-    der Faktor, um den das Team schneller Schaden macht: dein Anteil am Teamschaden mal deinem Faktor plus der Anteil
-    der Begleiter mal ihrem. Dein Faktor je Stück: (1 + Schaden ausgeteilt) · (1 + physischer · dein physischer Anteil)
-    · (1 + magischer · dein magischer Anteil) · (1 + Kritrate · Krit-Mehrschaden) / (1 − Hast) / (1 + Verlangsamung);
-    Stücke multiplizieren wie die Abwehr (meine Ableitung). Der Begleiterfaktor zählt nur Stücke, die auch auf ihn
-    wirken. Die Last eines Kampfs mit dieser Ausrüstung ist die gemessene geteilt durch das Tempo – auf der Skala von
-    Laden und Schatz, im Test des Wegs (K15) und an der Campsite (K10), über dieselben Faktoren der getragenen
-    Ausrüstung, mit denen RSR jede Last schon auf „ohne Ausrüstung" zurückrechnet.
-  - *Was RSR selbst misst (seine Vorgabe vom 15.11.2026, ingame belegen):* deinen Anteil am Teamschaden, deinen
-    physischen und magischen Anteil (Angriffsart jedes Treffers) und den Krit-Mehrschaden (je Aktion kritische gegen
-    gewöhnliche Treffer, Kennzeichen im Treffer) – laufend, über die Sitzung. Bis zur ersten Messung gelten die Werte
-    aus seinem Mitschnitt (68 %, 42 %; physisch: alle gemessenen Waffenkünste physisch).
-  - *Selbstkorrektur:* Jede gelernte Last wird beim Lernen mit dem Tempo von damals auf „ohne Ausrüstung" zurückgerechnet
-    und beim Lesen mit dem von jetzt angewandt. Stimmt die Annahme „Last wächst mit der Dauer" für einen Kampf nicht,
-    lernt er beim nächsten Lauf den höheren Wert (die Tafeln halten den schwersten), und die Rechnung liefert wieder das
-    Gemessene; ein Fehler kann so nur zwischen zwei Läufen mit verschiedenem Tempo bestehen. Werte aus der Zeit vor A830
-    sind ohne Tempo gelernt; trug er damals Angriffsausrüstung, unterschätzt RSR den Kampf um deren Tempo, bis ein Lauf
-    ihn neu lernt. *Preis:* bei seinen bisherigen Läufen höchstens das Tempo eines Stücks, das er damals trug; die
-    Trankschwelle und die Heilung darunter bleiben.
-  - *Und die Begleiter, die besser werden:* Ränge zählen schon (A729: die Lasten je Rang); Futter und Begleiter, die
-    stärker werden, senken die Last über die gemessenen Kämpfe, nicht über eine Annahme. Das Futter im Tempo der
-    Ausrüstung mitzurechnen, wäre derselbe Weg; er steht als offene Arbeit im TODO („Crucible: Futter im Tempo").
-  - *Gegenthesen:* (1) *Die Last wächst nicht mit der Dauer* (ein Boss mit festem Ablauf): siehe Selbstkorrektur; Preis:
-    ein Lauf. (2) *Kritrate ist ein Zuschlag in Prozentpunkten, nicht in Prozent:* Lesart Prozentpunkte (meine Ableitung,
-    unbelegt); RSR misst den Krit-Mehrschaden, nicht die Rate. (3) *Ausgeliefert, und nichts ändert sich:* Ohne
-    angebotenes Angriffsstück bleibt die Wahl gleich; sonst steht im Fenster ein Wert, wo vorher keiner stand, und die
-    Spur nennt „crucible pace: …".
+  - *Was davon dich schützt (gemessen, ACT 15.11.2026, Brett 2, drei Mitschnitte):* Auf dich kamen aus Gegnertreffern
+    5.631 Schaden in 152 Treffern, keiner davon ein Auto-Angriff – alle waren Fähigkeiten der Gegner. Dein Begleiter hält
+    die Gegner. Belegt ist nur: Ein Gegner greift automatisch in festem Takt an („auto-attack delay", das Hast verkürzt),
+    ein Kampf, den das Team schneller beendet, hat also im selben Verhältnis weniger Auto-Angriffe. Ob er auch weniger
+    Fähigkeiten auf dich bringt, belegt keine Quelle und kein Mitschnitt (Bosse wechseln an LP-Schwellen, und jede
+    Mechanik kommt trotzdem).
+  - *Regel:* Das *Tempo* der Ausrüstung ist der Faktor, um den das Team schneller Schaden macht: dein Anteil am
+    Teamschaden mal deinem Faktor plus der Anteil der Begleiter mal ihrem. Dein Faktor je Stück: (1 + Schaden
+    ausgeteilt) · (1 + physischer · dein physischer Anteil) · (1 + magischer · dein magischer Anteil) · (1 + Kritrate ·
+    Krit-Mehrschaden) / (1 − Hast) / (1 + Verlangsamung); Stücke multiplizieren wie die Abwehr (meine Ableitung). Der
+    Begleiterfaktor zählt nur Stücke, die auch auf ihn wirken, mit seinem eigenen physischen Anteil. Auf der Skala von
+    Laden und Schatz senkt das Tempo nur den Teil deiner gemessenen Last, der aus Auto-Angriffen kommt (gemessen je
+    Sitzung; vor der ersten Messung null): Last mal (1 − Anteil + Anteil / Tempo). Bei seinen Kämpfen ist dieser Anteil
+    null – ein Angriffsstück bringt ihm dort keine Sicherheit, und die Skala sagt das, statt es zu erfinden. Das Fenster
+    nennt bei jedem Angriffsstück sein Tempo.
+  - *Nicht im Test des Wegs, an der Campsite und in den gelernten Lasten:* Diese Rechnungen halten Schutz, Rast, Futter
+    und Käufe zurück (K15). Sie rechnen mit den gemessenen Lasten je Kampf und Rang (A729) – stärkere Begleiter senken die
+    Gefahr dort über die Messung, nicht über eine Annahme.
+  - *Was RSR selbst misst (Z15):* deinen Anteil am Teamschaden, deinen und den physischen Anteil der Begleiter (Angriffsart
+    jedes Treffers), den Krit-Mehrschaden (je Aktion kritische gegen gewöhnliche Treffer, Kennzeichen im Treffer) und den
+    Anteil der Auto-Angriffe an deiner Last – laufend, über die Sitzung. Bis zur ersten Messung gelten die Werte aus
+    seinem Mitschnitt (68 %, 42 %; physisch: alle gemessenen Waffenkünste physisch; Auto-Angriffe: null).
+  - *Verworfen (A830, Prüfrunde vom 15.11.2026):* Das Tempo als Teiler jeder Last, auch im Test des Wegs und beim Lernen.
+    Die Annahme „Last wächst mit der Dauer" ist für die Senke nicht belegt, und die Tafeln halten den schwersten Wert:
+    Ein schneller Lauf hätte die Last dauerhaft verzerrt, ein noch schnellerer sie unterschätzt. Der Weg galt dann als
+    getragen, und Sparsamkeit, Geizhals, Rast und Futter hielten Schutz zurück, den er brauchen konnte (C206).
+  - *Offen, mit Preis:* Die Begleiter nehmen die Auto-Angriffe; was das Tempo ihren Verlusten (K11) und „Keine Verluste"
+    erspart, rechnet RSR noch nicht (TODO „Crucible: Tempo für Begleiter und Futter"). Der Anteil am Teamschaden ist mit
+    der getragenen Ausrüstung gemessen (wenig zu hoch, Wirkung nur auf der Skala). Der Krit-Mehrschaden ist früh in der
+    Sitzung verrauscht (Mittel der Verhältnisse, direkte Treffer und Schwächen darin). Hast wirkt laut Blatt nicht auf
+    oGCDs; die Formel nimmt sie für deinen ganzen Schaden (höchstens Hast mal Anteil der oGCDs). Kritrate als
+    Prozentpunkte ist meine Lesart.
+  - *Gegenthesen:* (1) *Angriffswerte schützen dich doch:* nur über Auto-Angriffe belegt; sonst unbelegt, siehe oben.
+    (2) *Ausgeliefert, und nichts ändert sich:* Bei seinen Kämpfen bleibt die Wahl im Laden gleich, weil dich keine
+    Auto-Angriffe treffen; das Fenster nennt nun das Tempo jedes Angriffsstücks, und die Spur „crucible pace: …" zeigt
+    Anteil, Krit-Mehrschaden und Auto-Anteil.
   *Grund im Fenster:* Jedes Angebot steht im Fenster mit seinem Namen in der Sprache des Clients, seinem Wert auf der
   Skala und dem, was sie nicht misst; das empfohlene zuerst, mit dem Abstand zum nächstbesten.
   *Seine Lage (07.11.2026, Zahlen aus seinem Routenfenster kurz davor):* Ein Kampf kostete rund 4 %, Vorrat 36 %,
@@ -2398,8 +2410,8 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
   | Z10 | „mehrere züge im vorraus planen, theoretisch schon am anfang bis zum bosskampf. dann die planung nur an das tatsächliche ergebnis der kämpfe, des loots und des geschäfts anpassen. optimum erreichen“ (Präzisierung, 15.11.) | jede Entscheidung rechnet über den ganzen Weg bis einschließlich des Endkampfs und neu nach jedem Ergebnis; festgelegt wird nur die nächste | K10 „Weg“, K15 „Haushalt bis zum Endkampf“ | Spurzeilen je Entscheidung |
   | Z11 | „viele verbrauchsgegenstände ungenutzt, obwohl du sie extra zum kauf vorgeschlagen hast“ (15.11.) | ohne Gegenstandsbonus geht ein Schutzgegenstand in einem geplanten Kampf, sobald ein Gegner ihn angreift | `ProtectionPlanned` (K8 Schritt 6) | Spur „crucible item: fight … is a planned fight“ |
   | Z12 | Z7, „die hochmöglichste bonuszahl“ (meine Ableitung: Talerregen fehlte) | der Laden hält die Marken für Talerregen, solange der Weg getragen ist | `TokensToKeep`, `RankOffers(keep)` | Spur „crucible score: shop keeps … for Talerregen“ |
-  | Z13 | „ist ‚hast‘ … nicht eine beschleunigung der angriffe“, „gewisse fähigkeitsboni überhaupt nicht gewertet“ (Hinweis, 15.11.) | Schaden, physischer und magischer Schaden, Kritrate, Hast und Verlangsamung zählen über das Tempo auf derselben Skala wie Schutz | `GearFold`, `UncountedEffects` | Spur „crucible pace: …“, Wert im Fenster |
-  | Z14 | „je besser die begleiter im brett werden, desto geringer ist doch die gefahr“ (Hinweis, 15.11.) | die Last jedes Kampfs gilt mit dem Tempo von jetzt, Ränge über A729 | `WornFactors`, `BareShare` | Spur „crucible fight …: net loss …“ gegen den nächsten Lauf |
+  | Z13 | „ist ‚hast‘ … nicht eine beschleunigung der angriffe“, „gewisse fähigkeitsboni überhaupt nicht gewertet“ (Hinweis, 15.11.) | Schaden, physischer und magischer Schaden, Kritrate, Hast und Verlangsamung ergeben das Tempo; auf der Skala zählt es, soweit es deine Last nachweislich senkt (Auto-Angriffe), und das Fenster nennt es | `GearFold`, `UncountedEffects` | Spur „crucible pace: …“, Wert im Fenster |
+  | Z14 | „je besser die begleiter im brett werden, desto geringer ist doch die gefahr“ (Hinweis, 15.11.) | die Gefahr folgt den gemessenen Lasten je Kampf und Rang (A729); keine unbelegte Annahme in einer Rechnung, die Schutz zurückhält | `NetLoad`, `DipLoad`, `CarriesToFinal` | Spur „crucible fight …: net loss …“ je Rang |
   | Z15 | „was nicht aufgrund externer recherche belegt werden kann, könnte doch durch einmaligen ingame kauf und nutzung belegt werden“ (Vorschlag, 15.11.) | Anteil am Teamschaden, physischer Anteil und Krit-Mehrschaden misst RSR im Kampf; bis dahin Werte aus seinem Mitschnitt | `CrucibleBoard.PaceBasis` | Spur „crucible pace: … your share …“ |
   *Grundlagen (belegt):* Der Levelcap ist der Synchronrang des Bretts (`XBMContent`, Spalte 36: 5, 10, 15, 20, 25); wer
   darüber steht, kämpft mit ihm, wer darunter steht, mit dem eigenen. Jeder Begleiter im Kader bekommt Erfahrung, mit

@@ -31,7 +31,7 @@ public static partial class Watcher
 				// K10 shop (A569): what the player takes in the Crucible, physical or magic, for the gear that guards it.
 				if (effect.TargetID == player.GameObjectId && DataCenter.IsInCrucible && set.Action is { } action)
 				{
-					CrucibleBoard.RecordTaken(action.AttackType.RowId, FullAmount(damage));
+					CrucibleBoard.RecordTaken(action.AttackType.RowId, FullAmount(damage), action.GetActionCate() == ActionCate.Autoattack);
 				}
 			}
 			else if (effect.GetSpecificTypeEffect(ActionEffectType.Heal, out var heal)

@@ -600,7 +600,7 @@ public partial class BeastmasterRotation
 		// size, and no insurance in the final fight (A704).
 		if (slot < 0 && InCombat && (keepNoItem
 			? HitAnnouncedOn(player) && AnnouncedHitThreatens(player, line)
-			: HitAnnouncedOn(player) || ((finalFight || ProtectionPlanned(crucible)) && EnemyAttacks(player))))
+			: HitAnnouncedOn(player) || (EnemyAttacks(player) && (finalFight || ProtectionPlanned(crucible)))))
 		{
 			slot = Protection(crucible, player, out why);
 		}
@@ -1621,9 +1621,10 @@ public partial class BeastmasterRotation
 	}
 
 	/// <summary>
-	/// K15 (A829, rule 1): whether the fight in progress is one the protective items held are planned for - fewer battles on
-	/// the board's ways ahead are heavier, by the learned deepest dip (A709; one never measured counts heavier), than such
-	/// items are held. A fight not measured yet is not planned. Weighed again when the fight or the items held change.
+	/// K15 (A829, rule 1): whether the fight in progress is one the protective items held are planned for - on the way ahead
+	/// with the most battles heavier than it, by the learned deepest dip (A709; one never measured counts heavier), there are
+	/// fewer of them than such items are held. A fight not measured yet is not planned. Weighed again when the run, the fight
+	/// or the items held change.
 	/// </summary>
 	private static unsafe bool ProtectionPlanned(InstanceContentCrucibleOfTheUnbroken* crucible)
 	{
@@ -1638,34 +1639,27 @@ public partial class BeastmasterRotation
 			}
 		}
 
-		if (_protectionPlanKey == (battle, held))
+		var key = (CrucibleBoard.Run, battle, held);
+		if (_protectionPlanKey == key)
 		{
 			return _protectionPlanned;
 		}
 
-		_protectionPlanKey = (battle, held);
-		_protectionPlanned = false;
-		if (battle == 0 || held == 0 || CrucibleBoard.DipLoad(battle) is not { } here || CrucibleRoute.BattlesAhead() is not { } ahead)
+		// Weighed only once the fight's dip and the ways are known; until then not planned, and asked again.
+		if (battle == 0 || held == 0 || CrucibleBoard.DipLoad(battle) is not { } here
+			|| CrucibleRoute.MostAhead(other => CrucibleBoard.DipLoad(other) is not { } dip || dip > here) is not { } heavier)
 		{
 			return false;
 		}
 
-		var heavier = 0;
-		foreach (var other in ahead)
-		{
-			if (other != battle && (CrucibleBoard.DipLoad(other) is not { } dip || dip > here))
-			{
-				heavier++;
-			}
-		}
-
+		_protectionPlanKey = key;
 		_protectionPlanned = heavier < held;
 		DefenseTrace.Line($"crucible item: fight {battle} {(_protectionPlanned ? "is" : "is not")} a planned fight for the {held} "
-			+ $"protective item(s) held - {heavier} fight(s) ahead are heavier than its {here:P0}");
+			+ $"protective item(s) held - {heavier} fight(s) on the heaviest way ahead are heavier than its {here:P0}");
 		return _protectionPlanned;
 	}
 
-	private static (uint Battle, int Held) _protectionPlanKey;
+	private static (int Run, uint Battle, int Held) _protectionPlanKey;
 	private static bool _protectionPlanned;
 
 	private static unsafe int FirstOf(InstanceContentCrucibleOfTheUnbroken* crucible, CrucibleItemKind kind)

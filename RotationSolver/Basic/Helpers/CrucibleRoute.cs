@@ -623,6 +623,57 @@ internal static class CrucibleRoute
 	}
 
 	/// <summary>
+	/// K15 (A829, review A830): on the way from the last battle that holds the most of them, how many battles <paramref name="counts"/>
+	/// - a random space once when one of the battles it can become counts. Null while no battle is known or the ways were not
+	/// read.
+	/// </summary>
+	internal static int? MostAhead(Func<uint, bool> counts)
+	{
+		if (!TryStart(out var route, out var start) || route.Next == null)
+		{
+			return null;
+		}
+
+		var memo = new Dictionary<int, int>();
+		return Rest(start);
+
+		int Rest(int index)
+		{
+			var most = 0;
+			foreach (var next in route.Next[index])
+			{
+				most = Math.Max(most, From(next));
+			}
+
+			return most;
+		}
+
+		int From(int index)
+		{
+			if (memo.TryGetValue(index, out var known))
+			{
+				return known;
+			}
+
+			// A way back to a space still being searched ends there (concept 24, A795).
+			memo[index] = 0;
+			var node = route.Nodes[index];
+			var here = node.Battle != 0 && counts(node.Battle) ? 1 : 0;
+			foreach (var (_, battle) in node.Options)
+			{
+				if (battle != 0 && counts(battle))
+				{
+					here = 1;
+				}
+			}
+
+			var total = here + (node.Kind == Space.Boss ? 0 : Rest(index));
+			memo[index] = total;
+			return total;
+		}
+	}
+
+	/// <summary>
 	/// Whether a campsite - or a random space that can become one - can still come after another battle, from the last battle
 	/// on. False: the campsite after this battle is the last before the boss. Null while no battle is known or the board's ways
 	/// were not read.

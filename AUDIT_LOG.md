@@ -24226,12 +24226,24 @@ Absturzbericht.
   Lernwerte ohne Tempo (Preis: Unterschätzung um das Tempo eines damals getragenen Stücks, bis neu gelernt).
 - *7 Gebaut:* `GearFold` (eine Faltung für Laden, Schatz, Wegtest und Campsite statt vier gleicher Schleifen; Tempo in
   `Taken`), Werte aus dem Text, `CrucibleBoard.PaceBasis` mit `RecordPlayerDamage`, Spur „crucible pace: …".
-- *8 Nachweis:* Compile (0 Warnungen), Prüfungen; im Spiel nicht beobachtet. Prüfgrad statisch und Compile; eine
-  unabhängige Prüfrunde für Z10 bis Z15 läuft.
+- *8 Nachweis:* Compile (0 Warnungen), Prüfungen; im Spiel nicht beobachtet. Prüfgrad statisch und Compile.
+- *Prüfrunde (15.11.2026, Z10 bis Z15, ein frischer Hilfsagent):* zwei Befunde hoher Schwere – das Tempo teilte die Last
+  im Test des Wegs, an der Campsite und beim Lernen, auf eine unbelegte Annahme („Last wächst mit der Dauer", für die
+  Senke nicht haltbar), und Schutz, Rast, Futter und Käufe wären auf dieser Rechnung zurückgehalten worden; die behauptete
+  Selbstkorrektur stimmte nicht, weil die Tafeln den schwersten Wert halten (C206). Befund am Vorgehen: eine unbelegte
+  Annahme in eine Rechnung getragen, die Schutz zurückhält. Zurück zur Anforderung: Gemessen trafen ihn auf Brett 2 in
+  152 Gegnertreffern (5.631 Schaden, ACT 15.11.2026) keine Auto-Angriffe. *Neu gebaut:* Tempo nur auf der Skala von
+  Laden und Schatz und nur auf den gemessenen Anteil der Auto-Angriffe an seiner Last (`ScaleTaken`); `WornFactors`
+  nur Abwehr; das Fenster nennt das Tempo jedes Stücks. Mittlere Befunde: `ProtectionPlanned` zählte über alle Abzweige
+  (jetzt `CrucibleRoute.MostAhead`, der Weg mit den meisten schwereren Kämpfen; Schlüssel mit Lauf, kein Zwischenstand
+  bei unbekannter Last); der Begleiterfaktor nahm deine Angriffsart (jetzt seine, gemessen); der Markenertrag war das
+  Mittel mit Schatz und Zufallsfeldern (jetzt der kleinste je Kampf); Schritt 1 unter Talerregen hängt an `carries`,
+  das wieder nur gemessen rechnet. Niedrige Befunde mit Preis im Konzept (K13 „Tempo", „Offen, mit Preis").
 - *Vorhersage:* `DefenseTrace.log`, Crucible: nach „crucible gear held: …" eine Zeile „crucible pace: the gear held speeds
   the team x…", mit gemessenem Anteil statt 68 % nach dem ersten eigenen Treffer; ein Angriffsstück steht im Laden mit
   einem Wert über null. Maschinenlesbar: `pace-traced`.
-- *9 Dokumentation:* Konzept 21, K13 „Tempo", Anforderungen Z13 bis Z15; TODO „Crucible: Futter im Tempo".
+- *9 Dokumentation:* Konzept 21, K13 „Tempo", Anforderungen Z13 bis Z15; TODO „Crucible: Tempo für Begleiter und
+  Futter".
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
@@ -24590,3 +24602,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C203 | A817 (Stand A817): An der Trainingspuppe öffne die Pull-Regel nicht, „eine Puppe hält kein Ziel“; der Krieger-Fix beseitige die Abwehr an der Puppe | Unbelegt angenommen; seine Spur vom 11.11.2026 zeigt die Abwehr an der Puppe die ganze Zeit offen über „ohne Heiler“ – die Puppe hält den Spieler als Ziel. Seine Meldung vom 15.11.2026 (alle Klassen), behoben in A818 |
 | C204 | A795 (Stand A795): Eine über Bilder gehaltene Figur sei kein Absturzweg, weil der Speicherblock der Kampffiguren gültig bleibt; schlimmstenfalls lese RSR die Kennung des nächsten Bewohners | Der Speicher bleibt lesbar, die Funktionstabelle nicht: Am 15.11.2026 endete das Spiel in `IsCasting` einer gehaltenen Figur (A827). Gehalten wird nur noch die Id |
 | C205 | A632 (Stand A632): Seine Präzisierung „nicht am anfang des brettes fürs ganze brett …, ähnlich der vorausplanung beim schach" verbiete eine Rechnung über das ganze Brett; die Option „mehrere Strecken voraus" sei zu verwerfen, weil die Lasten nur gemittelt bekannt seien | Sie schließt einen festen Plan beim Betreten aus, nicht die Rechnung bis zum Endkampf mit Neuplanung nach jedem Ergebnis (seine Präzisierung vom 15.11.2026: Navi, Schach); die Lasten sind seit A661 je Kampf und seit A729 je Rang bekannt (A829) |
+| C206 | A830 (Stand 1e8f89762): Das Tempo der Ausrüstung senke die Last jedes Kampfs auch im Test des Wegs und an der Campsite; ein Fehler der Annahme „Last wächst mit der Dauer" bestehe nur zwischen zwei Läufen | Unbelegt für die Senke, und die Tafeln halten den schwersten Wert: verzerrt dauerhaft oder unterschätzt, wo Schutz zurückgehalten wird; gemessen trafen ihn keine Auto-Angriffe. Das Tempo gilt nur noch auf der Skala von Laden und Schatz für den Anteil der Auto-Angriffe (A830, Prüfrunde) |
