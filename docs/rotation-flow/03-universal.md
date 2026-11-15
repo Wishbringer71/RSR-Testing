@@ -1196,7 +1196,7 @@ die die Gegnerliste ausschließt.
 
 ## Flächen, die Gegner treffen, und Gegner, die noch nicht kämpfen
 
-*Was gilt (A826):* Eine Aktion, die Gegner um dich trifft, ist ein Angriff, auch wenn sie dazu heilt: „AoE type: Off"
+*Was gilt (A826):* Eine Aktion, die Gegner um dich trifft, ist ein Angriff, auch wenn sie dazu heilt: „AoE usage: Off"
 sperrt sie, und „Don't pull new enemies with AoE" lässt sie nicht los, solange ihr Wirkgebiet einen Gegner einschließt,
 der noch nicht kämpft (kein Ziel). Beides gilt für jede Fläche – um dich, um ein Ziel, auf einem Bodenpunkt –, für jeden
 Job, auch wenn die Rotation die Mindestzahl der Fläche überspringt (`skipAoeCheck`).
@@ -1208,7 +1208,7 @@ dazu die Gruppe.
 *Ursache, am Code:*
 - RSR stuft eine Aktion als freundlich ein, wenn sie Verbündete oder die Gruppe anvisiert oder, ohne Gegnerziel, mehr
   als 5 y um dich wirkt (`CustomRotation.LoadActionSetting`). Assise und Makrokosmos (Macrocosmos, 25874) fallen darunter;
-  für freundliche Aktionen gilt der AoE-Typ nicht, und unberührbare Gegner (Schlaf, Stopp-Markierung) schützt die Fläche
+  für freundliche Aktionen gilt „AoE usage" nicht, und unberührbare Gegner (Schlaf, Stopp-Markierung) schützt die Fläche
   nicht. Holy, Holy III und Flammenwerfer hat Upstream von Hand auf feindlich gestellt; die Klasse blieb offen. Erhoben
   am Spielblatt: unter den 101 Spieleraktionen dieser Einstufung richten außerhalb des Blaumagiers genau diese vier
   laut Wirktext Schaden an Gegnern um dich an, dazu Flammenwerfer im Kegel.
@@ -1224,7 +1224,7 @@ dazu die Gruppe.
 - Der Schalter gilt für die Flächen um dich mit derselben Prüfung wie im allgemeinen Pfad (Gegner im Wirkgebiet ohne
   Ziel), und ein Mittelpunkt, der einen solchen Gegner träfe, scheidet aus, statt mit 0 zu zählen.
 
-*Im Kampf:* Mit „AoE type: Off" kommen Assise und Makrokosmos nicht mehr; ein Weißmagier verliert ihre Heilung und das
+*Im Kampf:* Mit „AoE usage: Off" kommen Assise und Makrokosmos nicht mehr; ein Weißmagier verliert ihre Heilung und das
 MP, ein Astrologe die gespeicherte Heilung von Makrokosmos – der Preis, den der Schalter nennt. Mit „Don't pull new
 enemies" wartet jede Fläche um dich, bis die Gegner in ihrem Wirkgebiet kämpfen; ein Tank, der mit einer Fläche
 ansammeln will, lässt den Schalter aus (ab Werk aus). Assise weckt keinen schlafenden Gegner mehr.
