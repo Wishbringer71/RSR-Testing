@@ -38,14 +38,8 @@ public partial class CustomRotation
 		// The game names the Limit Break of the player's class for the level the full bar gives.
 		var id = controller->GetActionId((FFXIVClientStructs.FFXIV.Client.Game.Character.Character*)player.Address,
 			(byte)(controller->BarCount - 1));
-		IBaseAction? limitBreak = null;
-		foreach (var candidate in new[] { LimitBreak1, LimitBreak2, LimitBreak3 })
-		{
-			if (candidate != null && candidate.ID == id)
-			{
-				limitBreak = candidate;
-			}
-		}
+		// The three levels read one by one: this runs every frame the full bar waits, and an array of them would be allocated each time.
+		var limitBreak = LimitBreak3?.ID == id ? LimitBreak3 : LimitBreak2?.ID == id ? LimitBreak2 : LimitBreak1?.ID == id ? LimitBreak1 : null;
 
 		if (limitBreak == null)
 		{
@@ -162,17 +156,14 @@ public partial class CustomRotation
 			return stated;
 		}
 
-		var shortest = 0f;
-		foreach (var level in new[] { LimitBreak1, LimitBreak2, LimitBreak3 })
-		{
-			if (level != null && ActionTooltip.TryStatedDuration(level.ID, out var levelStated) && levelStated > 0f
-				&& (shortest == 0f || levelStated < shortest))
-			{
-				shortest = levelStated;
-			}
-		}
+		return ShorterStated(ShorterStated(ShorterStated(0f, LimitBreak1), LimitBreak2), LimitBreak3);
+	}
 
-		return shortest;
+	// The shorter of shortest and the duration level's effect text states; 0 counts as none.
+	private static float ShorterStated(float shortest, IBaseAction? level)
+	{
+		return level != null && ActionTooltip.TryStatedDuration(level.ID, out var stated) && stated > 0f
+			&& (shortest == 0f || stated < shortest) ? stated : shortest;
 	}
 
 	// A healer's Limit Break heals everyone within its range after its cast, and at level 3 raises the dead: more than one member

@@ -46,7 +46,7 @@ richtig ist:
 
 | Klasse | Anzahl | Warum korrekt |
 |---|---|---|
-| Limit Breaks | 63 | RSR fährt keine PvE-Limit-Breaks |
+| Limit Breaks | 63 | bis A628 setzte RSR keine PvE-Limit-Breaks; seither nur ohne anderen Spieler in der Gruppe, über die Stufe, die das Spiel nennt (`LimitBreak1` bis `LimitBreak3`), nicht über die Aktion je Job (Konzept 03, „Limit Break allein“) |
 | Pet-/Automaton-Aktionen | 49 | Beschreibung sagt selbst „cannot be assigned to a hotbar" — SMN-Demi-Angriffe, MCH-Queen, SCH-Faerie |
 | Stance-Abbruch (`Release*`) | 4 | RSR bricht Tank-Stances nicht ab |
 | Morph-Platzhalter | 3 | VPR `SerpentsTail`/`Twinfang`/`Twinblood` — „Changes to … when requirements are met"; RSR ruft die Zielaktion |

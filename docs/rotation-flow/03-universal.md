@@ -1611,6 +1611,9 @@ nennt das Spiel (`GetActionId`).
   unbekannt ist, gilt das). Fällt alles vorher, endet mit ihnen auch der Schaden, den das Limit Break mindern oder heilen
   soll.
 - Eine Spurzeile je Einsatz mit Rolle, Grund, Stufe und Fenster, eine je gemessener Sperre und gemessener Dauer.
+- *Kosten:* Die Prüfung läuft je Frame nur im Kampf, allein und bei voller Leiste; sie legt nichts an. Die Stufe zur
+  Id des Spiels und die kürzeste genannte Dauer liest sie aus den drei Eigenschaften einzeln, ohne Feld je Aufruf
+  (bis A844 je Aufruf ein neues Feld der drei Stufen).
 
 **Damage Dealer** (Nahkampf, Fernkampf, Magie; A628): sobald die Leiste voll ist, solange in seinem Fenster kein
 angekündigter Treffer auf dich liegt – ein Cast auf dich oder dich erreichend, ein Marker, ein Raidwide oder Tankbuster
