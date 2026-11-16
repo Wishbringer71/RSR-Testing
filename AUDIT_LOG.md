@@ -24483,6 +24483,22 @@ Absturzbericht.
   CLAUDE.md, „Was wann gilt". Seine neuere Fassung (V5i) ist hier nicht eingetragen – das entscheidet er.
 - *Prüfgrad:* Selbsttests, 60 Prüfungen grün; Windows nicht gemessen.
 
+### A839 · REGEL V5i übernommen (16.11.2026)
+
+- *Anlass:* Seine Anweisung (16.11.2026): „warum trägst du die regel nicht ein? du hast meine erlaubnis und anweisung“ –
+  nach A838, wo ich V5i offen ließ. Eingeordnet als Vorgabe; sie hebt die Präzisierung vom 14.11.2026 („aus dem
+  LLM-Framework nichts holen“) für die REGEL auf, sonst nicht.
+- *Quelle:* Wishbringer71/LLM-Framework, Kernregel (Abschnitt „K-REGEL“) an `a389fe0` (dort A69: wortgleich mit
+  `docs/rule-variants/v5i-en-telegraph.txt`; hier verglichen: gleich). Der Block steht wörtlich in CLAUDE.md.
+- *Was V5i nicht mehr im Block führt* – „Erreichbarer Prüfgrad“ (Messmittel mitliefern) und „Kontextkomprimierung →
+  Datei erneut lesen“ – steht dort als „K-Ergänzungen“. Vor dem Entfernen geprüft (CLAUDE.md, „Bevor ich etwas Gebautes
+  entferne“): Beide tragen Entscheidungen hier (Messmittel in A834 bis A837, Neulesen nach jeder Komprimierung). Sie
+  bleiben als Ergänzung unter dem Block, wie im Framework.
+- *Neu durch V5i:* fehlerhafte Tests anhalten und benennen statt Tests oder Code zurechtzubiegen; „[Schätzung: …]“ für
+  Schlüsse; „unbelegt“ auch für Zustandsbehauptungen („erledigt“, Test, Datei).
+- *Prüfsumme:* `regel.sha256` mit `--record-regel` neu aufgezeichnet (A838).
+- *Prüfgrad:* Textvergleich, `check_rule_files.py`.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
