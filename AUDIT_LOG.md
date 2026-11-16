@@ -24499,6 +24499,40 @@ Absturzbericht.
 - *Prüfsumme:* `regel.sha256` mit `--record-regel` neu aufgezeichnet (A838).
 - *Prüfgrad:* Textvergleich, `check_rule_files.py`.
 
+### A840 · Regeldateien mit dem fertigen LLM-Framework abgeglichen (16.11.2026)
+
+- *Anlass:* Seine Angabe (16.11.2026): „die anweisung für das framework galt nur, solange es nicht mature war. was es
+  jetzt ist“. Eingeordnet als Angabe zu seiner Präzisierung vom 14.11.2026; damit gilt die Regel in CLAUDE.md, die
+  Regeldateien bei jeder Änderung mit dem neuesten Branch abzugleichen. Die README des Frameworks führt noch „Noch nicht
+  ausgereift“ (R5 wartet dort auf Messung); seine Angabe geht vor.
+- *Stand:* LLM-Framework `a389fe0` (main), Regeldateien K, W, A, P, S, R/D, E; Gegenstücke hier: CLAUDE.md, `.claude/rules/`.
+- *Übernommen, weil hier fehlend:* eigene Sitzung für Arbeit an anderen Repositories, ein angehängtes Repository schaltet
+  die Agent-Hooks ab dem nächsten Neustart ab (A-Sitzungsstart, ADR 0051 dort); erfolglose Suche belegt kein Fehlen
+  (W-Nullbefund); jeder Defekt eine Klasse (W-Ursache); Prüferbefunde und sein „kein Defekt“ am Artefakt prüfen,
+  unüberprüfte Korrektur „ungeprüft“ nennen (P-Unabhängig); Surrogat benennen (P-Prüfgrad); Audit in zwei Durchgängen
+  mit Defektklassen (P-Audit); Diff gegen Nachricht nach einer Abweisung, kein angekündigter Lauf ohne Lauf (P-Commit);
+  Weiterarbeit nach Stop-Hook, auch nach grüner CI (A-Turnende); Selbsttest beide Seiten, gefährlicher Zwilling, keine
+  Umgehung und Schwächung, Ausgangsstand vor der Änderung, Regressionsfall (P-Selbsttest, P-Umgehung, P-Beleg);
+  Eskalation einer zweimal gebrochenen Textregel, keine Großschreibung als Betonung (R-Eskalation, R-Kurz); erster
+  Laufzeitkontakt vor dem Weiterbauen (P-Vorhersage); neue Abhängigkeit prüfen (S-Abhängigkeiten).
+- *Nicht übernommen, mit Grund:*
+  - *Freigabe für Prüfmittel* (`#freigabe tests|harness`, P-Tests): Sie legte jede Änderung meiner Hilfsmittel ihm vor;
+    hier stehen sie nicht zur Abstimmung. Das Verbot, eine Prüfung zu schwächen oder zu umgehen, trägt den Schutz gegen
+    Testmanipulation ohne seine Mühe.
+  - *Bis zu drei Prüfrunden* (P-Runden): Hier gilt eine Runde je Anforderungsstand, seine Rüge vom 14.11.2026 (A814);
+    strenger, bleibt.
+  - *ADR-Dokumente* (D-ADR): Hier tragen Konzepte und Archiv dieselben Teile; ein zweiter Ort altert daneben.
+  - *Regel der Zwei, Datenschutz vor Anweisungen* (S-Zwei, S-Daten): stehen in der Anweisung der Sitzungsumgebung und
+    in ihrer Sandbox; eine Kopie hier wäre Ballast (R-Kurz).
+  - *`onFailure: block` an der Regelwache:* Das Framework setzt es an alle sperrenden Hooks, auch an `rule_inject.py`
+    (Bash und Read). Ein Absturz dort sperrte jedes Werkzeug, auch das zur Reparatur; hier bleibt sie ohne Block (A838).
+    An das Framework weitergegeben.
+- *Gleich in der Sache* (Herkunft meist dieses Repository): Belege, Zustand messen, Ehrlichkeit, Einordnung seiner
+  Angaben, Entscheidungen, Rückfragen, Loop, Wirkungsbilanz, Definition of Ready und Done, Durchsetzung über Hooks,
+  Vorhersagen, Commit-Identität, fremde Daten, Release, Regeldateien, Archiv, TODO, Quellen, Entwurfsregeln E-Maßstab
+  bis E-Verwertung (code.md, CLAUDE.md).
+- *Prüfgrad:* Textvergleich Regel für Regel; `check_rule_files.py` grün.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

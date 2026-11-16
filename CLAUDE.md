@@ -54,6 +54,7 @@ Diese Datei gilt in jeder Lage. Die übrigen Regeln stehen je genau einmal im Re
 **Bei Sitzungsbeginn und nach jeder Kontextkomprimierung**
 - Der SessionStart-Hook gibt den Abgleich mit Upstream, die offenen TODO-Punkte, die offenen Issues und die jüngsten Archiveinträge aus. Fehlt seine Ausgabe: `check_sync_state.py` ausführen, `TODO.md`, die offenen Issues und `archive.py recent` lesen.
 - Fehlt die REGEL im Kontext, ihm das sagen.
+- Fehlt der Sitzungsbrief, laufen meist keine Agent-Hooks: ihm das sagen und in jedem Bericht nennen, dass nur Git-Hooks und CI wirken. Arbeit an einem anderen Repository (Abgleich, Issue, Quellenprüfung) gehört in eine eigene Sitzung: Ein angehängtes Repository schaltet die Agent-Hooks ab dem nächsten Neustart ab (LLM-Framework, „A-Sitzungsstart“, dort ADR 0051).
 
 **Wenn er etwas sagt**
 - Einordnen: Vorgabe, Präzisierung, Vorschlag oder Hinweis (→ „Als was seine Angaben gelten").
@@ -65,6 +66,7 @@ Diese Datei gilt in jeder Lage. Die übrigen Regeln stehen je genau einmal im Re
 **Bevor ich etwas zu einem Thema behaupte**
 - Konzept unter `docs/rotation-flow/` lesen, das Archiv zum Bereich über `archive.py find`.
 - Deutsche Namen nachschlagen (→ „Namen").
+- Eine erfolglose Suche belegt kein Fehlen: andere Namen, Schreibweisen, Orte und Werkzeuge versuchen und nennen; dieselbe Abfrage muss einen bekannten Treffer finden (LLM-Framework, „W-Nullbefund“).
 - Zustand von Branch, PR oder Tag frisch messen (→ „Zustand messen").
 
 **Bevor ich Code schreibe**
@@ -94,13 +96,14 @@ Diese Datei gilt in jeder Lage. Die übrigen Regeln stehen je genau einmal im Re
 
 **Bevor ich einen Zug beende**
 - Beenden darf ich einen Zug nur mit einem Ergebnis, einem Blocker oder einer Frage, die nur er beantworten kann (seine Vorgabe, zweimal gerügt). Grund: Eine Ankündigung ohne Ausführung lässt ihn warten, und es passiert nichts.
-- Kündige ich Arbeit an, beginne ich sie im selben Zug und arbeite sie ab. Zum Weitermachen braucht es keine Zustimmung von ihm. Ein Ergebnis mit dem Hinweis auf den nächsten offenen Punkt beendet keinen Zug, solange der Punkt zum Auftrag gehört (seine Rüge, 07.11.2026: „du bist mit beastmaster noch nicht fertig").
+- Kündige ich Arbeit an, beginne ich sie im selben Zug und arbeite sie ab. Zum Weitermachen braucht es keine Zustimmung von ihm. Ein Ergebnis mit dem Hinweis auf den nächsten offenen Punkt beendet keinen Zug, solange der Punkt zum Auftrag gehört (seine Rüge, 07.11.2026: „du bist mit beastmaster noch nicht fertig"), auch nicht nach einem grünen CI-Lauf. Setzt der Stop-Hook den Zug fort, arbeite ich weiter, statt die Meldung umzuformulieren.
 
 **Bevor ich committe und pushe**
 - Identität unverändert, Commit klein.
+- Nach einer Abweisung durch einen Hook oder eine Prüfung im selben Zug `git diff --cached --stat` gegen die Nachricht halten – sonst trägt der Commit eine Beschreibung ohne ihren Inhalt (LLM-Framework, „P-Commit“).
 - Nach einem Merge-Commit die Prüfungen erneut laufen lassen, vor dem Push: Die Merge-Basis wechselt, und was vorher als Fork-Zeile zählte, ist danach Upstreams (A324).
 - Release-Text: Unterschied zum letzten Release, englisch.
-- Nach dem Push den CI-Lauf abwarten – über das Ereignis des PR-Abonnements, nie über eine zeitgesteuerte Kontrolle (→ „Vorlagen an ihn"); bleibt er aus, `mergeable_state` messen.
+- Nach dem Push den CI-Lauf abwarten – über das Ereignis des PR-Abonnements, nie über eine zeitgesteuerte Kontrolle (→ „Vorlagen an ihn"); bleibt er aus, `mergeable_state` messen. Einen Lauf, den es nicht gibt, kündige ich nicht an; fehlt er oder ist er rot, messe ich die Ursache, statt „zum Probieren“ neu zu pushen.
 
 # Loop
 
@@ -110,7 +113,7 @@ Pflicht für jede nicht-triviale Aufgabe; die REGEL steht darüber.
 
 | # | Stufe | Was ich tue |
 |---|---|---|
-| 1 | Research | Bei einem Defekt: Fehlerbild vom Fehler trennen; Ursache am Artefakt belegen (Code, Versionsgeschichte, Laufzeitdaten, Fremddokumentation). Bei einem Konzept zuerst Grundlagenforschung (seine Vorgabe, 13.11.2026, in KSP-MyContracts: „Grundlagenforschung ist der Anfang in einem Konzept"): Fragen zu Spielern, Spielmechanik, Plattform (Client, Dalamud, RSR selbst), Vorbildern (andere Werkzeuge), Vorgehen und Prüfmitteln an Quellen beantworten, bevor Optionen entstehen; eine offene Frage nennt, bis wann sie beantwortet sein muss und was je Antwort folgt. Erinnerung ist keine Quelle. |
+| 1 | Research | Bei einem Defekt: Fehlerbild vom Fehler trennen; Ursache am Artefakt belegen (Code, Versionsgeschichte, Laufzeitdaten, Fremddokumentation). Jeder Defekt ist eine Klasse, bis das Gegenteil gezeigt ist: alle gleichen Stellen suchen, dann begründet eingrenzen; die Behebung zielt auf die Wiederholung (LLM-Framework, „W-Ursache“; Beispiel A838: ein fehlender Optionswert in sieben Skripten). Bei einem Konzept zuerst Grundlagenforschung (seine Vorgabe, 13.11.2026, in KSP-MyContracts: „Grundlagenforschung ist der Anfang in einem Konzept"): Fragen zu Spielern, Spielmechanik, Plattform (Client, Dalamud, RSR selbst), Vorbildern (andere Werkzeuge), Vorgehen und Prüfmitteln an Quellen beantworten, bevor Optionen entstehen; eine offene Frage nennt, bis wann sie beantwortet sein muss und was je Antwort folgt. Erinnerung ist keine Quelle. |
 | 2 | Optionen | Lösungsraum vollständig, mit Nullvariante und Rückbau. Noch nicht bewerten. |
 | 3 | Abwägung | Je Option als SWOT im Spielgeschehen: Stärken und Schwächen (was sie selbst im Kampf bewirkt), Chancen und Bedrohungen (Lagen und fremde Einflüsse, unter denen sie nützt oder schadet – Inhalt, andere Spieler, BossMod, Patch); dazu Schweregrad, Dringlichkeit, Aufwand (nachrangig), Blast Radius, Folgekosten; Bilanz, was überwiegt (→ „Maßstab: das Spielgeschehen"). |
 | 4 | Abgleich | Gegen die tatsächliche Anforderung prüfen, nicht gegen das Thema: Scope Creep und stille Verengung. |
@@ -189,7 +192,9 @@ Gilt für jede Regel, im Code wie im Konzept (seine Vorgabe, 26.09.2026; für di
 - Selbstkontrolle ist kein Audit. Ein Konzept, das über Leben und Tod eingreift (drehen, bewegen, Schutz zurückhalten), prüft vor der Auslieferung einmal ein unabhängiger Prüfer: ein frischer Hilfsagent (ein LLM, nicht deterministisch) ohne meinen Zwischenstand, mit Konzept, Code und Quellen und dem Auftrag, die schriftlichen Anforderungen und tragenden Annahmen anzugreifen. Befunde hoher Schwere arbeite ich ein, mittlere nur, wo sie eine Anforderung verletzen; den Rest führe ich mit Preis im Konzept. Eine weitere Runde für dasselbe Konzept gibt es nur, wenn sich seine Anforderungen ändern, nicht als Prüfung der eigenen Korrekturen. Was ein Prüfer findet und sich wiederholt prüfen lässt, wird ein Prüfskript oder eine Vorhersage. Die Zahl der Runden hält `review_once.py` fest (→ „Was wann gilt“; A815), nicht mein Gedächtnis. Grund: Die Fehler in A778, A779, A781 und A789 lagen in Prämissen, die weder Prüfskripte noch meine Eigenkontrolle fanden; Runden „bis zum Plateau“ enden dagegen nie, weil jeder neue Leser Neues findet (seine Einschätzung, 14.11.2026: „Die prüfenden scheinen kein sinnvolles Mittel zu sein, wenn sie so ewig weiterlaufen können“, A814; neun Runden an der Blickwache, A809, A812). Meine Entscheidung im Loop, unter seiner Vorgabe vom 14.11.2026 „im loop entscheiden, was am sinnvollsten wäre“ (A784).
 - Ein neuer Mechanismus – im Code eine Erweiterung einer Regel, unter `.github/` ein Prüfmittel – entsteht erst gegen eine schriftliche Anforderung im Konzept: wogegen er schützt, für wen, welcher Schaden ohne ihn im Kampf entsteht, Aufwand gegen Nutzen. Ohne sie baue ich nicht, auch nicht als Antwort auf den Angriff eines Prüfers (seine Rüge, 14.11.2026, in KSP-MyContracts: „bei vernünftiger vorausplanender konzeptionierung würde es nicht 10 reviewrunden benötigen … es ist eher ein beleg für deinen fehlschlag“). Grund: Ein Befund zeigt einen Fehler, nicht dass neue Mechanik die Antwort ist; oft trägt eine einfachere Bauart.
 - Bringt die eine Prüfrunde Befunde hoher Schwere, ist das ein Befund am Vorgehen, nicht am Artefakt: zurück zur Anforderung (Loop, Stufe 1) und prüfen, ob jede Mechanik gebraucht wird und wo die Prämisse falsch war – nicht flicken und erneut prüfen lassen (übernommen aus KSP-MyContracts, A792; an der Blickwache: drei Runden in Folge mit mittleren Befunden, seine Rüge vom 14.11.2026, A812).
-- Den Prüfgrad benenne ich — statisch, Prüfskript, Compile, Laufzeitbeobachtung —, und die Formulierung folgt ihm.
+- Befunde eines Prüfers prüfe ich am Artefakt, bevor ich sie übernehme; sein „kein Defekt“ ist eine Behauptung wie ein Befund, und seine tragende Prämisse prüfe ich an der Operation, die wirklich läuft (C204). Eine Korrektur, die keine Prüfrunde mehr sieht, nenne ich im Bericht ungeprüft (LLM-Framework, „P-Unabhängig“).
+- Den Prüfgrad benenne ich — statisch, Prüfskript, Compile, Laufzeitbeobachtung —, und die Formulierung folgt ihm. Prüft ein Test nur, dass etwas irgendwo steht, nicht dass es wirkt, nenne ich ihn ein Surrogat.
+- Ein Audit heißt „vollständig“ erst nach zwei Durchgängen: mechanisch über jede Datei (Abdeckung) und inhaltlich je Bereich gegen benannte Defektklassen, je Durchgang mit Datum, Commit und Ergebnis, auch ohne Befund, im Archiv. Allgemeine Klassen: Messwert hängt von dem ab, was die Regel steuert · Regel ohne Ende · Zustand ohne Rücksetzung · gemischte Einheiten · Text widerspricht Code · Schlüsselkollision · gelernte Maxima ohne Alterung · Nebenläufigkeit ohne Synchronisierung · ein früherer Zweig verdeckt einen späteren (LLM-Framework, „P-Audit“; Grund dort: in KerbalMissionDirector fand jeder als vollständig gemeldete Durchgang neue Klassen).
 - Ein grüner CI-Lauf belegt nur, was die Prüfungen erfassen. Konzepte werden nicht kompiliert (seine Vorgabe): Über ihren Inhalt sagt er nichts. Ihren Inhalt prüfe ich Aussage für Aussage am Code und an den Quellen. Eine Prüfung, die bei einem Konzept anschlägt, etwa auf eine verrutschte Zeilenangabe, zeigt, dass ich Code geändert habe, ohne die Konzeptstelle dazu neu zu lesen. Deshalb prüfe ich den Inhalt der Stelle, nicht nur die Angabe.
 
 **Definition of Ready: erst das vollständige Konzept, dann Code**
