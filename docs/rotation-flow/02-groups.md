@@ -212,7 +212,7 @@ flowchart TD
 
 | | DRG | MNK | NIN | RPR | SAM | VPR |
 |---|---|---|---|---|---|---|
-| `CountDownAction` | ✓ (Sprung zum Ziel) | ✓ | ✓ | ✓ | ✓ | ✓ (Sprung zum Ziel) |
+| `CountDownAction` | ✓ (Sprung zum Ziel) | ✓ (mit Sprung zum Ziel) | ✓ | ✓ | ✓ | ✓ (Sprung zum Ziel) |
 | `EmergencyAbility` | ✓ | ✓ | ✓ | **fehlt** | **fehlt** | ✓ |
 | `HealAreaAbility` | – | **✓** (Earth's Reply, Mantra) | – | – | – | – |
 | `HasOwnInterruptGate` | – | – | – | ✓ | – | ✓ |
@@ -485,6 +485,6 @@ Job-Komplexität; A4a hat PCT und SMN deshalb in benannte Stufen zerlegt.
 |---|---|---|---|
 | Heiler | Kurzschluss → Sustain → Ressource → AoE → DoT → Filler | Eukrasia, Pet, Karten | Gelehrter ohne Pflege im Pull (kein Sofortschild, Konzept 15) |
 | Tanks | Ressource → AoE/ST → Combo → Ranged-Fallback | – | Unverwundbarkeit an zwei Orten (Konzept 05) |
-| Melee | Burst → Combo → AoE → Ranged-Fallback | Mudra, Formen, Positionals | – (DRG und VPR haben seit 060b8fc82 den Sprung zum Ziel im Countdown, `04`, „Der Sprung zum Ziel am Ende des Countdowns“) |
+| Melee | Burst → Combo → AoE → Ranged-Fallback | Mudra, Formen, Positionals | – (DRG, MNK und VPR haben seit 060b8fc82 den Sprung zum Ziel im Countdown, `04`, „Der Sprung zum Ziel am Ende des Countdowns“) |
 | Phys. Ranged | DoT/Ressource → Burst → AoE/ST | Tänze (DNC) | – |
 | Mag. Ranged | Automat → Filler | Elementphasen | Automat mal ausgelagert, mal inline |

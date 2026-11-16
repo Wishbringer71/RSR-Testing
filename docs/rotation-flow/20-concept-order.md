@@ -25,9 +25,9 @@ Zwei Achsen, und jede Regel steht an genau einer Stelle:
   - *Rolle:* `02-groups.md` – Heiler, Tanks, Damage Dealer als Gesamtheit, darunter Nahkämpfer, physische Fernkämpfer,
     Magier.
   - *Nahkampf-Paare* (Mönch und Samurai, Dragoon und Schnitter, Ninja und Viper): Die Stufe bleibt leer. Keine Regel
-    gilt heute für genau eines dieser Paare; die Unterschiede in `02` laufen quer zu ihnen (der Countdown fehlt Dragoon
-    und Viper, `EmergencyAbility` Schnitter und Samurai, ein eigenes Unterbrechungstor haben Schnitter und Viper;
-    Erhebung 07.11.2026). Entsteht eine solche Regel, bekommt `02` den Abschnitt des Paars.
+    gilt heute für genau eines dieser Paare; die Unterschiede in `02` laufen quer zu ihnen (den Sprung zum Ziel im Countdown
+    haben Mönch, Dragoon und Viper, `EmergencyAbility` fehlt Schnitter und Samurai, ein eigenes Unterbrechungstor haben
+    Schnitter und Viper; gemessen am Code, 16.11.2026). Entsteht eine solche Regel, bekommt `02` den Abschnitt des Paars.
   - *Job:* `01-jobs.md`, je Job ein Abschnitt, die begrenzten Jobs eingeschlossen; Sonderjobs mit eigenem Regelwerk
     (Beastmaster, Blaumagier) bleiben dort. Was ein einzelner Job mit einer allgemeinen Regel tut, steht beim Job und
     verweist auf sie.
@@ -43,7 +43,7 @@ Zwei Achsen, und jede Regel steht an genau einer Stelle:
     Der Index (`README.md`, „Inhalte") nennt je Inhalt die Abschnitte.
 - **Übrige Konzepte** nach ihrer Frage, ohne Ebene: `04` (Umbau), `05` und `14` (Aktionsabdeckung, Abhängigkeiten),
   `06` (Archiv), `10` (Barriere des Dunkelritters), `12` (Searing Light), `15` und `16` (fremde Werkzeuge), `17`
-  (Maschinist), `18` (Einstellungen), `19` (Audit), `20` (diese Ordnung).
+  (Maschinist), `18` (Einstellungen), `19` (Audit), `20` (diese Ordnung), `24` (Struktur und Kosten des Codes).
 
 ## Der Bestand vor der Ordnung
 
@@ -111,7 +111,9 @@ der beide Achsen zeigt.
   Regel geschrieben und gesucht wird. Messbar ist das am Index und an der Prüfung der Verweise; ein falscher Verweis
   fällt in der CI auf. Für den Auftrag – Regeln auffindbar machen – nicht widerlegt; der Preis ist ein Umzug.
 
-## Plan
+## Der Umzug
+
+Umgesetzt am 07.11.2026 (A648):
 
 1. `21-crucible.md` aus `01` (Beastmaster, ab „Crucible of the Unbroken"), `22-masked-carnivale.md` aus `01`
    (Blaumagier, „Masked Carnivale", „Satz je Stufe aus den Stufenführern", „Schwäche und Immunität der Stufe"),
