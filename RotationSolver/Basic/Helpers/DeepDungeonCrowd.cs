@@ -1,4 +1,5 @@
 using ECommons.DalamudServices;
+using ECommons.GameHelpers;
 
 namespace RotationSolver.Basic.Helpers;
 
@@ -24,10 +25,58 @@ internal static class DeepDungeonCrowd
 	/// <summary>Whether the rule may put enemies to sleep here: the option is on, a deep dungeon, not PvP.</summary>
 	internal static bool Enabled => Service.Config.DeepDungeonSleepAdds && DataCenter.IsInDeepDungeons && !DataCenter.IsPvP;
 
-	/// <summary>Whether <paramref name="enemy"/> sleeps while the option is on in a deep dungeon: no area of RSR's may hit it.</summary>
+	private static readonly HashSet<ulong> _party = [];
+	private static readonly HashSet<ulong> _fought = [];
+
+	/// <summary>
+	/// Once a frame before the lists are built, from this frame's figures: who belongs to the party (the player and the
+	/// party members, as IsParty counts them) and which enemies are fought - the player's target and every party tank's target
+	/// (his precision, 16.11.2026, A836). Only in a deep dungeon with the sleep option on.
+	/// </summary>
+	internal static void Update(List<IBattleChara> allTargets)
+	{
+		_party.Clear();
+		_fought.Clear();
+		if (!Enabled || Player.Object is not { } player)
+		{
+			return;
+		}
+
+		_ = _party.Add(player.GameObjectId);
+		if (player.TargetObjectId != 0)
+		{
+			_ = _fought.Add(player.TargetObjectId);
+		}
+
+		foreach (var member in allTargets)
+		{
+			if (member == null || !member.IsParty())
+			{
+				continue;
+			}
+
+			_ = _party.Add(member.GameObjectId);
+			if (member.TargetObjectId != 0 && member.IsJobCategory(JobRole.Tank))
+			{
+				_ = _fought.Add(member.TargetObjectId);
+			}
+		}
+	}
+
+	/// <summary>Whether <paramref name="enemy"/> attacks the party: its target is the player or a party member.</summary>
+	internal static bool AttacksParty(IBattleChara enemy) => enemy.TargetObjectId != 0 && _party.Contains(enemy.TargetObjectId);
+
+	/// <summary>Whether <paramref name="enemy"/> is fought: the player's target or a party tank's.</summary>
+	internal static bool IsFought(IBattleChara enemy) => _fought.Contains(enemy.GameObjectId);
+
+	/// <summary>
+	/// Whether <paramref name="enemy"/> sleeps while the option is on in a deep dungeon: no area of RSR's may hit it, and it
+	/// is attacked only when no awake enemy is left. Not one that is fought: slept along, it stays the target and the next
+	/// attack wakes it (A836).
+	/// </summary>
 	internal static bool IsHeldAsleep(IBattleChara enemy)
 	{
-		return Enabled && enemy.HasStatus(false, StatusID.Sleep);
+		return Enabled && !IsFought(enemy) && enemy.HasStatus(false, StatusID.Sleep);
 	}
 
 	/// <summary>Whether a sleep was just pressed on <paramref name="enemy"/> and its status cannot show yet.</summary>

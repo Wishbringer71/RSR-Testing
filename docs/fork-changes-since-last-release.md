@@ -21,10 +21,12 @@ What this release changes in the fight. For the whole distance from upstream, se
   - *Damage doesn't pull new enemies:* no area of yours reaches a resting enemy - the caster's Sleep included, which pulls
     as damage does - and during a fight RSR picks no resting enemy as a new target, so no add joins. The enemy you pull
     yourself stays your target.
-  - *Put further enemies that attack you to sleep:* a healer or caster attacked by two or more enemies sleeps the ones
-    that are not the target with Repose or Sleep - not one about to die or taking damage over time - and renews a sleep
-    just before it runs out while you still fight an awake enemy. Every sleeping enemy, whoever put it to sleep, is spared
-    by your areas and attacked only when no awake enemy is left. A kind that resists is learned and not tried again.
+  - *Put further enemies that attack your party to sleep:* a healer or caster whose party two or more enemies attack
+    sleeps the ones nobody fights - not your target, not a tank's - with Repose or Sleep, not one about to die or taking
+    damage over time, and renews a sleep just before it runs out while an awake enemy is fought. The caster's Sleep may put
+    a fought enemy to sleep along; it stays the target and the next attack wakes it. Every other sleeping enemy, whoever put
+    it to sleep, is spared by your areas and attacked only when no awake enemy is left - the tank takes the next sleeper
+    once the other attackers are dead. A kind that resists is learned and not tried again.
 - **Resting enemies seen by every area.** "Don't pull new enemies with AoE" looked for resting enemies only among those
   RSR would attack; with an engage setting that skips them, an area hit them anyway. Every enemy in the area counts now.
 

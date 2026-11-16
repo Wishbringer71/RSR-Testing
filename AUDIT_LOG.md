@@ -24386,6 +24386,34 @@ Absturzbericht.
   Ausschlüsse und dieselbe Lernstelle wie der erste Schlaf, neu ist nur der Zeitpunkt, und der ist am Code nachgerechnet.
 - *Dokumentation:* Konzept 23, „Gegnerkontrolle" (Gebaut, Prüfrunde, tragende Annahmen, Vorhersage, G5).
 
+### A836 · Tiefe Gewölbe: Mitschläfer und Angreifer der Gruppe (16.11.2026)
+
+- *Sein Hinweis (16.11.2026):* „die gegner, welche irrtümlich mit schlafen, werden durch den nächsten angriff durch
+  gruppenmitglieder eh geweckt". Eingeordnet als Hinweis (Mechanik), im Konzept 23 mit Wortlaut geführt.
+- *Wirkung bisher:* Der Schlaf der Magier (25880, 5 y um den gewählten Gegner) wählte keinen Zusatzgegner näher als 5 y am
+  Ziel des Spielers, damit dieses nicht mitschläft. Nahkämpfende Gegner stehen dicht am Spieler und damit an seinem
+  Ziel; der Magier legte dann meist keinen schlafen (Preis in A835).
+- *Loop:* Die Ausnahme schützte nichts – das mitschlafende Ziel wacht beim nächsten Angriff auf, der ohnehin kommt, und
+  trifft bis dahin nicht. Nötig ist eine Gegenregel: Das Ziel des Spielers gilt nie als gehaltener Schläfer
+  (`DeepDungeonCrowd.IsHeldAsleep`), sonst fiele es aus der Zielliste, RSR wechselte das Ziel und schonte es mit den
+  Flächen. Gegenthesen im Konzept: Kosten des eingeschläferten Ziels (widerlegt), ein Ziel, das der Spieler selbst schlafen
+  legte und nicht angreifen will (er schaltet selbst um; Preis benannt). Ruhende Gegner im Kreis sperren den Schlaf
+  weiter (G3).
+- *Gebaut:* `CanSleep` ohne die 5-y-Sperre am Ziel; `IsHeldAsleep` nimmt das Ziel des Spielers aus; Optionstext.
+- *Seine Präzisierung (16.11.2026):* „der schlaf ist wie gesagt dafür da, dass angreifende gegner besser
+  crowdcontrolled werden. der tank sucht sich dann das nächste schlafende ziel, wenn alle anderen angreifer tot sind."
+  Eingeordnet als Präzisierung seines Vorschlags (Zweck: Angreifer kontrollieren) und Hinweis (Vorgehen des Tanks). Die
+  Bedingung „nur Gegner, die den Spieler selbst angreifen" (A834) war meine Ableitung; in der Gruppe hält der Tank die
+  Feindschaft, und die Regel schlief dort nie. *Jetzt:* Angreifer der Gruppe (Ziel ist der Spieler oder ein
+  Gruppenmitglied, wie RSRs `IsParty` sie zählt); nicht geschlafen und nicht als Schläfer gehalten wird, was bekämpft wird – das Ziel
+  des Spielers und jedes Ziel eines Tanks der Gruppe. Beides liest `DeepDungeonCrowd.Update` je Frame vor dem Listenbau
+  aus den Figuren dieses Frames (keine Figur eines früheren Frames, Konzept 03, „Dritte Invariante"), nur in den Gewölben
+  mit der Option an. Ein Tank mit RSR greift Schläfer erst an, wenn kein wacher Gegner mehr steht, und seine Flächen
+  sparen sie aus – wie er es beschreibt. Optionstext: „… that attack your party to sleep" (Schlüssel unverändert).
+- *Prüfgrad:* Compile, Prüfungen; im Spiel nicht beobachtet. Vorhersage unverändert (`deep-dungeon-sleep`); dazu: Ein
+  Magier legt in den Gewölben auch Angreifer schlafen, die an seinem Ziel stehen, und in der Gruppe schläft ein Heiler
+  oder Magier Angreifer, die den Tank angreifen.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

@@ -234,13 +234,14 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 	Filter = DutySpecificDeepDungeon)]
 	private static readonly bool _deepDungeonNoPullDamage = true;
 
-	[ConditionBool, UI("Deep dungeons: put further enemies that attack you to sleep",
-	Description = "In a fight: in a deep dungeon, a healer or caster attacked by two or more awake enemies puts the ones that are "
-		+ "not the target to sleep with Repose or Sleep - not one about to die, not one taking damage over time, not a boss, not a "
-		+ "kind that resists. Your areas spare every sleeping enemy, whoever put it to sleep, and RSR attacks it only when no awake "
-		+ "enemy is left, so you fight one at a time. Costs a cast per sleep; not while a party member is about to die or Swiftcast "
-		+ "stands. The caster's Sleep reaches 5 yalms around its target, so it is not used on an enemy that close to yours. A kind "
-		+ "that resisted a sleep is learned and not tried again.",
+	[ConditionBool, UI("Deep dungeons: put further enemies that attack your party to sleep",
+	Description = "In a fight: in a deep dungeon, a healer or caster whose party two or more awake enemies attack puts the ones "
+		+ "not fought - not your target, not a party tank's - to sleep with Repose or Sleep: not one about to die, not one taking "
+		+ "damage over time, not a boss, not a kind that resists. A sleep about to run out is renewed while an awake enemy is "
+		+ "fought. Your areas spare every sleeping enemy, whoever put it to sleep, and RSR attacks it only when no awake enemy is "
+		+ "left, so the party fights one at a time. Costs a cast per sleep; not while a party member is about to die or Swiftcast "
+		+ "stands. The caster's Sleep reaches 5 yalms around its target and may put a fought enemy to sleep too; it stays the "
+		+ "target and the next attack wakes it. A kind that resisted a sleep is learned and not tried again.",
 	Filter = DutySpecificDeepDungeon)]
 	private static readonly bool _deepDungeonSleepAdds = true;
 

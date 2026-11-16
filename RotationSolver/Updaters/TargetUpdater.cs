@@ -155,6 +155,8 @@ internal static partial class TargetUpdater
 		// Concept 03, "Tötungsregeln" (A588): which enemies a kill rule holds back, from every battle character - a held
 		// one leaves the list below, so the rules cannot read it.
 		KillOrder.Update(allTargets);
+		// Concept 23, "Gegnerkontrolle" (A836): the party and the enemies it fights, before a sleeper is held back.
+		DeepDungeonCrowd.Update(allTargets);
 
 		foreach (var member in allTargets)
 		{
