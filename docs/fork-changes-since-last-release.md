@@ -26,7 +26,8 @@ What this release changes in the fight. For the whole distance from upstream, se
     damage over time, and renews a sleep just before it runs out while an awake enemy is fought. The caster's Sleep may put
     a fought enemy to sleep along; it stays the target and the next attack wakes it. Every other sleeping enemy, whoever put
     it to sleep, is spared by your areas and attacked only when no awake enemy is left - the tank takes the next sleeper
-    once the other attackers are dead. A kind that resists is learned and not tried again.
+    once the other attackers are dead. A kind that resists is learned and not tried again. A caster's Sleep, which reaches every enemy within
+    5 yalms of its target, goes on the enemy whose area puts the most attackers to sleep - in a pack, the one in the middle.
 - **Resting enemies seen by every area.** "Don't pull new enemies with AoE" looked for resting enemies only among those
   RSR would attack; with an engage setting that skips them, an area hit them anyway. Every enemy in the area counts now.
 
@@ -59,3 +60,6 @@ What this release changes in the fight. For the whole distance from upstream, se
   by their id and read from the game's object table where they are used, and every figure kept from an earlier frame –
   in the party and enemy lists, the tankbuster plan, a tank swap – is dropped once it is gone, before anything reads it.
   Whether a figure is gone is read from the object table alone, never from the figure, so logging out is safe as well.
+- **What RSR learned is saved even when another program holds the file for a moment.** Saving a learned list was given
+  up when the file was briefly locked, such as by a virus scanner; a kind learned immune to sleep was then forgotten and tried
+  again on the next run. The save is now retried.

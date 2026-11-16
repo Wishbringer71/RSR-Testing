@@ -24717,6 +24717,53 @@ Dalamud-Log. Die vorige Logdatei stammt vom 12.11.2026.
 - *Mein Fehler:* In A827 habe ich die Lesbarkeit des Speicherblocks als Annahme in den Code geschrieben, ohne den Fall zu
   prüfen, in dem das Spiel den Block selbst freigibt.
 
+### A846 · Upload vom 16.11.2026 abends: Absturz in Interjection, Schlafwahl im Gleichstand, verlorene Speicherung, Flächenschlaf (16.11.2026)
+
+- *Anlass:* Seine Uploads (XIVLauncher, RotationSolver, fflogsarchive), „crash einmal und normale logs“; während der
+  Auswertung sein Hinweis und Vorschlag: „dran denken, dass einige schlaf spells aoe sind. da sind dann sofort mehrere
+  betäubt. also zielwahl eher mittig aller attackierenden gegner“ (eingeordnet als Hinweis und Vorschlag, Konzept 23, G6).
+- *Der Absturz (21:37:27 Ortszeit) liegt nicht in RSR:* `AccessViolationException` in `Interjection.EnemyList.UpdateIndex`,
+  gerufen aus `AddonEnemyListHooks.AddonPostDraw` beim Zeichnen der Feindliste (Interjection 0.0.0.5, fremdes Plugin).
+  Kein Thread des Absturzberichts trägt einen Rahmen von RSR; RSR liest und hakt die Feindliste nirgends (Suche nach
+  `EnemyList`, `_EnemyList`, `AddonEnemyList` über den ganzen Code: 0 Treffer). Lage laut Mitschnitt: Pilgers Pfad, Kampf
+  mit eben erschienenen Gegnern (Zeilen 03 um 21:37:22); um 21:37:27,467 meldet ACT die Entfernung aller Figuren, das
+  Ende des Prozesses. Das Protokoll der abgestürzten Sitzung ist verloren: `dalamud.old.log` endet um 20:06 nach 10 MB
+  Ausgabe eines anderen Plugins, `dalamud.log` beginnt mit dem Neustart. Die RSR-Spur dieser Sitzung (Build c0f3d49b4)
+  endet um 21:37:25 ohne „trace ended“, wie bei einem Absturz zu erwarten. Die Sitzung um 19:15 (Build db7bbea3d) endet
+  ebenso; das ist der Absturz beim Ausloggen von A845, vor der Behebung gebaut.
+- *Schlafwahl im Gleichstand (Defekt, behoben):* „sleep chosen“ stand 220-mal in der Spur, bis zu 36-mal je Sekunde
+  (20:40:08), abwechselnd zwischen zwei Gegnern. Ursache: Gewählt wurde der Gegner mit den meisten LP; Gegner einer Art
+  erscheinen mit gleichen LP (21:37:22, je 591 262), und die Reihenfolge von `AllHostileTargets` wechselt je Frame. Im
+  Kampf änderte das, welchen der beiden der Schlaf traf, nicht ob er fiel; die Spur, das Messmittel der Regel, war
+  unlesbar. Klasse gesucht: dieselbe Lage in der Verlängerung (kürzeste Restdauer, gleiche Restdauer nach einem
+  Flächenschlaf). Beide wählen jetzt bei Gleichstand die kleinere Id (`SleepFurtherAttacker`, Konzept 23).
+- *Verlorene Speicherung (Defekt, behoben):* 20:31:41 „sleep resisted by Gerufener Spinnrich (kind 18741): immune, its
+  kind is stored“, im selben Augenblick `UnauthorizedAccessException` in `OtherConfiguration.WriteFile` beim Verschieben
+  der temporären Datei. Die Art steht in `SleepLocks.json`, fehlt aber in `SleepResistantKinds.json`; eine spätere
+  Speicherung dieser Datei kam nicht. Im nächsten Lauf versucht RSR dort wieder Schlummer und verliert einen GCD, bis die
+  Art erneut gelernt ist. Ursache: `WriteFile` versuchte es nur bei `IOException` erneut; ein verweigertes Verschieben
+  ist keine. Zwei gleichzeitige Speicherungen derselben Datei schließt die Sperre je Speicher aus (Konzept 13); übrig
+  bleibt ein fremdes Programm, das die eben geschriebene Datei hält (unter Windows Virenscanner oder Indexer, Schluss,
+  nicht gemessen). Behoben am gemeinsamen Schreibweg für alle Speicher: Neuversuch auch bei
+  `UnauthorizedAccessException`, dreimal im Abstand von 1 s; jeder Aufrufer schreibt auf einem Pool-Thread. Nicht
+  geändert: `Configs.Save` schreibt im Spielthread; eine Wartezeit dort hielte das Spiel an, und ein Fehler wird dort
+  geworfen, nicht verschluckt.
+- *Flächenschlaf (G6, gebaut):* Ein Schlaf mit Wirkbereich (Schlaf des Magiers, #25880, 5 y um das Ziel, Blatt `Action`)
+  geht auf den Gegner, dessen Kreis die meisten Angreifer einschläfert, die schlafen bleiben; ein schon schlafender im
+  Kreis zählt dagegen (G5: ein neuer Schlaf hält kürzer); danach LP und Id. Verworfen: der Gegner nächst dem Schwerpunkt
+  aller Angreifer, der zwischen zwei Gruppen keinen weiteren trifft. Für den Weißmagier (Schlummer, kein Wirkbereich)
+  ändert sich nichts. Kosten: je Kandidat ein Durchgang über die Gegner, nur in den Gewölben im Kampf mit der Option an,
+  ohne Anlage.
+- *Vorhersagen (`evaluate_predictions.py`, Sitzung c0f3d49b4):* 20 PASS, darunter A834 (Schlaf in den Gewölben), A794,
+  A803, A807, A820, A829, A830. FAIL: A798 `exception-none`, beobachtet und erklärt (die verlorene Speicherung oben; die
+  Spur meldet jede Ausnahme beim ersten Wurf, auch eine, die der Neuversuch auffängt – die Vorhersage bleibt deshalb
+  streng). A783 `gaze-no-hit-after-turn`, A805 `level-core-low`, A806 `level-below-cap`, A821 `team-start-event`: in
+  Prüfung, Ergebnis unten nachgetragen.
+- *Prüfgrad:* statisch, Compile (0 Fehler, 0 Warnungen), Prüfskripte; im Spiel nicht beobachtet.
+- *Vorhersage:* In der nächsten Spur aus den Gewölben steht „deep dungeon: sleep chosen“ je Gegner einmal, bis „sleep
+  landed“ oder ein anderer gewählt wird, nicht abwechselnd im Abstand eines Frames. Jede Art, für die „its kind is stored“
+  in der Spur steht, steht danach in `SleepResistantKinds.json`. Als Magier nennt die Zeile „… more asleep in its area“.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

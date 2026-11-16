@@ -193,6 +193,7 @@ und FATEs „gut, wenn alle Gegner in der Nähe schnell zusammen kommen".
 | G3 | „einmal für Schaden (z.b. beim pullen, aber auch bei laufenden Kämpfen um adds zu vermeiden)" | in den Gewölben zieht keine Fläche RSRs einen Gegner, der noch nicht kämpft – Schaden wie Schlaf; im Kampf kein neues Ziel, das noch nicht kämpft; das Ziel des Pulls selbst bleibt | Option „damage", `PullsIfHit`, `ObjectHelper.IsAttackable` | Spur „deep dungeon: … not a new target" |
 | G4 | „crowd Control von geaggroedent mobs durch sleep" (Vorschlag) | greifen in den Gewölben mehrere Gegner die Gruppe an (ihr Ziel ist ein Gruppenmitglied, allein der Spieler), legt ein Heiler oder Magier die schlafen, die nicht bekämpft werden – bekämpft ist das Ziel des Spielers und jedes Ziel eines Tanks der Gruppe (Präzisierung 16.11.2026); RSRs Flächen wecken sie nicht, und angegriffen werden sie erst, wenn kein wacher mehr steht | Option „sleep", `DeepDungeonCrowd` | Spur „deep dungeon: sleep …" |
 | G5 | „Man kann Schlaf auch verlängern, hält nur kürzer. Am besten bevor er ausläuft." (Hinweis) | ein Schläfer, dessen Schlaf vor dem nächsten möglichen Schlaf ausliefe, wird erneut schlafen gelegt, solange ein wacher Gegner bekämpft wird und die Art nicht abgenutzt ist; nicht früher, weil die Verlängerung kürzer hält | Option „sleep", `SleepFurtherAttacker` | Spur „deep dungeon: sleep renewed …" |
+| G6 | „dran denken, dass einige schlaf spells aoe sind. da sind dann sofort mehrere betäubt. also zielwahl eher mittig aller attackierenden gegner" (Hinweis und Vorschlag, 16.11.2026; „betäubt" meint hier eingeschläfert) | ein Schlaf mit Wirkbereich (Schlaf des Magiers, 5 y um das Ziel) geht auf den Gegner, dessen Kreis die meisten wachen Angreifer einschläfert, die danach schlafen bleiben; ein Schlaf ohne Wirkbereich (Schlummer) wählt wie bisher | `SleepFurtherAttacker` | Spur „deep dungeon: sleep chosen … N more asleep in its area“ |
 
 *Grundlagen:*
 - *Was zieht:* Schaden an einem Gegner, der noch nicht kämpft. Heilhass verteilt das Spiel auf die Gegner im Kampf
@@ -280,10 +281,25 @@ und FATEs „gut, wenn alle Gegner in der Nähe schnell zusammen kommen".
   ist ein Gruppenmitglied, allein der Spieler; wie RSR die Gruppe zählt, `IsParty`), legt einen davon schlafen, der nicht bekämpft wird
   (nicht das Ziel des Spielers, nicht das Ziel eines Tanks der Gruppe), nicht stirbt (`IsDying`), keinen Schaden über Zeit trägt (der
   nächste Tick weckte ihn) und schlafen kann (`CanStillBeSlept`) – nicht, solange ein Gruppenmitglied in der kritischen
-  Klasse ist (Heiler), und nicht unter Swiftcast (seine Regel: für die Wiederbelebung).
+  Klasse ist (Heiler), und nicht unter Swiftcast (seine Regel: für die Wiederbelebung). Von mehreren schläft der mit den
+  meisten LP zuerst – der Gegner, der am längsten gegen die Gruppe stünde; bei Gleichstand der mit der kleineren Id.
+  Grund für die zweite Stufe: Gegner einer Art erscheinen mit gleichen LP, und die Reihenfolge der Gegnerliste wechselt von Frame
+  zu Frame; ohne feste Reihenfolge sprang die Wahl je Frame zwischen ihnen (Upload vom 16.11.2026, Pilgers Pfad: zwei
+  frisch erschienene Gegner mit je 591 262 LP, bis zu 36 Spurzeilen „sleep chosen“ je Sekunde statt einer). Im Kampf
+  änderte das nur, welchen der beiden der Schlaf traf; die Spur, an der die Regel gemessen wird, war unlesbar.
+  *Schlaf mit Wirkbereich (G6):* Der Schlaf des Magiers legt das Ziel und jeden Gegner bis 5 y um es schlafen (Wirktext
+  #25880, Blatt `Action`, Wirkbereich 5). Er geht deshalb auf den Gegner, dessen Kreis die meisten Angreifer einschläfert,
+  die danach schlafen bleiben – wach, nicht bekämpft, nicht sterbend, ohne Schaden über Zeit, ihre Art schlafbar; in einer
+  geschlossenen Gruppe ist das der in der Mitte. Ein schon schlafender Gegner im Kreis zählt dagegen, weil ein neuer Schlaf
+  kürzer hält (G5); erst danach entscheiden die LP und die Id. Gewählt wird nur ein Ziel, dessen Kreis die übrigen Sperren
+  erfüllt (ruhende und unberührbare Gegner, unten). *Verworfen:* der Gegner, der dem Schwerpunkt aller Angreifer am
+  nächsten steht – zwischen zwei Gruppen trifft er keinen weiteren; die Zahl misst, wozu die Mitte dient. *Im Kampf:* Fünf
+  Angreifer, drei dicht beieinander, zwei am Rand: bisher schlief der mit den meisten LP, oft ein Randgegner, allein; jetzt
+  schläft der mittlere der drei und mit ihm die beiden anderen. Für den Weißmagier ändert sich nichts, Schlummer trifft
+  nur sein Ziel.
 - *Verlängern (G5):* Vor einem neuen Schläfer prüft die Regel die Schlafenden. Liefe ein Schlaf aus, bevor ein Schlaf
   im nächsten GCD noch landen könnte – Restdauer höchstens Wirkzeit, laufender GCD, gemessene Verzögerung bis zur Wirkung
-  und ein GCD –, legt sie ihn erneut schlafen, den mit der kürzesten Restdauer zuerst; vorher nicht, denn jede
+  und ein GCD –, legt sie ihn erneut schlafen, den mit der kürzesten Restdauer zuerst, bei gleicher Restdauer – ein Schlaf des Magiers trifft mehrere zugleich – den mit der kleineren Id; vorher nicht, denn jede
   Verlängerung kostet vom Rest des alten Schlafs und hält kürzer. Nur solange ein wacher Gegner die Gruppe angreift: Ist
   keiner mehr da, wird der Schläfer ohnehin das nächste Ziel. Dieselben Ausschlüsse wie beim ersten Schlaf (Grenze der Art,
   ruhende Gegner im Bereich). Wacht er trotzdem auf, greift er an und zählt wieder

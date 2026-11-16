@@ -1824,6 +1824,7 @@ Speicher. Die Flächentabelle nutzt denselben Weg.
 | Unlesbare Datei beim Start | als `.corrupt` beiseitegelegt, im Protokoll gemeldet, im Listenfenster „LOAD FAILED" |
 | Halb geschriebene Datei nach Absturz | über eine temporäre Datei geschrieben |
 | Zwei Speicherungen gleichzeitig auf dieselbe `.tmp` | eine Sperre je Speicher |
+| Ein anderes Programm hält die eben geschriebene Datei (unter Windows etwa Virenscanner oder Indexer), das Verschieben wird verweigert (`UnauthorizedAccessException`, kein `IOException`) | Neuversuch wie bei einer belegten Datei, dreimal im Abstand von 1 s, für jeden Speicher (`OtherConfiguration.WriteFile`). Bis zu seinem Upload vom 16.11.2026 ging die Speicherung dann ohne Neuversuch verloren: Eine als schlafimmun gelernte Art fehlte danach in `SleepResistantKinds.json`, während ihre Bestätigung in `SleepLocks.json` stand; im nächsten Lauf hätte RSR den Schlaf dort erneut versucht. Die Einstellungen (`Configs.Save`) schreiben im Spielthread und warten deshalb nicht: Ein Fehler dort wird geworfen, nicht verschluckt |
 | Kopie auf dem Pool-Thread, während der Effekt-Handler schreibt (A224) | Kopie auf dem aufrufenden Thread, unter der Sperre der Tabelle, auch im Gesamtspeichern |
 | Messung zwischen letztem Speichern und Entladen | Effekt-Handler wird vor dem letzten Speichern abgehängt (gilt für alle Speicher) |
 | Erfolg ohne Beleg | die Datei wird zurückgelesen, „SAVE MISMATCH" bei Abweichung |

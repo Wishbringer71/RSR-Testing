@@ -186,7 +186,9 @@ public partial class CustomRotation
 				}
 
 				var left = sleeper.StatusTime(false, StatusID.Sleep);
-				if (left <= 0f || left > renewBy || left >= renewLeft || !CanSleep(sleeper, sleep))
+				// On an equal rest the lower id, as for a first sleep below: one sleep of the caster's lands on several at once.
+				if (left <= 0f || left > renewBy || left > renewLeft
+					|| (left == renewLeft && renew != null && sleeper.GameObjectId > renew.GameObjectId) || !CanSleep(sleeper, sleep))
 				{
 					continue;
 				}
@@ -209,8 +211,12 @@ public partial class CustomRotation
 
 		// The awake enemies attacking the party; of those not fought (the player's target, a tank's), the one with the most
 		// HP left sleeps first. The tank takes the next sleeper once the other attackers are dead (his precision, A836).
+		// A sleep with an area (the caster's, G6) goes where it puts the most attackers to sleep that stay asleep - the
+		// middle of a pack -, an area that would shorten a running sleep counting against it; HP and id decide only then.
+		var radius = sleep.Info.EffectRange;
 		var awake = 0;
 		IBattleChara? chosen = null;
+		int chosenStays = 0, chosenShortened = 0;
 		foreach (var enemy in DataCenter.AllHostileTargets)
 		{
 			if (enemy == null || enemy.IsDead || !DeepDungeonCrowd.AttacksParty(enemy) || enemy.HasStatus(false, StatusID.Sleep))
@@ -219,17 +225,27 @@ public partial class CustomRotation
 			}
 
 			awake++;
-			if (DeepDungeonCrowd.IsFought(enemy) || enemy.IsDying()
-				// Its next tick would wake it.
-				|| DeepDungeonCrowd.TakesDamageOverTime(enemy)
-				|| !CanSleep(enemy, sleep))
+			if (!StaysAsleep(enemy) || !CanSleep(enemy, sleep))
 			{
 				continue;
 			}
 
-			if (chosen == null || enemy.CurrentHp > chosen.CurrentHp)
+			int stays = 0, shortened = 0;
+			if (radius > 0f)
+			{
+				SleepArea(enemy, radius, out stays, out shortened);
+			}
+
+			// On equal HP the lower id: the list's order changes from frame to frame, and enemies of one kind arrive with
+			// the same HP - without a fixed order the choice flipped every frame (upload of 16.11.2026).
+			if (chosen == null || stays > chosenStays
+				|| (stays == chosenStays && (shortened < chosenShortened
+					|| (shortened == chosenShortened && (enemy.CurrentHp > chosen.CurrentHp
+						|| (enemy.CurrentHp == chosen.CurrentHp && enemy.GameObjectId < chosen.GameObjectId))))))
 			{
 				chosen = enemy;
+				chosenStays = stays;
+				chosenShortened = shortened;
 			}
 		}
 
@@ -239,8 +255,42 @@ public partial class CustomRotation
 			return false;
 		}
 
-		DeepDungeonCrowd.NoteChosen(chosen, sleep, $"{awake} awake enemies attack the party");
+		DeepDungeonCrowd.NoteChosen(chosen, sleep, radius > 0f
+			? $"{awake} awake enemies attack the party, {chosenStays - 1} more asleep in its area, {chosenShortened} sleep(s) shortened"
+			: $"{awake} awake enemies attack the party");
 		return true;
+	}
+
+	// Whether a sleep on this awake attacker holds: not fought (the next attack wakes it), not about to die, no damage over
+	// time (its next tick wakes it), and its kind can still be slept.
+	private static bool StaysAsleep(IBattleChara enemy)
+	{
+		return !DeepDungeonCrowd.IsFought(enemy) && !enemy.IsDying() && !DeepDungeonCrowd.TakesDamageOverTime(enemy)
+			&& SleepInterruptWatch.CanStillBeSlept(enemy);
+	}
+
+	// What a sleep with an area on this centre does: how many awake attackers in it, the centre included, fall asleep and stay
+	// so, and how many sleepers in it it would shorten. Measured as the area check of CanSleep measures, to the hitbox.
+	private static void SleepArea(IBattleChara centre, float radius, out int stays, out int shortened)
+	{
+		stays = 0;
+		shortened = 0;
+		foreach (var other in DataCenter.AllHostileTargets)
+		{
+			if (other == null || other.IsDead || Vector3.Distance(other.Position, centre.Position) - other.HitboxRadius > radius)
+			{
+				continue;
+			}
+
+			if (other.HasStatus(false, StatusID.Sleep))
+			{
+				shortened++;
+			}
+			else if (DeepDungeonCrowd.AttacksParty(other) && StaysAsleep(other))
+			{
+				stays++;
+			}
+		}
 	}
 
 	// Whether an awake enemy attacks the party: the fight a sleeper is kept out of goes on.

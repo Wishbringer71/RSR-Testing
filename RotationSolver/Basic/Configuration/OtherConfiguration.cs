@@ -1638,7 +1638,10 @@ internal sealed partial class OtherConfiguration
 				File.Move(tempPath, path, true);
 				return true;
 			}
-			catch (IOException ex) when (i < retryCount - 1)
+			// Access denied on the move is mostly another program holding the file just written - on Windows a virus
+			// scanner or the indexer - and passes like a sharing violation; without a retry the save was lost (upload of
+			// 16.11.2026: a kind learned immune to sleep missing from its store). Every caller writes on a pool thread.
+			catch (Exception ex) when ((ex is IOException or UnauthorizedAccessException) && i < retryCount - 1)
 			{
 				PluginLog.Warning($"Failed to save the file to {path}. Retrying in 1s...: {ex.Message}");
 				Thread.Sleep(1000);
