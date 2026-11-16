@@ -270,28 +270,41 @@ public partial class CustomRotation
 	}
 
 	// What a sleep with an area on this centre does: how many awake attackers in it, the centre included, fall asleep and stay
-	// so, and how many sleepers in it it would shorten. Measured as the area check of CanSleep measures, to the hitbox.
+	// so, and how many sleepers in it it would shorten. Measured as the area check of CanSleep measures, to the hitbox. A held
+	// sleeper is not in the list of targets but in its own (concept 23, G6); from the list of targets only a fought one counts,
+	// and once no awake enemy is left the held ones stand in both.
 	private static void SleepArea(IBattleChara centre, float radius, out int stays, out int shortened)
 	{
 		stays = 0;
 		shortened = 0;
 		foreach (var other in DataCenter.AllHostileTargets)
 		{
-			if (other == null || other.IsDead || Vector3.Distance(other.Position, centre.Position) - other.HitboxRadius > radius)
+			if (other == null || other.IsDead || !InSleepArea(other, centre, radius))
 			{
 				continue;
 			}
 
 			if (other.HasStatus(false, StatusID.Sleep))
 			{
-				shortened++;
+				shortened += DeepDungeonCrowd.IsHeldAsleep(other) ? 0 : 1;
 			}
 			else if (DeepDungeonCrowd.AttacksParty(other) && StaysAsleep(other))
 			{
 				stays++;
 			}
 		}
+
+		foreach (var sleeper in DeepDungeonCrowd.Sleepers)
+		{
+			if (sleeper != null && !sleeper.IsDead && InSleepArea(sleeper, centre, radius))
+			{
+				shortened++;
+			}
+		}
 	}
+
+	private static bool InSleepArea(IBattleChara other, IBattleChara centre, float radius)
+		=> Vector3.Distance(other.Position, centre.Position) - other.HitboxRadius <= radius;
 
 	// Whether an awake enemy attacks the party: the fight a sleeper is kept out of goes on.
 	private static bool AnyAwakeAttacker()

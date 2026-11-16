@@ -169,8 +169,7 @@ Gewölbe: Ihr Gebietsblatt nennt keine `ContentFinderCondition`, und `IsInDeepDu
 Magicite ruhten dort. Seit A807 gilt die `ContentFinderCondition`, die das Gebiet nennt (Konzept 03, „Inhalt eines
 Gebiets"). Die Zuordnung der Werte zu den Sorten ist für Pilgers Pfad gemessen (A737), für Himmelssäule und Eureka
 Orthos aus der Liste `MagiciteSlot` abgeleitet; stimmt sie dort nicht, nennt die Spurzeile je Stockwerk eine falsche
-Sorte, und ein Upload zeigt den Widerspruch. (Bis zur Konzeptprüfung vom 16.11.2026 stand hier ein Abgleich mit dem
-Statusagenten, den RSR seit A737 nicht mehr liest.)
+Sorte, und ein Upload zeigt den Widerspruch.
 
 ## Tiefe Gewölbe: Gegnerkontrolle – kein unnötiger Pull, Zusatzgegner schlafen
 
@@ -291,7 +290,7 @@ und FATEs „gut, wenn alle Gegner in der Nähe schnell zusammen kommen".
   #25880, Blatt `Action`, Wirkbereich 5). Er geht deshalb auf den Gegner, dessen Kreis die meisten Angreifer einschläfert,
   die danach schlafen bleiben – wach, nicht bekämpft, nicht sterbend, ohne Schaden über Zeit, ihre Art schlafbar; in einer
   geschlossenen Gruppe ist das der in der Mitte. Ein schon schlafender Gegner im Kreis zählt dagegen, weil ein neuer Schlaf
-  kürzer hält (G5); erst danach entscheiden die LP und die Id. Gewählt wird nur ein Ziel, dessen Kreis die übrigen Sperren
+  kürzer hält (G5); erst danach entscheiden die LP und die Id. Die gehaltenen Schläfer liest die Wahl aus ihrer eigenen Liste (`DeepDungeonCrowd.Sleepers`), denn in der Liste der Ziele stehen sie nicht (oben, „Wie eine Aktion ihr Ziel findet“ in den Grundlagen); aus der Liste der Ziele nur einen Schläfer, der bekämpft wird. Gewählt wird nur ein Ziel, dessen Kreis die übrigen Sperren
   erfüllt (ruhende und unberührbare Gegner, unten). *Verworfen:* der Gegner, der dem Schwerpunkt aller Angreifer am
   nächsten steht – zwischen zwei Gruppen trifft er keinen weiteren; die Zahl misst, wozu die Mitte dient. *Im Kampf:* Fünf
   Angreifer, drei dicht beieinander, zwei am Rand: bisher schlief der mit den meisten LP, oft ein Randgegner, allein; jetzt

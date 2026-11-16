@@ -24668,7 +24668,7 @@ Absturzbericht.
 | 20-concept-order.md | ✓ | ✓ 16.11.2026, Stand fe1b65574 | Drei Befunde. (1) Die Begründung der leeren Paar-Stufe nannte „der Countdown fehlt Dragoon und Viper“ – beide haben seit 060b8fc82 (25.10.2026) `CountDownAction` mit dem Sprung zum Ziel, die Aussage war schon bei der Erhebung am 07.11.2026 überholt; ersetzt durch die gemessene Querlage (Sprung bei Mönch, Dragoon, Viper; `EmergencyAbility` fehlt Schnitter und Samurai; Unterbrechungstor bei Schnitter und Viper) – die Folgerung „keine Regel gilt für genau ein Paar“ hält damit weiter. (2) `24` fehlte unter „Übrige Konzepte“. (3) „Plan“ las sich als offen; umgesetzt am 07.11.2026 (A648): `check_concept_refs.py` vorhanden (363 Verweise, 0 falsch), Index mit beiden Achsen, Verweissätze in `01` und `03`. Nachtrag zu `02` (Zeile oben unvollständig): Auch der Mönch springt seit 060b8fc82 im Countdown (`PullGapCloser`); Tabelle und Gruppenvergleich nannten nur Dragoon und Viper, berichtigt. |
 | 21-crucible.md | ✓ | ✓ 16.11.2026, Stand 0c8f510db | Ein Befund, Klasse „Text widerspricht Code“: Der Einstellungstext „Goal of a Crucible run …“ (`BST_Reborn`) und zwei Kommentare in `BeastmasterCrucibleTeam` sagten, gegen Gefährdung werde nur ein Platz ohne Rolle getauscht; seit A807 (2739d0cc6) tauscht `Strengthen` auch einen Rollenträger gegen einen stärkeren mit derselben Rolle (`Holds`), wie das Konzept und seine Vorgabe Z4 es sagen. Der Text kam einen Commit früher (087764ec2) und blieb stehen; nachgezogen, der Code bleibt. Im Kampf: Unter Level und Safe win sah er im Tooltip, ein Heiler auf Rang 7 bleibe, obwohl RSR ihn gegen Gefährdung durch einen Heiler auf Rang 10 ersetzte. Die übrigen Aussagen der Tooltips (ungemessen, Score, In Unterzahl) stimmen mit `LevelTeam`, `FewestStrong` und `Strengthen` überein. Am Code bestätigt: Start über die Brettwahl (`BeastmasterCrucibleStart`: Parameter 9 in `XBMStageDetailList`, „Beginnen“ erst bei aktivem Knopf, Fehlschlag sperrt für die Sitzung, Rückzug nicht), Fensterspur über fünf Fenster (`CrucibleWindowTrace.StartWindows`), Levelgrenze mit dem Mindestrang des nächsten Bretts (`BeastmasterCrucibleTeam`, Zeile 230), Ziel ab Werk Level, Rollenträger (`RoleHolders`), Tausch einzeln nach LP auf dem Kampfrang; maschinell: alle Bezeichner des Konzepts außer externen (BMR, Daedalus, Blattspalten) im Code, die vier geprüften Voreinstellungen an. |
 | 22-masked-carnivale.md | ✓ | ✓ 16.11.2026, Stand c76326b07 | Ohne Befund. Am Code bestätigt: „Don't use aspected actions on enemies immune to that aspect“ ab Werk an, „Only use actions of an aspect the enemy is weak to“ ab Werk aus, die zehn Kontrollsperren ab Werk aus (`Configs`); die Aspektsperre liest Element und Angriffsart (`MaskedCarnivaleHelper.ResistanceTo`), alle zehn Kontrollsperren greifen nur bei einem Gegner, den das Blatt als immun führt (`IsImmuneTo`, 10 Stellen in `ActionTargetInfo`), die Unterbrechungssperre weicht dem Spiel, solange es den Zauber als unterbrechbar meldet; Generator mit zwei CI-Schritten. Maschinell: die Stufenübersicht (nötig, empfohlen plus „neu“) gegen `CarnivaleSets.g.cs` für alle 32 Stufen, 0 Abweichungen. `AozArrangementData` ist ein Typ von FFXIVClientStructs, kein Bezeichner von RSR. |
-| 23-deep-dungeons.md | ✓ | offen | |
+| 23-deep-dungeons.md | ✓ | ✓ 16.11.2026, Stand 8a2377610 | Ein Befund am Code (A850, Widerruf C219): Der Flächenschlaf (G6) zählte gehaltene Schläfer im Kreis nicht, weil er sie in der Liste der Ziele suchte; behoben, das Konzept nennt die Quelle. Eine Dokumentchronik im Abschnitt Magicite entfernt (sie steht in A837). Am Code bestätigt: die fünf Optionen der Gewölbe ab Werk an (`Configs`: Pomander, Magicite, drei der Gegnerkontrolle), Witching erst nach Verlassen der kritischen Klasse (`_witchingArmed`), abgewiesener Platz bis Kampfende oder Stockwerk (`_refused`), Einsatz gilt höchstens einen GCD, nie in der Gruppe (beide Listen), Boss in Sicht vor dem Pull (`BossInSight`, `IsBossFromIcon`); Schlafregel: Heiler oder Magier, nicht unter Swiftcast, Heiler nicht bei kritischem Mitglied, Verlängerung über `Sleepers` mit Restdauer bis Wirkzeit + Verzögerung + GCD, Gleichstand kleinere Id, Wahl nach Zahl im Kreis, dann Verkürzte, dann LP, dann Id. |
 | 24-code-structure-and-cost.md | ✓ | offen | |
 | 25-pvp.md | ✓ | offen | |
 | README.md | ✓ | offen | |
@@ -24863,6 +24863,30 @@ Dalamud-Log. Die vorige Logdatei stammt vom 12.11.2026.
   sie nur gegen das Skript mit den Werten des Konzepts, nicht gegen das Blatt (Widerruf C217). Ursache am Vorgehen: Eine
   Zahl, die ein Modell aus einer Eingabe rechnet, ist erst belegt, wenn die Eingabe es ist.
 - *Prüfgrad:* Blatt, Modell mit Selbsttest, Compile, CI.
+
+### A850 · Konzept 23, Flächenschlaf: gehaltene Schläfer im Kreis wurden nicht gezählt (16.11.2026)
+
+- *Befund (zweiter Durchgang der Konzepte, A844):* Die Wahl des Schlafziels mit Wirkbereich (G6, A846) soll einen Kreis meiden,
+  der laufende Schlafe verkürzt. `SleepArea` zählte die Schläfer im Kreis aber in der Liste der Ziele, und ein gehaltener
+  Schläfer steht dort nicht: `TargetUpdater.UpdateLists` legt ihn in `restingHostiles` und damit in `DeepDungeonCrowd.Sleepers`,
+  solange ein wacher Gegner angreifbar ist. Gezählt wurde nur ein Schläfer, der bekämpft wird (das Ziel des Spielers oder eines
+  Tanks). Die Spur nannte deshalb „0 sleep(s) shortened“, auch wo Schläfer im Kreis lagen.
+- *Im Kampf:* Allein als Magier im Gewölbe, ein Pulk aus drei Gegnern schläft, zwei weitere Angreifer kommen dazu und stehen
+  am Pulk. Die Wahl sah keinen der drei Schläfer und konnte den Schlaf mitten in den Pulk legen: Jeder der drei schlief danach
+  kürzer (ein neuer Schlaf hält kürzer, G5) und verbrauchte eine Stufe seiner Abnutzung, statt dass der Kreis nur die beiden
+  neuen traf.
+- *Ursache am System:* Bei G6 wurde die Zählung der Wachen und der Schläfer über dieselbe Liste geführt; dass gehaltene Schläfer
+  aus ihr fallen, stand im Konzept („Wie eine Aktion ihr Ziel findet“), wurde aber für die neue Zählung nicht gegengelesen.
+  Die Klasse „Schläfer in der Liste der Ziele gesucht“: alle Leser des Schlafstatus erhoben (`StatusID.Sleep` in `RotationSolver/`):
+  die Verlängerung liest `Sleepers` (richtig), `AnyAwakeAttacker` und die Wahl der Wachen suchen Wache (richtig), `CanSleep`
+  liest `UntouchableHostiles` und nimmt Schläfer gewollt aus; kein weiterer Fall.
+- *Behoben:* `SleepArea` zählt die gehaltenen Schläfer aus `DeepDungeonCrowd.Sleepers` und aus der Liste der Ziele nur einen,
+  der nicht gehalten ist; ohne wache Gegner stehen die gehaltenen in beiden Listen und zählen einmal. Konzept 23, G6, nennt
+  die Quelle.
+- *Prüfgrad:* statisch und Compile. *Vorhersage:* offen, nicht maschinenlesbar – die Spur nennt keine Stellungen, und eine
+  Wahl ohne Schläfer im Kreis ist ebenso richtig wie eine mit gezählten. Widerlegt wäre die Behebung, wenn eine Spur aus den
+  Gewölben nach einem ersten Magier-Schlaf auf einen Pulk eine zweite Wahl mit „0 sleep(s) shortened“ zeigt, nach der die
+  Schläfer des Pulks mit kürzerer Restdauer weiterschlafen (Zeile „sleep landed on“ für sie).
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
@@ -25237,3 +25261,4 @@ geben den Stand vom 14.10.2026 wieder.
 | C216 | A231 (Stand bis A849): Sanctus habe 2,5 s Wirkzeit bei 2,5 s Erholzeit, der nächste GCD sei frei, sobald er landet | Blatt `Action`: Wirkzeit 1,5 s, Erholzeit 2,5 s; zwischen Landung und GCD liegt 1 s (A849) |
 | C217 | A844, Zeile zu Konzept 08 (Stand bis A849): Die Betäubungstabelle aus `stun_coverage.py 2.5 2.5` sei am Code bestätigt | Geprüft war nur das Skript mit den Werten des Konzepts; Sanctus wirkt 1,5 s, nicht 2,5 s (A849) |
 | C218 | Konzept 14, Maschinist- und Weißmagier-Tabelle, Zeile „Trank im Opener“/„Trank“ (Stand A779 bis A849): Schnitter-Text („nach Shadow of Death im Opener“, „Der 2-Minuten-Burst des Schnitters …“) als Abgleich dieser Jobs; Schnitter-Zeile mit Schalter „Opener“ (A775) | Ersetzungen trafen die falsche Zeile; die Jobs haben eigene Trankregeln, der Schnitter-Schalter ist seit A780 entfernt (A844, Zeile 14) |
+| C219 | A846, „Flächenschlaf (G6, gebaut)“ (Stand bis A850): Ein schon schlafender Gegner im Kreis zähle gegen die Wahl | Gezählt wurden nur Schläfer in der Liste der Ziele; gehaltene Schläfer stehen dort nicht (`TargetUpdater`, `DeepDungeonCrowd.Sleepers`), die Zählung war für sie 0. Behoben in A850 |
