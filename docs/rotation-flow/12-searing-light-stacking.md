@@ -513,12 +513,17 @@ zuerst 3920, Garuda zuerst 4420; zwischen bester und schlechtester Reihenfolge l
 Anlauf von Crimson Cyclone in eine Burstphase hinein ist ein Positionsrisiko, das 0,01 Prozent Schaden
 nicht rechtfertigen. Titan ist sicher, erlaubt Bewegung und kostet drei Potenz Schaden je Zyklus.
 
-**Zwei Einstellungen stützen diese Wahl.** `PreferTitanWhileMoving` zieht in `SummonPrimals` Titan bei
-Bewegung vor, unabhängig von der eingestellten Reihenfolge; ab Werk an (seine Regel für
-Voreinstellungen). `AddCrimsonCyclone`, ab Werk **aus**, überspringt laut seinem Optionstext und der
-Bedingung vor Crimson Cyclone in `SMN_Reborn` — `AddCrimsonCyclone ||
-CrimsonCyclonePvE.Target.Target.DistanceToPlayer() <= CrimsonCycloneDistance` — die Distanzprüfung: Mit ihr
-springt RSR aus beliebiger Entfernung heran. Aus greifen die drei Yalm aus `CrimsonCycloneDistance`.
+**Drei Einstellungen ordnen die Wahl.** `PreferTitanWhileMoving` zieht in `SummonPrimals` Titan bei Bewegung vor,
+unabhängig von der eingestellten Reihenfolge; ab Werk an (seine Regel für Voreinstellungen).
+`PreferIfritWhileCycloneCanFollow` (Fork, ab Werk an, A499) nimmt danach Ifrit zuerst, solange Crimson Cyclone sofort
+folgen darf – im Stehen oder mit „Use Crimson Cyclone when moving", Ziel innerhalb der Grenze des Zyklons –, nicht unter
+Searing Light und nicht mit „Use Crimson Cyclone at any range". Grund: Als letzter Primal verlor Ifrit Zyklon und
+Crimson Strike in 21 von 32 Runden an die Demi (sein Mitschnitt vom 26.10.2026); unter Searing Light gilt die Wahl
+oben, weil Titans Sofortzauber die Webplätze frei lassen. `AddCrimsonCyclone`, ab Werk **aus**, überspringt laut seinem
+Optionstext und der Bedingung vor Crimson Cyclone in `SMN_Reborn` – `AddCrimsonCyclone ||
+GapCloserAllowed(Ziel, CrimsonCycloneDistance)` – die Distanzprüfung: Mit ihr springt RSR aus beliebiger Entfernung
+heran. Aus gilt die kleinere der beiden Grenzen `CrimsonCycloneDistance` (ab Werk 3 Yalm) und „Distance for moving"
+(`DistanceForMoving2`), außer bei gesetztem Vorwärts-Befehl und im Countdown (`GapCloserAllowed`, Konzept 23).
 
 **Gieß- und Wiederholzeiten** (Action-Tabelle über xivapi, 12.10.2026, und Job-Guide, 02.10.2026): Ruby Rite
 2,8 s / 3,0 s, Slipstream 3,0 s / 3,5 s, Ruin III 1,5 s / 2,5 s; Emerald Rite, Topaz Rite und Ruin IV
