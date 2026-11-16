@@ -32,7 +32,8 @@ flowchart TD
 
 ### Identisch in allen vier
 
-1. **Raise-Kurzschluss ganz oben.** `SwiftRaisePending`, je Datei privat und gleichlautend, 13 Verwendungen
+1. **Raise-Kurzschluss ganz oben.** `SwiftRaisePending`, je Datei privat und gleichlautend (`SwiftLogic` ist eine Einstellung
+   jeder Rotation), 13 Verwendungen (16.11.2026)
    (jeder Heiler hat ihn zusätzlich in `HealSingleGCD` und `HealAreaGCD`). Der einzige Zweig, der die Methode verlässt, bevor
    irgendeine Rotationsentscheidung fällt.
 2. **Reihenfolge AoE → DoT → Filler.** Ohne Ausnahme.
@@ -211,12 +212,12 @@ flowchart TD
 
 | | DRG | MNK | NIN | RPR | SAM | VPR |
 |---|---|---|---|---|---|---|
-| `CountDownAction` | **fehlt** | ✓ | ✓ | ✓ | ✓ | **fehlt** |
+| `CountDownAction` | ✓ (Sprung zum Ziel) | ✓ | ✓ | ✓ | ✓ | ✓ (Sprung zum Ziel) |
 | `EmergencyAbility` | ✓ | ✓ | ✓ | **fehlt** | **fehlt** | ✓ |
 | `HealAreaAbility` | – | **✓** (Earth's Reply, Mantra) | – | – | – | – |
 | `HasOwnInterruptGate` | – | – | – | ✓ | – | ✓ |
 | Combo-Form | if-Kette | Automat | Automat | if-Kette | if-Kette | switch |
-| Trait-Duplikate | **6 Paare** | – | – | – | – | – |
+| Trait-Duplikate (`if (X.EnoughLevel)` und `if (!X.EnoughLevel)`, 16.11.2026) | **7 Paare** | – | – | – | – | – |
 
 Der Mönch führt Second Wind und Bloodbath seit 4b3c9412 in `HealSingleAbility`; `HealAreaAbility` trägt seine
 Gruppenheilungen.
@@ -484,6 +485,6 @@ Job-Komplexität; A4a hat PCT und SMN deshalb in benannte Stufen zerlegt.
 |---|---|---|---|
 | Heiler | Kurzschluss → Sustain → Ressource → AoE → DoT → Filler | Eukrasia, Pet, Karten | Gelehrter ohne Pflege im Pull (kein Sofortschild, Konzept 15) |
 | Tanks | Ressource → AoE/ST → Combo → Ranged-Fallback | – | Unverwundbarkeit an zwei Orten (Konzept 05) |
-| Melee | Burst → Combo → AoE → Ranged-Fallback | Mudra, Formen, Positionals | DRG/VPR ohne CountDown – keine Lücke (`04`, „Countdown und Notfallslot“) |
+| Melee | Burst → Combo → AoE → Ranged-Fallback | Mudra, Formen, Positionals | – (DRG und VPR haben seit 060b8fc82 den Sprung zum Ziel im Countdown, `04`, „Der Sprung zum Ziel am Ende des Countdowns“) |
 | Phys. Ranged | DoT/Ressource → Burst → AoE/ST | Tänze (DNC) | – |
 | Mag. Ranged | Automat → Filler | Elementphasen | Automat mal ausgelagert, mal inline |

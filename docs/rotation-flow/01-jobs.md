@@ -2148,6 +2148,6 @@ Stufen. Es baut auf den Regeln dieses Abschnitts auf (Hörner nach Lage B0 bis B
 | Jobs ohne `EmergencyAbility` in der Reborn-Datei | 3 (RPR, SAM, WAR) | keine Lücke: WAR in der Basisschicht, RPR/SAM ohne eigene Notfallaktion (Konzept 04) |
 | Echte Aufstiegsketten | 65 in 16 Dateien, davon 25 sauber gleichförmig (Zählung vom 20.08.2026) | siehe 04, Punkt A2 |
 | Redundantes `X.EnoughLevel && X.CanUse` | 63, davon 43 außerhalb `ExtraRotations` (16.11.2026) | `CanUse` prüft das bereits selbst |
-| Swiftcast/Raise-Kurzschluss | 17 Verwendungen von `SwiftRaisePending`, vier gleichlautende private Definitionen (eine je Heiler, weil `SwiftLogic` eine Einstellung jeder Rotation ist; 16.11.2026) | siehe 04, B1 |
+| Swiftcast/Raise-Kurzschluss | 13 Verwendungen von `SwiftRaisePending`, vier gleichlautende private Definitionen (eine je Heiler, weil `SwiftLogic` eine Einstellung jeder Rotation ist; 16.11.2026) | siehe 04, B1 |
 | Spannweite Dateigröße | 211 (BLM_RP) – 2969 (BST) LOC, ohne Duty- und PvP-Rotationen, Teildateien zusammengezählt (16.11.2026) | Faktor 14 |
 | Spannweite Configs | 3 (GNB) – 28 (WHM) (16.11.2026) | Faktor 9 |

@@ -24646,7 +24646,7 @@ Absturzbericht.
 | Datei | Durchgang 1 | Durchgang 2 | Befunde |
 |---|---|---|---|
 | 01-jobs.md | ✓ | ✓ 16.11.2026, Stand 4ace0f009 | Gelehrter: Hook-Profil ohne `GeneralAbility`, „einziger Heiler ohne Override“ falsch (Seraphism, A468). Blaumagier: Untote „offen“, obwohl seit A508 je Art gelernt; „RSR setzt das Set nie“ gegen Stufe 3 (A509). Beastmaster: Hornbelegung „wartet auf Protokolle“, gebaut mit B5 (A522); „RSR heute“ beschrieb den Stand vor A487. Kennzahlen: `CountDownAction` fehlt keinem Job mehr (060b8fc82), übrige Zahlen neu gemessen und datiert. Am Code bestätigt: Stufe 0 (`BlueMageSetTrace`), `OwnHitWatch.IsUndead`, `BestiaryTrace`, kein BST-Leser von `OwnHitWatch.DamagePerPotency`. |
-| 02-groups.md | ✓ | offen | |
+| 02-groups.md | ✓ | ✓ 16.11.2026, Stand 4a02fbae1 | Nahkämpfer: `CountDownAction` bei DRG und VPR „fehlt“, seit 060b8fc82 mit dem Sprung zum Ziel (Tabelle und Gruppenvergleich); Trait-Paare beim Dragoon 7 statt 6. Berichtigt in 01: 13 Verwendungen von `SwiftRaisePending`, nicht 17 (die 17 zählten die vier Definitionen mit; mein Fehler im Durchgang zu 01). Am Code bestätigt: `AoeCount = 2` der vier Flächencombos, zwölf Feint-Stellen, `HasOwnArmsLengthPullRule` bei allen vier Tanks. |
 | 03-universal.md | ✓ | offen | |
 | 04-concept.md | ✓ | offen | |
 | 05-action-coverage.md | ✓ | offen | |
