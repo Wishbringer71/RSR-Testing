@@ -51,7 +51,8 @@ in einem Zug, dazwischen verschwindet kein Objekt. Über einen Frame hinaus taug
   Tabelle durchläuft (`ObjectTable.CachedEntry.Update`). Eine gehaltene Referenz zeigt danach auf den neuen Inhaber des
   Platzes; ist der Platz leer, behält sie die alte Adresse.
 - `IsValid()` prüft nur, dass der Spieler geladen ist (`GameObject.IsValid`, Dalamud master, 15.10.2026), nicht das
-  Objekt. Es schützt keine gehaltene Referenz; die 33 Prüfungen im Plugin sind Nullprüfungen mit dieser Zusatzbedingung.
+  Objekt. Es schützt keine gehaltene Referenz; die Prüfungen im Plugin (32, gezählt 16.11.2026) sind Nullprüfungen mit dieser
+  Zusatzbedingung.
 - Spieler und Kampf-NPCs liegen in einem festen Speicherblock des Spiels (`CharacterManager.BattleCharaMemory`,
   FFXIVClientStructs). Der Speicher einer veralteten Adresse bleibt lesbar, ihre Funktionstabelle nicht: Fast jede
   Eigenschaft einer Figur – `GameObjectId`, `Name`, `IsDead`, `StatusList`, jede Wirk-Eigenschaft über `GetCastInfo` –
@@ -1041,16 +1042,16 @@ hatte einen grund. wenn der grund bei anderer entscheidung besser erfüllt wird,
   Spielers, im Augenblick neu abgewogen. Die Regel rechnet deshalb als Gefahr eines Gegners: seinen eigenen Schaden je
   Sekunde, angekündigte Treffer sofort; bei einem Heiler dazu den Schaden, den die Geheilten durch die längere Lebenszeit
   machen (geheilte LP durch deinen Schaden auf ihnen, mal ihr Schaden je Sekunde), gemessen an seinen Heilungen; bei
-  einem Wiederbeleber den Schaden des Zurückgeholten über dessen neue Lebenszeit. Schaden an Begleitern zählt, soweit er
-  dich schützt: der Heiler unter ihnen, der dich deckende, im Crucible der Bedarf über das Brett (Konzept 21, K3, K11).
+  einem Wiederbeleber den Schaden des Zurückgeholten über dessen neue Lebenszeit. Schaden an deinen Begleitern zählt wie
+  Schaden an dir (A582); ein Gewicht nach ihrem Bedarf über das Brett ist verworfen (Konzept 21, K3, A660).
 - *Gilt* nach seiner Bedingung für Beastmaster und Blaumagier ohne lebenden Tank und Heiler, wie bisher; gebaut in A541.
 - *Grenzen:* Ein Wiederbeleber unter den Gegnern zählt nicht eigens; seine Wiederbelebung kommt nicht als Heilung an,
-  und messbar wird nur der Schaden des Zurückgeholten. Schaden an seinem Begleiter zählt nicht (außer im Crucible, wo K3
-  und K11 das Brett planen, Konzept 21); er deckt ihn nur nach Zähnefletschen. Flächenangriffe wählen weiter das Ziel
+  und messbar wird nur der Schaden des Zurückgeholten. Flächenangriffe wählen weiter das Ziel
   mit den meisten Treffern, und bei Gleichstand ordnet dort weiter „wenigste LP".
 
-**Was im Kampf anders wird:** In einem Rudel aus fünf Gegnern fällt der schwächste zuerst, dann der nächste. Mit jedem
-toten Gegner schlägt einer weniger auf ihn ein; vorher verteilten sich Einzelzielangriffe nach seiner Zielart, bei „High
+**Was im Kampf anders wird:** In einem Rudel aus fünf Gegnern fällt zuerst der, dessen Gefahr je Sekunde im Verhältnis
+zu seinen LP am größten ist; bis ein Gegner gemessen ist, der schwächste. Mit jedem toten Gegner schlägt einer weniger
+auf ihn ein; vorher verteilten sich Einzelzielangriffe nach seiner Zielart, bei „High
 HP" auf den stärksten. Flächenangriffe treffen weiter alle. Gegen einen Boss allein ändert sich nichts.
 - *Preis:* Wechselt das Ziel mit jedem Tod, verliert ein Nahkämpfer Weg zum nächsten, wenn der nicht schon in seiner
   Reichweite steht; Kandidaten sind ohnehin nur Gegner in Reichweite der Aktion. Sonst kostet die Reihenfolge keinen
@@ -1073,16 +1074,17 @@ HP" auf den stärksten. Flächenangriffe treffen weiter alle. Gegen einen Boss a
   Stufen mit einem Gegner spielt; dann bleibt seine Zielart, und die Spurzeile sagt es.
 
 **Gegenposition, geprüft:**
-- *Nach Schaden je LP ordnen* (wer am härtesten schlägt und am schnellsten fällt, zuerst): Weniger Gegner heißt nicht
-  weniger Schaden, wenn einer allein so viel austeilt wie drei andere. RSR misst den Schaden je Gegner auf den Spieler
-  nicht zentral, und seine Vorgabe nennt die LP. Nicht übernommen; im Rudel gleicher Gegner fällt es zusammen.
+- *Nach Schaden je LP ordnen* (wer am härtesten schlägt und am schnellsten fällt, zuerst): zuerst nicht übernommen,
+  weil RSR den Schaden je Gegner nicht maß und seine Vorgabe die LP nannte; seit A541 die geltende Regel, auf seine
+  Frage nach seinem Grund (oben, „Erfüllt eine andere Regel seinen Grund besser?"). Im Rudel gleicher Gegner fällt sie
+  mit „wenigste LP" zusammen.
 - *Für alle Jobs:* von ihm verworfen (Präzisierung oben); für Einzelzielangriffe gilt seine Zielart.
 
 **Spur:** Wechselt die Regel zwischen „gilt" und „gilt nicht", schreibt RSR eine Zeile ins `DefenseTrace.log`; die
 Zustandszeile des Beastmasters nennt es ebenfalls.
 
-**Prüfgrad:** statisch am Code; Compile über die CI. Im Kampf: Im Rudel greift er den Gegner mit den wenigsten LP an;
-die Spurzeile nennt, ob die Regel gilt.
+**Prüfgrad:** statisch am Code; Compile über die CI. Im Kampf: Im Rudel greift er den Gegner mit dem größten Vorrang an,
+ohne Messung den mit den wenigsten LP; die Spurzeilen nennen, ob die Regel gilt, und jeden Wechsel der Führung.
 
 ## Gegner mit Stacheln
 
@@ -2275,7 +2277,7 @@ auf unsicherem Boden.
 | U1 | `GeneralGCD` ist Sammelbecken ohne Untergliederung | 7–81 Zweige auf einer Ebene, Median ~19 | für die fünf größten Dateien behoben (`04` A4a); MCH bewusst ausgelassen |
 | U2 | Proaktive Logik steht in drei Methoden | Heiler-Sustain | **keine Schwäche.** Die Bedingung liegt in genau einem Helfer je Job; dreifach steht nur die **Position**, und die ist je Dispatch-Slot eine eigene Prioritätsaussage. Herleitung in `04-concept.md` unter A1 |
 | U3 | Level-Ketten von Hand | 2 Schreibweisen, 1 realer Bug daraus | Fehlerklasse durch den Wächter A2′ geschlossen; die Ketten selbst bleiben |
-| U4 | Hook-Belegung ohne Regel | Dragoon und Viper ohne `CountDownAction` | keine Lücke: The Balance sieht keinen Vorlauf vor, den seine Regeln zulassen (`04`, „Countdown und Notfallslot"); die Slot-Lücken der Fernkämpfer und der Heilslot des Mönchs sind geschlossen (`04` B4/B5); ohne eigenen Notfall sind Schnitter und Samurai, und das ist keine Lücke (`04`, „Countdown und Notfallslot") |
+| U4 | Hook-Belegung ohne Regel | Dragoon und Viper ohne `CountDownAction` | geschlossen: seit 060b8fc82 tragen beide den Sprung zum Ziel am Pull (`04`, „Der Sprung zum Ziel am Ende des Countdowns"); die Slot-Lücken der Fernkämpfer und der Heilslot des Mönchs sind geschlossen (`04` B4/B5); ohne eigenen Notfall sind Schnitter und Samurai, und das ist keine Lücke (`04`, „Countdown und Notfallslot") |
 | U5 | Gleiche Rolle, verschiedene Orte | AoE-Schwelle an drei Orten (C3) | erledigt (A391): die Schwelle steht an der AoE-Aktion; keine Laufzeitfrage (A325); die Platzierung der Reflexion ist vereinheitlicht (`04` B3) |
 | U6 | Kein Job kann sagen „ich bin fertig" | jede Ebene muss `base.X` aufrufen; Vergessen oder Vertauschen war mit neun Fällen die häufigste Fehlerklasse im AUDIT_LOG | Fehlerklasse durch den Wächter A3 in der CI geschlossen; die Kette selbst bleibt |
 
