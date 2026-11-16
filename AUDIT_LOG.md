@@ -24902,6 +24902,27 @@ Dalamud-Log. Die vorige Logdatei stammt vom 12.11.2026.
   Gewölben nach einem ersten Magier-Schlaf auf einen Pulk eine zweite Wahl mit „0 sleep(s) shortened“ zeigt, nach der die
   Schläfer des Pulks mit kürzerer Restdauer weiterschlafen (Zeile „sleep landed on“ für sie).
 
+### A851 · Quellen am Auftragsende: sechs neue Stände ausgewertet (16.11.2026)
+
+- *Anlass:* Abschluss des Auftrags „alle bestehenden Konzepte im Loop kritisch prüfen“ (A844); `check_source_updates.py`
+  meldete 6 von 39 Quellen mit neuem Stand, Upstream ohne neue Commits (`check_sync_state.py`: 0 behind).
+- *FFXIV-CombatReborn/BossmodReborn* 35a908ad7 → 8d5ff8e21: Modulpflege (Dungeons aus Dawntrail, Merchant's Tale), eine
+  Anzeige im Inhaltsfinder (`ShowDutyFinderIndicator`), und `Components.RaidwideInstant` sagt seinen Raidwide jetzt einmal
+  mit der ganzen Gruppe voraus statt je Mitglied mit wachsender Maske. RSR liest nur den ersten Eintrag
+  (`Hints.PredictedDamagePlayers` = `PredictedDamage[0].Players`, `BossModUpdater`): Vorher trug er bei einem solchen
+  Raidwide nur das erste Mitglied. Ist das der Spieler (Platz 0), entscheidet RSR wie bisher; war er es nicht (etwa außerhalb
+  der Projektionsebene), verwarf RSR den Raidwide als „kein Flächentreffer auf diese Gruppe“, jetzt nicht mehr. Kein Leser
+  von RSR zählt Einträge; Vertragstypen (`SpecialMode`, `PredictedDamageType`) und die Blickliste unverändert. Keine Änderung
+  an RSR nötig.
+- *awgil/ffxiv_bossmod* ee5b04a4a → 9c9e68b33: ein Ring in der Himmelssäule (The Dragon's Voice 8 → 7,5 y), ein Befehl, eine
+  PvP-Rotation; RSR liest keine Geometrie aus BossMod. Ohne Wirkung.
+- *dajoey/lalalazy* 1c70fcfee → d2a94c617: LazyCrucible 0.1.9.20 bis 0.1.9.25 baut nur die Oberfläche um (Fenster, Karten,
+  Hinweise), keine Regel des Crucible; die übrigen Plugins liegen außerhalb des Gegenstands. Ohne Wirkung.
+- *NightmareXIV/ECommons* bc38dc713 → 7d5094137: zwei Sammlungshilfen und ein Werbebanner; RSR bindet ECommons fertig
+  gebaut, keine benutzte Methode geändert. *ofnature/Daedalus* und *t3knical/DalamudPlugins*: nur Verweise auf
+  Veröffentlichungen und Zähler. Ohne Wirkung.
+- Alle sechs mit `--record` auf den neuen Stand gesetzt.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

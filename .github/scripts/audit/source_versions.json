@@ -21,8 +21,8 @@
   },
   {
    "repo": "awgil/ffxiv_bossmod",
-   "commit": "ee5b04a4a",
-   "date": "2026-11-15",
+   "commit": "9c9e68b33",
+   "date": "2026-11-16",
    "use": "BossMod (Original)"
   },
   {
@@ -33,14 +33,14 @@
   },
   {
    "repo": "dajoey/lalalazy",
-   "commit": "1c70fcfee",
-   "date": "2026-11-15",
+   "commit": "d2a94c617",
+   "date": "2026-11-16",
    "use": "GluttonyCombo, LazyCrucible: Crucible-Aufzeichnungen, Sanduhr, Futter (A674, A679)"
   },
   {
    "repo": "FFXIV-CombatReborn/BossmodReborn",
-   "commit": "35a908ad7",
-   "date": "2026-11-14",
+   "commit": "8d5ff8e21",
+   "date": "2026-11-16",
    "use": "Crucible-Module, Mechaniken, Vertrag mit RSR (Konzept 21, Code.md), Blickliste GazeActions.g.cs (Konzept 13)"
   },
   {
@@ -105,8 +105,8 @@
   },
   {
    "repo": "NightmareXIV/ECommons",
-   "commit": "bc38dc713",
-   "date": "2026-11-10",
+   "commit": "7d5094137",
+   "date": "2026-11-16",
    "use": "Client-API"
   },
   {
@@ -117,8 +117,8 @@
   },
   {
    "repo": "ofnature/Daedalus",
-   "commit": "961997dcb",
-   "date": "2026-11-15",
+   "commit": "fcf1bb9cc",
+   "date": "2026-11-16",
    "use": "Feldnotizen, Rotationen aller Jobs, Crucible (A600, A660)"
   },
   {
@@ -183,8 +183,8 @@
   },
   {
    "repo": "t3knical/DalamudPlugins",
-   "commit": "909204b9c",
-   "date": "2026-11-15",
+   "commit": "ae4bfc718",
+   "date": "2026-11-16",
    "use": "Tekz-BossmodReborn-Fork (Zielvorrang je Kampf), BeastMasterHelper (A667)"
   },
   {
