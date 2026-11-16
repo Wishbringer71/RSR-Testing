@@ -37,6 +37,9 @@ What this release changes in the fight. For the whole distance from upstream, se
 
 ## Beastmaster in the Crucible
 
+- **Start a board from RSR's team window.** With the team as recommended, "Start" presses the board choice's start
+  button as your click does and commences the duty confirmation. If the start does not reach the board, the button is
+  not offered again that session.
 - **Protective items go where the run planned them.** A Tome of the Impervious bought for the heaviest fight stayed in the
   bag to the end: outside the final fight it went only against a hit announced on you. With no item bonus left to keep,
   each protective item you hold now belongs to the final fight or to one of the heaviest fights still ahead, and there it

@@ -19,7 +19,8 @@ auswahl und das timing der beschwörung" – je Kampf aller fünf Bretter (Gegne
 BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Zeitpunkt ihres Aufrufs im Loop prüfen
 (Beispiel seiner Beobachtung: der Raptor gegen Feuer, bevor feueranfällige Gegner da waren; A581).
 
-1. Crucible: „Start“ startet das Brett (Beastmaster-Vorrang).
+1. Burstphasen und Weben aus der Puppensitzung klären.
+2. Konzept 08: Wirkzeit von Sanctus.
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -34,12 +35,20 @@ Keine offenen Defekte.
 
 ## Offene Arbeit
 
-### Crucible: „Start“ startet das Brett · N
+### Burstphasen und Weben aus der Puppensitzung klären · R
 
-Im Kampf: Stimmt der Kader, startet ein Klick in RSRs Fenster das Brett; bis dahin steht dort „Team ready“ (A821, seine
-Vorgabe vom 15.11.2026). Daten da (A846): Der Start im Spiel ist ein ButtonClick der Brettwahl (`XBMStageDetailList`,
-Parameter 9), angenommen in der Inhaltsbestätigung (`ContentsFinderConfirm`, Parameter 8). Nächster Schritt: Loop zum
-Auslösen genau dieses Ereignisses, ohne geratenen Aufruf (A793, A794). Konzept 21, K7 „Kader stimmt“.
+Im Kampf: Technischer Schritt (Tänzer) nach 40 s, Laufstabilisator und Wildfeuer (Maschinist) nach 42 s, Ermutigen
+(Rotmagier) erst im dritten Kampf an der Puppe (A820); je Job der Opener und die Burstfenster gegen The Balance, das
+Weben je Job auf Optimierungsbedarf. Sein Hinweis (16.11.2026): „gerade der optimierungsbedarf zum weaving sollte durch
+die puppe feststellbar sein. ebenso recherche zu den burstphasen“ – keine Wartezeit auf neue Daten. Nächster Schritt:
+ACT-Mitschnitt vom 15.11. (09:49–11:35, 21 Jobabschnitte) je Job gegen die Burst-Bedingungen im Code und den Opener
+der Referenz, dann Loop je Ursache. Konzept 03, „Bereit, aber nicht genutzt“ und „Weben, Animationssperre und Latenz“.
+
+### Konzept 08: Wirkzeit von Sanctus · R
+
+Im Kampf ohne Wirkung (die Regel liest die Wirkzeit aus dem Spiel). Konzept 08, Kommentar in `WHM_Reborn.Universal.cs`
+und Selbsttest von `stun_coverage.py` rechnen mit 2,5 s Wirkzeit; das Blatt nennt 1,5 s (Recast 2,5 s), Konzept 10
+ebenso. Nächster Schritt: Zahlen und Text nachziehen, A231 widerrufen.
 
 ## Technische Schuld
 
@@ -109,13 +118,6 @@ Reborn"); beides kostet im Spiel, solange nicht beide Installationen gebraucht w
 nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigter Name bleibt.
 
 ## Warten auf Daten oder Fremde
-
-- **Später erster Burst bei Tänzer, Maschinist und Rotmagier** (A820). Im Kampf: Technischer Schritt, Laufstabilisator
-  mit Wildfeuer und Ermutigen kamen an der Puppe 40 bis 73 s nach Kampfbeginn, der Zwei-Minuten-Zyklus läuft danach
-  neben den Buffs der Gruppe. Eingegrenzt (A824): beim Maschinisten von 10 s bis zum zweiten Luftanker keine Ability,
-  obwohl Schachmatt, Doppelschach und Laufstabilisator bereit waren; Weben und Abwehrflagge ausgeschlossen. Auflösung: die Zeile „ready but unused over
-  the fight“ der nächsten Sitzung mit diesen Jobs (Build ab 6992f82af), dann Loop je Grund. Konzept 03, „Bereit, aber
-  nicht genutzt“.
 
 - **Absturz einer zweiten Installation am 11.11.2026, 21:18** (A736). Das Spiel endete als Dunkelritter in der
   Azim-Steppe 0,5 s nach Kampfbeginn, ohne die Plugins zu entladen; Build b184ee7fc (08.11.2026). Das `DefenseTrace.log`

@@ -24793,6 +24793,32 @@ Dalamud-Log. Die vorige Logdatei stammt vom 12.11.2026.
   landed“ oder ein anderer gewählt wird, nicht abwechselnd im Abstand eines Frames. Jede Art, für die „its kind is stored“
   in der Spur steht, steht danach in `SleepResistantKinds.json`. Als Magier nennt die Zeile „… more asleep in its area“.
 
+### A847 · Crucible: „Start“ startet das Brett mit dem gemessenen Ereignis (16.11.2026)
+
+- *Anlass:* TODO „Crucible: „Start“ startet das Brett“ (A821, seine Vorgabe vom 15.11.2026: „start/spielen und bei
+  pressen des buttons dann das brett starten“), Beastmaster-Vorrang; die Daten kamen mit A846.
+- *Grundlage:* Gestartet hat er zweimal in der Brettwahl (`XBMStageDetailList`, ButtonClick, Parameter 9), angenommen
+  in der Inhaltsbestätigung (`ContentsFinderConfirm`, ButtonClick, Parameter 8). ECommons 3.2.1.26 (Quelle 7d50941,
+  16.11.2026) löst einen Knopf so aus, wie ein Mausklick es tut: das am Knopf hinterlegte Ereignis an sein Fenster
+  (`ClickAddonButton`: `ReceiveEvent` mit Art, Parameter und Ereignis des Knopfs); „Beginnen“ über
+  `AddonMaster.ContentsFinderConfirm.Commence` (`ClickButtonIfEnabled` auf `CommenceButton`).
+- *Optionen:* (0) „Team ready“ lassen, er klickt zweimal im Spiel. (1) `Callback.Fire` der Brettwahl mit einem Wert –
+  verworfen: der Wert ist nicht gemessen (LazyCrucible nennt „challenge = [8]“, die Spur Parameter 9), ein geratener Aufruf
+  (A793, A794). (2) Den Knopf suchen, der genau das gemessene Ereignis trägt, und dieses Ereignis senden – gewählt: Es ist
+  der Klick selbst, nicht ein Nachbau. (3) Den Knopf über Text oder Lage suchen – verworfen: beides kennt keine Quelle,
+  daneben kann ein Knopf das Brett verlassen.
+- *Gebaut:* `BeastmasterCrucibleStart.cs` (Teildatei), Knopf „Start“ im Teamfenster, solange der Kader stimmt und die
+  Brettwahl mit dem Knopf offen ist; „Beginnen“ einmal, sobald dessen Knopf aktiv ist; Selbstprüfung: keine Bestätigung bis
+  zum Schließen der Brettwahl oder ein Gebietswechsel nicht ins Brett beendet das Angebot für die Sitzung; ein Zurückziehen
+  zählt nicht. Der Parameter 9 ist als gemessener Wert in `fixed_values.json` geführt. Konzept 21, K7 „Kader stimmt“.
+- *Falsifikation:* (1) *Kein Defekt, er klickt selbst:* zwei Klicks je Brett, seine Vorgabe verlangt einen. (2) *Option
+  falsch:* Trägt ein anderer Knopf dasselbe Ereignis, wäre er ein Start desselben Fensters; Parameter und Art stammen aus
+  seinem Klick. (3) *Ausgeliefert, nichts ändert sich:* Liegt der Parameter in einer anderen Lage anders, findet RSR keinen
+  Knopf und zeigt „Team ready“ mit Grund – kein Eingriff.
+- *Prüfgrad:* Quelle gelesen, Spur, Compile, CI; im Spiel nicht beobachtet.
+- *Vorhersage:* `predictions/2026-11-16.json`, „crucible-start-board“: nach „crucible start: pressed the board choice's
+  start“ folgt „crucible start: on the board“.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

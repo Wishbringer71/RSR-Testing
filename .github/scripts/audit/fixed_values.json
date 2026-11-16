@@ -2612,6 +2612,16 @@
    "status": "exception",
    "loop": "A808",
    "reason": "The gear list of the Crucible's windows: ten places of five values (held, -, icon, XBMItem row, name), from value 60 in XBMContentsMainHUD, 75 in XBMContentsTreasure, 78 in XBMContentsBooty and 205 in XBMContentsItemShop - read in the owner's traces of 11 to 14.11.2026, the Sacrifice Ring (row 2) on place 1 of each; the shop's 205 and 5 match ECommons' ReaderXBMContentsItemShop (OwnedEntries). The game's layout of the windows, not a tuned value; a place that does not read as this layout says drops the whole reading."
+  },
+  {
+   "file": "RotationSolver/Basic/Rotations/Basic/BeastmasterCrucibleStart.cs",
+   "code": "private const int BoardStartParam = 9;",
+   "values": [
+    "9"
+   ],
+   "status": "exception",
+   "loop": "A846",
+   "reason": "The event parameter the game's own start button of the Crucible's board choice (XBMStageDetailList) carries, measured twice in his trace of 16.11.2026; no sheet names a window's event parameters. RSR matches it against the event the button itself holds, so a changed parameter finds no button and leaves the start to him (A846)."
   }
  ]
 }

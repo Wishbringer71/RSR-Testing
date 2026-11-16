@@ -2574,9 +2574,20 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
     Brettwahl (`XBMStageDetailList`) stehen zugleich offen; gestartet hat er in der Brettwahl (ButtonClick, Parameter 9),
     angenommen in der Inhaltsbestätigung (`ContentsFinderConfirm`, ButtonClick, Parameter 8), zwei Sekunden später
     stand er im Brett. Das Ereignis, das der Knopf auslösen muss, gehört also der Brettwahl, nicht dem Teamfenster.
-  - *Danach, mit der Zeile:* Der Knopf heißt „Start" und löst am Fenster dasselbe Ereignis aus wie sein Klick
-    (`ReceiveEvent` des Fensters mit Art und Parameter, wie ein Klick des Spielers) – nur bei offenem Teamfenster, nur
-    bei stimmendem Kader. Kein Aufruf einer Agentenfunktion mit geratenem Argument.
+  - *Gebaut (A846):* Stimmt der Kader und steht die Brettwahl offen, heißt der Knopf in RSRs Teamfenster „Start“. Er
+    sucht in der Brettwahl den Knopf, an dem das Spiel genau das gemessene Ereignis hinterlegt hat (ButtonClick,
+    Parameter 9), und löst es aus wie ein Mausklick: dasselbe Ereignis an dasselbe Fenster (`ReceiveEvent`, wie ECommons'
+    `ClickAddonButton`), nur wenn der Knopf sichtbar und aktiv ist. Erscheint danach die Inhaltsbestätigung, drückt RSR
+    dort „Beginnen“ (`AddonMaster.ContentsFinderConfirm.Commence`, ECommons) – einmal, nur nach dem eigenen Start und
+    solange es auf ihn wartet. Findet RSR den Knopf nicht, bleibt „Team ready“ mit dem Grund stehen; kein anderer Knopf,
+    kein Aufruf einer Agentenfunktion.
+    - *Selbstprüfung:* Kommt nach dem Start bis zum Schließen der Brettwahl keine Bestätigung, oder führt der
+      Gebietswechsel danach nicht ins Brett, schreibt die Spur es, und RSR bietet „Start“ in dieser Sitzung nicht mehr an;
+      den Klick macht er dann selbst. „Beginnen“ drückt RSR erst, wenn der Knopf aktiv ist. Schließt die Bestätigung, ohne
+      dass er das Gebiet wechselt, und steht die Brettwahl noch – zurückgezogen –, gilt das nicht als Fehlschlag; „Start“
+      steht wieder bereit.
+    - *Im Kampf:* Vorher drei Klicks (Teamfenster prüfen, Herausfordern, Beginnen), jetzt einer in RSRs Fenster.
+    - *Spur:* „crucible start: …“ beim Druck, bei „Beginnen“ und bei jedem Abbruch.
   - *Gegenthese (gleich bauen, Knopf über seinen Text suchen):* Der Text des Startknopfs steht in keinem gelesenen
     Blatt, und der Knopf daneben kann das Brett verlassen. Ein Fehlgriff kostet den Lauf; das Warten kostet einen
     Klick im Spiel bis zur nächsten Sitzung.

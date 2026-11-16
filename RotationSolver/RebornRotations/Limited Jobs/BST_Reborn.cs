@@ -1756,6 +1756,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 		}
 
 		FollowTeamRequest(CrucibleGoal);
+		FollowCrucibleStart();
 		FollowCampsite(PickCampsiteRest);
 		FollowCrucibleShop(RecommendCrucibleShop);
 		FollowCrucibleTreasure(RecommendCrucibleTreasure);

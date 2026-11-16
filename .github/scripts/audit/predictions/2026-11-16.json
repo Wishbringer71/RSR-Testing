@@ -1,0 +1,9 @@
+[
+ {
+  "id": "crucible-start-board",
+  "archive": "A847",
+  "kind": "present",
+  "situation": "crucible start: pressed the board choice's start",
+  "match": "crucible start: on the board"
+ }
+]

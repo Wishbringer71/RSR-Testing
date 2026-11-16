@@ -113,13 +113,21 @@ internal sealed class CrucibleTeamWindow : RecommendationWindow
 
 		Footer();
 
-		// A821 (his rule of 15.11.2026): with the team as recommended there is nothing to apply. Starting the board from here
-		// waits until his trace shows the event the game's start button sends (concept 21, K7).
+		// A821 (his rule of 15.11.2026): with the team as recommended there is nothing to apply - "Start" starts the board,
+		// with the event the game's start button sends, measured in his trace (A846, concept 21, K7).
 		var ready = picks.Count > 0 && !BeastmasterRotation.CrucibleTeamRequestRunning && team.Count == wanted.Count
 			&& wanted.TrueForAll(team.Contains);
-		if (ready)
+		var whyNoStart = string.Empty;
+		if (ready && BeastmasterRotation.CanStartCrucibleBoard(out whyNoStart))
 		{
-			Line("Team ready", "start the board in the game's window", M3Severity.Success);
+			if (Action("##crucible_team_start", "Start", FontAwesomeIcon.Play, true))
+			{
+				BeastmasterRotation.StartCrucibleBoard();
+			}
+		}
+		else if (ready)
+		{
+			Line("Team ready", whyNoStart, M3Severity.Success);
 		}
 		else if (Action("##crucible_team_apply", "Apply", FontAwesomeIcon.Check, picks.Count > 0))
 		{
