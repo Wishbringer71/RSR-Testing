@@ -24617,6 +24617,63 @@ Absturzbericht.
   keine Weichmacher als Regelwort.
 - *Prüfgrad:* Textprüfung je Aussage, Messung am Repository, `check_rule_files.py`, 60 Prüfungen grün.
 
+### A844 · Alle Konzepte im Loop kritisch geprüft: Abdeckung und Befunde (16.11.2026)
+
+- *Anlass:* Sein Auftrag (16.11.2026): „alle bestehenden konzepte im loop kritisch prüfen. und wehe. du nimmst wieder nur
+  das letzte bearbeitete“. Umfang: 26 Dateien unter `docs/rotation-flow/`, 2 unter `docs/method/`. Die Aktionsmatrizen
+  (`docs/action-matrix/`, erzeugt und von `generate_action_matrix.py --check` gehalten) und die Release-Geschichte
+  (`fork-changes-in-play.md`) prüft nur der mechanische Durchgang der CI.
+- *Durchgang 1, mechanisch über jede Datei (16.11.2026):* je Datei Zitate widerrufener Archivaussagen (Ähnlichkeit der
+  Konzeptstelle mit der widerrufenen Aussage, 19 Kandidaten, alle schon berichtigt), Verweise auf TODO-Einträge gegen die
+  Titel in `TODO.md`, Zeilenangaben `Datei:Zeile` gegen die Dateien (0 falsch), Weichmacher und Zeitwörter; dazu die
+  vorhandenen Prüfungen (Bezeichner, Abschnittsverweise, Querverweise, Voreinstellungen, Aufbau), alle grün.
+- *Befunde aus Durchgang 1, berichtigt:*
+  - Konzept 21, K3 – Widerspruch im eigenen Abschnitt: „Was gilt“ gewichtete die Gefahr nach dem Bedarf des Getroffenen
+    über das Brett, derselbe Abschnitt nennt diese Gewichtung verworfen (A660). Der Code (`EnemyDanger`) zählt LP je
+    Sekunde, gleich wen es trifft. Konzept 03 nannte die Frage „offen“. Beide auf den gebauten Stand.
+  - Konzept 10 – „ohne Spielbeobachtung nicht zu belegen … offener Rest in TODO.md“, obwohl die Regel den Strom seit A340
+    selbst misst (`StreamWouldBreakBarrier`) und jede Barriere in der Spur steht; der TODO-Eintrag des Dunkelritters
+    betrifft nur die Darstellung der Einstellungen.
+  - Konzept 14 – „Dragoon und Viper: Burst und Prioritäten offen“ und „Vergleich mit The Balance bisher für den
+    Maschinisten“ gegen den eigenen Sachstand (jeder Kampfjob, A375 bis A414); ebenso Konzept 18.
+  - Konzept 08 – „Defekt der HoT-Listen (TODO)“, behoben seit A442. Konzept 12 – Verweis auf einen TODO-Titel, der seit
+    A415 nicht mehr besteht. Konzept 09 – zwei Verweise auf längst geschlossene TODO-Stände.
+  - Konzept 07 – Rekindle-Vorlauf „ohne eigenen Loop, offen“; das Register führt ihn als Ausnahme (A340).
+- *Durchgang 2, inhaltlich je Konzept* (Aussagen des geltenden Stands gegen Code, Blätter und Archiv; Defektklassen nach
+  CLAUDE.md, „Prüfgrad“, dazu: verworfen und doch als geltend beschrieben, Zustand von gestern als heute, Verweis ins
+  Leere, Doppelung zwischen Konzepten, unbelegte Zahl, Weichmacher). Abdeckung:
+
+| Datei | Durchgang 1 | Durchgang 2 | Befunde |
+|---|---|---|---|
+| 01-jobs.md | ✓ | offen | |
+| 02-groups.md | ✓ | offen | |
+| 03-universal.md | ✓ | offen | |
+| 04-concept.md | ✓ | offen | |
+| 05-action-coverage.md | ✓ | offen | |
+| 06-fork-audit.md | ✓ | offen | |
+| 07-heal-target-priority.md | ✓ | offen | |
+| 08-mitigation-synergy.md | ✓ | offen | |
+| 09-tank-selfprotection.md | ✓ | offen | |
+| 10-drk-blackest-night.md | ✓ | offen | |
+| 11-raise-dispatch.md | ✓ | offen | |
+| 12-searing-light-stacking.md | ✓ | offen | |
+| 13-aoe-damage-classification.md | ✓ | offen | |
+| 14-action-dependency-matrix.md | ✓ | offen | |
+| 15-wrathcombo-comparison.md | ✓ | offen | |
+| 16-xivanalysis-catalog.md | ✓ | offen | |
+| 17-machinist-reassemble-buffs.md | ✓ | offen | |
+| 18-settings-player-or-automatic.md | ✓ | offen | |
+| 19-codebase-audit.md | ✓ | offen | |
+| 20-concept-order.md | ✓ | offen | |
+| 21-crucible.md | ✓ | offen | |
+| 22-masked-carnivale.md | ✓ | offen | |
+| 23-deep-dungeons.md | ✓ | offen | |
+| 24-code-structure-and-cost.md | ✓ | offen | |
+| 25-pvp.md | ✓ | offen | |
+| README.md | ✓ | offen | |
+| method/01-loop-evaluation-methods.md | ✓ | offen | |
+| method/02-source-audit.md | ✓ | offen | |
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

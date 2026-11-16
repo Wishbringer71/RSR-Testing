@@ -155,9 +155,8 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
   ihr Tod den Cast (16:13:12 nach 351 Schaden auf 37 LP; 18:11:50 und 18:46:09 ebenso, „Sonde" in K4, A665). *Was gilt:* Zuerst fällt der Gegner mit der größten Gefahr je
   Sekunde bis zu seinem Fall: seine Gefahr je Sekunde geteilt durch die Zeit, bis er fällt. Diese Reihenfolge macht die
   Summe des Schadens über den Kampf am kleinsten (Regel von Smith, Ablaufplanung); „wenigste LP zuerst" ist ihr Sonderfall
-  bei gleicher Gefahr aller Gegner. *Gefahr:* sein Schaden an dir und an deinen Begleitern, je als Anteil an den LP, die
-  der Getroffene für den Rest des Bretts braucht (dein Lauf, ihre Einsätze nach K11) – Schaden an einem Begleiter, der
-  später unersetzlich ist, wiegt so mehr als an einem, der nicht mehr gebraucht wird; dazu, was er für andere tut: geheilte
+  bei gleicher Gefahr aller Gegner. *Gefahr:* sein Schaden an dir und an deinen Begleitern in LP je Sekunde, gleich wen er trifft (`EnemyDanger`; die
+  Gewichtung nach dem Bedarf über das Brett ist verworfen, oben, A660); dazu, was er für andere tut: geheilte
   LP (Blütenkaktor, Biloko, Kupoheiler), die LP eines zurückgeholten Gegners (Raise der Lamia), der Mehrschaden der
   Gestärkten (Sukkubus-Magierin, Jüngerer Taurus, Melomog), die Wirkung beim Erreichen des Verbündeten (Irrlichter, die zum
   Oger laufen). *Zeit bis zum Fall:* seine LP durch deinen Schaden auf ihm, mit dem Zuschlag seiner Schwäche (K1). *Start

@@ -278,7 +278,7 @@ tatsächlich genutzt werden — „für alle im Loop".
 **Sachstand:** Geprüft ist, ob ein gewährtes Fenster — ein Status, der eine Aktion für eine Zeit
 freigibt (Proc, „Ready", Stapel), oder eine Ressource mit Obergrenze — verbraucht wird, bevor es
 verfällt oder überläuft. Ob eine Abfolge die beste ist, prüft dieser Abschnitt nicht; das prüft „Vergleich mit
-The Balance", bisher für den Maschinisten (TODO, „Rotationen gegen The Balance abgleichen"). Die Dauern der
+The Balance", für jeden Kampfjob (A375 bis A414). Die Dauern der
 Fenster, die `ActionId.resx` ausblendet, belegt der offizielle Job-Guide: Ready to Break, Ready to
 Reign, Ogi Namikiri Ready, Hypercharged, Full Metal Machinist je 30 s, Phantom Kamaitachi Ready 45 s,
 Silken Symmetry und Silken Flow 30 s. Der Code braucht sie nicht: Er liest die Restzeit zur Laufzeit.
@@ -648,7 +648,7 @@ zurück, wo eine Zahl fehlt. `DefenseTrace.log` nennt einmal je Aktion und Stufe
 
 ### Dragoon und Viper: Opener
 
-Geprüft ist bisher nur der Vorlauf (A343); Burst und Prioritäten sind offen.
+Hier der Vorlauf (A343); Ressourcen und Buffs stehen unter „Schadensausteiler: Ressourcen und Buffs“ (A379), die Burstfenster in A381 bis A386.
 
 - *Dragoon* (The Balance, Openers, Patch 7.5): kein Vorlauf im Standard-Opener; der Trank nach dem zweiten GCD, mit
   Lance Charge, vor Battle Litany. RSR nimmt ihn, sobald Battle Litany liegt – einen GCD später; der Trank wirkt 30 s

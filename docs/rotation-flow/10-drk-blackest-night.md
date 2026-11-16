@@ -453,13 +453,12 @@ Reihenfolge der Stufen ist frei, ihre Bezeichner sind Vertrag. Den MP-Haushalt f
 die Kosten von The Blackest Night übrig bleiben („Keep at least 3000 MP", beide Kosten aus dem Spiel, A406), mit Dark
 Arts immer. Den Fall „Dark Arts liegt an, während die Barriere noch läuft" behandelt es selbst.
 
-**Was das nicht leistet.** Ob vier Gegner die Verbrauchsrate im gespielten Inhalt erreichen, ob eine
-halb betäubte Gruppe den Strom weit genug drückt und ob die engeren Stufen insgesamt besser
-abschneiden — all das ist ohne Spielbeobachtung nicht zu belegen. Voreinstellung ist trotzdem die engste
-Stufe mit Notfall, weil sie im Kampf die sinnvollere ist (seine Regel, 29.09.2026): Sie behält die 3000 MP für
-Treffer, die die Barriere füllen, und der Notfall unter der Gesundheitsschwelle bleibt. Gegnerzahl und
-Gesundheitsschwelle sind einstellbar, und deshalb steht der offene
-Rest in `TODO.md`.
+**Was die Messung trägt.** Ob der Strom die Verbrauchsrate erreicht, misst die Regel selbst (`StreamWouldBreakBarrier`,
+oben, A340), statt es an der Gegnerzahl anzunehmen; ob die Barriere dann brach, schreibt `DefenseTrace.log` je
+Barriere. Voreinstellung ist die engste Stufe mit Notfall, weil sie im Kampf die sinnvollere ist (seine Regel,
+29.09.2026): Sie behält die 3000 MP für Treffer, die die Barriere füllen, und der Notfall unter der Gesundheitsschwelle
+bleibt. Ob die engeren Stufen insgesamt besser abschneiden, zeigt erst der Vergleich der Spurzeilen über mehrere Pulls
+(unbelegt).
 
 ## Offene Punkte
 

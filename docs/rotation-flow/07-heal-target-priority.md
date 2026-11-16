@@ -670,8 +670,10 @@ Spiel ihn im PvE setzt, ist belegt: Die
 Status-Tabelle des Spiels (xivapi, 02.10.2026) kennt genau einen Status dieses Namens, 3229, Job SMN, mit
 dem Wirktext „Able to execute Fountain of Fire and Brand of Purgatory" — beides PvE-Aktionen. Die
 Jobleiste bleibt die Quelle der Phase, weil sie auch die Restzeit liefert; der Status wäre ein
-gleichwertiger Zeuge. Der Vorlauf von drei GCDs ist ein
-fester Wert ohne eigenen Loop (`fixed_values.json`, offen).
+gleichwertiger Zeuge. Der Vorlauf von drei GCDs ist Upstreams
+Zahl; das Register führt ihn als Ausnahme (`fixed_values.json`, A340: Upstreams Zahlen auf Zeilen, die der Fork aus
+anderem Grund berührt). Abgeleitet aus dem Spiel ist er nicht; fasst eine Änderung die Zeile an, braucht er seinen Loop
+(`code.md`, „Keine festen Werte“).
 
 **Geprüft wird das maschinell:**
 `.github/scripts/audit/check_heal_target_measure.py` erhebt aus `ActionId.resx` jede Aktion, deren

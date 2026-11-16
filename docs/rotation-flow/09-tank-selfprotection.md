@@ -900,7 +900,7 @@ auf andere gecasted werden kann. auf wen soll nascent flash denn gecasted werden
 höhere priorität als normale damagedealer. auch da dann prüfen: was ist beim ziel vorhanden? schilde, bestehender
 hot, bestehende minderung. haben die ziele debuffs, hat der tank debuffs? bewertungstriage = muss auf jemanden
 durch tod verzichtet werden und wer ist am ehestens entbehrlich?" Einordnung: Vorgabe mit Kriterien für die
-vorgelegte Entscheidung (TODO, A191). Der Satz „Heiler haben eine höhere Priorität als normale Damagedealer"
+vorgelegte Entscheidung (A191). Der Satz „Heiler haben eine höhere Priorität als normale Damagedealer"
 bestätigt die Rollenordnung aus Konzept 07; dort gilt sie bei gleicher Gefährdung.
 
 ### Mechanik
@@ -1523,7 +1523,7 @@ die höchste gesundheit."
   abgeben und auf mich übertragen." Mechanik belegt (Geteiltes Leid, unten): Sein Geteiltes Leid gibt dir 25 % seiner
   Feindseligkeit und bewegt den Gegner nur, wenn du schon über der Hälfte seiner liegst. Auf deiner Seite war es
   bedacht (kein Zurückgeben an einen Tank in Gefahr; seine Geste steht nur im Protokoll), in der Vorlage für die andere
-  Seite nicht; dort jetzt eingearbeitet (`TODO.md`).
+  Seite nicht; dort eingearbeitet (Abschnitt „Die andere Seite“).
 - *Hinweis (17.10.2026):* „aktives agieren des anderen tanks wäre eigentlich ein hinweis darauf, dass er den
   tankbuster nicht nehmen will, weil z.b. sein invul noch nicht wieder da ist." Seine Geste ist damit das Zeichen für
   einen gewollten Wechsel; eingearbeitet in die Vorlage (Variante D).

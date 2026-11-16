@@ -1464,7 +1464,7 @@ Spieler, nicht der HoT ohne jede Schwelle. Bestandteile:
 7. *Messmittel für ihn:* `act_heal_need.py` auf seinen nächsten Mitschnitt – GCD-HoTs ohne Bedarf und ihre Überheilung
    gegen den Stand von A430.
 
-Getrennt davon, ohne Entscheidungsbedarf: der Defekt der HoT-Listen (TODO).
+Getrennt davon: Laufende HoTs fehlten in den HoT-Listen; seit A442 zählt jeder laufende HoT, erkannt am Wirktext (`IsHealOverTime`).
 
 ### Bauplan nach dem Loop über H1 mit Lernen
 
