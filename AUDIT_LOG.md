@@ -24572,6 +24572,23 @@ Absturzbericht.
   Commit ändert nur `docs/rotation-flow/03-universal.md` – der Fall, gegen den „Diff gegen Nachricht“ schützt).
 - *Prüfgrad:* Textvergleich; Herkunft per `git log -S` und Archiv.
 
+### A842 · REGEL: Untergrenze der Konfidenz hart formuliert; Regeln hart formulieren (16.11.2026)
+
+- *Anlass:* Seine Antwort auf die Vorlage aus A841 (16.11.2026): „hart formulieren. kein weichgespültes geblubber. wenn
+  du es falscherweise dann nicht beachtest, kannst du nicht behaupten, dass es zu ungenau war“. Eingeordnet als seine
+  Entscheidung (Untergrenze in den Block) und als Vorgabe für die Form jeder Regel.
+- *REGEL, Zeile „Required“:* statt „Confidence, wording ≤ evidence“ jetzt „Confidence and wording = evidence, never
+  above, never below: unproven → „unbelegt“ or „[Schätzung: …]“; proven → state it flat, no „vielleicht“,
+  „möglicherweise“, „könnte“, „sollte“. Hedging a proven fact is a violation like overclaiming.“ Prüfsumme neu
+  aufgezeichnet. Dieselbe Fassung steht in seinen Einstellungen und im LLM-Framework; dort ändere ich nichts – seine
+  Einstellungen trägt er selbst nach, das Framework bekommt die Änderung als Issue.
+- *Form jeder Regel (`regeldateien.md`):* bindendes Verb, eindeutige Bedingung, keine Weichmacher. Hart heißt eindeutig,
+  nicht laut: Großbuchstaben führen zu Überanwendung (Anthropic, „Prompting best practices“, 16.11.2026, A841). Durchsucht:
+  CLAUDE.md, `.claude/rules/`, Skills auf „sollte“, „möglichst“, „eventuell“, „gegebenenfalls“, „wenn möglich“,
+  „nach Möglichkeit“, „tendenziell“ – kein Weichmacher als Regelwort; die Treffer stehen in seinen Zitaten oder
+  beschreiben einen Zweck.
+- *Prüfgrad:* `check_rule_files.py`, Textsuche.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
