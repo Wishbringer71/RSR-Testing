@@ -174,13 +174,13 @@ Nach der Zuordnung zu A4a bleibt von C ein einziger eigenständiger Punkt.
 |---|---|---|
 | BLU · PhantomDefault · PCT · SAM · SMN | 80 / 33 / 32 / 27 / 23 Zweige | A4a, umgesetzt |
 | MCH | 23 Zweige | A4a, bewusst ausgelassen |
-| DRG | 6 `Trait.EnoughLevel`/`!Trait…`-Paare (gezählt am 02.10.2026) | Vereinfachung verworfen |
+| DRG | 7 `Trait.EnoughLevel`/`!Trait…`-Paare (gezählt am 16.11.2026; am 02.10.2026 sechs) | Vereinfachung verworfen |
 | DRG · VPR | `CountDownAction` nur mit dem Sprung zum Ziel | geschlossen: Sprung außerhalb der Nahkampfreichweite wie beim Monk (unten, „Der Sprung zum Ziel am Ende des Countdowns", A347) |
 | RPR · SAM · WAR | kein `EmergencyAbility` in der Reborn-Datei | keine Lücke: WAR in der Basisschicht, RPR/SAM ohne eigene Notfallaktion |
 
 ### C1 · DRG-Trait-Paare — der Fund, der die Vereinfachung blockiert
 
-Sechsmal steht in `DRG_Reborn.cs` dasselbe Muster (gezählt am 02.10.2026):
+Siebenmal steht in `DRG_Reborn.cs` dasselbe Muster (gezählt am 16.11.2026; am 02.10.2026 sechsmal):
 
 ```csharp
 if (LanceMasteryIiTrait.EnoughLevel)  { if (HeavensThrustPvE.CanUse(out act)) return true; }
