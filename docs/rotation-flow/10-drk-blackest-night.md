@@ -326,9 +326,9 @@ zurück, solange ein Gruppenmitglied in Tankrolle The Blackest Night trägt
 verlangsamt ist und mindestens `HoldHolyMinSlowedHostiles` (Vorgabe 3) den Slow tragen — gleich durch wen, nicht nur
 durch die Barriere (Konzept 08, „Die Aussetzbedingung ist ein Anteil, mit Schranke“). Sie ist der dritte Zeitpunkt der Regel aus Konzept 08 und der Grund, warum die
 Verlangsamung hier in beide Richtungen wirkt: Sie hält die Barriere des Dunkelritters zurück
-(`PackSlowed`) **und** den Sanctus des Weißmagiers. Anders als die beiden Nachbarbedingungen steht
-sie auf Standard an, weil sie eine Anweisung des Auftraggebers mit einer Beobachtung aus dem Spiel
-dahinter ist und kein Vorschlag, dessen Nutzen eine Annahme bleibt.
+(`PackSlowed`) **und** den Sanctus des Weißmagiers. Wie die beiden Nachbarbedingungen (`StretchHolyStun`,
+`HoldHolyForBlackestNight`) steht sie ab Werk an; bei ihr kommt hinzu, dass sie eine Anweisung des Auftraggebers mit
+einer Beobachtung aus dem Spiel dahinter ist (Stand 16.11.2026).
 
 **Das ist kein Warten aufeinander.** Jede Seite wartet nur, während der Zustand der anderen aktiv
 ist, und beide Zustände laufen von selbst ab — die Betäubung nach vier Sekunden, die Barriere nach
@@ -441,7 +441,9 @@ zuerst und die Schwelle danach, und stand das gewählte Mitglied darüber, ging 
 **Autoren abgeleiteter Rotationen (R).** `TankbusterOnMe`, `HasMajorMitigation` und die
 `SurveyStuns`-Überladung sind additiv; die vorhandene Signatur bleibt bestehen und delegiert.
 
-**Upstream-Pflege (U).** Alle Eingriffe liegen in `DRK_Reborn.cs` und `CustomRotation_OtherInfo.cs`.
+**Upstream-Pflege (U).** Die Regeln liegen in Teildateien des Forks (`DRK_Reborn.BlackestNight.cs`,
+`DRK_Reborn.TankProtection.cs`, `CustomRotation_OtherInfo.Channels.cs`, `DataCenter.TankProtection.cs`); in Upstreams
+`DRK_Reborn.cs` stehen die Optionen und die Aufrufe (Stand 16.11.2026).
 Nimmt Upstream die Verdrahtung von `BlackLantern` selbst vor, entfällt unsere Zeile im Merge
 folgenlos.
 
