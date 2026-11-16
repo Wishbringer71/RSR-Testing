@@ -22,6 +22,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from hook_io import read_hook_input
+from cli_args import option_value  # noqa: E402
 
 FENCE = re.compile(r"```.*?(?:```|\Z)|~~~.*?(?:~~~|\Z)", re.S)
 INLINE = re.compile(r"`[^`\n]*`")
@@ -194,7 +195,7 @@ def main(argv):
     if "--self-test" in argv:
         return self_test()
     if "--transcript" in argv:
-        for text, found in transcript(argv[argv.index("--transcript") + 1]):
+        for text, found in transcript(option_value(argv, "--transcript")):
             if found:
                 print("---\n" + text[-300:].replace("\n", " ") + "\n  => " + " | ".join(f[:90] for f in found))
         return 0

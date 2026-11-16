@@ -28,6 +28,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from hook_io import read_hook_input  # noqa: E402
+from cli_args import option_rest  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[3]
 LEDGER = "review_rounds.json"
@@ -163,7 +164,7 @@ def main():
         return self_test()
     if "--record" in sys.argv:
         ledger = load(ROOT)
-        for concept in sys.argv[sys.argv.index("--record") + 1:]:
+        for concept in option_rest(sys.argv, "--record"):
             print(f"{concept}: {record(ROOT, concept, ledger)}")
         save(ROOT, ledger)
         return 0

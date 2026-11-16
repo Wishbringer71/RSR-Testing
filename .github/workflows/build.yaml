@@ -318,6 +318,11 @@ jobs:
       - name: Check the hooks read their input without waiting on a silent pipe
         run: python3 .github/scripts/audit/hook_io.py --self-test
 
+      # An option of an audit script without its value ended in an IndexError or took the next option as its value; one
+      # function refuses both with exit 2 (issue #26).
+      - name: Check the audit scripts refuse an option without its value
+        run: python3 .github/scripts/audit/cli_args.py --self-test
+
       - name: Check the rule hook against constructed calls
         run: python3 .github/scripts/audit/rule_inject.py --self-test
 

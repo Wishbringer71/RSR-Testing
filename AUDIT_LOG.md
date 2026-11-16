@@ -24454,6 +24454,35 @@ Absturzbericht.
   einem Magier stehen nach dem ersten Schlaf weitere „sleep chosen" für Gegner nahe am ersten, und vor Ablauf eines
   Schlafs „renewed".
 
+### A838 · Weitergabe Issue #26: Optionswerte, Hook-Eingang unter Windows, Hook-Ausfall, Prüfsumme der REGEL (16.11.2026)
+
+- *Herkunft:* Issue #26, aus dem Abgleich im LLM-Framework (ADR 0051) auf seinen Auftrag vom 16.11.2026, geprüft an
+  6c28c6a. Aus dem LLM-Framework hole ich weiter nichts (CLAUDE.md, seine Präzisierung vom 14.11.2026); ob sein Auftrag
+  vom 16.11.2026 sie aufhebt, entscheidet er. Alle vier Punkte sind Befunde an diesem Repository und hier am Artefakt
+  geprüft.
+- *1 · Fehlender Optionswert – bestätigt, weiter als gemeldet:* Sieben Skripte lasen `argv[argv.index(name) + 1]`
+  (`stop_check.py`, `evaluate_predictions.py`, `check_fork_version.py`, `check_fixed_values.py`,
+  `check_release_note.py`, `revision_harness/prepare.py`; `review_once.py --record` ohne Wert zeichnete still nichts
+  auf), `check_source_updates.py` mit eigener Prüfung. Steht die Option zuletzt, endete das im `IndexError`; folgt eine
+  andere Option, galt sie als Wert. *Behoben:* `cli_args.py` (`option_value`, `option_values`, `option_rest`) weist
+  beides mit Exit 2 ab, Selbsttest in der CI; alle acht Stellen nutzen es.
+- *2 · `select()` unter Windows – bestätigt:* `hook_io.py` wartete mit `select.select([sys.stdin], …)`; unter Windows
+  nimmt `select()` nur Sockets, der Fehler wurde gefangen, und jeder Hook las keine Eingabe und ließ den Aufruf durch.
+  *Behoben:* ein Lesethread mit Zeitgrenze am rohen Deskriptor (`os.read`), der beim Ende des Skripts keine Sperre des
+  Interpreters hält. *Offen, als Annahme benannt:* Die Hooks rufen `python3`; ob es unter Windows so heißt, hängt von
+  seiner Installation ab. Läuft Claude Code bei ihm unter Windows, ist das zu messen.
+- *3 · Ein abstürzender Hook lässt den Aufruf durch – bestätigt:* Hook-Referenz (code.claude.com/docs/en/hooks, gelesen
+  16.11.2026): ohne `"onFailure": "block"` ist ein Hook, der nicht startet, mit einem anderen Code als 0 oder 2 endet
+  oder ins Zeitlimit läuft, ein nicht sperrender Fehler; ab v2.1.295; an `Stop` wirkungslos. *Gesetzt* für
+  `concept_first.py` und `review_once.py`. *Nicht* für `rule_inject.py`: Er prüft auch Bash und Read; stürzte er mit
+  „block" ab, wäre jedes Werkzeug gesperrt, auch das, mit dem er sich reparieren ließe. Bei den beiden anderen bleibt
+  Bash der Weg zur Reparatur.
+- *4 · REGEL ohne Prüfsumme – Prämisse halb, Lücke ganz:* CLAUDE.md nennt die REGEL nicht „wörtlich"; ihre Persistenz
+  verlangt aber, Verlust und Abweichung zu erkennen. *Gebaut:* `check_rule_files.py` hält den Block unter „# REGEL" gegen
+  `regel.sha256` (Selbsttest: unverändert, geändert, Block fehlt); `--record-regel` zeichnet seine Änderung auf; Zeile in
+  CLAUDE.md, „Was wann gilt". Seine neuere Fassung (V5i) ist hier nicht eingetragen – das entscheidet er.
+- *Prüfgrad:* Selbsttests, 60 Prüfungen grün; Windows nicht gemessen.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

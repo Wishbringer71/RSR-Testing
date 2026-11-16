@@ -34,6 +34,7 @@ import re
 import subprocess
 import sys
 from pathlib import Path
+from cli_args import option_value  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[3]
 LIST = Path(__file__).with_name("fixed_values.json")
@@ -215,7 +216,7 @@ def main(argv):
     print("self-test ok: numbers in code are found, identities, strings, comments and identifiers "
           "are left out.")
 
-    base = argv[argv.index("--base") + 1] if "--base" in argv else None
+    base = option_value(argv, "--base")
     if base is None:
         base = (run("git", "merge-base", "upstream/main", "HEAD") or "").strip()
     if not base:

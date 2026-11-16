@@ -9,6 +9,8 @@ Usage: prepare.py <build directory> [--mutant N]
 import shutil
 import sys
 from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from cli_args import option_value  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[4]
 SOURCE = ROOT / 'RotationSolver/Basic/Configuration'
@@ -49,7 +51,8 @@ MUTANTS = [
 
 def main():
     target = Path(sys.argv[1])
-    mutant = int(sys.argv[sys.argv.index('--mutant') + 1]) if '--mutant' in sys.argv else None
+    mutant = option_value(sys.argv, '--mutant')
+    mutant = int(mutant) if mutant is not None else None
     shutil.copy(SOURCE / 'LearnedRevision.cs', target / 'LearnedRevision.cs')
     shutil.copy(SOURCE / 'TankbusterReading.cs', target / 'TankbusterReading.cs')
     locks = (SOURCE / 'LearnedLocks.cs').read_text(encoding='utf-8-sig')

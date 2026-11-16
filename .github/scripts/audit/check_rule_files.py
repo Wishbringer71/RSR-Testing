@@ -7,12 +7,15 @@ table with its occasion (the owner's rule of 27.10.2026: in the repository, edit
 is silent: a rule file the table does not name is read by chance only; a path rule whose globs match nothing never
 loads; a rule file without `paths:` loads every session and saves nothing; a rule standing in two files ages in one
 of them; a skill without its name or description is never offered. This fails on each, and on a hook of any event
-that points at a script that does not exist.
+that points at a script that does not exist. The REGEL at the top of CLAUDE.md is his text: its block is held against
+the checksum in regel.sha256, so no change to it passes unseen (issue #26, 16.11.2026); a change he made is recorded.
 
-  check_rule_files.py              the repository
-  check_rule_files.py --self-test  constructed defects, each must be found
+  check_rule_files.py                the repository
+  check_rule_files.py --record-regel record the checksum of the REGEL as it stands now - only for his change
+  check_rule_files.py --self-test    constructed defects, each must be found
 """
 
+import hashlib
 import json
 import re
 import subprocess
@@ -78,6 +81,20 @@ def bullets(text):
     return [l.strip() for l in text.split("\n") if l.lstrip().startswith("- ") and len(l.strip()) >= MIN_DUPLICATE]
 
 
+REGEL_RECORD = Path(".github/scripts/audit/regel.sha256")
+
+
+def regel_block(claude):
+    """The fenced block of the section '# REGEL' in CLAUDE.md, or None."""
+    found = re.search(r"^# REGEL\b.*?^```\n(.*?)^```", claude, re.S | re.M)
+    return found.group(1) if found else None
+
+
+def regel_sum(claude):
+    block = regel_block(claude)
+    return hashlib.sha256(block.encode("utf-8")).hexdigest() if block is not None else None
+
+
 def check(root, tracked):
     errors = []
     claude_path = root / "CLAUDE.md"
@@ -119,6 +136,14 @@ def check(root, tracked):
             if b in seen and seen[b] != rel:
                 errors.append(f"the same rule stands in {seen[b]} and {rel}: {b[:80]}")
             seen.setdefault(b, rel)
+    record = root / REGEL_RECORD
+    if record.exists():
+        now = regel_sum(claude)
+        if now is None:
+            errors.append("CLAUDE.md: no fenced block under '# REGEL' - the REGEL is gone or out of its block")
+        elif now != record.read_text(encoding="utf-8").strip():
+            errors.append(f"CLAUDE.md: the REGEL differs from {REGEL_RECORD} - if he changed it, record it with "
+                          "--record-regel; otherwise restore his text")
     settings = root / ".claude" / "settings.json"
     if settings.exists():
         try:
@@ -147,6 +172,8 @@ def self_test():
     good_rule = "---\npaths:\n  - \"src/**\"\n---\n\n# A\n\n- Eine andere Regel, die nur in der Regeldatei steht, lang genug.\n"
     good_skill = "---\nname: s\ndescription: Ein Ablauf.\n---\n\n# S\n"
     files = ["src/x/y.cs", "CLAUDE.md"]
+    regel_claude = good_claude.replace("# REGEL\n", "# REGEL (Priorität 1)\n\nText.\n\n```\nREGEL: Stopp bei Plateau\n```\n", 1)
+    regel_record = regel_sum(regel_claude)
 
     def tree(tmp, claude=good_claude, rule=good_rule, skill=good_skill, extra=None, settings=None):
         root = Path(tmp)
@@ -156,6 +183,7 @@ def self_test():
         (root / ".claude" / "rules" / "a.md").write_text(rule, encoding="utf-8")
         (root / ".claude" / "skills" / "s" / "SKILL.md").write_text(skill, encoding="utf-8")
         for rel, text in (extra or {}).items():
+            (root / rel).parent.mkdir(parents=True, exist_ok=True)
             (root / rel).write_text(text, encoding="utf-8")
         if settings is not None:
             (root / ".claude" / "settings.json").write_text(settings, encoding="utf-8")
@@ -174,6 +202,9 @@ def self_test():
         "hook runs a missing script": (dict(settings='{"hooks": {"SessionStart": [{"hooks": [{"type": "command", "command": "python3 x/missing.py"}]}]}}'), 1),
         "stop hook runs a missing script": (dict(settings='{"hooks": {"Stop": [{"hooks": [{"type": "command", "command": "python3 x/gone.py"}]}]}}'), 1),
         "no reading table": (dict(claude="# REGEL\n"), 1),
+        "REGEL as recorded passes": (dict(claude=regel_claude, extra={str(REGEL_RECORD): regel_record}), 0),
+        "REGEL changed": (dict(claude=regel_claude.replace("Stopp", "Weiter"), extra={str(REGEL_RECORD): regel_record}), 1),
+        "REGEL block gone": (dict(claude=good_claude, extra={str(REGEL_RECORD): regel_record}), 1),
     }
     failed = []
     for name, (kwargs, expected) in cases.items():
@@ -184,7 +215,7 @@ def self_test():
     if failed:
         print("self-test FAILED:\n  " + "\n  ".join(failed))
         return 1
-    print(f"self-test ok: {len(cases) - 1} constructed defects found, the clean tree passes")
+    print(f"self-test ok: {sum(1 for _, e in cases.values() if e)} constructed defects found, the clean trees pass")
     return 0
 
 
@@ -192,6 +223,17 @@ def main(argv):
     if "--self-test" in argv:
         return self_test()
     if self_test() != 0:
+        return 1
+    if "--record-regel" in argv:
+        now = regel_sum((ROOT / "CLAUDE.md").read_text(encoding="utf-8"))
+        if now is None:
+            print("CLAUDE.md: no fenced block under '# REGEL' - nothing to record")
+            return 1
+        (ROOT / REGEL_RECORD).write_text(now + "\n", encoding="utf-8")
+        print(f"REGEL recorded: {now}")
+        return 0
+    if not (ROOT / REGEL_RECORD).exists():
+        print(f"{REGEL_RECORD} is missing - the REGEL is held by nothing; record it with --record-regel")
         return 1
     errors = check(ROOT, tracked_files(ROOT))
     claude_lines = len((ROOT / "CLAUDE.md").read_text(encoding="utf-8").split("\n"))

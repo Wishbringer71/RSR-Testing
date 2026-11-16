@@ -25,6 +25,7 @@ import os
 import re
 import subprocess
 import sys
+from cli_args import option_value  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 DEFAULT_DIR = os.path.join(ROOT, ".github", "scripts", "audit", "predictions")
@@ -177,8 +178,8 @@ def main(argv):
         return self_test()
     directory = DEFAULT_DIR
     if "--predictions" in argv:
+        directory = option_value(argv, "--predictions")
         index = argv.index("--predictions")
-        directory = argv[index + 1]
         argv = argv[:index] + argv[index + 2:]
     if not argv:
         print(__doc__)

@@ -22,6 +22,7 @@ upstream tags, so a run that finds no tag to compare against fails instead of pa
 import re
 import subprocess
 import sys
+from cli_args import option_value  # noqa: E402
 
 PROPS = 'Directory.Build.props'
 VERSION = re.compile(r'<Version>([^<]+)</Version>')
@@ -111,7 +112,7 @@ def self_test():
 
 
 def main(argv):
-    remote = argv[argv.index('--remote') + 1] if '--remote' in argv else 'upstream'
+    remote = option_value(argv, '--remote', 'upstream')
     self_test()
 
     have = declared()

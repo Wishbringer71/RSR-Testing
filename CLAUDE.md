@@ -50,7 +50,7 @@ Diese Datei gilt in jeder Lage. Die übrigen Regeln stehen je genau einmal im Re
 | Zugende | `.github/scripts/audit/stop_check.py` (Stop-Hook): Ankündigung, englische Schlussmeldung | von selbst |
 
 - Regeldateien laden über Read, Edit und Write, nicht über die Shell (gemessen 27.10.2026, A423), und erst mit dem Ergebnis des Aufrufs, wie jeder Hook-Text (A682). Deshalb weist `rule_inject.py` den ersten Zugriff ab, der die Regel bräuchte, bis eine Datei ihres Anlasses gelesen ist. Ändert ein Skript Dateien, ohne ihren Pfad im Befehl zu nennen, oder handle ich ohne Dateizugriff nach einem Anlass – Recherche, eine Aussage aus dem Gedächtnis –, lese ich die Datei zuerst.
-- `check_rule_files.py` hält die Tabelle in der CI gegen die Dateien: jede genannt, jede Pfadregel trifft Dateien, keine Regel doppelt.
+- `check_rule_files.py` hält die Tabelle in der CI gegen die Dateien: jede genannt, jede Pfadregel trifft Dateien, keine Regel doppelt. Die REGEL hält es gegen ihre Prüfsumme (`regel.sha256`): Weicht sie ab, stelle ich seinen Text wieder her; hat er sie geändert, zeichne ich sie mit `--record-regel` auf.
 
 # Prüfpunkte
 

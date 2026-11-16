@@ -6,26 +6,51 @@ sends and never closes; a plain read waits for ever there (found 27.10.2026: run
 session_brief.py, and KSP-MyContracts found stop_check.py and rule_inject.py built the same way). So the input is read
 only when data is there within half a second; nothing or nothing but blanks reads as no hook call.
 
+The wait is a reading thread with a time limit, not select(): on Windows select() takes sockets only, and every hook
+there read no input and let each call through (issue #26, 16.11.2026; select documentation of Python). The thread reads
+the raw descriptor, so one still waiting on a silent pipe holds no lock of the interpreter when the script ends.
+
   hook_io.py --self-test  the three cases against a child process: open silent pipe, closed empty input, JSON
 """
 
 import json
-import select
+import os
 import subprocess
 import sys
+import threading
 import time
 
 
-def read_hook_input(wait=0.5):
-    """The hook's JSON as a dict, or None when no hook call is there (a terminal, a silent pipe, empty input)."""
+def read_hook_input(wait=0.5, whole=5.0):
+    """The hook's JSON as a dict, or None when no hook call is there (a terminal, a silent pipe, empty input). The first
+    data must come within wait seconds, the end of the input within whole seconds after it."""
     if sys.stdin is None or sys.stdin.isatty():
         return None
     try:
-        if not select.select([sys.stdin], [], [], wait)[0]:
-            return None
-        text = sys.stdin.read()
+        fd = sys.stdin.fileno()
     except (OSError, ValueError):
         return None
+    chunks = []
+    first, done = threading.Event(), threading.Event()
+
+    def read():
+        try:
+            while True:
+                chunk = os.read(fd, 65536)
+                first.set()
+                if not chunk:
+                    break
+                chunks.append(chunk)
+        except OSError:
+            pass
+        finally:
+            first.set()
+            done.set()
+
+    threading.Thread(target=read, daemon=True).start()
+    if not first.wait(wait) or not done.wait(whole):
+        return None
+    text = b"".join(chunks).decode("utf-8", errors="replace")
     if not text.strip():
         return None
     return json.loads(text)

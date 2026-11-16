@@ -32,6 +32,7 @@ import re
 import subprocess
 import sys
 from pathlib import Path
+from cli_args import option_value  # noqa: E402
 
 RELEASE_NOTE = 'docs/fork-changes-since-last-release.md'
 STANDING = 'docs/fork-changes-in-play.md'
@@ -133,9 +134,7 @@ def self_test():
 def main():
     self_test()
 
-    remote = 'origin'
-    if '--remote' in sys.argv:
-        remote = sys.argv[sys.argv.index('--remote') + 1]
+    remote = option_value(sys.argv, '--remote', 'origin')
 
     path = Path(RELEASE_NOTE)
     if not path.exists():

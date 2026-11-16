@@ -18,6 +18,7 @@ import subprocess
 import sys
 import tempfile
 from pathlib import Path
+from cli_args import option_values  # noqa: E402
 
 LIST = Path(__file__).with_name("source_versions.json")
 TIMEOUT = 30
@@ -132,10 +133,8 @@ if __name__ == "__main__":
     if "--self-test" in sys.argv:
         self_test()
     elif "--record" in sys.argv:
-        i = sys.argv.index("--record")
-        if len(sys.argv) < i + 3:
-            sys.exit("usage: --record <owner/repo> <commit>")
-        if not record(sys.argv[i + 1], sys.argv[i + 2]):
-            sys.exit(f"{sys.argv[i + 1]} is not listed in {LIST.name}")
+        repo, commit = option_values(sys.argv, "--record", 2)
+        if not record(repo, commit):
+            sys.exit(f"{repo} is not listed in {LIST.name}")
     else:
         sys.exit(report(load()["sources"]))
