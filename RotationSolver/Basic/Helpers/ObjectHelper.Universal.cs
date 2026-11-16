@@ -21,11 +21,17 @@ namespace RotationSolver.Basic.Helpers;
 
 public static partial class ObjectHelper
 {
+	// A845: the object table slot of each wrapper Dalamud handed out - one fixed wrapper per slot and kind
+	// (ObjectTable.CachedEntry) -, read from the table while its figure stood there; the frame the table was last scanned.
+	private static readonly Dictionary<IGameObject, int> _slotOfWrapper = new(ReferenceEqualityComparer.Instance);
+	private static DateTime _slotsScannedAt;
+
 	/// <summary>
 	/// Whether <paramref name="obj"/> still is the figure its object table slot holds now (concept 03, "Dritte Invariante",
-	/// A827). Compares addresses only: a figure held past its frame may be gone, and every property of it that calls
-	/// through the game's virtual table - its id, name, death, statuses, cast - can then end the game. Dalamud hands out
-	/// one wrapper per slot and leaves it the old address when the slot is empty. Game thread only.
+	/// A827, A845). Reads nothing of the figure: a figure held past its frame may be gone, every property of it that calls
+	/// through the game's virtual table can then end the game, and after logging out its memory itself is freed - reading
+	/// its own index field ended the game on 16.11.2026. The slot comes from the table, kept per wrapper; a wrapper whose slot
+	/// is unknown after one scan of the table in this frame is not current. Game thread only.
 	/// </summary>
 	public static bool IsCurrent(this IGameObject? obj)
 	{
@@ -34,8 +40,31 @@ public static partial class ObjectHelper
 			return false;
 		}
 
-		// The figure's own index field lies in its memory, which stays readable for a battle figure (a fixed block).
-		return Svc.Objects.GetObjectAddress(obj.ObjectIndex) == obj.Address;
+		if (!_slotOfWrapper.TryGetValue(obj, out var slot))
+		{
+			var frame = Svc.Framework.LastUpdate;
+			if (frame == _slotsScannedAt)
+			{
+				return false;
+			}
+
+			_slotsScannedAt = frame;
+			var objects = Svc.Objects;
+			for (var i = 0; i < objects.Length; i++)
+			{
+				if (objects[i] is { } inSlot)
+				{
+					_slotOfWrapper[inSlot] = i;
+				}
+			}
+
+			if (!_slotOfWrapper.TryGetValue(obj, out slot))
+			{
+				return false;
+			}
+		}
+
+		return Svc.Objects.GetObjectAddress(slot) == obj.Address;
 	}
 
 	/// <summary>

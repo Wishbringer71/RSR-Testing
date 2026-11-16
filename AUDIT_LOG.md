@@ -24674,6 +24674,48 @@ Absturzbericht.
 | docs/method/01-loop-evaluation-methods.md | ✓ | offen | |
 | docs/method/02-source-audit.md | ✓ | offen | |
 
+### A845 · Spielabsturz beim Ausloggen: die Prüfung gehaltener Figuren las die Figur (16.11.2026)
+
+Sein Upload (16.11.2026, abends, `XIVLauncher.7z`; „das ist wichtiger“): Dalamud-Absturzbericht 19:26:34, Plugin-Version
+7.5.8.3 (sein Branch-Build), ohne DefenseTrace. Die Sitzung lief von 19:14 bis 19:26; RSR schrieb in ihr keinen Fehler ins
+Dalamud-Log. Die vorige Logdatei stammt vom 12.11.2026.
+- *Fehlerbild:* Zugriffsverletzung in `GameObject.get_ObjectIndex`, gerufen aus `StaleFigures.Prune` über
+  `ObjectHelper.IsCurrent` zu Beginn des Durchlaufs (`MajorUpdater.OnUpdate`). .NET fängt sie nicht ab; das Spiel endete.
+- *Anlass im Spiel:* Er loggte aus: `Condition change: LoggingOut=True` um 19:26:32,351, `Logout: Type 0, Code 10000` um
+  19:26:33,305, der Absturz um 19:26:34.
+- *Ursache, am Code und am Quelltext:* `IsCurrent` (A827) verglich `GetObjectAddress(obj.ObjectIndex)` mit der Adresse der
+  Figur. `ObjectIndex` liest `this.Struct->ObjectIndex`, ein Feld im Speicher der Figur (Dalamud 43b3411, 10.11.2026,
+  `GameObject.cs`). Der Kommentar dazu nahm an, der Speicherblock der Kampffiguren bleibe lesbar. Beim Ausloggen gibt das
+  Spiel ihn frei; die erste Bereinigung danach las die gehaltene Figur. Die Annahme ist widerrufen (C214).
+- *Klasse:* jede Prüfung, die zur Frage „besteht die Figur noch“ die Figur selbst liest. Gesucht: `ObjectIndex` liest RSR
+  sonst nur in `DataCenter.HostileTarget`, an einer Figur, die es im selben Augenblick aus der Tabelle holt (sicher);
+  `IsCurrent(id)` liest die Id erst nach bestandenem Vergleich. Alle elf Aufrufer von `IsCurrent` laufen über die
+  korrigierte Prüfung.
+- *Gebaut* (Konzept 03, „Dritte Invariante“; Konzept 24, „Fehlertoleranz“): `IsCurrent` liest nichts aus der Figur. Dalamud
+  legt je Tabellenplatz und Objektart einen festen Wrapper an (`ObjectTable.CachedEntry`); RSR merkt sich je Wrapper den
+  Platz, gelesen an der Tabelle, solange seine Figur dort steht, und vergleicht danach nur den Platz der Tabelle
+  (`GetObjectAddress`) mit der Adresse des Wrappers. Ein unbekannter Wrapper löst höchstens einen Lauf über die Tabelle je
+  Bild aus (`IFramework.LastUpdate`); steht er danach nicht darin, ist er nicht aktuell.
+- *Im Spiel:* Nach dem Ausloggen zeigt die Tabelle leere Plätze; jede gehaltene Figur fällt aus den Listen, ohne gelesen
+  zu werden. Im Kampf unverändert: Gültige Figuren bleiben, die Prüfung gegen einen neuen Inhaber desselben Platzes (A832)
+  gilt weiter.
+- *Optionen, verworfen:* (a) Die Bereinigung beim Ausloggen überspringen oder alles leeren: deckte nur diesen Anlass; ein
+  anderer Weg, auf dem das Spiel Speicher freigibt, bliebe offen. (b) Je Bild eine Menge aller Adressen der Tabelle: Ein
+  Effekt-Handler zwischen zwei Bildern läse eine Menge aus einem älteren Zustand. Die gewählte Form liest die Tabelle
+  bei jeder Frage neu.
+- *Falsifikation:* Kein Defekt – widerlegt am Absturzbericht. Option falsch – sie hängt an Dalamuds festen Wrappern je
+  Platz; gäbe Dalamud je Lesen neue heraus, fände RSR einen gehaltenen Wrapper nie und hielte ihn für nicht aktuell: kein
+  Absturz, die Listen würden je Bild neu gebaut, das Wörterbuch wüchse (sichtbar in der Kostenzeile). Ausgeliefert, und
+  nichts ändert sich – wenn das Spiel Speicher freigibt, während der Tabellenplatz noch auf ihn zeigt; dann läse auch
+  Dalamuds eigene Aufzählung ihn, und das beträfe jedes Plugin.
+- *Vorhersage:* Nach einem Ausloggen mit einem Build ab diesem Commit steht im Dalamud-Log keine Zugriffsverletzung mit
+  `StaleFigures` oder `IsCurrent` im Stapel; das Spiel kehrt zum Titelbildschirm zurück. Nicht in `DefenseTrace.log`
+  messbar, deshalb ohne maschinenlesbare Vorhersage.
+- *Prüfgrad:* Absturzbericht, Dalamud-Log, Quelltext von Dalamud; Compile ohne Fehler und Warnung, CI; im Spiel nicht
+  beobachtet.
+- *Mein Fehler:* In A827 habe ich die Lesbarkeit des Speicherblocks als Annahme in den Code geschrieben, ohne den Fall zu
+  prüfen, in dem das Spiel den Block selbst freigibt.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -25039,3 +25081,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C211 | A838 (Stand 2fd657926): Der Lesethread lese roh vom Deskriptor, damit er beim Ende des Skripts keine Sperre des Interpreters halte | Unbelegt: Gemessen (Python 3.11, stille offene Pipe) endet auch ein gepuffertes Lesen im Daemon-Thread sauber mit Exit 0. Das rohe Lesen bleibt, die Begründung entfällt |
 | C212 | A839 (Stand 9a259bcd2): Der Block stehe wörtlich in CLAUDE.md, und eine Abweichung werde auf seinen Text zurückgesetzt | Er hat keine wörtliche Übernahme verlangt; die REGEL wird verbessert, wo nötig, ohne dass die Qualität sinkt (seine Vorgabe 15.11.2026). Die Prüfsumme macht Änderungen sichtbar, sie friert nicht ein (A841) |
 | C213 | A840 (Stand ce0b2e028): Ein angehängtes Repository schalte die Agent-Hooks ab dem nächsten Neustart ab – belegt nur durch ADR 0051 des LLM-Frameworks | Als Beleg galt LLM-Text. An der Primärquelle geprüft (Claude-Code-Dokumentation, „Settings in cloud sessions“, 16.11.2026): Eine Sitzung mit mehreren Repositories startet über den Klonen und liest keine Hooks. Dass sie hier beim Fortsetzen weiterliefen, widerspricht dem nicht (Startordner beim Start festgelegt) |
+| C214 | A827 (Stand bis A845): Das Feld `ObjectIndex` einer gehaltenen Kampffigur sei lesbar, weil ihr Speicherblock bestehen bleibe | Beim Ausloggen gibt das Spiel den Speicher frei; das Lesen beendete am 16.11.2026 das Spiel (A845) | Widerrufen |

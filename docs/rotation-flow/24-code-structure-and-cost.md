@@ -321,7 +321,9 @@ Sitzung mit Kampf steht keine Zeile „exception:"; steht eine, ist sie eine Urs
   weil der Speicherblock der Kampffiguren bestehen bleibt. Sein Absturz vom 15.11.2026, 18:54 (Build 77af8f6d6, Crucible,
   Ahriman-Ebenbilder) widerlegt es: `GazeWatch.AddLandings` fragte eine gehaltene Figur nach `IsCasting`, zwei Sekunden
   nach ihrem Blick; `IsDead` lief noch, der Aufruf über Platz 80 nicht – der Platz gehörte inzwischen keiner Kampffigur
-  mehr, und eine Zugriffsverletzung fängt .NET nicht ab. Der Speicher bleibt lesbar, die Funktionstabelle nicht.
+  mehr, und eine Zugriffsverletzung fängt .NET nicht ab. Innerhalb einer Sitzung bleibt der Speicher lesbar, die
+  Funktionstabelle nicht; beim Ausloggen gibt das Spiel auch den Speicher frei, und das Lesen eines Felds der Figur
+  (`ObjectIndex` in `IsCurrent`) beendete am 16.11.2026 das Spiel (A845). Die Prüfung liest deshalb nur die Tabelle.
   *Regel, ohne Ausnahme:* Was über ein Bild hinaus lebt, hält die Id (beim Anlegen aus der frischen Figur gelesen) und
   löst die Figur dort, wo es sie liest, über die Objekttabelle auf (`SearchById`); eine gehaltene Figur wird nach keiner
   Eigenschaft gefragt, auch nicht nach ihrer Id. Konzept 03, „Dritte Invariante", führt die Regel; die Blickwache hält

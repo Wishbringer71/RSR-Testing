@@ -54,7 +54,8 @@ in einem Zug, dazwischen verschwindet kein Objekt. Über einen Frame hinaus taug
   Objekt. Es schützt keine gehaltene Referenz; die Prüfungen im Plugin (32, gezählt 16.11.2026) sind Nullprüfungen mit dieser
   Zusatzbedingung.
 - Spieler und Kampf-NPCs liegen in einem festen Speicherblock des Spiels (`CharacterManager.BattleCharaMemory`,
-  FFXIVClientStructs). Der Speicher einer veralteten Adresse bleibt lesbar, ihre Funktionstabelle nicht: Fast jede
+  FFXIVClientStructs). Innerhalb einer Sitzung bleibt der Speicher einer veralteten Adresse lesbar, ihre
+  Funktionstabelle nicht; beim Ausloggen gibt das Spiel auch den Speicher frei (A845). Fast jede
   Eigenschaft einer Figur – `GameObjectId`, `Name`, `IsDead`, `StatusList`, jede Wirk-Eigenschaft über `GetCastInfo` –
   ruft über sie. Beobachtet am 15.11.2026 (A827): Die Blickwache fragte eine gehaltene Figur zwei Sekunden nach ihrem
   Blick nach `IsCasting`, und das Spiel endete mit einer Zugriffsverletzung, die .NET nicht abfängt. Upstreams
@@ -64,9 +65,20 @@ Was über Frames hinweg lebt, hält deshalb die Id – beim Anlegen aus der fris
 lesenden Frame aus der Tabelle auf (`SearchById`); eine gehaltene Figur wird nach keiner Eigenschaft gefragt, auch nicht
 nach ihrer Id. So halten es der Tankwechsel (`TankSwapWatch`), die Marker-Beobachtung, der Tankbuster-Plan für den
 Wirkenden des geplanten Casts (seit A309) und seit A827 die Blickwache. Was eine Figur doch über das Bild hinaus hält,
-fängt eine Prüfung ohne Aufruf über die Funktionstabelle ab (A827): `ObjectHelper.IsCurrent` vergleicht die Adresse der
-Figur mit der, die ihr Tabellenplatz jetzt trägt – Dalamud gibt je Platz denselben Wrapper heraus, und ein leerer Platz
-lässt ihm die alte Adresse.
+fängt eine Prüfung ab, die nichts aus der Figur liest (A827, A845): `ObjectHelper.IsCurrent` vergleicht die Adresse der
+Figur mit der, die ihr Tabellenplatz jetzt trägt. Den Platz kennt RSR ohne Lesen: Dalamud legt je Platz und Objektart
+einen festen Wrapper an und gibt ihn bei jedem Lesen des Platzes heraus (`ObjectTable.CachedEntry`, Dalamud 43b3411,
+10.11.2026); ein leerer Platz lässt ihm die alte Adresse. RSR merkt sich je Wrapper seinen Platz, gelesen an der Tabelle,
+solange die Figur darin steht, und liest danach nur noch den Platz der Tabelle (`GetObjectAddress`), nie die Figur.
+- *Absturz beim Ausloggen (A845):* Bis A845 holte `IsCurrent` den Platz aus der Figur selbst (`ObjectIndex`, ein Feld in
+  ihrem Speicher), unter der Annahme, der Speicherblock der Kampffiguren bleibe lesbar. Am 16.11.2026 um 19:26 loggte er
+  aus (Dalamud-Log: `LoggingOut`), das Spiel gab den Speicher frei, und die Bereinigung zu Beginn des nächsten Durchlaufs
+  las `ObjectIndex` einer gehaltenen Figur: Zugriffsverletzung, das Spiel endete (`StaleFigures.Prune`, sein Upload).
+  Jetzt zeigt die Tabelle nach dem Ausloggen leere Plätze, und jede gehaltene Figur fällt, ohne gelesen zu werden.
+- *Ein Wrapper ohne bekannten Platz:* RSR durchläuft die Tabelle höchstens einmal je Bild (`IFramework.LastUpdate`) und
+  merkt sich die Plätze aller Wrapper, die sie dann herausgibt. Steht der Wrapper danach nicht darin – sein Platz ist
+  leer oder trägt eine Figur anderer Art, oder er stammt nicht aus der Tabelle (`CreateObjectReference`) –, gilt er als
+  nicht aktuell. Grund: Ohne Platz bliebe nur das Lesen der Figur, und das ist genau der Fehler.
 - *Zu Beginn jedes Durchlaufs* (`StaleFigures.Prune`, vor allem anderen): Die Listen von `DataCenter` und die
   Einzelziele (Unterbrechen, Provozieren, Tote, Reinigung), die Casts des Tankbuster-Plans samt Plan und die Ziele des
   Tankwechsels verlieren jede Figur, die nicht mehr aktuell ist. Wer die Listen in diesem Durchlauf neu baut, baut sie
@@ -80,7 +92,9 @@ lässt ihm die alte Adresse.
   gewirkt wird, ein Tankwechselziel, das ein anderer Gegner ist. Wo die Id beim Anlegen gelesen wurde (Tankbuster:
   `Cast.SourceId`; Tankwechsel: beim Setzen von Ziel und Rückholquelle), vergleicht die Bereinigung nach dem
   Adressvergleich auch die Id (`IsCurrent(id)`); erst der bestandene Adressvergleich erlaubt die Frage nach ihr.
-- *Kosten:* ein Adressvergleich je gehaltener Figur und Bild, wo eine Id gehalten wird dazu ein Lesen; keine Anlage.
+- *Kosten:* ein Wörterbuchzugriff und ein Lesen der Tabelle je gehaltener Figur und Bild, wo eine Id gehalten wird dazu
+  ein Lesen der Figur nach bestandenem Vergleich; höchstens ein Lauf über die Tabelle je Bild, wenn ein Wrapper unbekannt
+  ist. Angelegt wird nur ein Eintrag je neuem Wrapper, höchstens fünf je Platz (die Arten, für die Dalamud Wrapper führt).
 - *Vorbild (BossModReborn 35a908a, `WorldStateGameSync.UpdateActors`):* BMR hält keine Figur des Spiels über ein Bild
   hinaus. Es liest jedes Bild die Objekttabelle direkt, vergleicht je Platz die `EntityId`, führt eigene Kopien
   (`Actor`, die Wirkinformation als `ActorCastInfo`) und entfernt eine Kopie, sobald ihre Figur den Platz verlässt;

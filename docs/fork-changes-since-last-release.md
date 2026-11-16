@@ -58,3 +58,4 @@ What this release changes in the fight. For the whole distance from upstream, se
   whether it was still casting; once the figure was gone, the game closed (seen in the Crucible). Figures are now held
   by their id and read from the game's object table where they are used, and every figure kept from an earlier frame –
   in the party and enemy lists, the tankbuster plan, a tank swap – is dropped once it is gone, before anything reads it.
+  Whether a figure is gone is read from the object table alone, never from the figure, so logging out is safe as well.
