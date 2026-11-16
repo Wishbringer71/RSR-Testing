@@ -184,9 +184,10 @@ der Heilschwelle verlangte. Jetzt fällt sie, sobald im Radius genug Verletzte s
   des Auftraggebers:** Heilungen erzeugen Feindschaft, wie Schaden auch — bestätigt im consolegameswiki,
   „Enmity" (02.10.2026: „healing effects used on allies generate enmity"); den Umfang nennt keine der
   geprüften Quellen (consolegameswiki, Akhmorning „Raiding Fundamentals").
-  Ob eine Gruppenheilung dabei mehr oder andere Gegner erreicht als eine Einzelheilung, ist ebenfalls
-  nicht belegt — `NoNewHostiles` bleibt deshalb eine Regel für Angriffe, und das ist eine offene
-  Annahme, keine belegte Tatsache.
+  Den Heilhass verteilt das Spiel auf die Gegner, die schon kämpfen; einen ruhenden Gegner zieht eine
+  Heilung nicht (Akhmorning, Feindschaft, Shadowbringers; Konzept 03, „Flächen, die Gegner treffen", A833).
+  `NoNewHostiles` bleibt deshalb eine Regel für Angriffe, auch für den Schadensteil einer Heilung, die
+  Gegner trifft (Assise, Makrokosmos, A826).
 - Die AoE-Einstellung (Full/Cleave/Off) gilt nur Angriffen, seine Lesart (A147): Unter „Cleave" und
   „Off" gehen Gruppenheilungen und Gruppenminderungen wie unter „Full".
 - Ob überhaupt geheilt wird, entscheidet weiter die Flagge. Deren Streuungsbedingung hält die Flagge
@@ -687,13 +688,12 @@ zugleich, und seine Vorgabe dazu — Heiler vor Schadensausteiler, geprüft, was
 Ordnung dieses Konzepts. Die drei Upstream-Einstellungen (niedrigster Prozentsatz, Heiler zuerst, nur Heiler)
 bleiben, weil ihr Text bindet. Konzept 09, Abschnitt zum Krieger.
 
-**Die übrigen Fundstellen derselben Bauform sind erhoben und bleiben unbearbeitet**, weil bei ihnen
-das Punktemaß nach der Tabelle oben das richtige sein kann: The Blackest Night und Oblation beim
-Dunkelritter, Heart of Corundum, Heart of Stone und Aurora beim Revolverklinge. Beim Dunkelritter
-hängt eine zweite Prüfung an derselben Wahl — das gewählte Ziel muss zusätzlich unter
-`BlackLanternRatio` stehen —, sodass eine Fehlwahl die Aktion nicht nur verschiebt, sondern ganz
-ausfallen lässt. Die Entscheidung darüber berührt `10-drk-blackest-night.md` und gehört dem
-Auftraggeber. Die Fundstellen in den PvP-Rotationen liegen außerhalb seines Nutzungsprofils.
+**Die übrigen Fundstellen derselben Bauform** (gemessen 16.11.2026): Nach Punkten wählt nur noch der Dunkelritter
+seine Barriere und Oblation (`DRK_Reborn.CanUseOnLowestBelow`), und dort ist das Punktemaß nach der Tabelle oben das
+richtige — gegen einen Treffer zählt eine absolute Zahl. Bis A283 kam die Wahl vor der Schwelle `BlackLanternRatio`:
+Stand das Mitglied mit den wenigsten Punkten über ihr, ging die Barriere an niemanden, obwohl ein anderes darunter stand.
+Seither filtert die Schwelle zuerst. Die Revolverklinge (Heart of Corundum, Heart of Stone, Aurora) und die
+PvP-Rotationen sortieren nirgends mehr nach Punkten.
 
 ## Heilziele außerhalb der Gruppe: Figuren, die nur Einzelheilung besiegt
 
