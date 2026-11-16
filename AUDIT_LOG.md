@@ -24525,8 +24525,8 @@ Absturzbericht.
   - *Regel der Zwei, Datenschutz vor Anweisungen* (S-Zwei, S-Daten): stehen in der Anweisung der Sitzungsumgebung und
     in ihrer Sandbox; eine Kopie hier wäre Ballast (R-Kurz).
   - *`onFailure: block` an der Regelwache:* Das Framework setzt es an alle sperrenden Hooks, auch an `rule_inject.py`
-    (Bash und Read). Ein Absturz dort sperrte jedes Werkzeug, auch das zur Reparatur; hier bleibt sie ohne Block (A838).
-    An das Framework weitergegeben.
+    (Bash und Read); alle importieren `llmfw/common.py`. Ein Fehler dort sperrte Bash, Read, Edit und Write, auch für die
+    Reparatur; hier bleibt die Regelwache ohne Block (A838). Weitergegeben als LLM-Framework #5, mit `python3` unter Windows.
 - *Gleich in der Sache* (Herkunft meist dieses Repository): Belege, Zustand messen, Ehrlichkeit, Einordnung seiner
   Angaben, Entscheidungen, Rückfragen, Loop, Wirkungsbilanz, Definition of Ready und Done, Durchsetzung über Hooks,
   Vorhersagen, Commit-Identität, fremde Daten, Release, Regeldateien, Archiv, TODO, Quellen, Entwurfsregeln E-Maßstab
@@ -24895,3 +24895,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C208 | A826 (Stand 3ca98a945): Unter den Spieleraktionen dieser Einstufung richten genau Assise, Makrokosmos, Holy und Holy III laut Wirktext Schaden an Gegnern um dich an | Gefiltert auf `IsPlayerAction`; dazu König der Kronen (7444), und die Textregel fing auch die Sterndetonation (8324), deren Schaden ein gelegter Stern an anderem Ort anrichtet; seit A832 nur ein Satz, der mit „Deals" beginnt |
 | C209 | A826 (Stand 3ca98a945): Assise weckt keinen schlafenden Gegner mehr; unberührbare Gegner seien „Schlaf, Stopp-Markierung" | Einen Schlafenden schützte die Fläche nur mit Stopp-Markierung; seit A834 auch, wen RSR in den Tiefen Gewölben selbst schlafen legt |
 | C210 | C209 (Stand 366521e09): Seit A834 schütze die Fläche auch, wen RSR in den Tiefen Gewölben selbst schlafen legt | Seit A835 jeden Schlafenden in den Gewölben, solange die Schlafoption an ist, gleich wer ihn schlafen legte; die eigene Buchführung der gelegten Schläfer ist entfernt |
+| C211 | A838 (Stand 2fd657926): Der Lesethread lese roh vom Deskriptor, damit er beim Ende des Skripts keine Sperre des Interpreters halte | Unbelegt: Gemessen (Python 3.11, stille offene Pipe) endet auch ein gepuffertes Lesen im Daemon-Thread sauber mit Exit 0. Das rohe Lesen bleibt, die Begründung entfällt |

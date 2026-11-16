@@ -7,8 +7,7 @@ session_brief.py, and KSP-MyContracts found stop_check.py and rule_inject.py bui
 only when data is there within half a second; nothing or nothing but blanks reads as no hook call.
 
 The wait is a reading thread with a time limit, not select(): on Windows select() takes sockets only, and every hook
-there read no input and let each call through (issue #26, 16.11.2026; select documentation of Python). The thread reads
-the raw descriptor, so one still waiting on a silent pipe holds no lock of the interpreter when the script ends.
+there read no input and let each call through (issue #26, 16.11.2026; select documentation of Python).
 
   hook_io.py --self-test  the three cases against a child process: open silent pipe, closed empty input, JSON
 """
