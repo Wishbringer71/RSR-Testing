@@ -743,8 +743,9 @@ im Modul ein Raidwide auf einen Cast des Bosses an sich selbst, den Schaden brin
 Abwehr, Abschütteln und Reflexion gingen hinaus, und im ganzen Kampf steht kein Treffer auf ihn. Ob er nicht
 getroffen wurde oder das Protokoll die Quelle nicht sieht, ist nicht bestimmt. Am Quelltext belegt ist ein Weg für
 das Zweite: ECommons löst die Quelle über die Objekttabelle auf, und einen Satz ohne auflösbare Quelle verwirft der
-Effekt-Handler ganz, ohne Zeile, Schadensaufnahme und Messung (`TODO.md`). Seit A299 schreibt das Protokoll jeden
-Treffer aus einer Quelle, die RSR nicht als Gegner liest. Sein Protokoll vom 18.10.2026 belegt einen zweiten Weg: Alle
+Effekt-Handler für Schadensaufnahme und Messung (`Watcher.ActionFromEnemy` endet ohne Quelle); bis A299 auch ohne Zeile.
+Seither schreibt das Protokoll jeden Treffer aus einer Quelle, die RSR nicht als Gegner liest, auch aus einer, die die
+Objekttabelle nicht hält (`TraceHitFromUnreadSource`). Sein Protokoll vom 18.10.2026 belegt einen zweiten Weg: Alle
 47 Treffer des Dungeonbosses Hammerschädel kamen aus Figuren in der Objekttabelle, die der Handler nur nicht las – er
 nahm von nicht anvisierbaren Figuren nur Kämpfer an, und Teile eines Gegners oder Figuren ohne Unterart fielen heraus.
 Seit A327 liest er jede Figur der Gegnerseite (`ObjectHelper.IsEnemySideFigure`), und die Protokollzeile nennt bei
@@ -1179,7 +1180,7 @@ nicht beobachtet. Weg B in seiner ersten Form ist verworfen (A430).
   Signatur wie RSRs `Watcher` in die Verarbeitung von ActorControl und liest auf Spielern Kategorie 0x605 als DoT-Tick,
   Betrag im zweiten Parameter, und 0x604 als HoT-Tick, Betrag im zweiten, Status-Id im ersten, wo sie nicht 0 ist,
   kritisch im vierten (Werkzeugquelle, Stand 02.05.2026). RSR empfängt 0x605 schon, liest aber nur den Zeitpunkt
-  (`DotTickTracker`); das Ereignis kommt für jedes Ziel mit DoT, auch für Gruppenmitglieder – seine Mitschnitte zeigen
+  (`DotTickTracker`, so vor A432); das Ereignis kommt für jedes Ziel mit DoT, auch für Gruppenmitglieder – seine Mitschnitte zeigen
   DoT-Ticks auf drei Spielern. Der erste Tick fällt 0–3 s nach dem Auflegen, auf dem Takt des Mitglieds, und nennt
   seinen Verlust in Lebenspunkten, also auch als Anteil seiner maximalen HP. Wer einen DoT trägt und wie lange, zeigt
   der Status schon beim Auflegen. *Grenzen:* Der Betrag ist die Summe aller DoTs auf dem Mitglied, nicht je Status –
@@ -1188,7 +1189,7 @@ nicht beobachtet. Weg B in seiner ersten Form ist verworfen (A430).
   25.10.2026: sechs Ticks unter Galvanize meldeten 0, einer im Augenblick des Bruchs 678 statt rund 1000, danach
   wieder rund 1000 (ACT liest dieselben Netzwerkdaten). Ob prozentuale Minderung den Tick senkt, ist unbelegt. BossMod
   führt mit 23 eine Kategorienummer des alten Dissectors; 0x605 lesen RSRs Upstream (für den Takt, seit 24.10.2026)
-  und DeathRecap übereinstimmend. In RSR zur Laufzeit gemessen ist der Betrag nicht. *Vor dem ersten Tick* ist die Stärke unbekannt: Ein
+  und DeathRecap übereinstimmend. RSR liest den Betrag seit A432 (`Watcher`, `DotOnParty.RecordDotTick`). *Vor dem ersten Tick* ist die Stärke unbekannt: Ein
   Status trägt keine Potenz (Blatt `Status`), die Stärke setzt der Inhalt. Eine je Status gelernte Stärke brächte
   höchstens einen Tick früher und läge falsch, wo derselbe allgemeine Status anderswo anders stark ist (Schluss) –
   nicht vorgesehen.
@@ -1243,7 +1244,7 @@ Zoraal Ja (Everkeep) und Alexander, zusammen rund 100 Minuten Kampf.
 Das Überheilen, das er beschreibt, ist also messbar, kostet aber fast nur dort etwas, wo ein GCD-HoT ohne Bedarf
 fällt – und das ist selten.
 
-### Was RSR heute tut
+### Was RSR ohne H1 tut (die Untergrenze, die H1 behält)
 
 - *Ob geheilt wird:* Einzel- und Flächenschwellen auf die vorausberechnete Gesundheit (`HealAheadOfDamage`, A182,
   A191). Die Vorausschau liest den Gesundheitsverlauf des Mitglieds (`RecordedHP`, `GetCorrectedTTK`), also den
@@ -1627,7 +1628,8 @@ Belege abgerufen 18.10.2026 (xivapi v2, Blätter `Action` und `Status`, englisch
   Keine offizielle Quelle und kein Status zeigt es; deshalb lernt die Regel die Anzahl, statt sie einzutragen. Fandom
   („Sleep (Final Fantasy XIV)"): Oberhalb Stufe 50 sind Gegner in Inhalten über die Inhaltssuche „typically immune".
 - *Ziehen:* Schlaf trifft bis 5 y um das Ziel, Sanctga 8 y um den Weißmagier – auch Gegner, die noch nicht kämpfen.
-  „Don't pull new enemies with AoE" (ab Werk aus) verbietet das für jede Flächenaktion; die Regel hält sich daran.
+  „Don't pull new enemies with AoE" (ab Werk aus) verbietet das für jede Flächenaktion, in den Tiefen Gewölben deren
+  eigene Option (`DataCenter.GuardsAgainstPull`, Konzept 23); die Regel hält sich daran.
 
 ### Mitwirkende Regeln (derselbe GCD, dasselbe Ziel)
 
@@ -1678,8 +1680,9 @@ Reinigung, Herausforderung, Wiederbelebung und Heilung. Unter mehreren das Wirke
 „Die Zeit reicht" heißt für beide: Vom Wirken ist mehr übrig als die eigene Wirkzeit (null unter Dualcast oder
 Triplecast), der laufende GCD, die gemessene Zeit vom Ende des eigenen Wirkens bis zur Wirkung (vor der ersten Messung
 die Laufzeit einer Anfrage) und der gelernte Rest beim Eintreffen. Nicht unter Swiftcast. Beim Heiler nicht, solange ein
-Mitglied in der kritischen Klasse steht. Nicht, wenn die Flächenaktion unter „Don't pull new enemies with AoE" einen
-Gegner träfe, der noch nicht kämpft.
+Mitglied in der kritischen Klasse steht. Nicht, wenn die Flächenaktion einen Gegner träfe, der noch nicht kämpft,
+solange die Zugsperre gilt (`DataCenter.GuardsAgainstPull`: „Don't pull new enemies with AoE", in den Tiefen Gewölben
+deren Option, Konzept 23).
 
 ### Gespeichertes Wissen
 
@@ -1917,9 +1920,9 @@ der Tank gar nicht erst fallen soll. Was die Groesse nicht kann:
   Gegnerzahl setzen – nicht gebaut. Die großen Abklingzeiten der Tanks warten im Pull auf den Verlauf (Konzept 09, „Die
   Abwehr im Pull"). Die eigenen Minderungen einzurechnen hülfe hier nicht: Vor dem ersten Treffer
   gibt es keine Rate, die sie skalieren könnten.
-- **Traegheit, und sie ist gemessen.** `GetTTK` misst den Abfall seit dem **ersten** beobachteten
-  Wert geteilt durch die **gesamte** verstrichene Zeit — eine Durchschnittsrate ueber den Kampf,
-  keine Momentanrate. Ein ploetzlicher Einbruch wird darin verwaessert, und der Fehler geht in die
+- **Traegheit, und sie ist gemessen.** `GetTTK` misst den Abfall seit dem Bezugspunkt geteilt durch die
+  Zeit seitdem — der letzten Probe, die mindestens so hoch stand wie die jetzige (A356; davor die erste der vier
+  Minuten) — eine Durchschnittsrate ueber diese Spanne, keine Momentanrate. Ein ploetzlicher Einbruch wird darin verwaessert, und der Fehler geht in die
   gefaehrliche Richtung: Die gemeldete Restzeit ist **zu lang**, eine Regel darauf griffe zu spaet.
   Behoben ist das nicht durch eine gesetzte Zahl, sondern durch Selbstkorrektur, siehe unten.
 - **Keine Zuordnung.** Der Verlauf sagt, **dass** die Gesundheit faellt, nicht **warum**. Eine Regel,
@@ -2380,11 +2383,11 @@ Der Entwurf erfindet wenig; das meiste lag im Baum und war nur nicht verbunden.
 
 | Baustein | Fundstelle | Zustand |
 |---|---|---|
-| Mitigationsmessung: Gegner-Debuffs und Party-Buffs, verrechnet zu einem Schadensfaktor | `CustomRotation.GetCurrentMitigationPercent` | Gelesen nur zur Anzeige (`MainWindow_Debug`, Stand 12.10.2026) |
+| Mitigationsmessung: Gegner-Debuffs und Party-Buffs, verrechnet zu einem Schadensfaktor | `CustomRotation.GetCurrentMitigationPercent` | Gelesen nur zur Anzeige (`MainWindow_Debug`, Stand 16.11.2026) |
 | Betäubung und Verlangsamung als Statuseffekte | `StatusHelper.StunStatus`, `.SlowStatus`, `StatusID.ArmsLength` | In Betrieb. „Stun Resistance" (39, 1349) ist die Dauerimmunität bestimmter Gegner, nicht die Abnahme nach jeder Anwendung; die zeigt das Spiel nicht als Status, `StunWatch` liest sie aus dem Ereignisstrom (A272). Ob es eine Abnahme der Verlangsamung gibt und ob sie sichtbar ist, ist unbelegt |
 | Statusabfragen mit Restzeit und Stapelzahl | `StatusHelper.HasStatus`, `.StatusTime`, `.StatusStack` | In Betrieb |
 | Vorhersagefenster aus der BossModReborn-Timeline | `Configs.BMRRaidwideMitWindow` und Geschwister, ausgewertet in `StateUpdater` | In Betrieb |
-| Zentralisierte Nachzieh-Regel für Gegner-Debuffs | `CustomRotation.ShouldSustainMitigationDebuff` | In Betrieb, 25 Aufrufstellen in den Standardrotationen (Stand 26.09.2026) — Beleg, dass eine gemeinsame Regel über viele Jobs trägt |
+| Zentralisierte Nachzieh-Regel für Gegner-Debuffs | `CustomRotation.ShouldSustainMitigationDebuff` | In Betrieb, 25 Aufrufstellen in den Standardrotationen, 2 in `NinjaRotation` (Stand 16.11.2026) — Beleg, dass eine gemeinsame Regel über viele Jobs trägt |
 | Gegnerzahl-Schwelle als etabliertes Muster | `Configs.MitigationSustainHostileCount` gegen `NumberOfHostilesInRange` | In Betrieb |
 | Trennung von Mitigation und Schaden im Dispatch | `CustomRotation_GCD.cs`, Reihenfolge in Konzept 03 („Die Slot-Kette“): Heilung, dann Abwehr, `GeneralGCD` zuletzt | In Betrieb |
 
@@ -2453,9 +2456,10 @@ Flächenpull; im Einzelzielkampf fällt Sanctus nicht (eigene Zielzahl der Aktio
 von `RotationSolver.Basic` additiv; keine Signatur bricht. Wer die neuen Prüfungen
 nicht aufruft, merkt nichts.
 
-**Upstream-Pflege.** Der Eingriff liegt in `CustomRotation_OtherInfo` und
-`WHM_Reborn`, beides Dateien mit regelmäßiger Upstream-Aktivität. Neue Teile liegen in
-eigenen Regionen; kein Block wandert.
+**Upstream-Pflege.** In Upstreams Dateien stehen nur die Optionen und die Aussetzbedingung vor dem
+Sanctus-Block (`WHM_Reborn.cs`); die Regeln selbst liegen in Teildateien des Forks (`WHM_Reborn.HitResponse.cs`,
+`WhiteMageRotation.HitResponse.cs`, `CustomRotation_OtherInfo.Universal.cs`) und in `StunWatch` (Stand 16.11.2026).
+Kein Block wandert.
 
 ## Offene Punkte
 
