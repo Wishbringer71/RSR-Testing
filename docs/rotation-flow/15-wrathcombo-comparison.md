@@ -103,7 +103,7 @@ Die Rollenaktionen der Heiler (Repose, Esuna, Lucid Dreaming, Swiftcast, Surecas
 ### Die Regel
 
 **Eine Regel für alle Heiler** („Universell zuerst", Stufe „Heiler"; A184): `TryPullUpkeepOnTank` in
-`CustomRotation_OtherInfo.cs`. Sie hält eine Sofort-Regen- oder Sofort-Barriereaktion auf dem Tank, solange
+`CustomRotation_OtherInfo.Channels.cs`. Sie hält eine Sofort-Regen- oder Sofort-Barriereaktion auf dem Tank, solange
 er sich einer Gruppe nähert oder sie bindet (`TankApproachingMobGroup`: genug Gegner in 20 y um den Tank,
 nicht in Prüfungen und Raids), und erneuert sie,
 sobald der Status fehlt oder innerhalb der Auffrischfrist endet. Eine verbrauchte Barriere nimmt das Spiel
@@ -237,8 +237,8 @@ Arten von Daten. Ergebnis je Art:
 
 | Art | Ableitbar im Spiel? | RSR | Folge |
 |---|---|---|---|
-| Raidwide-Ids | **ja**, aus dem Treffer: trifft eine Aktion jedes Gruppenmitglied, ist sie eine Gruppenaktion | die Flächenliste lernt so (unter „Record enemy AoE actions"), die Schadenstabelle misst die Größe (A177, A185) | keine Übernahme nötig. Beleg: zwei Ids aus WrathCombos Liste für The Clyteum (48896, 48920) stehen in RSRs Liste und in seiner Schadenstabelle |
-| Tankbuster-Ids | **teilweise**: ein Zauber mit Wirkzeit auf ein Gruppenmitglied, der nur dieses trifft | kuratierte Liste (31 Einträge), dazu für Tanks die Regel „Zauber auf das aktuelle Ziel"; Marker (V2) | Lernen im Spiel wäre möglich, braucht aber eine Größenschwelle für „Tankbuster"; nicht gebaut |
+| Raidwide-Ids | **ja**, aus dem Treffer: trifft eine Aktion jedes Gruppenmitglied, ist sie eine Gruppenaktion | die Flächenliste lernt so (unter „Record enemy AoE actions"), die Schadenstabelle misst die Größe (A177, A185); seit A620 liefert RSR dazu die Casts mit, die cactbot als Raidwide ansagt (`CactbotCasts.HostileCastingArea`, 688 Ids, Stand 16.11.2026) | keine Übernahme nötig. Beleg: zwei Ids aus WrathCombos Liste für The Clyteum (48896, 48920) stehen in RSRs Liste und in seiner Schadenstabelle |
+| Tankbuster-Ids | **teilweise**: ein Zauber mit Wirkzeit auf ein Gruppenmitglied, der nur dieses trifft | kuratierte Liste (`ActionLists.HostileCastingTank`, 31 Ids), seit A620 die Tankbuster-Ansagen von cactbot (`CactbotCasts.HostileCastingTank`, 401 Ids, Stand 16.11.2026), dazu für Tanks die Regel „Zauber auf das aktuelle Ziel"; Marker (V2) | Lernen im Spiel wäre möglich, braucht aber eine Größenschwelle für „Tankbuster"; nicht gebaut |
 | zu ignorierende Raidwides (Blicke) | **teilweise**: eine gelistete Flächenaktion, die landet und niemandem Schaden zufügt | bleibt unbewertet und gilt damit als „lohnt Minderung" | Ableitbar über „landet ohne Schadenseintrag". Gegenrisiko: Eine ausweichbare Fläche, der alle ausgewichen sind, sähe genauso aus. Ein Blick steht in keinem Feld der Aktion (Konzept 13, „Raidwide oder ausweichbare Fläche", A750); nicht gebaut |
 | Pausen (Blicke, Scanner) | **nein**: begegnungsspezifische Skripte (Blickrichtung, Position eines Helfers) | keine; BossModReborn deckt das im eigenen Modul | nicht übertragbar |
 | Unverwundbarkeit je Begegnung | **nein** allgemein: Plattform- oder Farbzuordnung je Kampf | Statusliste `InvincibleStatus` | nicht übertragbar |
