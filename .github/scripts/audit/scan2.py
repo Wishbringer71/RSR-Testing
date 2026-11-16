@@ -273,7 +273,10 @@ def main():
     known = [
         ('i_unguarded_division', 'FullControlWindow.cs', '/ AoeSegments.Length', 'divisor is a fixed non-empty array'),
         ('i_unguarded_division', 'StateControlWindow.cs', '/ Segments.Length', 'divisor is a fixed non-empty array'),
-        ('i_unguarded_division', 'DataCenter.cs', '/ lowestCount', 'lowestCount = Math.Min(count, LightPartySize) under count > 0'),
+        # The file name as the division stands today: it moved to the partial file (fork placement), and a key on the old
+        # name stopped matching without a sound (A844).
+        ('i_unguarded_division', 'DataCenter.Universal.cs', '/ lowestCount', 'lowestCount = Math.Min(count, LightPartySize) under count > 0'),
+        ('i_unguarded_division', 'BST_Reborn.cs', '/ battle.Length', 'under battle is { Length: > 0 }'),
     ]
 
     def known_reason(key, item):

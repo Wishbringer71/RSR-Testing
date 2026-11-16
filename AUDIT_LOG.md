@@ -24650,7 +24650,7 @@ Absturzbericht.
 | 03-universal.md | ✓ | ✓ 16.11.2026, Stand c96a670c3 | „Zielart ohne Tank und Heiler“: „Was im Kampf anders wird“, Prüfgrad und eine Gegenposition beschrieben „wenigste LP zuerst“ und „Schaden je LP ordnen: nicht übernommen“, obwohl seit A541 die Gefahr je LP gilt; zwei Stellen nannten Schaden am Begleiter „nur im Crucible“ und ein Gewicht nach Bedarf, der Code zählt Treffer auf eigene Objekte überall (`Watcher.RecordEnemyDanger`, A582), das Gewicht ist verworfen (A660). U4: DRG und VPR ohne `CountDownAction`, seit 060b8fc82 geschlossen. Zahl der `IsValid()`-Prüfungen datiert (32). Am Code bestätigt: Reihenfolge der Fähigkeitsslots, `StaleFigures.Prune` über `MajorUpdater`, Voreinstellungen von „Don't pull new enemies with AoE“ (aus), Stacheln und Tötungsregeln (an), Heiltrank-Schwellen (aus). |
 | 04-concept.md | ✓ | ✓ 16.11.2026, Stand f4e0ef481 | C1: Trait-Paare beim Dragoon sieben, nicht sechs (Zahl und Datum nachgezogen). Am Code bestätigt: `PullGapCloser` bei MNK, DRG, VPR; Voreinstellungen „Dash to the target …“ und „Lay damage areas only where the enemies stay“ (an); 23 Basisdateien, `Rotation.resx` 2,05 MB; B1 mit 13 Verwendungen. |
 | 05-action-coverage.md | ✓ | ✓ 16.11.2026, Stand 049196e4f | „RSR fährt keine PvE-Limit-Breaks“ gegen A628/A630 berichtigt. Beim Prüfen des Limit-Break-Pfads gefunden: zwei Schleifen legten je Aufruf ein Feld der drei Stufen an, die erste je Frame, solange die volle Leiste allein im Kampf wartet (Verstoß gegen „Struktur und Kosten“, code.md); behoben in `CustomRotation_LimitBreak.cs`, Kostenzeile in Konzept 03. Klasse gesucht (`foreach … in new[]`): die übrigen vier Stellen laufen einmal und sind zwischengespeichert. Compile 0 Fehler, 0 Warnungen. |
-| 06-fork-audit.md | ✓ | offen | |
+| 06-fork-audit.md | ✓ | ✓ 16.11.2026, Stand c0f3d49b4 | Inhalt als Nachweis des ersten Durchgangs unverändert gültig (Pfade, Voreinstellung `UsePreEukrasianDiagnosis` geprüft). Verweis ins Leere: Schluss und Teil B nannten die Nachprüfung der Commits vom 11./12.09. offen in `TODO.md`; der Eintrag ist seit A290 fort. Je Befund aus A286 gemessen: alle behoben außer Z1 (nicht messbar); `scan2` erkannte eine bekannte Division nicht mehr, weil sie in die Teildatei gewandert war (Schlüssel nachgezogen, dazu eine abgesicherte in `BST_Reborn`). |
 | 07-heal-target-priority.md | ✓ | offen | |
 | 08-mitigation-synergy.md | ✓ | offen | |
 | 09-tank-selfprotection.md | ✓ | offen | |
@@ -24710,9 +24710,9 @@ Dalamud-Log. Die vorige Logdatei stammt vom 12.11.2026.
   Dalamuds eigene Aufzählung ihn, und das beträfe jedes Plugin.
 - *Vorhersage:* Nach einem Ausloggen mit einem Build ab diesem Commit steht im Dalamud-Log keine Zugriffsverletzung mit
   `StaleFigures` oder `IsCurrent` im Stapel; das Spiel kehrt zum Titelbildschirm zurück. Nicht in `DefenseTrace.log`
-  messbar, deshalb ohne maschinenlesbare Vorhersage.
-- *Prüfgrad:* Absturzbericht, Dalamud-Log, Quelltext von Dalamud; Compile ohne Fehler und Warnung, CI; im Spiel nicht
-  beobachtet.
+  messbar, deshalb ohne maschinenlesbare Vorhersage. *Beobachtet* (16.11.2026, seine Angabe: „crash ist behoben“).
+- *Prüfgrad:* Absturzbericht, Dalamud-Log, Quelltext von Dalamud; Compile ohne Fehler und Warnung, CI; im Spiel
+  bestätigt durch seine Beobachtung (16.11.2026).
 - *Mein Fehler:* In A827 habe ich die Lesbarkeit des Speicherblocks als Annahme in den Code geschrieben, ohne den Fall zu
   prüfen, in dem das Spiel den Block selbst freigibt.
 
@@ -24860,7 +24860,10 @@ Code 18 · Generator 2 · CI 4 · Prüfmittel 18 · Doku 29 · sonstiges 2 · in
 | `fc41210ce` | 2026-09-11 | Merge `upstream/main` |
 | `60eb6d106` | 2026-09-11 | Merge `origin/main` |
 
-Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung — steht in `TODO.md`.
+Die Nachprüfung ist abgeschlossen (A86, A87, A286). Ihre Befunde sind behoben: G1–G6 (A287, A288, A290), R1–R5, H1–H3
+und P1 (A289); C1–C6 und P2–P5 in späteren Fassungen der Prüfskripte, am 16.11.2026 je Befund am heutigen Stand
+gemessen (A844). Z1 bleibt ohne Behebung, weil die Objekte fort sind. Die Vermerke „offen“ in der Spalte Prüfstand
+geben den Stand vom 14.10.2026 wieder.
 
 ---
 

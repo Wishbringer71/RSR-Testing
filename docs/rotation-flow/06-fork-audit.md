@@ -242,6 +242,6 @@ Workflow hat seit diesem Durchgang weitere Prüfschritte bekommen; die Liste ste
 ## Offene Punkte zu diesem Konzept
 
 Sie stehen in `TODO.md` und sind dort unter der Überschrift des Eintrags mit **Konzept:** auf dieses
-Dokument gekennzeichnet. Dass dieses Dokument nicht fortgeschrieben wird, gilt für seinen **Inhalt**:
-Der erste Durchgang ist abgeschlossen. Die Nachprüfung der vorgemerkten Commits gehört gleichwohl
-hierher, weil sie denselben Gegenstand hat — die Abweichung des Forks von Upstream.
+Dokument gekennzeichnet; am 16.11.2026 steht dort keiner. Dass dieses Dokument nicht fortgeschrieben wird, gilt für
+seinen **Inhalt**: Der erste Durchgang ist abgeschlossen. Die Nachprüfung der vorgemerkten Commits vom 11. und
+12. September 2026 ist es ebenfalls, samt ihrer Befunde (`AUDIT_LOG.md`, B2).
