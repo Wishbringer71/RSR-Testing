@@ -868,6 +868,11 @@ public partial struct ActionTargetInfo(IBaseAction action)
 			return null;
 		}
 
+		if (RuleTargetId != 0)
+		{
+			return FindCommandObjectTarget(RuleTargetId, canAffects, skipStatusProvideCheck, skipTargetStatusNeedCheck);
+		}
+
 		var commandTarget = DataCenter.GetCommandTarget(action);
 		if (commandTarget is { ObjectId: not 0 } objectTarget
 			&& FindCommandObjectTarget(objectTarget.ObjectId, canAffects, skipStatusProvideCheck, skipTargetStatusNeedCheck) is { } commandResult)
@@ -1785,7 +1790,7 @@ public partial struct ActionTargetInfo(IBaseAction action)
 	/// <summary>
 	/// Concept 03, "Gegner, die keine Fläche treffen darf" (A572): whether this area attack, centred on
 	/// <paramref name="centre"/> (the player for an area around him), would catch an enemy no attack may hit - by the
-	/// action's shape, and for a cone around the player by his facing.
+	/// action's shape, and for a cone around the player by his facing. A sleep may reach a held sleeper.
 	/// </summary>
 	private readonly bool HitsUntouchable(IBattleChara centre)
 	{
@@ -1795,10 +1800,13 @@ public partial struct ActionTargetInfo(IBaseAction action)
 			return false;
 		}
 
+		// A sleep wakes nobody: a sleeper held back from attacks may lie in its area (concept 23, A837).
+		var sleeps = SleepInterruptWatch.IsSleepAction(action.ID);
 		List<IBattleChara> caught = [];
 		foreach (var enemy in untouchable)
 		{
-			if (enemy != null && enemy.GameObjectId != centre.GameObjectId && GetCanTarget(centre, enemy))
+			if (enemy != null && enemy.GameObjectId != centre.GameObjectId && !(sleeps && DeepDungeonCrowd.IsHeldAsleep(enemy))
+				&& GetCanTarget(centre, enemy))
 			{
 				caught.Add(enemy);
 			}

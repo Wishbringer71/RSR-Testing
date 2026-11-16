@@ -1259,7 +1259,8 @@ dazu die Gruppe.
   Ziel), und ein Mittelpunkt, der einen solchen Gegner träfe, scheidet aus, statt mit 0 zu zählen – für Angriffe, nicht
   für freundliche Flächen (ein Gruppenmitglied ohne Ziel zieht nichts), und nicht wegen des gewählten Ziels selbst:
   Wen die Rotation anvisiert, will sie treffen (A832). Die Prüfung „kämpft noch nicht" ist eine einzige
-  (`DataCenter.PullsIfHit`), für die Zielwahl und für die Schlafregel.
+  (`DataCenter.NotFightingYet`), für die Flächen, die Zielwahl und die Schlafregel; ob sie gilt, sagt
+  `DataCenter.GuardsAgainstPull` – außerhalb der Tiefen Gewölbe dieser Schalter, in ihnen deren Optionen (Konzept 23).
 
 *Im Kampf:* Mit „AoE usage: Off" kommen Assise und Makrokosmos nicht mehr; ein Weißmagier verliert ihre Heilung und das
 MP, ein Astrologe die gespeicherte Heilung von Makrokosmos – der Preis, den der Schalter nennt. Mit „Don't pull new
@@ -1275,7 +1276,7 @@ zieht, kostet mehr LP, als sie bringt.
 *Gegenthese 2 (ein Gegner ohne Ziel kämpft doch):* Ein Gegner kann im Kampf kurz kein Ziel halten (Wirken auf den
 Boden, Phasenwechsel). Bis A833 wartete die Fläche dann. *Widerlegt seit A833:* Als „kämpft noch nicht" gilt ein Gegner
 nur, wenn er weder ein Ziel hält noch im Kampf steht (das Kampfkennzeichen seiner Figur, `ObjectHelper.InCombat`) – für
-die Flächen, die Zielwahl und die Schlafregel gleich (`DataCenter.PullsIfHit`).
+die Flächen, die Zielwahl und die Schlafregel gleich (`DataCenter.NotFightingYet`).
 *Sein Ziel (15.11.2026, A833):* „dass bei schwierigen Kämpfen in Deep Dungeons nicht unnötig weitere Gegner durch assiese
 gepullt werden … Gerade in Deep Dungeons ist aggrokontrolle und gegnermanagement überlebenswichtig. … Vielleicht die
 jetzt gewählte Lösung übervorsichtig." *Geprüft:*

@@ -469,7 +469,7 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 	// sensible value in a fight is a refresh that loses no tick and no DoT on a target dying before it pays (A341).
 	private static readonly bool _useDotTickTiming = true;
 
-	[ConditionBool, UI("Don't pull new enemies with AoE", Description = "Never use an AoE action that could hit enemies that aren't already hostile targets.",
+	[ConditionBool, UI("Don't pull new enemies with AoE", Description = "Never use an AoE action that could hit enemies that aren't already hostile targets. In deep dungeons their own options decide instead (Deep dungeon section).",
 		Filter = AutoActionUsage, Section = 1)]
 	private static readonly bool _noNewHostiles = false;
 

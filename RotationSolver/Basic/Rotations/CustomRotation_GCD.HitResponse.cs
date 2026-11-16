@@ -170,13 +170,13 @@ public partial class CustomRotation
 		}
 
 		// G5: a sleeper whose sleep would run out before a sleep cast at the next GCD could land is renewed now - not
-		// earlier, a renewal holds shorter than the sleep it replaces. Only while an awake enemy is fought; without one the
-		// sleeper is the next target anyway.
+		// earlier, a renewal holds shorter than the sleep it replaces. Only while an awake enemy attacks the party; without
+		// one the sleeper is the next target anyway.
 		var lag = SleepInterruptWatch.Lag >= 0f ? SleepInterruptWatch.Lag : Math.Max(0f, TankbusterForecast.RoundTrip);
 		var renewBy = sleep.Info.NeededStatusMargin + lag + DataCenter.DefaultGCDTotal;
 		IBattleChara? renew = null;
 		var renewLeft = float.MaxValue;
-		if (DeepDungeonCrowd.Sleepers.Count > 0 && AnyAwakeHostile())
+		if (DeepDungeonCrowd.Sleepers.Count > 0 && AnyAwakeAttacker())
 		{
 			foreach (var sleeper in DeepDungeonCrowd.Sleepers)
 			{
@@ -243,12 +243,12 @@ public partial class CustomRotation
 		return true;
 	}
 
-	// Whether any enemy in the list of targets is awake: the fight a sleeper is kept out of goes on.
-	private static bool AnyAwakeHostile()
+	// Whether an awake enemy attacks the party: the fight a sleeper is kept out of goes on.
+	private static bool AnyAwakeAttacker()
 	{
 		foreach (var enemy in DataCenter.AllHostileTargets)
 		{
-			if (enemy != null && !enemy.IsDead && !enemy.HasStatus(false, StatusID.Sleep))
+			if (enemy != null && !enemy.IsDead && DeepDungeonCrowd.AttacksParty(enemy) && !enemy.HasStatus(false, StatusID.Sleep))
 			{
 				return true;
 			}
@@ -258,30 +258,50 @@ public partial class CustomRotation
 	}
 
 	// What bars a sleep on this enemy, first or renewed: a sleep of the player's on it not shown yet, its kind or the
-	// sleeps it took this fight (SleepInterruptWatch), or an enemy not fighting yet in the casters' area. The player's
-	// target in that area sleeps along and wakes at the next attack (his hint, 16.11.2026, A836).
+	// sleeps it took this fight (SleepInterruptWatch), and in the casters' area an enemy not fighting yet or one no attack
+	// may hit other than a sleeper - the rule target skips the action's own check of that area. The fought target in that
+	// area sleeps along and wakes at the next attack (his hint, 16.11.2026, A836).
 	private static bool CanSleep(IBattleChara enemy, IBaseAction sleep)
 	{
-		return !DeepDungeonCrowd.IsPending(enemy) && SleepInterruptWatch.CanStillBeSlept(enemy)
-			&& !AreaReachesNewMob(enemy, sleep.Info.EffectRange);
+		var radius = sleep.Info.EffectRange;
+		if (DeepDungeonCrowd.IsPending(enemy) || !SleepInterruptWatch.CanStillBeSlept(enemy) || AreaReachesNewMob(enemy, radius))
+		{
+			return false;
+		}
+
+		if (radius <= 0f)
+		{
+			return true;
+		}
+
+		foreach (var other in DataCenter.UntouchableHostiles)
+		{
+			if (other != null && other.GameObjectId != enemy.GameObjectId && !DeepDungeonCrowd.IsHeldAsleep(other)
+				&& Vector3.Distance(other.Position, enemy.Position) - other.HitboxRadius <= radius)
+			{
+				return false;
+			}
+		}
+
+		return true;
 	}
 
-	// The sleep on this one enemy, the target filter swapped in for this call only, as for the stop above.
+	// The sleep on this one enemy, aimed past the lists of targets: a sleeper is not in them and counts as untouchable
+	// there, which holds for damage, not for a sleep (concept 23, "Tiefe Gewölbe: Gegnerkontrolle", A837). Its status is
+	// no reason to refuse: a renewal lands on a sleeping enemy.
 	private static bool SleepOn(IBattleChara enemy, IBaseAction sleep, out IAction? act)
 	{
-		var setting = sleep.Setting;
-		var canTarget = setting.CanTarget;
-		var chosenId = enemy.GameObjectId;
-		setting.CanTarget = t => canTarget(t) && t.GameObjectId == chosenId;
+		ActionTargetInfo.RuleTargetId = enemy.GameObjectId;
 		try
 		{
-			return sleep.CanUse(out act, skipAoeCheck: true, skipTTKCheck: true);
+			return sleep.CanUse(out act, skipStatusProvideCheck: true, skipAoeCheck: true, skipTTKCheck: true);
 		}
 		finally
 		{
-			setting.CanTarget = canTarget;
+			ActionTargetInfo.RuleTargetId = 0;
 		}
 	}
+
 
 
 	/// <summary>

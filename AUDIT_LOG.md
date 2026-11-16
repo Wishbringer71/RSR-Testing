@@ -24414,6 +24414,46 @@ Absturzbericht.
   Magier legt in den Gewölben auch Angreifer schlafen, die an seinem Ziel stehen, und in der Gruppe schläft ein Heiler
   oder Magier Angreifer, die den Tank angreifen.
 
+### A837 · Konzept 23 im vollen Loop geprüft: Schlaf erreicht Schläfer, Gewölbe-Optionen vor dem allgemeinen Schalter (16.11.2026)
+
+- *Anlass:* Sein Auftrag (16.11.2026): „Konzept 23 im vollen Loop kritisch prüfen". Alle vier Abschnitte Aussage für
+  Aussage gegen Code, Blätter und Archiv.
+- *Hoch 1 – Die Verlängerung (G5, A835) griff nie:* Jede feindliche Aktion nimmt ihr Ziel aus der Liste der Ziele
+  (`TargetHelper.GetTargetsByRange` → `AllHostileTargets`); ein gehaltener Schläfer steht nicht darin (A834). Der
+  Schlaf fand ihn nie, und die Regel gab die Verlängerung jedes Frame auf. *Behoben:* Regelziel
+  `ActionTargetInfo.RuleTargetId` – eine Regel richtet eine Nutzung auf genau eine Figur, geprüft wie ein befohlenes
+  Ziel (`FindCommandObjectTarget`: Reichweite, `CanUseActionOnTarget`, `CanTarget`); der Statusvorbehalt entfällt
+  (`skipStatusProvideCheck`), eine Verlängerung trifft einen Schlafenden. Ersetzt in der Regel auch das Austauschen des
+  Zielfilters (ein Abschluss weniger je Wahl).
+- *Hoch 2 – Der Magier-Schlaf ging neben einem Schläfer nicht:* Eine Fläche auf ein Ziel scheidet aus, wenn ihr Kreis
+  einen Unberührbaren fängt (`HitsUntouchable`); gehaltene Schläfer sind unberührbar (`MustNotBeHit`, A834). Nach dem
+  ersten Schlaf schlief kein Gegner im Umkreis von 5 y mehr ein, und die Schlafregel gegen Wirken (Konzept 08) ging in
+  den Gewölben neben einem Schläfer ebenso nicht. *Behoben an der gemeinsamen Stelle:* Für Schlummer und Schlaf zählt ein
+  gehaltener Schläfer nicht als unberührbar – ein Schlaf weckt niemanden. Andere Unberührbare im Kreis (Stacheln,
+  Stopp-Markierung, Tötungsregel) sperren weiter; die Regel prüft sie selbst, weil das Regelziel die Prüfung der Aktion
+  überspringt.
+- *Ursache am Vorgehen:* Die Schlafregel übernahm die Zielwahl der Schadensaktionen, die Schläfer gewollt ausschließt; die
+  Prüfung von G5 (A835) rechnete den Zeitpunkt nach, nicht den Weg zum Ziel. Eine Annahme („die Aktion erreicht den
+  gewählten Gegner") war nicht am Code belegt.
+- *Mittel – Zwei Schalter für dieselbe Lage:* In den Gewölben galt „Don't pull new enemies with AoE" zusätzlich zu ihren
+  Optionen; mit ihm wartete die Heilung auch dann, wenn ein Gruppenmitglied kritisch war, und die Ausnahme der
+  Heiloption griff nicht. *Jetzt:* In den Gewölben entscheiden deren Optionen, außerhalb der allgemeine Schalter
+  (`GuardsAgainstPull`); der Text des allgemeinen Schalters sagt es.
+- *Mittel – Preis benannt:* Ein im Kampf bewusst gewählter ruhender Gegner wird nicht angegriffen, bis er von Hand gezogen
+  ist; ihn als Ziel zuzulassen zöge das vor dem Kampf gewählte ruhende Ziel, während ein anderer angreift.
+- *Niedrig:* Die Verlängerung läuft nur, solange ein wacher Gegner die Gruppe angreift (vorher: irgendein wacher in der
+  Liste). Veraltete Stellen: Formfläche (Abschnitt Verwandlung) nennt die Gewölbe-Option; der Abgleich mit dem
+  Statusagenten (Abschnitt Magicite) entfernt – RSR liest ihn seit A737 nicht; „Was RSR heute nicht tut" als Stand vor
+  A834; „schläft im Raum" für einen ruhenden Gegner; gelernte Immunität je Spielversion statt je Sitzung; Konzept 03 und
+  der Doc-Kommentar nannten `PullsIfHit` als die eine Prüfung, sie heißt `NotFightingYet`.
+- *Geprüft ohne Befund:* Reichweiten am Blatt (Assise, Makrokosmos, „Das Jüngste Gericht" 20 y, Pneuma 25 y Linie,
+  Schlaf 5 y, Schlummer Einzelziel); Optionsnamen der Pomander, Steine, Pflichtaktionen und BossMod-Prüfung; Rocky Roll
+  über `ModifyRockyRollPvE`; Reihenfolge der GCD-Regeln (Notfall, Unterbrechung, Wirken stoppen, dann Schlaf);
+  Schläfer stehen nur in Sicht und bis 48 y in der Liste, das Regelziel trifft also keinen ohne Sicht.
+- *Prüfgrad:* Compile, Prüfungen; im Spiel nicht beobachtet. Vorhersage `deep-dungeon-sleep` unverändert; dazu: Bei
+  einem Magier stehen nach dem ersten Schlaf weitere „sleep chosen" für Gegner nahe am ersten, und vor Ablauf eines
+  Schlafs „renewed".
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

@@ -14,7 +14,7 @@ What this release changes in the fight. For the whole distance from upstream, se
 ## Deep dungeons
 
 - **Aggro control of its own.** Three options under Deep dungeon, on by default, leave every other content as it was -
-  pull with areas and heal as you like there:
+  pull with areas and heal as you like there. In a deep dungeon they decide instead of "Don't pull new enemies with AoE":
   - *Heals that also deal damage don't pull new enemies:* Assize, Macrocosmos and Pneuma wait while they would hit an
     enemy that is not fighting yet; the heal alone pulls nobody, its damage does. While a party member is about to die,
     the heal goes all the same.

@@ -32,21 +32,17 @@ internal static partial class DataCenter
 	internal static bool NotFightingYet(IBattleChara enemy) => enemy.TargetObject == null && !enemy.InCombat();
 
 	/// <summary>
-	/// Whether an action may not reach an enemy that is not fighting yet: "Don't pull new enemies with AoE" anywhere, and in
-	/// a deep dungeon the option for heals that also deal damage (<paramref name="healsToo"/>) or for damage (concept 23,
-	/// "Gegnerkontrolle", A834). A heal does not wait in a deep dungeon while a party member is in the critical class: a
-	/// death there ends the run, the pulled enemy comes seconds later.
+	/// Whether an action may not reach an enemy that is not fighting yet: in a deep dungeon its own options decide - the one
+	/// for heals that also deal damage (<paramref name="healsToo"/>), which lets a heal go while a party member is in the
+	/// critical class (a death there ends the run, the pulled enemy comes seconds later), and the one for damage; elsewhere
+	/// "Don't pull new enemies with AoE" (concept 23, "Tiefe Gewölbe: Gegnerkontrolle", A834, A837). The content's own option goes first:
+	/// with both deciding, the general one held a heal back in the very danger the deep dungeon option lets it go.
 	/// </summary>
 	internal static bool GuardsAgainstPull(bool healsToo)
 	{
-		if (Service.Config.NoNewHostiles)
-		{
-			return true;
-		}
-
 		if (!IsInDeepDungeons)
 		{
-			return false;
+			return Service.Config.NoNewHostiles;
 		}
 
 		return healsToo
@@ -55,9 +51,10 @@ internal static partial class DataCenter
 	}
 
 	/// <summary>
-	/// "Don't pull new enemies" (concept 03, A826, A832, A833; concept 23, A834): whether hitting <paramref name="enemy"/> with
-	/// an action - one that also heals with <paramref name="healsToo"/> - would pull it. The one test for the target choice,
-	/// the areas and the sleep rules.
+	/// "Don't pull new enemies" (concept 03, A826, A832, A833; concept 23, A834): whether hitting <paramref name="enemy"/>
+	/// with an action - one that also heals with <paramref name="healsToo"/> - would pull it: the guard is on
+	/// (<see cref="GuardsAgainstPull"/>) and the enemy is not fighting yet (<see cref="NotFightingYet"/>). For the sleep
+	/// rules' areas; the attacks' areas ask the same two questions in <c>ActionTargetInfo.PullsAround</c>.
 	/// </summary>
 	internal static bool PullsIfHit(IBattleChara enemy, bool healsToo = false) => GuardsAgainstPull(healsToo) && NotFightingYet(enemy);
 

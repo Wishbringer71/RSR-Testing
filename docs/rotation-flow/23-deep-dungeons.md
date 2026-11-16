@@ -37,8 +37,8 @@ Muster, die Leiste nicht zu prüfen und dem Spiel zu folgen, nutzt RSR schon fü
 *Verworfen:* (a) Die Form am Status ablesen und je Form eine Liste führen: Für drei Formen nennt das Blatt keine Aktion,
 und das Spiel weiß ohnehin, welche gilt. (b) Rocky Roll selbsttätig auf das Ziel: Bewegung für Schaden (oben).
 
-*Gegenthese 1 – Eine Formfläche zieht Gegner, die noch nicht kämpfen:* wie jede Fläche; „Don't pull new enemies with
-AoE" gilt auch hier.
+*Gegenthese 1 – Eine Formfläche zieht Gegner, die noch nicht kämpfen:* wie jede Fläche; in den Gewölben entscheidet
+„Deep dungeons: damage doesn't pull new enemies" (ab Werk an, „Tiefe Gewölbe: Gegnerkontrolle").
 *Gegenthese 2 (ausgeliefert, und nichts ändert sich):* „Use duty actions" ist aus, oder das Spiel meldet die Aktion trotz
 Verwandlung nicht frei. Ab Werk ist es an; ob das Spiel sie frei meldet, ist nicht beobachtet – die Spur zeigt es.
 *Gegenthese 3 – Andere Pflichtrotationen für dieselben Gebiete:* keine (Stand 06.11.2026).
@@ -167,10 +167,10 @@ but the item will still be consumed" (Poisonfruit). Preis benannt; Raising geht 
 *Gegenthese 3 (ausgeliefert, und nichts ändert sich):* In der Himmelssäule galt bis A807 kein Gebiet als Tiefes
 Gewölbe: Ihr Gebietsblatt nennt keine `ContentFinderCondition`, und `IsInDeepDungeons` las die Art 0 – Pomander und
 Magicite ruhten dort. Seit A807 gilt die `ContentFinderCondition`, die das Gebiet nennt (Konzept 03, „Inhalt eines
-Gebiets"). In Pilgers Pfad ist der Agent ohne Fenster leer – dann bleibt dort
-alles wie bisher; die Spurzeile je Stockwerk zeigt es, und ein Upload belegt die Zuordnung. In Himmelssäule und Eureka
-Orthos trägt die Spalte, solange die abgeleitete Bedeutung des Werts stimmt; stimmt sie nicht, zeigt die Spurzeile den
-Widerspruch zum Agenten.
+Gebiets"). Die Zuordnung der Werte zu den Sorten ist für Pilgers Pfad gemessen (A737), für Himmelssäule und Eureka
+Orthos aus der Liste `MagiciteSlot` abgeleitet; stimmt sie dort nicht, nennt die Spurzeile je Stockwerk eine falsche
+Sorte, und ein Upload zeigt den Widerspruch. (Bis zur Konzeptprüfung vom 16.11.2026 stand hier ein Abgleich mit dem
+Statusagenten, den RSR seit A737 nicht mehr liest.)
 
 ## Tiefe Gewölbe: Gegnerkontrolle – kein unnötiger Pull, Zusatzgegner schlafen
 
@@ -188,7 +188,7 @@ und FATEs „gut, wenn alle Gegner in der Nähe schnell zusammen kommen".
 *Anforderungen (A834; seine Worte → prüfbares Kriterium → Stelle → Messweg):*
 | # | Seine Angabe | Kriterium | Stelle | Messweg |
 |---|---|---|---|---|
-| G1 | „regulär weiter mit aoes gepullt werden kann und auch geheilt" | außerhalb der Tiefen Gewölbe ändert keine der neuen Optionen etwas; „Don't pull new enemies with AoE" bleibt der allgemeine Schalter (ab Werk aus) | `DataCenter.PullsIfHit` | Spur: keine Zeile außerhalb der Gewölbe |
+| G1 | „regulär weiter mit aoes gepullt werden kann und auch geheilt" | außerhalb der Tiefen Gewölbe ändert keine der neuen Optionen etwas; „Don't pull new enemies with AoE" bleibt dort der Schalter (ab Werk aus); in den Gewölben entscheiden deren Optionen (seit A837) | `DataCenter.PullsIfHit` | Spur: keine Zeile außerhalb der Gewölbe |
 | G2 | „einmal für heilung (mit dem damit verbundenen Schaden)" | in den Gewölben trifft eine Aktion, die die Gruppe heilt und dabei Gegner trifft (Assise, Makrokosmos, Pneuma), keinen Gegner, der noch nicht kämpft – außer ein Gruppenmitglied ist in der kritischen Klasse | Option „heals that also deal damage", `ActionTooltip.HealsToo` | Spur „deep dungeon: … waits" |
 | G3 | „einmal für Schaden (z.b. beim pullen, aber auch bei laufenden Kämpfen um adds zu vermeiden)" | in den Gewölben zieht keine Fläche RSRs einen Gegner, der noch nicht kämpft – Schaden wie Schlaf; im Kampf kein neues Ziel, das noch nicht kämpft; das Ziel des Pulls selbst bleibt | Option „damage", `PullsIfHit`, `ObjectHelper.IsAttackable` | Spur „deep dungeon: … not a new target" |
 | G4 | „crowd Control von geaggroedent mobs durch sleep" (Vorschlag) | greifen in den Gewölben mehrere Gegner die Gruppe an (ihr Ziel ist ein Gruppenmitglied, allein der Spieler), legt ein Heiler oder Magier die schlafen, die nicht bekämpft werden – bekämpft ist das Ziel des Spielers und jedes Ziel eines Tanks der Gruppe (Präzisierung 16.11.2026); RSRs Flächen wecken sie nicht, und angegriffen werden sie erst, wenn kein wacher mehr steht | Option „sleep", `DeepDungeonCrowd` | Spur „deep dungeon: sleep …" |
@@ -218,10 +218,14 @@ und FATEs „gut, wenn alle Gegner in der Nähe schnell zusammen kommen".
   2013 und 2016: „30s, 15s, 8s, then immune"; kein Spieltext – die Zahlen sind unbestätigt, die Regel braucht sie nicht). Wie viele Schlafe eine Art
   verträgt, lernt die Schlafwache je Art (`SleepDiminishing`) und zählt die gelandeten je Kampf; `CanStillBeSlept` sperrt
   den Schlaf, sobald die Grenze erreicht ist.
-- *Was RSR heute nicht tut:* Einen schlafenden Gegner schützt keine Fläche, außer er trägt eine Stopp-Markierung („Never
-  attack targets with stop markers"); die Zielwahl greift ihn an wie jeden. Ein schlafen gelegter Zusatzgegner wacht
-  beim nächsten Flächenangriff auf. Die Zielart ab Werk („All targets when solo in duty") wählt allein in den Gewölben
+- *Was RSR vor A834 nicht tat:* Einen schlafenden Gegner schützte keine Fläche, außer er trug eine Stopp-Markierung („Never
+  attack targets with stop markers"); die Zielwahl griff ihn an wie jeden. Ein schlafen gelegter Zusatzgegner wachte
+  beim nächsten Flächenangriff auf. Die Zielart ab Werk („All targets when solo in duty") wählte allein in den Gewölben
   auch im Kampf einen Gegner, der noch nicht kämpft, als neues Ziel.
+- *Wie eine Aktion ihr Ziel findet:* Jede feindliche Aktion wählt ihr Ziel aus der Liste der Ziele
+  (`TargetHelper.GetTargetsByRange` → `DataCenter.AllHostileTargets`), und eine Fläche auf ein Ziel scheidet aus, wenn ihr
+  Kreis einen Unberührbaren fängt (`HitsUntouchable`, `MustNotBeHit`). Ein gehaltener Schläfer steht nicht in der Liste
+  und ist unberührbar – für Schaden gewollt, für einen Schlaf nicht: Ein Schlaf weckt niemanden.
 
 *Optionen:*
 - (0) Nullvariante: der allgemeine Schalter, von Hand je Inhalt umgestellt – kostet ihn in Dungeons und FATEs den
@@ -238,7 +242,7 @@ und FATEs „gut, wenn alle Gegner in der Nähe schnell zusammen kommen".
 
 *Abwägung im Kampf:*
 - (2)+(3) *Stärken:* Allein auf Stockwerk 140 der Himmelssäule kämpft er gegen einen Gegner, ein zweiter steht 15 y
-  daneben und schläft im Raum: Assise wartet, bis der erste fällt oder der zweite angreift; die Schadensflächen ebenso;
+  daneben und ruht im Raum (noch kein Kampf): Assise wartet, bis der erste fällt oder der zweite angreift; die Schadensflächen ebenso;
   fällt der erste, wählt RSR den zweiten nicht von selbst, er zieht ihn, wenn er will. *Schwächen:* Ein Heiler mit
   Assise im Kampf heilt einmal weniger, solange ein ruhender Gegner in 20 y steht; ein Tank verliert die Flächen, mit denen
   er sammeln würde – in den Gewölben gewollt. *Bedrohung:* Gegner, die das Spiel aneinander bindet, ziehen einander auch
@@ -246,7 +250,7 @@ und FATEs „gut, wenn alle Gegner in der Nähe schnell zusammen kommen".
 - (4) *Stärken:* Drei Gegner greifen einen Weißmagier an; zwei schlafen, er kämpft gegen einen, der Schaden sinkt auf
   ein Drittel. *Schwächen:* je Schlaf ein GCD mit Wirkzeit; eine Fläche trifft nur die Wachen, der Kampf dauert länger;
   ein Schlafender wacht nach 30 s oder bei jedem Schaden (Gift, eine Fläche eines Mitspielers). *Bedrohungen:* Immunität
-  ohne Status – der erste Schlaf geht ins Leere (Preis: ein GCD je Art und Sitzung, dann gelernt); in der Gruppe weckt
+  ohne Status – der erste Schlaf geht ins Leere (Preis: ein GCD je Art, dann gelernt und je Spielversion gespeichert); in der Gruppe weckt
   ein Mitspieler ihn. Bis A836 schlief die Regel deshalb nur Gegner, die den Spieler selbst angreifen – meine Ableitung;
   in der Gruppe hält der Tank die Feindschaft, und dann schlief nie einer. Nach seiner Präzisierung (16.11.2026) gilt der
   Schlaf allen Angreifern der Gruppe; der Tank nimmt sich den nächsten Schläfer, wenn die übrigen Angreifer tot sind.
@@ -255,16 +259,23 @@ und FATEs „gut, wenn alle Gegner in der Nähe schnell zusammen kommen".
 - Drei Optionen unter „Deep dungeon" (Abschnitt der Gewölbe), ab Werk an (code.md: neue Regeln werden getestet):
   „Deep dungeons: heals that also deal damage don't pull new enemies", „Deep dungeons: damage doesn't pull new
   enemies", „Deep dungeons: put further enemies that attack your party to sleep".
-- Heilung mit Schaden: Die Prüfung „würde ziehen" (`PullsIfHit`) gilt in den Gewölben mit der ersten Option für Aktionen,
-  die laut Wirktext die Gruppe heilen, mit der zweiten für jede andere feindliche Fläche – auch den Schlaf, der zieht wie
-  Schaden (Grundlagen); sonst wie bisher der allgemeine Schalter.
+- Heilung mit Schaden: Die Prüfung „würde ziehen" (`DataCenter.GuardsAgainstPull`, `NotFightingYet`) gilt in den Gewölben
+  mit der ersten Option für Aktionen, die laut Wirktext die Gruppe heilen, mit der zweiten für jede andere feindliche
+  Fläche – auch den Schlaf, der zieht wie Schaden (Grundlagen). *In den Gewölben entscheiden ihre Optionen, außerhalb der
+  allgemeine Schalter* (Konzeptprüfung 16.11.2026): Bis dahin galt der allgemeine Schalter auch in den Gewölben zusätzlich,
+  und mit ihm wartete die Heilung selbst dann, wenn ein Gruppenmitglied kritisch war – die Ausnahme unten griff nicht.
+  Zwei Schalter für dieselbe Lage widersprechen sich sonst; der für den Inhalt eigene geht vor. Wer in den Gewölben mit
+  Flächen ziehen will, schaltet deren Option ab.
 - *Notfall:* Ist ein Gruppenmitglied in der kritischen Klasse (dieselbe wie in der Heilkette), wartet die Heilung nicht.
   Grund: In den Gewölben endet ein Tod allein den Lauf; der gezogene Gegner kommt erst nach Sekunden und trifft auf einen
   geheilten Spieler, gegen ihn stehen Schlaf, Flucht und Pomander. *Schluss, unbelegt am Spiel:* dass die Heilung den
   Tod verhindert, wo sonst keine greift; die Ausnahme lässt sie nur zu, die Heilkette wählt.
 - Schaden, Zielwahl: Mit der zweiten Option ist im Kampf in den Gewölben ein Gegner, der noch nicht kämpft, kein Ziel.
   Außerhalb des Kampfes bleibt die Zielart; das Ziel, das er zieht, kämpft danach. Jeder so ausgenommene Gegner steht
-  einmal je Stockwerk in der Spur.
+  einmal je Stockwerk in der Spur. *Preis:* Will er im Kampf bewusst einen weiteren Gegner ziehen, greift RSR ihn nicht an,
+  solange er ruht – ein Angriff von Hand zieht ihn, danach kämpft er und ist Ziel. Ihn als Ziel zuzulassen, weil er sein
+  Ziel ist, hilft nicht: Ein vor dem Kampf gewähltes Ziel, das ruht, während ein anderer Gegner angreift, würde dann
+  gezogen – genau der Zusatzgegner, den die Option vermeiden soll.
 - Schlaf: Ein Heiler oder Magier im Kampf in den Gewölben, dessen Gruppe mindestens zwei wache Gegner angreifen (ihr Ziel
   ist ein Gruppenmitglied, allein der Spieler; wie RSR die Gruppe zählt, `IsParty`), legt einen davon schlafen, der nicht bekämpft wird
   (nicht das Ziel des Spielers, nicht das Ziel eines Tanks der Gruppe), nicht stirbt (`IsDying`), keinen Schaden über Zeit trägt (der
@@ -273,8 +284,8 @@ und FATEs „gut, wenn alle Gegner in der Nähe schnell zusammen kommen".
 - *Verlängern (G5):* Vor einem neuen Schläfer prüft die Regel die Schlafenden. Liefe ein Schlaf aus, bevor ein Schlaf
   im nächsten GCD noch landen könnte – Restdauer höchstens Wirkzeit, laufender GCD, gemessene Verzögerung bis zur Wirkung
   und ein GCD –, legt sie ihn erneut schlafen, den mit der kürzesten Restdauer zuerst; vorher nicht, denn jede
-  Verlängerung kostet vom Rest des alten Schlafs und hält kürzer. Nur solange ein wacher Gegner bekämpft wird: Ist keiner
-  mehr da, wird der Schläfer ohnehin das nächste Ziel. Dieselben Ausschlüsse wie beim ersten Schlaf (Grenze der Art,
+  Verlängerung kostet vom Rest des alten Schlafs und hält kürzer. Nur solange ein wacher Gegner die Gruppe angreift: Ist
+  keiner mehr da, wird der Schläfer ohnehin das nächste Ziel. Dieselben Ausschlüsse wie beim ersten Schlaf (Grenze der Art,
   ruhende Gegner im Bereich). Wacht er trotzdem auf, greift er an und zählt wieder
   als wacher Angreifer.
 - Wer schläft, ob RSR, er oder ein Mitspieler ihn schlafen legte, trifft keine Fläche RSRs (`MustNotBeHit`), und er wird
@@ -284,6 +295,15 @@ und FATEs „gut, wenn alle Gegner in der Nähe schnell zusammen kommen".
   mehr steht (seine Präzisierung); seine Flächen sparen sie ebenso aus.
   *Kosten:* Welche Ziele bekämpft und wer zur Gruppe gehört, liest ein Durchgang über die Figuren je Frame vor dem
   Listenbau, nur in den Gewölben mit der Option an.
+- *Zielen auf den Schläfer (Konzeptprüfung 16.11.2026):* Ein Schlaf weckt niemanden. Deshalb zählt ein gehaltener
+  Schläfer für einen Schlaf nicht als unberührbar (`ActionTargetInfo.HitsUntouchable`, für Schlummer und Schlaf) – das
+  gilt auch für die Schlafregel gegen gegnerisches Wirken (Konzept 08) in den Gewölben. Und der Schlaf dieser Regel geht
+  über ein Regelziel (`ActionTargetInfo.RuleTargetId`) auf genau den gewählten Gegner, auch wenn er nicht in der Liste der
+  Ziele steht – geprüft wie ein befohlenes Ziel (Reichweite, Sicht, ob das Spiel die Aktion auf ihn zulässt). Was der
+  Kreis sonst nicht treffen darf, prüft die Regel dann selbst: ruhende Gegner (G3) und jeder andere Unberührbare
+  (Stacheln, Stopp-Markierung, von einer Tötungsregel gehalten). Bis dahin gingen beide Wege über die Liste: Eine
+  Verlängerung fand ihr Ziel nie (der Schläfer steht nicht darin), und der Schlaf der Magier schied aus, sobald ein
+  Schläfer im Kreis lag – nach dem ersten Schlaf schlief kein zweiter Gegner daneben ein.
 - *Nachsteuerung (code.md, „Entscheidung zur Laufzeit"):* Ob ein Schlaf auf eine Art wirkt, lernt die bestehende
   Schlafwache (`SleepInterruptWatch.ObserveOwnSleep`) aus der Antwort des Spiels für jedes Ziel jedes eigenen Schlafs –
   widerstanden, unberührt, nach mehreren Schlafen abgenutzt –, gespeichert je Art und Spielversion; `CanStillBeSlept`
@@ -304,6 +324,13 @@ und FATEs „gut, wenn alle Gegner in der Nähe schnell zusammen kommen".
   - *Gegenthese (der Spieler hat sein Ziel selbst schlafen gelegt und will es nicht angreifen):* Dann wechselt er das Ziel
     selbst; solange es sein Ziel ist, greift RSR es an. *Preis:* ein Schlaf, den er auf sein Ziel legt, ohne umzuschalten,
     hält nur bis zum nächsten Angriff.
+
+*Konzeptprüfung (16.11.2026, A837):* Zwei Befunde hoher Schwere am Code: Die Verlängerung (G5) konnte nie greifen, und
+der Schlaf der Magier ging neben einem Schläfer nicht (beides „Zielen auf den Schläfer"). Ursache: Die Schlafregel nahm
+die Zielwahl der Schadensaktionen, die Schläfer gewollt ausschließt; die Prüfung von G5 rechnete nur den Zeitpunkt nach,
+nicht den Weg zum Ziel. Dazu: Vorrang der Gewölbe-Optionen vor dem allgemeinen Schalter (Notfall griff sonst nicht), der
+Preis eines bewusst gezogenen Gegners, „wacher Angreifer" für die Verlängerung, veraltete Stellen in allen vier
+Abschnitten.
 
 *Prüfrunde (A834, unabhängiger Prüfer, eine Runde):* Zwei Befunde hoher Schwere – ein Befund am Vorgehen, nicht am
 Artefakt. (1) Die Regel führte eine eigene Buchführung, ob ein Schlaf landete, und erklärte eine Art für nicht schlafbar,
@@ -338,6 +365,8 @@ Schläfer wird je Gegner nur über seinen Status gelesen, nur in den Gewölben).
   Wirkzeit (2,5 s) steht gegen 8 s, in denen der Gegner nicht trifft; danach sperrt die gelernte Grenze den Schlaf, und
   die Regel versucht keinen vierten. *Preis:* In der Gruppe kann ein Mitspieler denselben Schläfer verlängern; dann geht
   ein GCD doppelt – die Regel sieht nur eigene Schlafe als laufend.
+- *Ausgeliefert, und die Verlängerung ändert nichts (16.11.2026 gehalten, behoben):* Der Weg zum Ziel führte über die
+  Liste, in der kein Schläfer steht. Seitdem das Regelziel; die Spur „sleep chosen … renewed" zeigt jede Verlängerung.
 - *Gegenthese (Schlaf kostet mehr, als er bringt):* Gegen zwei schwache Gegner wäre eine Fläche schneller. Die These
   gilt für Gegner, die gleich fallen – deshalb nimmt die Regel sie aus (`IsDying`). Für die übrigen widerlegt: Ein GCD
   Wirkzeit steht gegen bis zu 30 s, in denen einer statt zwei trifft; nach seiner Spielweise (Sicherheit vor Schaden,
