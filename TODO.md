@@ -19,7 +19,7 @@ auswahl und das timing der beschwörung" – je Kampf aller fünf Bretter (Gegne
 BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Zeitpunkt ihres Aufrufs im Loop prüfen
 (Beispiel seiner Beobachtung: der Raptor gegen Feuer, bevor feueranfällige Gegner da waren; A581).
 
-Keine offene Arbeit in Reihenfolge.
+1. Crucible: „Start“ startet das Brett (Beastmaster-Vorrang).
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -34,7 +34,12 @@ Keine offenen Defekte.
 
 ## Offene Arbeit
 
-Keine offene Arbeit.
+### Crucible: „Start“ startet das Brett · N
+
+Im Kampf: Stimmt der Kader, startet ein Klick in RSRs Fenster das Brett; bis dahin steht dort „Team ready“ (A821, seine
+Vorgabe vom 15.11.2026). Daten da (A846): Der Start im Spiel ist ein ButtonClick der Brettwahl (`XBMStageDetailList`,
+Parameter 9), angenommen in der Inhaltsbestätigung (`ContentsFinderConfirm`, Parameter 8). Nächster Schritt: Loop zum
+Auslösen genau dieses Ereignisses, ohne geratenen Aufruf (A793, A794). Konzept 21, K7 „Kader stimmt“.
 
 ## Technische Schuld
 
@@ -104,14 +109,6 @@ Reborn"); beides kostet im Spiel, solange nicht beide Installationen gebraucht w
 nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigter Name bleibt.
 
 ## Warten auf Daten oder Fremde
-
-- **Crucible: „Start" startet das Brett** (A821; seine Vorgabe vom 15.11.2026). Im Kampf: Stimmt der Kader, startet ein
-  Klick in RSRs Fenster das Brett; bis dahin steht dort „Team ready". Auflösung: die Zeilen „crucible window … event:
-  …" seines Starts in der nächsten Brettsitzung (Build ab A824: Teamfenster, Brettwahl und Inhaltsbestätigung), dann
-  der Knopf mit dem Ereignis, nach dem er das Brett betritt. Upload vom 15.11. nachmittags (Build 77af8f6d6, vor A824):
-  kein Klick im Teamfenster vor dem Betreten („team-start-event" gescheitert) – der Start liegt anderswo, wie A824
-  vermutet.
-  Konzept 21, K7 „Kader stimmt".
 
 - **Später erster Burst bei Tänzer, Maschinist und Rotmagier** (A820). Im Kampf: Technischer Schritt, Laufstabilisator
   mit Wildfeuer und Ermutigen kamen an der Puppe 40 bis 73 s nach Kampfbeginn, der Zwei-Minuten-Zyklus läuft danach

@@ -11,6 +11,10 @@ What this release changes in the fight. For the whole distance from upstream, se
   was never asked by areas around you (Overpower, Total Eclipse, Holy and every other), and a rotation that skipped the
   minimum enemy count could still pull. Now no area goes out while it would reach an enemy that is not fighting yet.
 
+- **Only gazes are treated as gazes.** An enemy attack that only shares its name with a gaze - such as the Taurus's
+  Mortal Ray in the Crucible, which hits everyone with Doom - no longer turns you away or holds your actions back. A
+  gaze's own helper casts, which carry no mark of their own, still count.
+
 ## Deep dungeons
 
 - **Aggro control of its own.** Three options under Deep dungeon, on by default, leave every other content as it was -

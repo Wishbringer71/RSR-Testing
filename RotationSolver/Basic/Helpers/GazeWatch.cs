@@ -654,7 +654,7 @@ internal static partial class GazeWatch
 	}
 
 	// A harmful status on <targetId> in the packet - a gaze works through its status (Doom, Stone, Paralysis). A801: damage
-	// alone does not count; Mortal Ray (#48143) dealt 1 % to him facing away, and counting it would have read every gaze
+	// alone does not count; Mortal Ray (#48143, since A846 no gaze at all) dealt 1 % to him facing away, and counting it would have read every gaze
 	// that also damages as failed and, with the members facing away hit too, as refuted.
 	private static bool Harmed(ActionEffectSet set, ulong targetId)
 	{
@@ -1552,9 +1552,12 @@ internal static partial class GazeWatch
 		if (row is { } action && !action.IsPlayerAction)
 		{
 			var name = action.Name.ExtractText();
+			// A846: the name speaks only for a namesake without a cast mark of its own, as a helper's is. One with another
+			// mark is a different attack - Mortal Ray (#48143) is a raidwide with Doom to both BossMods, not a gaze.
+			var unmarked = action.VFX.RowId == 0;
 			kind = (action.VFX.RowId == GazeCastVfx && (texts == null || !texts.InvertedAll.Contains(name)))
-				|| (texts != null && texts.GazeNames.Contains(name)) ? Kind.Gaze
-				: texts != null && texts.InvertedNames.Contains(name) ? Kind.Inverted
+				|| (unmarked && texts != null && texts.GazeNames.Contains(name)) ? Kind.Gaze
+				: unmarked && texts != null && texts.InvertedNames.Contains(name) ? Kind.Inverted
 				: Kind.None;
 		}
 

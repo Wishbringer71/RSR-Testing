@@ -2570,6 +2570,10 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
       die Zeile „Team ready".
     - Messmittel: Die Fensterspur schreibt jedes Ereignis des Teamfensters (`XBMPetParty`, Dalamud
       `PreReceiveEvent`): Ereignisart, Parameter, Knoten. Ein Klick auf seinen Startknopf steht so in der nächsten Spur.
+  - *Gemessen (A846, sein Upload vom 16.11.2026, Brett 2, zweimal):* Kein Klick im Teamfenster. Teamfenster und
+    Brettwahl (`XBMStageDetailList`) stehen zugleich offen; gestartet hat er in der Brettwahl (ButtonClick, Parameter 9),
+    angenommen in der Inhaltsbestätigung (`ContentsFinderConfirm`, ButtonClick, Parameter 8), zwei Sekunden später
+    stand er im Brett. Das Ereignis, das der Knopf auslösen muss, gehört also der Brettwahl, nicht dem Teamfenster.
   - *Danach, mit der Zeile:* Der Knopf heißt „Start" und löst am Fenster dasselbe Ereignis aus wie sein Klick
     (`ReceiveEvent` des Fensters mit Art und Parameter, wie ein Klick des Spielers) – nur bei offenem Teamfenster, nur
     bei stimmendem Kader. Kein Aufruf einer Agentenfunktion mit geratenem Argument.

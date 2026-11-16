@@ -238,8 +238,15 @@ weitere, xivapi 14.11.2026); 0 heißt „um sich selbst“. Bis A789 verlangte R
 Nahkampf-Waffenfertigkeit aus der Regel: keine Sperre, kein Ersatz der Drehung beim Auslösen. Ein Nahkämpfer auf Angra
 Mainyu wurde von jedem GCD zurück ins Auge gedreht. BossModReborn nimmt nur 0 aus (`GetSpellOrientation`).
 - *Was ein Blick ist:* eine Aktion mit dem Blick-Kennzeichen des Blatts (`VFX` 25, wie BossMod), eine Aktion, die
-  BossModReborns Kampfmodule als Blick führen (A772, unten), oder eine gegnerische Aktion mit demselben Namen wie eine
-  dieser beiden. Am Blatt gemessen (xivapi v2, 13.11.2026): 230 Aktionen tragen das
+  BossModReborns Kampfmodule als Blick führen (A772, unten), oder eine gegnerische Aktion ohne eigene Wirkmarke (`VFX` 0)
+  mit demselben Namen wie eine dieser beiden. Eine gleichnamige Aktion mit einer anderen eigenen Wirkmarke ist kein Blick
+  (A846): Am Blatt gemessen (xivapi v2, 16.11.2026) tragen 55 Namensvettern der 93 Blicknamen eine andere Marke, meist 24;
+  BossModReborns Liste führt davon 3 als Blick. Beide BossMod-Fassungen führen die geprüften als Fläche oder Raidwide:
+  Tödlicher Strahl des Taurus (#48143, `RaidwideCast` „Raidwide + Doom“ in BossModReborn 8d5ff8e21 und BossMod 9c9e68b3),
+  Mortal Ray in Qarn (#42229, „raidwide doom debuff“), Hex Eye bei Cerberus (#1914, Kreis), Shifting Light (#9818,
+  Raidwide). Über den Namen hielt RSR beim Taurus Aktionen zurück und drehte ihn weg; der Strahl traf ihn trotzdem mit
+  Verhängnis, wie jeden (sein Upload vom 16.11.2026, Brett 2). 45 Namensvettern ohne Marke bleiben Blicke, darunter die
+  Helferfassungen. Am Blatt gemessen (xivapi v2, 13.11.2026): 230 Aktionen tragen das
   Kennzeichen, keine davon eine Spieleraktion. 77 gegnerische Wirken heißen gleich und tragen es nicht, darunter die
   Helferfassungen von „Mortal Gaze“, „Hex Eye“, „Petrifaction“ und „Evil Eye“. Die Namen liest RSR einmal im
   Hintergrund, am englischen Blatt; bis dahin zählt das Kennzeichen. Scheitert das Lesen, versucht RSR es nach dem nächsten
@@ -526,7 +533,8 @@ Mainyu wurde von jedem GCD zurück ins Auge gedreht. BossModReborn nimmt nur 0 a
   zurück. Am Mitschnitt: Das Verhängnis traf 9 von 24, alle nach #3499.
 - *Gegenthese 2 (Option falsch, gleicher Name ist kein Blick):* Einige der 77 könnten Begleitaktionen ohne Blick sein.
   *Preis:* Für ein Wirken hält RSR Aktionen in einer Richtung zurück, ein bis zwei GCDs. Gewogen gegen Versteinerung
-  oder Verhängnis wiegt das wenig.
+  oder Verhängnis wiegt das wenig. *Eingetreten und eingegrenzt (A846):* Für Namensvettern mit eigener anderer Wirkmarke
+  hielt die Gegenthese; sie zählen nicht mehr. Für die ohne Marke bleibt der Preis, wie gewogen.
 - *Gegenthese 3 (ausgeliefert, und nichts ändert sich):* Ohne „Turn away from gaze attacks“ oder ohne gemessenen
   Vorlauf dreht RSR ihn nicht weg, wenn er schon mit Blick zum Wirkenden steht; das kann dann nur er oder BossModReborn.
   Mit der Option dreht RSR im Vorlauf weg, und das Auslösen wählt die Richtung auch für Bodenzauber, zum Ort hin

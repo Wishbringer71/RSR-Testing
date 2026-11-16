@@ -24757,8 +24757,28 @@ Dalamud-Log. Die vorige Logdatei stammt vom 12.11.2026.
 - *Vorhersagen (`evaluate_predictions.py`, Sitzung c0f3d49b4):* 20 PASS, darunter A834 (Schlaf in den Gewölben), A794,
   A803, A807, A820, A829, A830. FAIL: A798 `exception-none`, beobachtet und erklärt (die verlorene Speicherung oben; die
   Spur meldet jede Ausnahme beim ersten Wurf, auch eine, die der Neuversuch auffängt – die Vorhersage bleibt deshalb
-  streng). A783 `gaze-no-hit-after-turn`, A805 `level-core-low`, A806 `level-below-cap`, A821 `team-start-event`: in
-  Prüfung, Ergebnis unten nachgetragen.
+  streng).
+  - A783 `gaze-no-hit-after-turn`, *widerlegt, Ursache behoben:* 19:45:47 drehte RSR ihn um 179° vom Tödlichen Strahl
+    des Taurus (#48143) weg, 0,10 s vor dem Eintreffen; der Strahl traf ihn mit Verhängnis, beim nächsten Wirken
+    (19:46:25) ebenso, während RSR nur Aktionen hielt. Der Strahl ist kein Blick: BossModReborn (8d5ff8e21) und BossMod
+    (9c9e68b3, beide 15.11.2026) führen ihn als `RaidwideCast` „Raidwide + Doom“, Konzept 21 als Verhängnis auf alle
+    (A683). RSR hielt ihn über den Namen für einen: „Mortal Ray“ heißen auch drei Blicke mit Blickmarke (#2832, #6100,
+    #11608). Klasse gemessen (xivapi, 16.11.2026): 55 Namensvettern der 93 Blicknamen tragen eine andere eigene
+    Wirkmarke, 3 davon führt BossModReborns Liste als Blick; die übrigen geprüften führen beide BossMods als Fläche oder
+    Raidwide (Mortal Ray in Qarn #42229, Hex Eye #1914, Shifting Light #9818). Behoben: Der Name zählt nur für eine
+    Aktion ohne eigene Wirkmarke, wie bei den Helferfassungen, für die die Regel gebaut war (Konzept 13, „Was ein Blick
+    ist“). Im Kampf: kein Wegdrehen und keine zurückgehaltene Aktion mehr bei diesen Angriffen; der Treffer trifft ohnehin
+    jeden. Die Selbstnachsteuerung der Blickwache hatte den Schaden begrenzt (nach dem zweiten Treffer ihm überlassen),
+    aber je Laden wiederholt.
+  - A805 `level-core-low` und A806 `level-below-cap`, *Lage nicht gegeben, nicht widerlegt:* Beide setzen genug
+    Begleiter unter der Stufengrenze voraus (A806: „solange zwölf unter dem Cap zur Wahl stehen“). Auf Brett 2 (Rang 10)
+    standen nur noch Schleim und Fledermaus auf 9, die übrigen auf 10 bis 12 („crucible team rank 9 on board 2“,
+    `CrucibleFamiliarRank.json`). Angefordert wurden beide auf 9 und zehn darüber; das ist die Regel. Das Prüfskript kennt
+    keine Vorbedingung über ein Muster hinaus und meldet deshalb FAIL.
+  - A821 `team-start-event`, *widerlegt in der Annahme, Daten da:* kein Klick im Teamfenster. Der Start kam aus der
+    Brettwahl (`XBMStageDetailList`, ButtonClick, Parameter 9, 19:43:15 und 19:43:37) und wurde in der
+    Inhaltsbestätigung angenommen (`ContentsFinderConfirm`, ButtonClick, Parameter 8, 19:43:17), wie A824 vermutete
+    (`board-start-event` PASS). Der TODO-Punkt „Start“ wartet damit nicht mehr auf Daten.
 - *Prüfgrad:* statisch, Compile (0 Fehler, 0 Warnungen), Prüfskripte; im Spiel nicht beobachtet.
 - *Vorhersage:* In der nächsten Spur aus den Gewölben steht „deep dungeon: sleep chosen“ je Gegner einmal, bis „sleep
   landed“ oder ein anderer gewählt wird, nicht abwechselnd im Abstand eines Frames. Jede Art, für die „its kind is stored“
@@ -25133,3 +25153,4 @@ geben den Stand vom 14.10.2026 wieder.
 | C212 | A839 (Stand 9a259bcd2): Der Block stehe wörtlich in CLAUDE.md, und eine Abweichung werde auf seinen Text zurückgesetzt | Er hat keine wörtliche Übernahme verlangt; die REGEL wird verbessert, wo nötig, ohne dass die Qualität sinkt (seine Vorgabe 15.11.2026). Die Prüfsumme macht Änderungen sichtbar, sie friert nicht ein (A841) |
 | C213 | A840 (Stand ce0b2e028): Ein angehängtes Repository schalte die Agent-Hooks ab dem nächsten Neustart ab – belegt nur durch ADR 0051 des LLM-Frameworks | Als Beleg galt LLM-Text. An der Primärquelle geprüft (Claude-Code-Dokumentation, „Settings in cloud sessions“, 16.11.2026): Eine Sitzung mit mehreren Repositories startet über den Klonen und liest keine Hooks. Dass sie hier beim Fortsetzen weiterliefen, widerspricht dem nicht (Startordner beim Start festgelegt) |
 | C214 | A827 (Stand bis A845): Das Feld `ObjectIndex` einer gehaltenen Kampffigur sei lesbar, weil ihr Speicherblock bestehen bleibe | Beim Ausloggen gibt das Spiel den Speicher frei; das Lesen beendete am 16.11.2026 das Spiel (A845) | Widerrufen |
+| C215 | A801 (Stand bis A846): Der Tödliche Strahl des Taurus (#48143) sei ein Blick, der nur Schaden mache | Er ist ein Raidwide mit Verhängnis auf alle (BossModReborn und BossMod `RaidwideCast`, Konzept 21 A683); RSR hielt ihn nur über den Namen eines anderen Blicks für einen (A846) |
