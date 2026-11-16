@@ -24671,8 +24671,8 @@ Absturzbericht.
 | 24-code-structure-and-cost.md | ✓ | offen | |
 | 25-pvp.md | ✓ | offen | |
 | README.md | ✓ | offen | |
-| method/01-loop-evaluation-methods.md | ✓ | offen | |
-| method/02-source-audit.md | ✓ | offen | |
+| docs/method/01-loop-evaluation-methods.md | ✓ | offen | |
+| docs/method/02-source-audit.md | ✓ | offen | |
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
