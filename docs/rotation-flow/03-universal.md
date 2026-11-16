@@ -822,7 +822,7 @@ merklich schneller zu beenden; sie kostet Geld, und sie für einen gewöhnlichen
   - *Gegenthese 1 (kein Defekt):* Unter der Schwelle trank RSR schon; ein GCD später reicht. Widerlegt, wo der Fall
     schnell ist: Am 04.11.2026 kostete jeder GCD rund 3 % LP, gegen den Wurm ein GCD rund 200 von 2.785 LP – genug, dass
     ein Trank, der erst im nächsten Fenster geht, den Tod nicht mehr aufhält.
-  - *Gegenthese 2 (ausgeliefert, und nichts ändert sich):* Mit „Heal ahead of damage" aus ist die Vorhersage die LP
+  - *Gegenthese 2 (ausgeliefert, und nichts ändert sich):* Mit „Heal ahead of incoming damage" aus ist die Vorhersage die LP
     jetzt; ohne gemessenen Fall ebenso. Dann bleibt alles wie zuvor.
   - *Universell:* Stufe „alle Jobs", die Bedingung ist kein lebender Heiler, kein Job.
 - *Vorrang: Tränke warten auf die Tinktur* (Einstellung je Job „Hold HP and MP potions for the tincture", ab Werk aus;

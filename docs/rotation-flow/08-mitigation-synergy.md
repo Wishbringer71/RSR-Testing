@@ -265,7 +265,7 @@ gewählten Trank mit dem Zweig, der ihn freigab, und den HP.
   - *Ohne die Einstellung* kommt es zuletzt, wenn Plenary, Temperance und Divine Caress nicht bereit sind, und
     hält danach die übrige Abwehr 20 s zurück (Streckung).
   - *Dieselben zwei Unteroptionen bei den anderen Heilern* (A468): Astrologe, Gelehrter und Weiser haben dieselbe
-    Beschränkung auf Mehrfach-Sammelmarker – „Limit Macrocosmos / Seraphism / Panhaima to multihit party stacks",
+    Beschränkung auf Mehrfach-Sammelmarker – „Limit Macrocosmos to multihit party stacks“, „Limit Seraphism …“ und „Limit Panhaima …“,
     ab Werk aus. Eingeschaltet blieben ihre großen Werkzeuge in den Serien ohne Marker ungenutzt, die die Glocke seit
     A349 kennt. Alle drei gewinnen wie die Glocke mit jedem weiteren Treffer und vor einem schweren (Job-Guide,
     31.10.2026): Macrocosmos sammelt 15 s lang die Hälfte des erlittenen Schadens und heilt ihn danach zurück, dazu

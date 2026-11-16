@@ -127,7 +127,7 @@ Bewegungsfähigkeit, sondern eine Schadensaktion mit Rücksprung, die zusätzlic
 Rückzugsslot fällt es nur bei gesetztem `AutoStatus.MoveBack`, also nur, wenn ein Rückzug ohnehin gewollt ist.
 
 **Sicherheit des Landepunkts (A313, A498).** Vor jeder Bewegungsaktion fragt RSR BossModReborn, ob der Weg in eine
-Gefahrenzone führt (`ActionTargetInfo.CheckMovementSafety`, Schalter „Skip position safety check" je Aktion). Den
+Gefahrenzone führt (`ActionTargetInfo.CheckMovementSafety`, Schalter „Skip BossModReborn position-safety check for this movement action" je Aktion, `SkipPositionSafetyCheck`). Den
 Landepunkt rechnet RSR selbst und fragt `Hints.IsDashSafe(from, to)`:
 - Sprung auf ein Ziel: bis zum Rand seiner Trefferfläche; steht der Spieler schon dort (0 Yalm), nichts zu prüfen.
 - fester Sprung entlang der Blickrichtung: die Weite aus dem Wirktext (`ActionSetting.BackstepDistance`) – Hell's

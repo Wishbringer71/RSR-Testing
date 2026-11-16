@@ -45,7 +45,7 @@ Bestandsaufnahme umfasst Fork, Upstream und alles, was aus anderen Werkzeugen ü
      Flächen (`SleepToStopAreaCasts`), Limit Break allein (PvE-Limit Break, PvP kennt eine Gruppe immer),
      Figuren zum Heilen (`HealToDefeat`), Tötungsregeln (`KillOrder`), Sperrzustände (`PlayerHasLockActions`) und
      Upstreams Sperre für liegende Strafzustände (`NoCastingStatus`; alle 31 Zustände stammen aus PvE-Bosskämpfen).
-   - Guard: Jede Aktion beendet ihn (Wirktext). „PvP Guard control" hält deshalb alle Aktionen, solange er steht.
+   - Guard: Jede Aktion beendet ihn (Wirktext). „Don't use actions while Guard is up" (`PvpGuardControl`) hält deshalb alle Aktionen, solange er steht.
    - Das Elixier wirkt 4,5 s, länger als jeder GCD. Die Grenze für Fähigkeiten mit Wirkzeit (`01-jobs.md`, W1) hielte
      es für immer zurück. Sie gilt deshalb nur für Wirkzeiten unter dem GCD, in PvE und PvP gleich, statt PvP
      auszunehmen.
@@ -87,7 +87,7 @@ Purify, dann Guard, dann Recuperate oder Elixier. Weißmagier und Barde lösen B
   bringt oder nicht geht: unter Hallowed Ground (1302), Undead Redemption (3039), Sky High (3180, nicht anvisierbar),
   Hardened Scales (4096), Inner Release (1303, „Cannot execute Guard"), Unguarded (3021) und auf einer Maschine
   (Mounted, 1420). Bisher waren nur Undead Redemption und Inner Release ausgenommen; unter Hallowed Ground hielt Guard
-  danach 4 s lang jede Aktion zurück („PvP Guard control"), ohne Schaden zu verhindern.
+  danach 4 s lang jede Aktion zurück („Don't use actions while Guard is up", `PvpGuardControl`), ohne Schaden zu verhindern.
 - *Recuperate* heilt 16.000 LP (Job-Guide, seit 7.5; 1 Potenz ist in PvP 1 LP) für 2000 MP. Es geht, wenn dir mindestens
   seine Heilung fehlt; die Menge liest RSR aus dem Wirktext des Clients („Cure Potency"), nicht aus einer Zahl im Code.
   Bisher stand dort 15.000, die Heilung vor 7.5. Es lässt das MP für ein Purify übrig (beide Kosten fragt RSR beim Spiel ab),
@@ -239,7 +239,7 @@ Ziel. Erhoben an den Wirktexten aller 21 Jobs (Job-Guide) und den PvP-Rotationen
 | Wechselwirkung | Wirkung im Kampf | Stand |
 |---|---|---|
 | MP: Recuperate, Purify, Haelan (je 2000) | Ein Heilen bis zum letzten MP lässt einen Stun ohne Purify | Recuperate und Haelan lassen das MP für ein Purify, außer in der kritischen Klasse (Haelan: des Ziels) |
-| Guard endet mit jeder Aktion | Jede Aktion, auch Recuperate, ein Limit Break oder ein abgefangener Tastendruck, beendet ihn | „PvP Guard control" hält alles; Guard steht vor Recuperate |
+| Guard endet mit jeder Aktion | Jede Aktion, auch Recuperate, ein Limit Break oder ein abgefangener Tastendruck, beendet ihn | „Don't use actions while Guard is up" (`PvpGuardControl`) hält alles; Guard steht vor Recuperate |
 | Guard und Schutz-Limit-Break | Phalanx (10 s unverwundbar, Gruppe −33 %), Mesotes (Schaden aus der Zone genullt), Sky High (4 s unerreichbar, dann 24.000 Barriere) und Eventide (10 s Undead Redemption: „Most attacks cannot reduce your HP to less than 1", jede Waffenfertigkeit heilt ihren Schaden; meine Ableitung, keine Quelle nutzt es so, A761) schützen länger oder mehr als Guard (4 s, nur du) | Wo Guard fällig ist (oben), geht ein bereiter Schutz-Limit-Break vor Guard; Phalanx und Mesotes gehen außerdem in der kritischen Klasse; danach lässt die Liste `GuardWastedStatuses` Guard unter Hallowed Ground, Sky High und Undead Redemption aus |
 | Guard am Ziel und Aktionen, die ihn übergehen, entfernen oder halbieren | Seiton Tenchu, Zantetsuken, Smite, Eagle Eye Shot, Drill übergehen ihn; Full Swing und Meteodrive entfernen ihn; Shield Smite und Chain Stratagem halbieren ihn | Ob eine Aktion ein Ziel unter Guard wählen darf, liest RSR aus ihrem Wirktext („Ignores the effects of Guard", „Removes … Guard", „defensive bonus of Guard"); bisher nur über ein Flag je Aktion, das Seiton Tenchu, Zantetsuken, Meteodrive und Shield Smite fehlte |
 | Resilience, Guard und andere Immunität am Ziel gegen Bannzustände | Ein Stun verpufft, der Schaden der Aktion nicht | Eine Aktion, deren Wirktext einen Bannzustand setzt („Additional Effect: Stun/Bind/Heavy/Silence/Deep Freeze", Miracle of Nature), wählt unter ihren Kandidaten zuerst einen ohne Immunität; nur ohne ihn trifft sie ein immunes Ziel für ihren Schaden (A757). Immun ist ein Ziel unter einem Zustand, dessen Text die Bannzustände aufhebt („nullified", „immunity" zu Stun oder zu den Zuständen von Purify): Resilience, Guard, Inner Release, Hardened Scales, Swift und weitere, ohne Liste |
