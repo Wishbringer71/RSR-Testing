@@ -250,8 +250,7 @@ gilt nur, wenn die Minderung bei jedem ihrer Treffer steht.
     große Treffer höchstens 6,4 s nach dem ersten (Bitter Whirlwind), die kleinen von Valfodr und Knallregen bis 7 und
     11 s nach dem Balken.
 
-**Überlebt heißt: über der Linie** (A304). Ein Bündel reicht nur, wenn es den Tank über „The HP% for tank to use
-invulnerability" (`HealthForDyingTanks`, ab Werk 15 %) zurücklässt. An oder unter dieser Linie zieht jeder der vier Tanks
+**Überlebt heißt: über der Linie** (A304). Ein Bündel reicht nur, wenn es den Tank über „Use invulnerability below this HP" (`HealthForDyingTanks`, ab Werk 15 %) zurücklässt. An oder unter dieser Linie zieht jeder der vier Tanks
 seine Unverwundbarkeit selbst (`EmergencyAbility`), sobald der Treffer gelandet ist – Bündel und Unverwundbarkeit wären
 dann beide weg, und bis dahin steht der Tank mit fast nichts vor dem nächsten Auto-Angriff. Reicht kein Bündel bis über
 die Linie, plant RSR gleich die Unverwundbarkeit, sonst „alles". Die Linie ist seine Einstellung, keine gewählte Zahl;
@@ -930,9 +929,10 @@ braucht, trägt deshalb keinen Grund, Nascent Flash zurückzuhalten.
   (Heilzielwahl, Excogitation); `check_invuln_polarity.py` hält sie in der CI.
 - Nascent Flash liegt im Heilpfad der Fähigkeiten (`HealSingleAbility`, Upstream c3fac720b). Dieser läuft im
   Dispatch vor der Einzelabwehr und vor dem allgemeinen Pfad. Ziel ist ein Mitglied unter
-  `Nascent Flash Heal Threshold` (0,6, Vorausschau), nicht unverwundbar, sortiert nach Einstellung „Nascent Flash
-  target priority": niedrigster **Prozentsatz der aktuellen Gesundheit** (ohne Vorausschau, ohne Barriere),
-  Heiler zuerst oder nur Heiler.
+  `Nascent Flash Heal Threshold` (0,6, Vorausschau), nicht unverwundbar, gewählt nach „Nascent Flash target
+  priority": ab Werk „By danger", die Heilzielwahl (`TargetType.Heal`, Abschnitt „Auf wen?"); die drei übrigen
+  Einstellungen nach dem niedrigsten **Prozentsatz der aktuellen Gesundheit** (ohne Vorausschau, ohne Barriere),
+  Heiler zuerst oder nur Heiler (Stand 16.11.2026).
 - Bloodwhetting fällt für sich
   - in der Einzelabwehr (Tankbuster, Beschuss) mit „Use Bloodwhetting/Raw intuition on single enemies" oder
     bei mehr als zwei Gegnern in Reichweite, und nur, solange der Gegner den Krieger anvisiert;
@@ -1135,7 +1135,7 @@ Außerhalb der Einzelabwehr:
 - **Kampfrausch** zusätzlich, wenn die Gesundheit beim gemessenen Verlauf **innerhalb seiner Wirkdauer** unter diese
   Schwelle fiele (A239).
 - **Urimpuls** reaktiv unter 0,7, solo immer.
-- **Holmgang** als Notfall bei „Health of dying tank" (ab Werk 15 %).
+- **Holmgang** als Notfall bei „Use invulnerability below this HP" (ab Werk 15 %).
 - **Abschütteln** als Gruppenheilung und Flächenabwehr.
 - **Urflackern**: Abschnitt „Krieger: Urimpuls für sich oder Urflackern für andere".
 - **Tiefschlag** und **Zwischenruf**: zentral, nicht auf Bosse, nur auf Gegner, deren Wirken jemanden bedroht (Konzept 03,
@@ -1214,7 +1214,7 @@ Das Fenster für Schutzwall ist seine Dauer aus dem Wirktext, keine feste Zahl.
 
 *Gegenpositionen:*
 - *Ein Tankbuster braucht beide:* möglich bei einem Treffer weit über der Maximalgesundheit. Für diesen
-  Fall bleiben Holmgang (bei „Health of dying tank") und die kurzen Minderungen. Ein Tankbuster gleich nach dem ersten
+  Fall bleiben Holmgang (bei „Use invulnerability below this HP") und die kurzen Minderungen. Ein Tankbuster gleich nach dem ersten
   bekäme mit beiden auf dem ersten gar nichts mehr, wie im Protokoll.
 - *Ausgeliefert, nichts ändert sich:* Ohne Vorhersage greifen diese Zweige nicht. Dann staffelt die Zeitregel darunter,
   die beide schon nicht zugleich zulässt.
@@ -1292,7 +1292,7 @@ Reprisal and the party mitigation over a run of area attacks", ab Werk an.
   anderen Tanks zählt nicht: Die Streckung liest nur die eigenen Aktionen.
 
 **Ohne eigene Regel:**
-- *Äquilibrium* (reaktiv, unter Kampfrausch), *Holmgang* (Notfall bei „Health of dying tank", ab Werk 15 %; vorbeugend
+- *Äquilibrium* (reaktiv, unter Kampfrausch), *Holmgang* (Notfall bei „Use invulnerability below this HP", ab Werk 15 %; vorbeugend
   vor einem gemessenen Tankbuster, den nichts Geringeres trägt, über den Plan).
 - *Tiefschlag/Zwischenruf* (zentral) und *Urflackern* (A226).
 
@@ -1381,7 +1381,7 @@ ein Schadensausteiler, ausgeschaltete Einzelabwehr oder eine vorher greifende Pu
 - Unter „Spend only the mitigation a measured tankbuster needs" fällt ein Mitglied heraus, das jeden auf es
   gerichteten Tankbuster unter Heiligem Boden oder Meteoritenfall nimmt (sein Vorschlag vom 04.10.2026). Bei einem
   Marker oder einer Vorhersage gilt das nicht, beide nennen hier keine Einschlagszeit.
-- Ebenso hält der Heiler unter „Hold mitigation under invulnerability" seine Minderung nur zurück, wenn jedes Mitglied,
+- Ebenso hält der Heiler unter „Spend only the mitigation a measured tankbuster needs" (`HoldMitigationUnderInvulnerability`) seine Minderung nur zurück, wenn jedes Mitglied,
   auf das ein Tankbuster gewirkt wird, darunter steht (`StateUpdater.TankbusterTargetsAllImpervious`). Gezählt werden
   dieselben Wirkenden wie in der Tankbuster-Flagge, Helfer mit gelistetem Tankbuster eingeschlossen (`AreaCasters`,
   A750); bis dahin las die Prüfung nur die Gegnerliste. *Im Kampf:* Wirkt der Boss auf den Tank unter Heiligem Boden und
@@ -1461,7 +1461,7 @@ entscheidet die Triage K2–K4 (Abschnitt „Andere Pfade, die dem Plan ein Glie
   Tankbuster auf den anderen Tank öffnet deine Einzelabwehr, nennt aber kein Ziel; dann bleibt die Hilfe aus.
 - Cover: übernimmt den Treffer, der Paladin nähme den Tankbuster selbst; bleibt Notfall unter seiner Schwelle.
 - Oblation auf den anderen Tank: nicht gebaut; The Blackest Night ist die größere Hilfe und refinanziert sich.
-- Die Linie der Unverwundbarkeit („The HP% for tank to use invulnerability") als Maß, ob ein gemessener Tankbuster
+- Die Linie der Unverwundbarkeit („Use invulnerability below this HP") als Maß, ob ein gemessener Tankbuster
   Hilfe braucht: Sie ließe fast jeden ohne – ein Treffer von 40 % lässt einen vollen Tank bei 60 %. Dieselbe Linie ist
   für die Flächenabwehr aus diesem Grund verworfen („a rule that cannot fire in its own domain", `DataCenter`). Für die
   eigene Abwehr des Tanks gilt sie weiter: Dort geht es um das geringste Mittel, mit dem er überlebt, und hinter der
@@ -1688,14 +1688,12 @@ Leid sofort und festigt den Wechsel, wie es die Referenz vorsieht.
   an. Gezählt wird so erst seit Upstream 7.5.7.5: Vorher las die Prüfung die Allianzliste, die die eigene Gruppe nie
   enthält – in einer Gruppe mit zwei Tanks legten beide die Haltung an, und im Allianzraid hielt die Haltung eines
   Tanks aus einer anderen Gruppe deine zurück, sobald `RaiseType` die Allianz einschloss (A332).
-- **Automatische Herausforderung** (`ObjectHelper.CanProvoke`): Gegner auf Nicht-Tanks nach „Auto provoke when there
-  is another tank in party" (bei zwei Tanks in der eigenen Gruppe nur mit ihr, ab Werk an), und – unter eigener Option
+- **Automatische Herausforderung** (`ObjectHelper.CanProvoke`): Gegner auf Nicht-Tanks nach „Provoke when there is another tank in the party" (bei zwei Tanks in der eigenen Gruppe nur mit ihr, ab Werk an), und – unter eigener Option
   „Take the enemy from a co-tank in danger", ab Werk an (A318, A321) – der Gegner eines Co-Tanks in Gefahr (oben, „Die
   andere Seite"). Mit der ersten Option aus nimmt RSR in einer Gruppe mit zwei Tanks keinem Nicht-Tank den Gegner ab;
   das überlässt du dann dem anderen Tank, so sagt es ihr Text. Wirksam ist das erst seit Upstream 7.5.7.5 – vorher zählte
   dieselbe Allianzliste, fand den zweiten Tank nie und provozierte trotzdem (A332). Eine Rettung des Nicht-Tanks gegen
-  die ausgeschaltete Option ist nicht gebaut: Sie fiele genau in den Fall, den ihr Text ausschließt. Mit „Provoke
-  anything" gilt die Übernahme ebenso. Sie ruht, solange du selbst in Gefahr bist (oben, „Kein Zurückholen").
+  die ausgeschaltete Option ist nicht gebaut: Sie fiele genau in den Fall, den ihr Text ausschließt. Mit „Provoke any enemy not on the Don't provoke list" gilt die Übernahme ebenso. Sie ruht, solange du selbst in Gefahr bist (oben, „Kein Zurückholen").
 - **Zwei RSR-Tanks, die andere Seite:** Er wirkt Geteiltes Leid auf dich (seine Regel), du provozierst (B oder D) –
   beide schieben den Gegner zu dir. Zurück holt er ihn nach seiner eigenen Regel, weil sein Geteiltes Leid ihn bewegt
   hat; nach deiner Herausforderung allein holst du ihn nicht zurück, du gibst ihn nach deinem nächsten gefährlichen
