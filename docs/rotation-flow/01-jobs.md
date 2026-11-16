@@ -154,7 +154,7 @@ Hält der Tank die Aggro, hat er die Heilpriorität.
 ```
 Hook-Profil
   GCD     CountDown · GeneralGCD · HealAreaGCD · HealSingleGCD · RaiseGCD · DefenseAreaGCD
-  oGCD    Emergency · Attack · DefenseArea · DefenseSingle · HealArea · HealSingle · Speed
+  oGCD    Emergency · General · Attack · DefenseArea · DefenseSingle · HealArea · HealSingle · Speed
   Flags   CanHealSingleSpell · CanHealAreaSpell · DisplayRotationStatus
 
 GeneralGCD
@@ -167,8 +167,8 @@ GeneralGCD
   └ 6  Bewegung       Ruin II bei Bewegungszeit
 ```
 
-Einziger Heiler ohne `GeneralAbility`-Override und einziger mit
-`SpeedAbility`. Als einziger Heiler ohne Pflege auf dem Tank im Pull: Er hat keinen Sofortschild (Adloquium
+Einziger Heiler mit `SpeedAbility`. `GeneralAbility` setzt Seraphism in eine gelernte Trefferserie, auch ohne die
+Flagge der Flächenabwehr (A468). Als einziger Heiler ohne Pflege auf dem Tank im Pull: Er hat keinen Sofortschild (Adloquium
 hat Wirkzeit), und Stehenbleiben ist erst am Ende des Wall-to-Wall vorgesehen (Konzept 15, V1).
 
 **Deployment Tactics nur mit jemandem, der den Schild bekommt (A597).** Die Aktion verbreitet das Galvanize ihres
@@ -584,7 +584,7 @@ statt Reihenfolge" und „Mondflöte"):
 | Kampfinstinkt (23276) | +100 % Schaden und Heilung, hebt die Strafe der Totalabwehr auf | alles | ×2 | nur allein in Inhalten für mehrere Spieler |
 | Wetter Regen, Schauer, Gewitter | – | Pitsche, patsche (34580): 1000 statt 500 | +500 | Wetter des Gebiets; RSR liest es für den Blaumagier noch nicht |
 | eigener Chocobo in der Gruppe | – | Choco-Meteo (23284): 300 | Fläche | |
-| Untote | – | Heiligenstrahl: 500, Fläche ohne Abschlag | +290 | woran RSR Untote erkennt, ist offen; ohne das nur ab drei Gegnern (100 je Gegner) |
+| Untote | – | Heiligenstrahl: 500, Fläche ohne Abschlag | +290 | RSR lernt Untote je Art am Treffer (Stufe 2); bis dahin nur ab drei Gegnern (100 je Gegner) |
 
 **Ziel-Rotation nach Rolle** (Blue Academy 7.5, WrathCombo, BossMod; die Rolle aus der Äther-Mimikry):
 - *DPS, Einzelziel:* Füllzauber Schallwelle. Gesang der Gemarterten erneuern; Zauberatem (eine Wirkung je Gruppe) oder
@@ -646,7 +646,8 @@ statt Reihenfolge" und „Mondflöte"):
   - Ohne Schallwelle im Set bleibt die bisherige Reihenfolge.
   - Im Masked Carnivale zählt jede Potenz mit dem Faktor des Ziels für den Zauber (unten, „Schwäche und Immunität der
     Stufe", A647).
-  - Heiligenstrahl geht damit ab drei Gegnern (100 je Gegner gegen 210), solange RSR Untote nicht erkennt. Perpetueller
+  - Heiligenstrahl geht damit ab drei Gegnern (100 je Gegner gegen 210); auf einem Ziel erst, wenn RSR dessen Art als
+    untot gelernt hat (Stufe 2). Perpetueller
     Strahl (220 in 3 s) geht nie als Füllzauber.
 - *Verstärker (D4, D8):*
   - Pfeife nur vor einem physischen Zauber, der damit über einen Füllzauber kommt: vor dem Dreizack (dreimal 150, +80 %:
@@ -867,7 +868,8 @@ A508) am Beastmaster gesucht.
   erst nach der Kombo. Mitten in der Kombo bräche es sie (160, 500, 600: im Mittel 420 je GCD gegen 350); so steht es.
 - Seit A507 misst `OwnHitWatch` auch beim Beastmaster den Schaden je Potenz (Smash Axe nennt eine bedingungslose
   Potenz); heute liest ihn keine Beastmaster-Regel.
-- Die beiden offenen Punkte („die Regeln schrieben keine Zeile", Hornbelegung setzen) warten auf seine Protokolle.
+- Die beiden damals offenen Punkte sind erledigt: Die Regeln schreiben ihre Zeilen, belegt an seinen Protokollen
+  (Anfreunden, A523 bis A528), und RSR belegt die Hörner selbst (B5, A522).
 
 **Anfreunden und Analysieren** (seine Frage vom 02.11.2026, ob sich vor dem Tod eines Gegners prüfen lässt, ob man sich
 mit ihm anfreunden kann, und das Talent dann so einsetzen, dass es wahrscheinlich gelingt; A483):
@@ -903,7 +905,7 @@ mit ihm anfreunden kann, und das Talent dann so einsetzen, dass es wahrscheinlic
   (Werkzeugquelle); von den zehn Grundzeilen mit dem Modell des Eichhörnchens tragen vier die 5. Was die Spalte
   bedeutet, nennt keine Quelle. Die freigeschalteten Begleiter führt das Spiel in `XBMManager` (`IsPetUnlocked`, mit
   der XBMPet-Id).
-- *RSR heute:* Die Beastmaster-Rotation setzte keines der beiden Talente ein. Die Basisschicht gab Anfreunden
+- *RSR vor A487:* Die Beastmaster-Rotation setzte keines der beiden Talente ein. Die Basisschicht gab Anfreunden
   widersprüchliche Bedingungen: `TargetStatusNeed` und `TargetStatusProvide` verlangten beide Interest Captured
   (`ModifyCapturePvE`); das wirkte nicht, solange es niemand rief.
 
@@ -1282,7 +1284,8 @@ eingearbeitet werden, situationsbezogen"; A487, A488, A522):
     (`ActionManager.GetActiveBlueMageActionInSlot`, `ActionUpdater`). Ein Zauber des Blaumagiers geht nur, wenn er im
     Set steht (`ActionBasicInfo.IsOnSlot` in der Grundprüfung). Ausnahme sind die Folgezauber, die das Spiel an die
     Stelle eines gesetzten Zaubers legt: White Death über Cold Fog, Divine Cataract über Chelonian Gate
-    (`RequiredBluSlotActionId`). Ein Zauber außerhalb des Sets geht nicht, und RSR setzt das Set nie.
+    (`RequiredBluSlotActionId`). Ein Zauber außerhalb des Sets geht nicht. Das Set schreibt RSR nur außerhalb des Kampfes,
+    Platz für Platz (oben, „Alle gelernten Zauber nutzen: das Set“, A509).
   - *Setzer im Client:* Für den Blaumagier kennt FFXIVClientStructs Setzer (`ActionManager.SetBlueMageActions`,
     `AssignBlueMageActionToSlot`, `SwapBlueMageActionSlots`), für Kreszentia
     `PublicContentOccultCrescent.ChangeSupportJob(byte)`. Beides gilt auf b69073a vom 02.11.2026.
@@ -2141,10 +2144,10 @@ Stufen. Es baut auf den Regeln dieses Abschnitts auf (Hörner nach Lage B0 bis B
 |---|---|---|
 | Rotationsdateien mit `GeneralGCD`-Override | 24 / 24 | einziger wirklich universeller Hook |
 | Rotationsdateien mit `AttackAbility`-Override | 24 / 24 | zweiter universeller Hook |
-| Jobs ohne `CountDownAction` | 2 (DRG, VPR) | keine Lücke: kein Vorlauf, den seine Regeln zulassen (`04`, „Countdown und Notfallslot“) |
+| Jobs ohne `CountDownAction` | 0 (16.11.2026) | DRG und VPR seit 060b8fc82 mit dem Sprung zum Ziel am Pull (`04`, „Der Sprung zum Ziel am Ende des Countdowns“) |
 | Jobs ohne `EmergencyAbility` in der Reborn-Datei | 3 (RPR, SAM, WAR) | keine Lücke: WAR in der Basisschicht, RPR/SAM ohne eigene Notfallaktion (Konzept 04) |
 | Echte Aufstiegsketten | 65 in 16 Dateien, davon 25 sauber gleichförmig (Zählung vom 20.08.2026) | siehe 04, Punkt A2 |
-| Redundantes `X.EnoughLevel && X.CanUse` | 56, davon 44 außerhalb `ExtraRotations` | `CanUse` prüft das bereits selbst |
-| Swiftcast/Raise-Kurzschluss | 13 Verwendungen von `SwiftRaisePending`, vier gleichlautende private Definitionen (eine je Heiler) | siehe 04, B1 |
-| Spannweite Dateigröße | 199 (BLM_RP) – 1433 (SMN) LOC, ohne Duty-Rotationen | Faktor 7 |
-| Spannweite Configs | 3 – 26 | Faktor 9 |
+| Redundantes `X.EnoughLevel && X.CanUse` | 63, davon 43 außerhalb `ExtraRotations` (16.11.2026) | `CanUse` prüft das bereits selbst |
+| Swiftcast/Raise-Kurzschluss | 17 Verwendungen von `SwiftRaisePending`, vier gleichlautende private Definitionen (eine je Heiler, weil `SwiftLogic` eine Einstellung jeder Rotation ist; 16.11.2026) | siehe 04, B1 |
+| Spannweite Dateigröße | 211 (BLM_RP) – 2969 (BST) LOC, ohne Duty- und PvP-Rotationen, Teildateien zusammengezählt (16.11.2026) | Faktor 14 |
+| Spannweite Configs | 3 (GNB) – 28 (WHM) (16.11.2026) | Faktor 9 |

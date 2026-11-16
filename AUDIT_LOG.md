@@ -24645,7 +24645,7 @@ Absturzbericht.
 
 | Datei | Durchgang 1 | Durchgang 2 | Befunde |
 |---|---|---|---|
-| 01-jobs.md | ✓ | offen | |
+| 01-jobs.md | ✓ | ✓ 16.11.2026, Stand 4ace0f009 | Gelehrter: Hook-Profil ohne `GeneralAbility`, „einziger Heiler ohne Override“ falsch (Seraphism, A468). Blaumagier: Untote „offen“, obwohl seit A508 je Art gelernt; „RSR setzt das Set nie“ gegen Stufe 3 (A509). Beastmaster: Hornbelegung „wartet auf Protokolle“, gebaut mit B5 (A522); „RSR heute“ beschrieb den Stand vor A487. Kennzahlen: `CountDownAction` fehlt keinem Job mehr (060b8fc82), übrige Zahlen neu gemessen und datiert. Am Code bestätigt: Stufe 0 (`BlueMageSetTrace`), `OwnHitWatch.IsUndead`, `BestiaryTrace`, kein BST-Leser von `OwnHitWatch.DamagePerPotency`. |
 | 02-groups.md | ✓ | offen | |
 | 03-universal.md | ✓ | offen | |
 | 04-concept.md | ✓ | offen | |
