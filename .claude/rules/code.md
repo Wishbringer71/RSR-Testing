@@ -27,10 +27,9 @@ Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
 - Kennzeichen einer Änderung ohne Verständnis: Klon ohne Anpassung, entfernte Verdrahtung bei stehender Definition, Kommentar widerspricht Code.
 - Kommentare und Optionstexte belegen die Absicht. Einen Widerspruch zum Code nie durch Anpassen des Kommentars auflösen — das tilgt den Befund.
 - Der Text einer Einstellung in der Oberfläche bindet (seine Vorgabe): Weicht der Code ab, wird der Code angepasst, nicht der Text, und nicht zur Wahl gestellt.
-- Jeder Defekt gilt als Klasse, bis das Gegenteil belegt ist: alle gleichen Stellen erheben, dann begründet einschränken; die Behebung zielt auf die Wiederholbarkeit.
 
 **Möglichkeitssinn**
-- Zu jeder Stelle fragen: Welche vorhandene Stärke trifft hier auf welche offene Frage? Grund: Ohne Defekt läuft der Loop gar nicht — alle bisherigen Fälle dieser Art hat er eingebracht, keinen der Loop; die Abwägung (Stufe 3) wägt nur Optionen, die schon auf dem Tisch liegen.
+- Zu jeder Stelle frage ich: Welche vorhandene Stärke trifft hier auf welche offene Frage? Grund: Ohne Defekt läuft der Loop nicht an, und die Abwägung (Stufe 3) wägt nur Optionen, die schon auf dem Tisch liegen; die ersten vier Fälle dieser Art brachte er ein, nicht der Loop (A97).
 - Vorhandene Stärken: Gesundheitshistorie über vier Minuten, Effekt-Handler für jeden Treffer, Vorhersage fremder Casts.
 - Ein Baustein ist nicht Vorratsarbeit, nur weil ihn heute keine Regel liest; fragen, was er beantwortbar macht (`docs/method/01-loop-evaluation-methods.md`).
 
@@ -38,7 +37,6 @@ Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
 - Erst klären, was eine Stelle ausdrücken soll, dann, ob sie es tut.
 - Ungenutzten Code darauf prüfen, ob nur die Verdrahtung fehlt; entfernen erst nach Nachweis einer Ablösung.
 - Was ich nicht verstehe, entferne ich nicht.
-- Einen Test, der ein Surrogat prüft, benenne ich als solchen.
 
 ## Entwurfsregeln für den Code
 
@@ -99,7 +97,7 @@ Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
 
 **Option und Beobachtbarkeit**
 - Eine Verbesserung, deren Nutzen ich nicht belegen kann, kommt hinter eine Option. Belegte Defektbehebungen nicht.
-- Voreinstellung einer Option ist der Wert, der im Spielgeschehen sinnvoller ist, nicht das bisherige Verhalten (seine Vorgabe, 29.09.2026): Neue Regeln sollen getestet werden. Ausnahme nur mit Grund aus dem Kampf, etwa eine dokumentierte Entscheidung von ihm; „noch nicht entschieden" ist keiner.
+- Voreinstellung einer Option ist der Wert, der im Spielgeschehen sinnvoller ist, nicht das bisherige Verhalten (seine Vorgabe, 29.09.2026): Neue Regeln werden getestet. Ausnahme nur mit Grund aus dem Kampf, etwa eine dokumentierte Entscheidung von ihm; „noch nicht entschieden" ist keiner.
 - Liest eine neue Regel vorhandene Schalter mit, die sie sperren können, stehen auch diese ab Werk an (seine Präzisierung, 28.10.2026, zu H1: „zum testen müssten somit alle diese schalter per default auf on sein"). Grund: Ein Schalter, der ab Werk aus ist, hält die Regel vom Test fern.
 - Gründliche Vorarbeit wird nicht durch nachträgliche Betrachtung ersetzt (seine Präzisierung). Was Analyse klären kann — Wirktexte, Code, Versionsgeschichte, Modell —, ist vor dem Code geklärt. Eine Anzeige ist kein Ablageort für offene Annahmen, und ich verweise nicht auf sie, um eine ungeprüfte Annahme zu tragen.
 - Er nutzt das Diagnosefenster nicht (seine Vorgabe): Ich baue dort keine neuen Zeilen als Messmittel und verweise ihn nicht darauf. Wo die Antwort erst zur Laufzeit fällt, steuert die Regel selbst nach; reicht das nicht, schreibt der Code eine Protokolldatei, die er nach einer Sitzung hochlädt (Beispiel `AreaMeasurementTrace.log`, A176).
@@ -109,7 +107,4 @@ Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
 - Zulässig ist nur, was sich selbst nachsteuert: Die Regel hält ihre Vorhersage gegen den Verlauf und rechnet den Fehler heraus (wie `ScoreTtkForecast`, `GetCorrectedTTK`).
 - Eine neue Regel, die ins Spielgeschehen eingreift (drehen, bewegen, Schutz zurückhalten), erkennt im Spiel, ob ihr Eingriff gewirkt hat. Nach dem ersten Fehlschlag gibt sie für diesen Fall jeden Eingriff auf, der bei falscher Annahme schaden kann; was nur Schaden kostet, darf bleiben, solange der Fehlschlag ihre Annahme nicht widerlegt. Nach einem zweiten Fehlschlag oder einem widerlegenden gilt für diesen Fall das Verhalten ohne sie. Jeden Schritt und jeden Erfolg schreibt sie in die Protokolldatei. Seine Vorgabe (14.11.2026): „bei testumsetzung darf bloß nicht der supergau entstehen, dass durch die neue regel sofort und immer bis zum fix gestorben wird. daher kommt von mir auch immer die vorgabe: ingame auswertung und ingame daraus lernen.“ Grund: Ein theoretisch tragfähiges Konzept wird erst durch Tests oder Logs bestätigt oder widerlegt; bis dahin darf ein Irrtum begrenzt kosten, nicht jedes Mal. Der sofortige Rückfall auf „ohne Regel“ stellte dagegen genau das Fehlerbild wieder her, das die Regel beheben sollte, bis zum nächsten Build (A791).
 - Keine Datensammlung, die auf seine Ablesung und meine spätere Auswertung wartet — das macht ihn zum Teil des Regelkreises. Ist Selbstkorrektur nicht baubar, sage ich das.
-- Das Messmittel der REGEL ist in erster Linie die Selbstnachsteuerung; eine Protokolldatei ergänzt sie, wo ein Defekt nur zur Laufzeit zu finden ist, und ersetzt sie nicht.
-
-**Abhängigkeiten**
-- Eine neue Abhängigkeit erst nach der Prüfung, dass das Paket unter diesem Namen existiert, gepflegt wird und tut, was erwartet ist; nie einen Paketnamen aus dem Gedächtnis (erfundene Paketnamen sind ein bekanntes Muster); Versionen festhalten (LLM-Framework, „S-Abhängigkeiten“).
+- Das Messmittel nach „Erreichbarer Prüfgrad“ (CLAUDE.md) ist in erster Linie die Selbstnachsteuerung; eine Protokolldatei ergänzt sie, wo ein Defekt nur zur Laufzeit zu finden ist, und ersetzt sie nicht.

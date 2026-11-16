@@ -24589,6 +24589,34 @@ Absturzbericht.
   beschreiben einen Zweck.
 - *Prüfgrad:* `check_rule_files.py`, Textsuche.
 
+### A843 · Alle Regeldateien im Loop kritisch geprüft (16.11.2026)
+
+- *Anlass:* Sein Auftrag (16.11.2026): „alle regeldateien im loop kritisch prüfen“. Geprüft: CLAUDE.md, die sechs Dateien
+  unter `.claude/rules/`, die drei Skills; je Aussage Herkunft (Archiv, `git log -S`), Tatsachen am Repository,
+  Widersprüche, Doppelungen, Weichmacher, Titelverweise (Skript über alle Dateien: jeder „→ „…““-Verweis löst auf).
+- *Hoch – falsche Zuschreibung:* „Erreichbarer Prüfgrad“ stand seit A97 (17.09.2026) in seinem REGEL-Block und seit A839
+  als „Ergänzung aus der vorigen Fassung“ darunter, als wäre er von ihm. Herkunft gemessen: mein Commit 4039f76fd, A97.
+  Er nannte „Anzeige“ als Messmittel, gegen seine Vorgabe in `code.md` (keine neuen Zeilen im Diagnosefenster). Jetzt
+  unter „Prüfgrad“ als meine Ableitung, Messmittel: Selbstnachsteuerung, Zähler, Protokolldatei.
+- *Hoch – Widerspruch:* Der Skill `upstream-sync` ließ `RefCheck` aus Retainer-Repricer in diese Sitzung anhängen; ein
+  angehängtes Repository nimmt ihr nach dem nächsten Neustart die Agent-Hooks (Claude-Code-Dokumentation, A841). Jetzt:
+  eigene Sitzung für RefCheck.
+- *Mittel – Doppelungen, von mir in A840 erzeugt:* „Defekt ist eine Klasse“ (CLAUDE.md und `code.md`), „Surrogat“ (beide),
+  „erfolglose Suche“ (CLAUDE.md und `konzepte.md`, zweimal), „Prüferbefunde am Artefakt“ neben der Regel zu LLM-Text.
+  Je eine Stelle bleibt, die allgemeinere; `check_rule_files.py` findet nur wörtliche Doppelungen.
+- *Mittel – Regel gegen die REGEL:* `archiv-todo.md` verbot Fehler „im Bericht“; die REGEL verbietet die Auslassung
+  eines Fehlschlags. Jetzt: Fehler im Bericht mit Wirkung und Berichtigung, Ursache im Archiv, keine Rechtfertigung.
+- *Mittel – Ort:* Die Regel zu neuen Abhängigkeiten stand in `code.md`, die nur für `RotationSolver*/` lädt; sie gilt
+  auch für Python und CI. Jetzt in CLAUDE.md, „Bevor ich Code schreibe“.
+- *Niedrig:* „laufen meist keine Agent-Hooks“ ohne Beleg für „meist“ → hart: Fehlt der Brief, lief kein Agent-Hook. Das
+  Neulesen nach einer Komprimierung steht jetzt unter „Bei Sitzungsbeginn …“. „Neue Regeln sollen getestet werden“ →
+  „werden“. Veraltete Begründung „alle bisherigen Fälle hat er eingebracht“ (Stand 17.09.2026) → die ersten vier, A97.
+  Klonpfad von WrathCombo (`/home/user/punishxiv/wrathcombo`) besteht in diesem Container nicht → gestrichen.
+- *Geprüft ohne Befund:* Gesundheitshistorie „vier Minuten“ (`DataCenter.AreaDamage.cs:120`); Modelle laufen in der CI
+  nur bei Änderung ihres Skripts (`build.yaml`, Schritt „Run the models whose script changed“); `lsp_query.py` besteht;
+  keine Weichmacher als Regelwort.
+- *Prüfgrad:* Textprüfung je Aussage, Messung am Repository, `check_rule_files.py`, 60 Prüfungen grün.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

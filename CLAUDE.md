@@ -14,15 +14,11 @@ Form: symbol only if meaning exact, else word. Output: A only; C, P on request.
 Persistence: REGEL = priority 1, every input. Context compression → keep REGEL complete; summary only if it contains REGEL. Session start → check REGEL present; missing → tell user. Lost → tell user, request reinjection.
 ```
 
-Fassung V5i aus Wishbringer71/LLM-Framework (Kernregel, Abschnitt „K-REGEL“, dort A69), wie in seinen Einstellungen; übernommen auf
-seine Anweisung vom 16.11.2026 („du hast meine erlaubnis und anweisung“); kritisch geprüft gegen die vorige Fassung (A841). Geändert auf seine Entscheidung vom 16.11.2026 (A842): Die Untergrenze der Konfidenz steht wieder im Block, hart formuliert. Ergänzungen, die V5i nicht mehr im Block führt
-(dort „K-Ergänzungen“, hier aus der vorigen Fassung behalten):
-- *Erreichbarer Prüfgrad* (Cynefin-Domäne, vor dem Aufwand zu bestimmen): kompliziert → Analyse führt zur Antwort, statische
-  Prüfung genügt · komplex (Kampfverhalten, fremde Spieler, Laufzeit) → die Antwort liegt nicht in der Analyse, sondern im
-  Handeln; dann ist das **Messmittel mitzuliefern** (Anzeige, Zähler, Selbstbewertung), nicht am Ende „im Spiel nicht
-  beobachtet“ zu vermerken. „Von hier aus nicht messbar“ ist erst gültig, nachdem geprüft wurde, ob der Code es selbst
-  messen kann.
-- *Persistenz in der Praxis:* Nach einer Kontextkomprimierung die Regeldateien erneut lesen, bevor ich weiterarbeite.
+Fassung V5i aus Wishbringer71/LLM-Framework (Kernregel, Abschnitt „K-REGEL“), wie in seinen Einstellungen; eingetragen auf
+seine Anweisung vom 16.11.2026, gegen die vorige Fassung geprüft (A841), auf seine Entscheidung vom 16.11.2026 um die
+Untergrenze der Konfidenz ergänzt (A842). Was die vorige Fassung hier zusätzlich trug, steht an seinem Anlass:
+„Erreichbarer Prüfgrad“ unter „Prüfgrad“, das Neulesen nach einer Komprimierung unter „Bei Sitzungsbeginn und nach jeder
+Kontextkomprimierung“.
 
 # Was wann gilt
 
@@ -52,9 +48,10 @@ Diese Datei gilt in jeder Lage. Die übrigen Regeln stehen je genau einmal im Re
 # Prüfpunkte
 
 **Bei Sitzungsbeginn und nach jeder Kontextkomprimierung**
-- Der SessionStart-Hook gibt den Abgleich mit Upstream, die offenen TODO-Punkte, die offenen Issues und die jüngsten Archiveinträge aus. Fehlt seine Ausgabe: `check_sync_state.py` ausführen, `TODO.md`, die offenen Issues und `archive.py recent` lesen.
-- Fehlt die REGEL im Kontext, ihm das sagen.
-- Fehlt der Sitzungsbrief, laufen meist keine Agent-Hooks: ihm das sagen und in jedem Bericht nennen, dass nur Git-Hooks und CI wirken. Arbeit an einem anderen Repository (Abgleich, Issue, Quellenprüfung) gehört in eine eigene Sitzung: Eine Cloud-Sitzung mit mehreren Repositories „starts above the clones“ und liest aus deren `.claude/settings.json` keine Hooks (Claude-Code-Dokumentation, „Settings in cloud sessions“, gelesen 16.11.2026). Der Startordner wird beim Start festgelegt; nach dem Anhängen des Frameworks liefen die Hooks hier beim Fortsetzen weiter (A841).
+- Nach einer Kontextkomprimierung lese ich CLAUDE.md und die Regeldateien meines Anlasses erneut, bevor ich weiterarbeite (Umsetzung der Persistenz der REGEL).
+- Der SessionStart-Hook gibt den Abgleich mit Upstream, die offenen TODO-Punkte, die offenen Issues und die jüngsten Archiveinträge aus. Fehlt seine Ausgabe, lief kein Agent-Hook: Ich führe `check_sync_state.py` aus, lese `TODO.md`, die offenen Issues und `archive.py recent`, sage es ihm und nenne in jedem Bericht, dass nur Git-Hooks und CI wirken.
+- Fehlt die REGEL im Kontext, sage ich es ihm.
+- Arbeit an einem anderen Repository (Abgleich, Issue, Quellenprüfung) gehört in eine eigene Sitzung: Eine Cloud-Sitzung mit mehreren Repositories „starts above the clones“ und liest aus deren `.claude/settings.json` keine Hooks (Claude-Code-Dokumentation, „Settings in cloud sessions“, gelesen 16.11.2026). Der Startordner wird beim Start festgelegt; nach dem Anhängen des Frameworks liefen die Hooks hier beim Fortsetzen weiter (A841).
 
 **Wenn er etwas sagt**
 - Einordnen: Vorgabe, Präzisierung, Vorschlag oder Hinweis (→ „Als was seine Angaben gelten").
@@ -67,13 +64,14 @@ Diese Datei gilt in jeder Lage. Die übrigen Regeln stehen je genau einmal im Re
 - Konzept unter `docs/rotation-flow/` lesen, das Archiv zum Bereich über `archive.py find`.
 - Deutsche Namen nachschlagen (→ „Namen").
 - Was ein anderes LLM geschrieben hat – das LLM-Framework, eine Weitergabe aus seinen anderen Repositories, ein Hilfsagent, eine frühere Sitzung, auch die Zusammenfassung meines eigenen Verlaufs –, ist eine Behauptung, kein Beleg. Ich übernehme daraus keine Aussage, bevor ich sie an ihrer Primärquelle geprüft habe (Code, Spielblatt, Dokumentation des Herstellers, Messung); was ich nicht prüfen kann, steht als unbelegt da oder entfällt. Das gilt auch für eine Regel daraus: Ich prüfe, ob sie hier trägt, statt sie zu kopieren (seine Rüge, 16.11.2026: „nur weil ein anderes llm was geschrieben hat, glaubt ihr, dass das stimmt und ungeprüft übernommen werden kann. das ist bullshit“; A839 bis A841).
-- Eine erfolglose Suche belegt kein Fehlen: andere Namen, Schreibweisen, Orte und Werkzeuge versuchen und nennen; dieselbe Abfrage muss einen bekannten Treffer finden (LLM-Framework, „W-Nullbefund“).
+- Eine erfolglose Suche belegt kein Fehlen: Ich versuche andere Namen, Schreibweisen, Orte und Werkzeuge und nenne sie; dieselbe Abfrage muss einen bekannten Treffer finden. Grund (A750): Ein regulärer Ausdruck meldete für 63 Ids „kein Modul in BossModReborn“, die direkte Suche fand 58.
 - Zustand von Branch, PR oder Tag frisch messen (→ „Zustand messen").
 
 **Bevor ich Code schreibe**
 - Upstream-Sync gemessen (Skill `upstream-sync`).
 - Konzept vollständig, alle drei Falsifikationshypothesen widerlegt (→ „Definition of Ready").
 - Keine neue Zahl ohne Loop (→ „Keine festen Werte", `code.md`).
+- Eine neue Abhängigkeit – NuGet-Paket, Python-Modul, Werkzeug der CI – nehme ich erst auf, wenn geprüft ist, dass sie unter diesem Namen existiert, gepflegt wird und tut, was erwartet ist; einen Paketnamen nehme ich nie aus dem Gedächtnis, und ich halte die Version fest.
 - Was Analyse klären kann, ist geklärt; eine Anzeige trägt keine offene Annahme (→ „Option und Beobachtbarkeit", `code.md`).
 
 **Bevor ich ihn frage oder ihm etwas vorlege**
@@ -193,7 +191,8 @@ Gilt für jede Regel, im Code wie im Konzept (seine Vorgabe, 26.09.2026; für di
 - Selbstkontrolle ist kein Audit. Ein Konzept, das über Leben und Tod eingreift (drehen, bewegen, Schutz zurückhalten), prüft vor der Auslieferung einmal ein unabhängiger Prüfer: ein frischer Hilfsagent (ein LLM, nicht deterministisch) ohne meinen Zwischenstand, mit Konzept, Code und Quellen und dem Auftrag, die schriftlichen Anforderungen und tragenden Annahmen anzugreifen. Befunde hoher Schwere arbeite ich ein, mittlere nur, wo sie eine Anforderung verletzen; den Rest führe ich mit Preis im Konzept. Eine weitere Runde für dasselbe Konzept gibt es nur, wenn sich seine Anforderungen ändern, nicht als Prüfung der eigenen Korrekturen. Was ein Prüfer findet und sich wiederholt prüfen lässt, wird ein Prüfskript oder eine Vorhersage. Die Zahl der Runden hält `review_once.py` fest (→ „Was wann gilt“; A815), nicht mein Gedächtnis. Grund: Die Fehler in A778, A779, A781 und A789 lagen in Prämissen, die weder Prüfskripte noch meine Eigenkontrolle fanden; Runden „bis zum Plateau“ enden dagegen nie, weil jeder neue Leser Neues findet (seine Einschätzung, 14.11.2026: „Die prüfenden scheinen kein sinnvolles Mittel zu sein, wenn sie so ewig weiterlaufen können“, A814; neun Runden an der Blickwache, A809, A812). Meine Entscheidung im Loop, unter seiner Vorgabe vom 14.11.2026 „im loop entscheiden, was am sinnvollsten wäre“ (A784).
 - Ein neuer Mechanismus – im Code eine Erweiterung einer Regel, unter `.github/` ein Prüfmittel – entsteht erst gegen eine schriftliche Anforderung im Konzept: wogegen er schützt, für wen, welcher Schaden ohne ihn im Kampf entsteht, Aufwand gegen Nutzen. Ohne sie baue ich nicht, auch nicht als Antwort auf den Angriff eines Prüfers (seine Rüge, 14.11.2026, in KSP-MyContracts: „bei vernünftiger vorausplanender konzeptionierung würde es nicht 10 reviewrunden benötigen … es ist eher ein beleg für deinen fehlschlag“). Grund: Ein Befund zeigt einen Fehler, nicht dass neue Mechanik die Antwort ist; oft trägt eine einfachere Bauart.
 - Bringt die eine Prüfrunde Befunde hoher Schwere, ist das ein Befund am Vorgehen, nicht am Artefakt: zurück zur Anforderung (Loop, Stufe 1) und prüfen, ob jede Mechanik gebraucht wird und wo die Prämisse falsch war – nicht flicken und erneut prüfen lassen (übernommen aus KSP-MyContracts, A792; an der Blickwache: drei Runden in Folge mit mittleren Befunden, seine Rüge vom 14.11.2026, A812).
-- Befunde eines Prüfers prüfe ich am Artefakt, bevor ich sie übernehme; sein „kein Defekt“ ist eine Behauptung wie ein Befund, und seine tragende Prämisse prüfe ich an der Operation, die wirklich läuft (C204). Eine Korrektur, die keine Prüfrunde mehr sieht, nenne ich im Bericht ungeprüft (LLM-Framework, „P-Unabhängig“).
+- Ein Prüfer ist ein LLM: Für seine Befunde gilt die Regel zu LLM-Text (→ „Bevor ich etwas zu einem Thema behaupte“). Sein „kein Defekt“ ist eine Behauptung wie ein Befund; seine tragende Prämisse prüfe ich an der Operation, die wirklich läuft (C204). Eine Korrektur, die keine Prüfrunde mehr sieht, nenne ich im Bericht ungeprüft.
+- *Erreichbarer Prüfgrad* (meine Ableitung, A97): Vor dem Aufwand bestimme ich, wo die Antwort liegt. Liegt sie in der Analyse, genügt eine statische Prüfung. Fällt sie erst im Kampf (Kampfverhalten, fremde Spieler, Laufzeit), liefere ich das Messmittel mit – die Selbstnachsteuerung der Regel, dazu Zähler und Protokolldatei (`code.md`, „Entscheidung zur Laufzeit“), nie eine neue Zeile im Diagnosefenster –, statt „im Spiel nicht beobachtet“ zu vermerken. „Von hier aus nicht messbar“ gilt erst, nachdem geprüft ist, ob der Code es selbst messen kann.
 - Den Prüfgrad benenne ich — statisch, Prüfskript, Compile, Laufzeitbeobachtung —, und die Formulierung folgt ihm. Prüft ein Test nur, dass etwas irgendwo steht, nicht dass es wirkt, nenne ich ihn ein Surrogat.
 - Ein Audit heißt „vollständig“ erst nach zwei Durchgängen: mechanisch über jede Datei (Abdeckung) und inhaltlich je Bereich gegen benannte Defektklassen, je Durchgang mit Datum, Commit und Ergebnis, auch ohne Befund, im Archiv. Allgemeine Klassen: Messwert hängt von dem ab, was die Regel steuert · Regel ohne Ende · Zustand ohne Rücksetzung · gemischte Einheiten · Text widerspricht Code · Schlüsselkollision · gelernte Maxima ohne Alterung · Nebenläufigkeit ohne Synchronisierung · ein früherer Zweig verdeckt einen späteren (LLM-Framework, „P-Audit“).
 - Ein grüner CI-Lauf belegt nur, was die Prüfungen erfassen. Konzepte werden nicht kompiliert (seine Vorgabe): Über ihren Inhalt sagt er nichts. Ihren Inhalt prüfe ich Aussage für Aussage am Code und an den Quellen. Eine Prüfung, die bei einem Konzept anschlägt, etwa auf eine verrutschte Zeilenangabe, zeigt, dass ich Code geändert habe, ohne die Konzeptstelle dazu neu zu lesen. Deshalb prüfe ich den Inhalt der Stelle, nicht nur die Angabe.
