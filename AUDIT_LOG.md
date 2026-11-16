@@ -24779,6 +24779,15 @@ Dalamud-Log. Die vorige Logdatei stammt vom 12.11.2026.
     Brettwahl (`XBMStageDetailList`, ButtonClick, Parameter 9, 19:43:15 und 19:43:37) und wurde in der
     Inhaltsbestätigung angenommen (`ContentsFinderConfirm`, ButtonClick, Parameter 8, 19:43:17), wie A824 vermutete
     (`board-start-event` PASS). Der TODO-Punkt „Start“ wartet damit nicht mehr auf Daten.
+- *Übrige Auswertung (Mitschnitt 15.11. 14:16 bis 16.11. 22:35, Spur 2727 Zeilen, drei Sitzungen):* Gespielt Weißmagier
+  (Pilgers Pfad, Inhalte in Il Mheg und Worqor Zormor), Beschwörer, Beastmaster (Brett 2). Kein Tod des Spielers. Vier Tode
+  von Mitspielern in Pilgers Pfad, alle durch einen Einzeltreffer aus (nahezu) vollen LP: Linie „Dunkle Vision“ (#44349,
+  Art 12, 41 y, mit Omen), Kegel „Autoritätenschnitt“ (#44510, Art 13, 5 s Wirkzeit), Kreis direkt nach einem Wirken
+  und ein Treffer nach „Joch der Flammen“ – ausweichbar, durch Heilung nicht zu verhindern; RSR bewegt nicht (seine
+  Vorgabe). Wiederbelebt hat RSR jeweils sofort (20:47 mit Swiftcast 2,3 s nach dem Treffer, 21:23 0,2 s nach dem Tod).
+  Keine Zeile „NOT SAVED“, „SAVE MISMATCH“, „LOAD FAILED“ oder „hook fault“. Geistesgegenwart stand je Kampf höchstens
+  9,4 s bereit und ungenutzt. Der Wartepunkt „später erster Burst“ (Tänzer, Maschinist, Rotmagier) bleibt offen; keiner
+  dieser Jobs wurde gespielt.
 - *Prüfgrad:* statisch, Compile (0 Fehler, 0 Warnungen), Prüfskripte; im Spiel nicht beobachtet.
 - *Vorhersage:* In der nächsten Spur aus den Gewölben steht „deep dungeon: sleep chosen“ je Gegner einmal, bis „sleep
   landed“ oder ein anderer gewählt wird, nicht abwechselnd im Abstand eines Frames. Jede Art, für die „its kind is stored“
