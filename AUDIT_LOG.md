@@ -24819,6 +24819,31 @@ Dalamud-Log. Die vorige Logdatei stammt vom 12.11.2026.
 - *Vorhersage:* `predictions/2026-11-16.json`, „crucible-start-board“: nach „crucible start: pressed the board choice's
   start“ folgt „crucible start: on the board“.
 
+### A848 · Puppensitzung vom 15.11.2026 neu ausgewertet: erster Burst je Job, Bereitschaft ohne Nutzung (16.11.2026)
+
+- *Anlass:* Sein Hinweis (16.11.2026): „gerade der optimierungsbedarf zum weaving sollte durch die puppe feststellbar sein.
+  ebenso recherche zu den burstphasen“. Der TODO-Punkt „später erster Burst“ wartete auf neue Daten; die vorhandenen
+  waren nicht ausgeschöpft.
+- *Messung:* ACT-Mitschnitt vom 15.11. (09:59–11:35, Puppe im Nebelfeld, 21 Jobabschnitte, Build 9036b6874). Je
+  Fähigkeit mit mindestens 20 s Wiederholzeit: wie lange sie mit vollen Ladungen bereitstand, ohne genutzt zu werden;
+  Wiederholzeit und Ladungen aus dem Blatt `Action` (xivapi, 16.11.2026). Getrennt in die Zeit bis zum ersten Einsatz
+  (gezählt ab der ersten eigenen Aktion, also mit dem Weg zur Puppe) und die Abdrift danach.
+- *Befund, erster Burst zu spät:* Maschinist Laufstabilisator und Wildfeuer 49 s, Schachmatt 53 s (mit vollen
+  Ladungen); Tänzer Devilment 50 s (nach Technischem Schritt bei 40 s); Rotmagier Embolden 73 s, Acceleration 67 s,
+  Manafication 30 s; Dunkelritter Living Shadow 68 s; Samurai Hissatsu: Senei 60 s; Beschwörer Searing Light 49 s
+  (A820, behoben mit A818). Der jeweils zweite Burst kam pünktlich (Abdrift 0–3 s).
+- *Ausgeschlossen:* die Tinktur (in der ganzen Sitzung dreimal, die letzte vor dem Maschinisten 25 min davor); ein
+  gemeinsamer Burst-Zustand (`IsBurst`): beim Dunkelritter fiel Delirium im selben Burst-Block bei 14 s, Living Shadow
+  erst bei 68 s. Die Ablehnung liegt in der Prüfung der einzelnen Aktion; Maschinist, Tänzer und Rotmagier fragen ihren
+  Burst zusätzlich über `IsBurst` ab.
+- *Weben:* Ein fehlendes Webfenster erklärt es nicht: Beim Maschinisten lagen 30 s lang GCDs im Abstand von 2,4 s ohne
+  jede Fähigkeit, die Spur meldet „weave window 0,600 s“ und „GCD held back by a lock 0 times“. Bereit, aber nicht
+  gewoben, ist hier der Befund, nicht die Animationssperre.
+- *Ursache offen:* Die Prüfgründe je Aktion schreibt erst `BurstWatch` („ready but unused … refused …“, Build ab
+  6992f82af); die Sitzung vom 15.11. lief davor, die vom 16.11. ohne diese Jobs. Was die Messung beantwortet: welche Aktion
+  wie lange zu spät kam. Was sie nicht beantwortet: welche Prüfung ablehnte.
+- *Prüfgrad:* Mitschnittanalyse, Code gelesen; Ursache nicht belegt.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

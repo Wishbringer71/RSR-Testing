@@ -37,12 +37,11 @@ Keine offenen Defekte.
 
 ### Burstphasen und Weben aus der Puppensitzung klären · R
 
-Im Kampf: Technischer Schritt (Tänzer) nach 40 s, Laufstabilisator und Wildfeuer (Maschinist) nach 42 s, Ermutigen
-(Rotmagier) erst im dritten Kampf an der Puppe (A820); je Job der Opener und die Burstfenster gegen The Balance, das
-Weben je Job auf Optimierungsbedarf. Sein Hinweis (16.11.2026): „gerade der optimierungsbedarf zum weaving sollte durch
-die puppe feststellbar sein. ebenso recherche zu den burstphasen“ – keine Wartezeit auf neue Daten. Nächster Schritt:
-ACT-Mitschnitt vom 15.11. (09:49–11:35, 21 Jobabschnitte) je Job gegen die Burst-Bedingungen im Code und den Opener
-der Referenz, dann Loop je Ursache. Konzept 03, „Bereit, aber nicht genutzt“ und „Weben, Animationssperre und Latenz“.
+Im Kampf: Der erste Burst kommt bei Maschinist (49 s), Tänzer (50 s), Rotmagier (73 s), Dunkelritter (Living Shadow 68 s)
+und Samurai (Senei 60 s) zu spät; der zweite pünktlich (A848, Puppensitzung vom 15.11.). Ausgeschlossen: Tinktur,
+gemeinsamer Burst-Zustand, Webfenster. Sein Hinweis (16.11.2026) verlangt die Klärung an der Puppe. Nächster Schritt: die
+Zeile „ready but unused over the fight“ (Build ab 6992f82af) je betroffenem Job an der Puppe nennt die ablehnende
+Prüfung; danach Loop je Grund. Konzept 03, „Bereit, aber nicht genutzt“.
 
 ### Konzept 08: Wirkzeit von Sanctus · R
 
