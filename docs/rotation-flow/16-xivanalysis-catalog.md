@@ -41,8 +41,9 @@ gewollt. Eine Lücke fand der Abgleich, sie ist geschlossen:
 
 ## Jobs in seinem Schwerpunkt
 
-**Beschwörer.** Aetherflow nicht verlieren: Fester und Necrotize fallen spätestens, wenn Energy Drain in zwei
-GCDs bereitsteht — abgedeckt. Ruin IV nicht in der Demi — abgedeckt (`UseFillers`). Ruin IV vor dem nächsten
+**Beschwörer.** Aetherflow nicht verlieren: Fester und Necrotize fallen spätestens, wenn Energy Drain in so vielen
+Einwebungen bereitsteht, wie Ladungen liegen (`WillHaveOneChargeGCD(AetherflowStacks)`), außer sie warten auf das
+Zwei-Minuten-Fenster, das spätestens mit Energy Drain kommt (Konzept 14, „Beschwörer", A375) — abgedeckt. Ruin IV nicht in der Demi — abgedeckt (`UseFillers`). Ruin IV vor dem nächsten
 Energy Drain: abgedeckt, gerechnet aus Spieldaten (xivapi, 01.10.2026). Energy Drain gewährt Further Ruin für
 60 s und hat 60 s Abklingzeit; RSR wirkt es in jeder Demi. Ein Minutenzyklus mit 2,5-s-GCD braucht: Demi 15 s,
 Ifrit 13,5 s (Beschwörung 2,5 + zwei Ruby Rite je 3,0 + Crimson Cyclone und Strike je 2,5), Titan 12,5 s
