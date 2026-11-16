@@ -219,25 +219,28 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 	private static readonly bool _elementalWeaknessTracking = false;
 
 	[ConditionBool, UI("Deep dungeons: heals that also deal damage don't pull new enemies",
-	Description = "In a fight: in a deep dungeon, a heal that also deals damage to the enemies around you - Assize, Macrocosmos - "
+	Description = "In a fight: in a deep dungeon, a party heal that also deals damage to enemies - Assize, Macrocosmos, Pneuma - "
 		+ "waits while it would reach an enemy that is not fighting yet (no target, not in combat), so the heal does not wake "
-		+ "the next group. Healing alone pulls nobody; its damage does. Outside deep dungeons \"Don't pull new enemies with AoE\" "
-		+ "decides, as before.",
+		+ "the next group. Healing alone pulls nobody; its damage does. It does not wait while a party member is about to die. "
+		+ "Outside deep dungeons \"Don't pull new enemies with AoE\" decides, as before.",
 	Filter = DutySpecificDeepDungeon)]
 	private static readonly bool _deepDungeonNoPullHeals = true;
 
 	[ConditionBool, UI("Deep dungeons: damage doesn't pull new enemies",
 	Description = "In a fight: in a deep dungeon, no attack of yours reaches an enemy that is not fighting yet - an area waits "
-		+ "while one stands in it, and during a fight RSR picks no such enemy as a new target, so no add joins. The enemy you pull "
+		+ "while one stands in it, the caster's Sleep too, which pulls an enemy as damage does, and during a fight RSR picks no "
+		+ "such enemy as a new target, so no add joins. The enemy you pull "
 		+ "yourself stays your target. Outside deep dungeons \"Don't pull new enemies with AoE\" decides, as before.",
 	Filter = DutySpecificDeepDungeon)]
 	private static readonly bool _deepDungeonNoPullDamage = true;
 
 	[ConditionBool, UI("Deep dungeons: put further enemies that attack you to sleep",
 	Description = "In a fight: in a deep dungeon, a healer or caster attacked by two or more awake enemies puts the ones that are "
-		+ "not the target to sleep with Repose or Sleep - not one about to die, not a boss, not a kind that resists. Your areas spare "
-		+ "a sleeper and RSR attacks it only when no awake enemy is left, so you fight one at a time. Costs a cast per sleep; "
-		+ "not while a party member is about to die or Swiftcast stands. A kind a sleep did not reach is not tried again in the session.",
+		+ "not the target to sleep with Repose or Sleep - not one about to die, not one taking damage over time, not a boss, not a "
+		+ "kind that resists. Your areas spare every sleeping enemy, whoever put it to sleep, and RSR attacks it only when no awake "
+		+ "enemy is left, so you fight one at a time. Costs a cast per sleep; not while a party member is about to die or Swiftcast "
+		+ "stands. The caster's Sleep reaches 5 yalms around its target, so it is not used on an enemy that close to yours. A kind "
+		+ "that resisted a sleep is learned and not tried again.",
 	Filter = DutySpecificDeepDungeon)]
 	private static readonly bool _deepDungeonSleepAdds = true;
 

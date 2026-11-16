@@ -1,130 +1,173 @@
 using ECommons.DalamudServices;
-using ECommons.GameHelpers;
 
 namespace RotationSolver.Basic.Helpers;
 
 /// <summary>
-/// Concept 23, "Tiefe Gewölbe: Gegnerkontrolle" (A834): the enemies RSR put to sleep in a deep dungeon so the player fights
-/// one at a time, held by id and read from the object table where used (concept 03, "Dritte Invariante"), and the enemy
-/// kinds a sleep did not reach in this session. A sleeper is spared by every area of RSR's and attacked only when no awake
-/// enemy is left.
+/// Concept 23, "Tiefe Gewölbe: Gegnerkontrolle" (A834): which enemies stay out of a deep dungeon fight. A sleeping enemy
+/// is spared by every area of RSR's and attacked only when no awake enemy is left, whoever put it to sleep. Whether a
+/// kind can be slept is learned by <see cref="SleepInterruptWatch"/> from the game's answer to every own sleep; this class
+/// only remembers the enemy a sleep was just pressed on until its status could show, and writes each decision to the trace once.
 /// </summary>
 internal static class DeepDungeonCrowd
 {
-	// Per enemy id: its kind, the sleep chosen for it, when, whether the player's cast on it was seen and when it ends,
-	// and whether the sleep landed.
-	private sealed class Sleeper
-	{
-		public required uint Kind { get; init; }
-		public required uint ActionId { get; init; }
-		public required DateTime Chosen { get; init; }
-		public DateTime CastEnd { get; set; } = DateTime.MinValue;
-		public bool Landed { get; set; }
-	}
-
-	private static readonly Dictionary<ulong, Sleeper> _sleepers = [];
-	private static readonly List<ulong> _gone = [];
-	private static readonly HashSet<uint> _unsleepable = [];
+	private static ulong _pendingId;
+	private static DateTime _pendingUntil = DateTime.MinValue;
+	private static ulong _chosenTraced;
+	private static float _pendingSleepLeft;
+	private static readonly HashSet<ulong> _keptOutTraced = [];
+	private static readonly HashSet<(uint Action, ulong Enemy)> _waitTraced = [];
 	private static uint _territory;
+
+	/// <summary>The sleeping enemies of this frame's list build, kept out of the targets (G4) and renewed (G5).</summary>
+	internal static List<IBattleChara> Sleepers { get; set; } = [];
 
 	/// <summary>Whether the rule may put enemies to sleep here: the option is on, a deep dungeon, not PvP.</summary>
 	internal static bool Enabled => Service.Config.DeepDungeonSleepAdds && DataCenter.IsInDeepDungeons && !DataCenter.IsPvP;
 
-	/// <summary>Whether <paramref name="enemy"/> is one RSR put to sleep and sleeps now: no area of RSR's may hit it.</summary>
+	/// <summary>Whether <paramref name="enemy"/> sleeps while the option is on in a deep dungeon: no area of RSR's may hit it.</summary>
 	internal static bool IsHeldAsleep(IBattleChara enemy)
 	{
-		return _sleepers.Count > 0 && _sleepers.TryGetValue(enemy.GameObjectId, out var sleeper) && sleeper.Landed
-			&& enemy.HasStatus(false, StatusID.Sleep);
+		return Enabled && enemy.HasStatus(false, StatusID.Sleep);
 	}
 
-	/// <summary>Whether a sleep on <paramref name="enemy"/> is chosen and not judged yet, or its kind did not sleep this session.</summary>
-	internal static bool IsBarred(IBattleChara enemy)
+	/// <summary>Whether a sleep was just pressed on <paramref name="enemy"/> and its status cannot show yet.</summary>
+	internal static bool IsPending(IBattleChara enemy)
 	{
-		return _unsleepable.Contains(enemy.BaseId) || (_sleepers.TryGetValue(enemy.GameObjectId, out var sleeper) && !sleeper.Landed);
-	}
-
-	/// <summary>The rule chose <paramref name="action"/> to put <paramref name="enemy"/> to sleep.</summary>
-	internal static void NoteChosen(IBattleChara enemy, uint action)
-	{
-		_sleepers[enemy.GameObjectId] = new Sleeper { Kind = enemy.BaseId, ActionId = action, Chosen = DateTime.Now };
-		DefenseTrace.Line($"deep dungeon: sleep chosen for {enemy.Name.TextValue} ({enemy.BaseId}), {DataCenter.AllHostileTargets.Count} enemies listed");
+		return enemy.GameObjectId == _pendingId && DateTime.Now <= _pendingUntil;
 	}
 
 	/// <summary>
-	/// Once a frame before the lists of targets are built: whether each chosen sleep was cast, landed or wore off. A sleep cast
-	/// that shows no Sleep on the enemy a GCD after its cast ended marks its kind as not to be slept in this session
-	/// (code.md, "Entscheidung zur Laufzeit"); a sleep never cast is dropped unjudged.
+	/// A sleep was pressed on <paramref name="targetId"/> - by the rule or by the player: held as pending for its cast time
+	/// and one GCD, the time its status needs to show, so the next GCD does not choose the enemy again. Called from
+	/// <c>BaseAction.Use</c>.
 	/// </summary>
-	internal static void Update()
+	internal static void RecordPress(uint actionId, ulong targetId, float castTime)
+	{
+		if (!SleepInterruptWatch.IsSleepAction(actionId))
+		{
+			return;
+		}
+
+		_pendingId = targetId;
+		_pendingUntil = DateTime.Now.AddSeconds(castTime + DataCenter.DefaultGCDTotal);
+		// A renewal lands on a sleeper: it shows by its sleep growing longer, not by a sleep appearing.
+		_pendingSleepLeft = Svc.Objects.SearchById(targetId) is IBattleChara enemy ? enemy.StatusTime(false, StatusID.Sleep) : 0f;
+	}
+
+	/// <summary>
+	/// <paramref name="enemy"/> sleeps; if a sleep was pressed on it and its sleep is now longer than at the press - a first
+	/// sleep or a renewal -, it landed: traced and no longer pending. Called by the
+	/// list build for each sleeping enemy - the measure of the rule (a refusal is traced by SleepInterruptWatch).
+	/// </summary>
+	internal static void NoteAsleep(IBattleChara enemy)
+	{
+		if (enemy.GameObjectId != _pendingId || _pendingId == 0 || enemy.StatusTime(false, StatusID.Sleep) <= _pendingSleepLeft)
+		{
+			return;
+		}
+
+		_pendingId = 0;
+		_chosenTraced = 0;
+		DefenseTrace.Line($"deep dungeon: sleep landed on {enemy.Name.TextValue} (kind {enemy.BaseId})");
+	}
+
+	/// <summary>The rule chose <paramref name="sleep"/> for <paramref name="enemy"/>; traced once per enemy chosen in a row.</summary>
+	internal static void NoteChosen(IBattleChara enemy, IBaseAction sleep, string why)
+	{
+		if (enemy.GameObjectId == _chosenTraced)
+		{
+			return;
+		}
+
+		_chosenTraced = enemy.GameObjectId;
+		DefenseTrace.Line($"deep dungeon: sleep chosen for {enemy.Name.TextValue} (kind {enemy.BaseId}) with {sleep.Name}: {why}");
+	}
+
+	/// <summary>
+	/// A heal or attack of <paramref name="actionId"/> waits because it would reach <paramref name="enemy"/>, not fighting
+	/// yet. Traced once per action, enemy and floor.
+	/// </summary>
+	internal static void TraceWait(uint actionId, IBattleChara enemy)
+	{
+		if (!DataCenter.IsInDeepDungeons)
+		{
+			return;
+		}
+
+		NewFloor();
+		if (!_waitTraced.Add((actionId, enemy.GameObjectId)))
+		{
+			return;
+		}
+
+		DefenseTrace.Line($"deep dungeon: {(ActionID)actionId} waits - it would reach {enemy.Name.TextValue} (kind {enemy.BaseId}), not fighting yet");
+	}
+
+	/// <summary>
+	/// Whether, in a deep dungeon fight with "Deep dungeons: damage doesn't pull new enemies" on, <paramref name="enemy"/>
+	/// is not fighting yet and so no new target; traced once per enemy and floor.
+	/// </summary>
+	internal static bool KeepsOut(IBattleChara enemy)
+	{
+		if (!DataCenter.InCombat || !DataCenter.IsInDeepDungeons || !Service.Config.DeepDungeonNoPullDamage
+			|| !DataCenter.NotFightingYet(enemy))
+		{
+			return false;
+		}
+
+		NewFloor();
+		if (_keptOutTraced.Add(enemy.GameObjectId))
+		{
+			DefenseTrace.Line($"deep dungeon: {enemy.Name.TextValue} (kind {enemy.BaseId}) is not a new target - not fighting yet");
+		}
+
+		return true;
+	}
+
+	// Each floor is its own territory; what was traced on the last one is let go.
+	private static void NewFloor()
 	{
 		var territory = DataCenter.TerritoryID;
 		if (territory != _territory)
 		{
 			_territory = territory;
-			_sleepers.Clear();
+			_keptOutTraced.Clear();
+			_waitTraced.Clear();
 		}
+	}
 
-		if (_sleepers.Count == 0)
+	/// <summary>Whether a party member is in the heal chain's critical class: a heal that also deals damage does not wait then.</summary>
+	internal static bool PartyInDanger()
+	{
+		foreach (var member in DataCenter.PartyMembers)
 		{
-			return;
+			if (member != null && !member.IsDead && member.MaxHp > 0 && member.IsInCriticalClass())
+			{
+				return true;
+			}
 		}
 
-		var now = DateTime.Now;
-		var gcd = DataCenter.DefaultGCDTotal;
-		var player = Player.Object;
-		_gone.Clear();
-		foreach (var (id, sleeper) in _sleepers)
+		return false;
+	}
+
+	/// <summary>Whether <paramref name="enemy"/> carries damage over time from anyone: its next tick would wake it.</summary>
+	internal static bool TakesDamageOverTime(IBattleChara enemy)
+	{
+		var statusList = enemy.StatusList;
+		if (statusList == null)
 		{
-			if (Svc.Objects.SearchById(id) is not IBattleChara enemy || enemy.IsDead)
-			{
-				_gone.Add(id);
-				continue;
-			}
-
-			var asleep = enemy.HasStatus(false, StatusID.Sleep);
-			if (!sleeper.Landed && asleep)
-			{
-				sleeper.Landed = true;
-				DefenseTrace.Line($"deep dungeon: sleep landed on {enemy.Name.TextValue} ({sleeper.Kind})");
-				continue;
-			}
-
-			if (sleeper.Landed)
-			{
-				if (!asleep)
-				{
-					_gone.Add(id);
-					DefenseTrace.Line($"deep dungeon: {enemy.Name.TextValue} woke after {(now - sleeper.Chosen).TotalSeconds:F0} s");
-				}
-
-				continue;
-			}
-
-			if (sleeper.CastEnd == DateTime.MinValue)
-			{
-				if (player != null && player.IsCasting && player.CastActionId == sleeper.ActionId && player.CastTargetObjectId == id)
-				{
-					sleeper.CastEnd = now.AddSeconds(Math.Max(0f, player.TotalCastTime - player.CurrentCastTime));
-				}
-				else if ((now - sleeper.Chosen).TotalSeconds > gcd + gcd)
-				{
-					_gone.Add(id);
-				}
-
-				continue;
-			}
-
-			if ((now - sleeper.CastEnd).TotalSeconds > gcd)
-			{
-				_ = _unsleepable.Add(sleeper.Kind);
-				_gone.Add(id);
-				DefenseTrace.Line($"deep dungeon: no sleep on {enemy.Name.TextValue} a GCD after the cast - its kind ({sleeper.Kind}) is not slept again this session");
-			}
+			return false;
 		}
 
-		foreach (var id in _gone)
+		for (var i = 0; i < statusList.Length; i++)
 		{
-			_ = _sleepers.Remove(id);
+			var status = statusList[i];
+			if (status != null && status.StatusId != 0 && StatusHelper.IsDamageOverTime([(StatusID)status.StatusId]))
+			{
+				return true;
+			}
 		}
+
+		return false;
 	}
 }

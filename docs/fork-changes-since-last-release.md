@@ -15,13 +15,16 @@ What this release changes in the fight. For the whole distance from upstream, se
 
 - **Aggro control of its own.** Three options under Deep dungeon, on by default, leave every other content as it was -
   pull with areas and heal as you like there:
-  - *Heals that also deal damage don't pull new enemies:* Assize and Macrocosmos wait while they would hit an enemy
-    that is not fighting yet; the heal alone pulls nobody, its damage does.
-  - *Damage doesn't pull new enemies:* no area of yours reaches a resting enemy, and during a fight RSR picks no resting
-    enemy as a new target, so no add joins. The enemy you pull yourself stays your target.
+  - *Heals that also deal damage don't pull new enemies:* Assize, Macrocosmos and Pneuma wait while they would hit an
+    enemy that is not fighting yet; the heal alone pulls nobody, its damage does. While a party member is about to die,
+    the heal goes all the same.
+  - *Damage doesn't pull new enemies:* no area of yours reaches a resting enemy - the caster's Sleep included, which pulls
+    as damage does - and during a fight RSR picks no resting enemy as a new target, so no add joins. The enemy you pull
+    yourself stays your target.
   - *Put further enemies that attack you to sleep:* a healer or caster attacked by two or more enemies sleeps the ones
-    that are not the target with Repose or Sleep, spares them with every area, and turns to them only when no awake enemy
-    is left. A kind that does not sleep is not tried again in the session.
+    that are not the target with Repose or Sleep - not one about to die or taking damage over time - and renews a sleep
+    just before it runs out while you still fight an awake enemy. Every sleeping enemy, whoever put it to sleep, is spared
+    by your areas and attacked only when no awake enemy is left. A kind that resists is learned and not tried again.
 - **Resting enemies seen by every area.** "Don't pull new enemies with AoE" looked for resting enemies only among those
   RSR would attack; with an engage setting that skips them, an area hit them anyway. Every enemy in the area counts now.
 

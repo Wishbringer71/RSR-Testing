@@ -24342,6 +24342,50 @@ Absturzbericht.
   danach „… sleep landed on …" oder „no sleep on … a GCD after the cast"; maschinenlesbar `deep-dungeon-sleep`.
 - *9 Dokumentation:* Konzept 23, „Gegnerkontrolle"; Konzept 03, „Flächen, die Gegner treffen" (Schlafende, C209).
 
+### A835 · Tiefe Gewölbe, Gegnerkontrolle: Prüfrunde zu A834 und Überarbeitung (15.11.2026)
+
+- *Anlass:* Die eine unabhängige Prüfrunde zu A834 (Anforderungen G1 bis G4, Konzept 23) brachte zwei Befunde hoher
+  Schwere – ein Befund am Vorgehen: zurück zur Anforderung, keine zweite Runde (die Anforderungen blieben gleich).
+- *Hoch 1, eigene Schlafbuchführung:* `DeepDungeonCrowd` verfolgte Wahl, Wirken, Landen und Aufwachen und sperrte eine
+  Art für die Sitzung, wenn einen GCD nach dem Wirken kein Status stand. Das doppelte `SleepInterruptWatch`, die aus der
+  Antwort des Spiels für jedes Ziel jedes eigenen Schlafs lernt (`ObserveOwnSleep`, `LearnRefusal`: widerstanden,
+  unberührt, abgenutzt; je Art und Spielversion gespeichert), und hätte bei Verzögerung, Abbruch des Wirkens oder einem
+  Schlaf auf ein anderes Ziel eine schlafbare Art gesperrt. *Entfernt.* Geblieben: Schläfer ist, wer schläft – gleich, wer
+  ihn schlafen legte –, solange die Option in den Gewölben an ist; eine Wartemarke ab dem Drücken eines Schlafs
+  (`BaseAction.Use` → `DeepDungeonCrowd.RecordPress`), Wirkzeit plus ein GCD, damit der nächste GCD denselben Gegner nicht
+  erneut wählt; ab der Wahl gesetzt, hätte sie im nächsten Frame vor dem Drücken einen anderen Gegner wählen lassen
+  (beim Umbau gefunden).
+- *Hoch 2, Schlaf unter der Schadensoption:* Der Prüfer las „damage" im Optionstext als Grenze. Am Zweck geprüft (REGEL):
+  G3 will Zusatzgegner vermeiden; ein ruhender Gegner, den die Fläche des Magier-Schlafs trifft, steht im Kampf und greift
+  beim Aufwachen an (*Schluss aus der Feindschaftsregel, unbelegt*). Verworfen; der Optionstext nennt den Schlaf jetzt.
+- *Mittel, eingearbeitet:* Notfall – mit einem Gruppenmitglied in der kritischen Klasse wartet die Heilung nicht (ein Tod
+  beendet in den Gewölben allein den Lauf; der gezogene Gegner kommt erst nach Sekunden). Heilung mit Schaden nur, wenn der
+  Wirktext die Gruppe heilt: Abgleich aller Aktionen mit Flächen- und Heiltext am Blatt (15.11.2026) – Assise (3571, 9620),
+  Makrokosmos (25874, 29253), „Das Jüngste Gericht" (41637), dazu Pneuma (24318, Linie); ausgeschlossen Heiliger Kreis,
+  Dyskrasia, Eukrasische Dyskrasia, die nur den Spieler oder das Kardion-Ziel heilen. Kein Schlaf auf einen Gegner mit
+  Schaden über Zeit (`StatusHelper.IsDamageOverTime`, jede Quelle). Spur: „deep dungeon: … waits" je Aktion, Gegner und
+  Stockwerk, „… is not a new target" je Gegner und Stockwerk, „sleep chosen", „sleep landed". Preis der Magier (Schlaf 5 y
+  um das Ziel) im Konzept.
+- *Niedrig, eingearbeitet:* Die Spur der parierenden Gegner hing nach dem Einfügen am falschen `if`; zurückgesetzt.
+  `PullsAround` läuft über die Liste ohne Iterator, billige Prüfungen zuerst. Doc-Kommentar von `MustNotBeHit` an seinem
+  Platz. „Universell zuerst": Die Schlafregel gilt in den Gewölben für Heiler und Magier; Tanks haben keinen Schlaf,
+  Nahkämpfer und Fernkämpfer ebenso nicht – die Stufen darunter bleiben leer.
+- *Prüfgrad:* Compile (0 Warnungen), 59 Prüfungen grün; im Spiel nicht beobachtet. *Vorhersage:* `deep-dungeon-sleep`
+  neu gefasst (dieser Build): nach „deep dungeon: sleep chosen for" folgt „deep dungeon: sleep landed on" oder eine
+  Ablehnung der Schlafwache („sleep resisted by", „sleep did not reach").
+- *Sein Hinweis (16.11.2026):* „Man kann Schlaf auch verlängern, hält nur kürzer. Am besten bevor er ausläuft." Als
+  Anforderung G5 aufgenommen: Vor einem neuen Schläfer verlängert die Regel einen Schlafenden, dessen Schlaf ausliefe,
+  bevor ein Schlaf im nächsten GCD noch landen könnte (Restdauer ≤ Wirkzeit + laufender GCD + gemessene Verzögerung + ein
+  GCD), den kürzesten zuerst, nur solange ein wacher Gegner bekämpft wird; die Grenze der Art (abgenutzt) liest
+  `CanStillBeSlept`. Die Landung einer Verlängerung erkennt die Wartemarke am längeren Schlaf (vorher: am erscheinenden
+  Status, der bei einem Schläfer schon steht – sonst wäre die Marke sofort gefallen und der nächste GCD hätte erneut
+  verlängert; beim Bau gefunden). Spur „sleep chosen … renewed, … s of its sleep left". *Zitat-Abgleich:* Die
+  Halbierung „halving its duration with each application" bei The Balance gilt der Betäubung, nicht dem Schlaf
+  (Konzept 08); für den Schlaf stehen nur die Forenquellen der Schlafwache, im Konzept als unbestätigt geführt.
+- *Prüfrunde:* G5 ändert die Anforderungen; eine Runde wäre zulässig. Nicht gestartet: Die Verlängerung nutzt dieselben
+  Ausschlüsse und dieselbe Lernstelle wie der erste Schlaf, neu ist nur der Zeitpunkt, und der ist am Code nachgerechnet.
+- *Dokumentation:* Konzept 23, „Gegnerkontrolle" (Gebaut, Prüfrunde, tragende Annahmen, Vorhersage, G5).
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -24703,3 +24747,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C207 | A830 (Stand 8acaafc5c): Auf Brett 2 trafen ihn in 152 Gegnertreffern keine Auto-Angriffe; ein Angriffsstück bringe ihm dort keine Sicherheit | Gezählt waren nur die Aktionen 7 und 8; die Auto-Angriffe der Gegner sind eigene Aktionen der Kategorie „Auto-attack": 57 % seiner und 64 % der Last seiner Begleiter (A831) |
 | C208 | A826 (Stand 3ca98a945): Unter den Spieleraktionen dieser Einstufung richten genau Assise, Makrokosmos, Holy und Holy III laut Wirktext Schaden an Gegnern um dich an | Gefiltert auf `IsPlayerAction`; dazu König der Kronen (7444), und die Textregel fing auch die Sterndetonation (8324), deren Schaden ein gelegter Stern an anderem Ort anrichtet; seit A832 nur ein Satz, der mit „Deals" beginnt |
 | C209 | A826 (Stand 3ca98a945): Assise weckt keinen schlafenden Gegner mehr; unberührbare Gegner seien „Schlaf, Stopp-Markierung" | Einen Schlafenden schützte die Fläche nur mit Stopp-Markierung; seit A834 auch, wen RSR in den Tiefen Gewölben selbst schlafen legt |
+| C210 | C209 (Stand 366521e09): Seit A834 schütze die Fläche auch, wen RSR in den Tiefen Gewölben selbst schlafen legt | Seit A835 jeden Schlafenden in den Gewölben, solange die Schlafoption an ist, gleich wer ihn schlafen legte; die eigene Buchführung der gelegten Schläfer ist entfernt |

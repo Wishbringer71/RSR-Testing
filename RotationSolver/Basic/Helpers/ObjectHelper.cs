@@ -299,7 +299,7 @@ public static partial class ObjectHelper
 		}
 
 		// Concept 23 (A834): in a deep dungeon fight no new target that is not fighting yet.
-		if (battleChara.IsKeptOutOfDeepDungeonFight())
+		if (DeepDungeonCrowd.KeepsOut(battleChara))
 		{
 			return false;
 		}

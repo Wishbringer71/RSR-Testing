@@ -18,5 +18,5 @@
   {"id": "pace-traced", "archive": "A830",
    "kind": "present", "situation": "crucible gear held: ", "match": "crucible pace: the gear held speeds the team x[0-9]"},
   {"id": "deep-dungeon-sleep", "archive": "A834",
-   "kind": "present", "situation": "deep dungeon: sleep chosen for ", "match": "deep dungeon: (sleep landed on |no sleep on )"}
+   "kind": "present", "situation": "deep dungeon: sleep chosen for ", "match": "deep dungeon: sleep landed on |sleep resisted by |sleep did not reach "}
 ]

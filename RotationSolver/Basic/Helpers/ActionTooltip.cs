@@ -91,8 +91,9 @@ internal static class ActionTooltip
 	private static readonly Dictionary<uint, bool> _healsToo = [];
 
 	/// <summary>
-	/// A834: whether the effect text of <paramref name="actionId"/> also heals - Assize, Macrocosmos -, kept per action.
-	/// Game thread. False when the sheet has no row.
+	/// A834: whether the effect text of <paramref name="actionId"/> also heals the party - Assize, Macrocosmos, Pneuma -, kept
+	/// per action. A heal of the player alone or of the Kardion target (Holy Circle, Dyskrasia, Abyssal Drain) is a side
+	/// effect of an attack and does not count. Game thread. False when the sheet has no row.
 	/// </summary>
 	public static bool HealsToo(uint actionId)
 	{
@@ -104,7 +105,7 @@ internal static class ActionTooltip
 		try
 		{
 			var sheet = Svc.Data.GetExcelSheet<ActionTransient>(ClientLanguage.English);
-			heals = sheet != null && sheet.TryGetRow(actionId, out var row) && RestoresHp.IsMatch(row.Description.ExtractText());
+			heals = sheet != null && sheet.TryGetRow(actionId, out var row) && HealsParty(row.Description.ExtractText());
 		}
 		catch (Exception)
 		{
@@ -114,6 +115,9 @@ internal static class ActionTooltip
 		_healsToo[actionId] = heals;
 		return heals;
 	}
+
+	private static bool HealsParty(string text)
+		=> RestoresHp.IsMatch(text) && text.Contains("party members", StringComparison.Ordinal);
 
 	/// <summary>
 	/// Whether the effect text of <paramref name="actionId"/> says the action itself deals damage to the enemies around the

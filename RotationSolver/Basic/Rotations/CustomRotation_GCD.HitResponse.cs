@@ -143,9 +143,10 @@ public partial class CustomRotation
 
 	/// <summary>
 	/// Concept 23, "Gegnerkontrolle" (A834): in a deep dungeon, a healer or caster attacked by two or more awake enemies puts
-	/// one that is not his target to sleep - not one about to die, not one a sleep cannot reach - so he fights one at a time.
-	/// Not while a party member is about to die (a healer's GCD is theirs) or Swiftcast stands (his rule: kept for raises).
-	/// The sleeper is spared by RSR's areas and attacked last (DeepDungeonCrowd).
+	/// one that is not the player's target to sleep - not one about to die, not one taking damage over time, not one a sleep
+	/// cannot reach - so the player fights one at a time. Not while a party member is about to die (a healer's GCD is
+	/// theirs) or Swiftcast stands (kept for raises). The sleeper is spared by RSR's areas and attacked last; whether its
+	/// kind sleeps is learned by SleepInterruptWatch from the game's answer.
 	/// </summary>
 	private bool SleepFurtherAttacker(out IAction? act)
 	{
@@ -157,15 +158,9 @@ public partial class CustomRotation
 			return false;
 		}
 
-		if (role == JobRole.Healer)
+		if (role == JobRole.Healer && DeepDungeonCrowd.PartyInDanger())
 		{
-			foreach (var member in DataCenter.PartyMembers)
-			{
-				if (member != null && !member.IsDead && member.IsInCriticalClass())
-				{
-					return false;
-				}
-			}
+			return false;
 		}
 
 		var sleep = role == JobRole.Healer ? ReposePvE : SleepPvE;
@@ -174,8 +169,47 @@ public partial class CustomRotation
 			return false;
 		}
 
-		// The awake enemies attacking him; of those not his target, the one with the most HP left sleeps first.
 		var target = player.TargetObject as IBattleChara;
+
+		// G5: a sleeper whose sleep would run out before a sleep cast at the next GCD could land is renewed now - not
+		// earlier, a renewal holds shorter than the sleep it replaces. Only while an awake enemy is fought; without one the
+		// sleeper is the next target anyway.
+		var lag = SleepInterruptWatch.Lag >= 0f ? SleepInterruptWatch.Lag : Math.Max(0f, TankbusterForecast.RoundTrip);
+		var renewBy = sleep.Info.NeededStatusMargin + lag + DataCenter.DefaultGCDTotal;
+		IBattleChara? renew = null;
+		var renewLeft = float.MaxValue;
+		if (DeepDungeonCrowd.Sleepers.Count > 0 && AnyAwakeHostile())
+		{
+			foreach (var sleeper in DeepDungeonCrowd.Sleepers)
+			{
+				if (sleeper == null || sleeper.IsDead)
+				{
+					continue;
+				}
+
+				var left = sleeper.StatusTime(false, StatusID.Sleep);
+				if (left <= 0f || left > renewBy || left >= renewLeft || !CanSleep(sleeper, sleep, target))
+				{
+					continue;
+				}
+
+				renew = sleeper;
+				renewLeft = left;
+			}
+		}
+
+		if (renew != null)
+		{
+			if (!SleepOn(renew, sleep, out act))
+			{
+				return false;
+			}
+
+			DeepDungeonCrowd.NoteChosen(renew, sleep, $"renewed, {renewLeft:F1} s of its sleep left");
+			return true;
+		}
+
+		// The awake enemies attacking the player; of those not the target, the one with the most HP left sleeps first.
 		var awake = 0;
 		IBattleChara? chosen = null;
 		foreach (var enemy in DataCenter.AllHostileTargets)
@@ -186,12 +220,10 @@ public partial class CustomRotation
 			}
 
 			awake++;
-			if (enemy.GameObjectId == player.TargetObjectId || enemy.IsDying() || DeepDungeonCrowd.IsBarred(enemy)
-				|| !SleepInterruptWatch.CanStillBeSlept(enemy)
-				// A sleep with an area (the casters' Sleep) must not reach the target he fights.
-				|| (target != null && sleep.Info.EffectRange > 0f
-					&& Vector3.Distance(target.Position, enemy.Position) - target.HitboxRadius <= sleep.Info.EffectRange)
-				|| AreaReachesNewMob(enemy, sleep.Info.EffectRange))
+			if (enemy.GameObjectId == player.TargetObjectId || enemy.IsDying()
+				// Its next tick would wake it.
+				|| DeepDungeonCrowd.TakesDamageOverTime(enemy)
+				|| !CanSleep(enemy, sleep, target))
 			{
 				continue;
 			}
@@ -203,31 +235,57 @@ public partial class CustomRotation
 		}
 
 		// The chosen one and at least one more awake attacker - otherwise there is nobody to fight meanwhile.
-		if (chosen == null || awake <= 1)
+		if (chosen == null || awake <= 1 || !SleepOn(chosen, sleep, out act))
 		{
 			return false;
 		}
 
-		// The target filter is swapped in for this call only, as for the stop above.
+		DeepDungeonCrowd.NoteChosen(chosen, sleep, $"{awake} awake enemies attack you");
+		return true;
+	}
+
+	// Whether any enemy in the list of targets is awake: the fight a sleeper is kept out of goes on.
+	private static bool AnyAwakeHostile()
+	{
+		foreach (var enemy in DataCenter.AllHostileTargets)
+		{
+			if (enemy != null && !enemy.IsDead && !enemy.HasStatus(false, StatusID.Sleep))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	// What bars a sleep on this enemy, first or renewed: a sleep of the player's on it not shown yet, its kind or the
+	// sleeps it took this fight (SleepInterruptWatch), the casters' area reaching the target the player fights, or an
+	// enemy not fighting yet.
+	private static bool CanSleep(IBattleChara enemy, IBaseAction sleep, IBattleChara? target)
+	{
+		return !DeepDungeonCrowd.IsPending(enemy) && SleepInterruptWatch.CanStillBeSlept(enemy)
+			&& (target == null || sleep.Info.EffectRange <= 0f || target.GameObjectId == enemy.GameObjectId
+				|| Vector3.Distance(target.Position, enemy.Position) - target.HitboxRadius > sleep.Info.EffectRange)
+			&& !AreaReachesNewMob(enemy, sleep.Info.EffectRange);
+	}
+
+	// The sleep on this one enemy, the target filter swapped in for this call only, as for the stop above.
+	private static bool SleepOn(IBattleChara enemy, IBaseAction sleep, out IAction? act)
+	{
 		var setting = sleep.Setting;
 		var canTarget = setting.CanTarget;
-		var chosenId = chosen.GameObjectId;
+		var chosenId = enemy.GameObjectId;
 		setting.CanTarget = t => canTarget(t) && t.GameObjectId == chosenId;
 		try
 		{
-			if (!sleep.CanUse(out act, skipAoeCheck: true, skipTTKCheck: true))
-			{
-				return false;
-			}
+			return sleep.CanUse(out act, skipAoeCheck: true, skipTTKCheck: true);
 		}
 		finally
 		{
 			setting.CanTarget = canTarget;
 		}
-
-		DeepDungeonCrowd.NoteChosen(chosen, sleep.ID);
-		return true;
 	}
+
 
 	/// <summary>
 	/// The job's own way to stop <paramref name="enemy"/>'s cast, tried before a sleep: a stun that reaches it in time

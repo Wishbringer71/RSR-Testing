@@ -51,19 +51,8 @@ public static partial class ObjectHelper
 	/// <summary>
 	/// Concept 03, "Gegner, die keine Fläche treffen darf" (A572, A588): an enemy no attack may hit, not even an area one -
 	/// spikes that damage attackers, a stop marker while "Never attack targets with stop markers" is on, a guarded zu egg,
-	/// an enemy a kill rule holds where its fall would harm.
+	/// an enemy a kill rule holds where its fall would harm, a sleeping enemy in a deep dungeon (concept 23, A834).
 	/// </summary>
-	/// <summary>
-	/// Concept 23, "Gegnerkontrolle" (A834): whether, in a deep dungeon fight with "Deep dungeons: damage doesn't pull new
-	/// enemies" on, <paramref name="battleChara"/> is not fighting yet and so no new target - the enemy pulled out of combat
-	/// fights from then on.
-	/// </summary>
-	internal static bool IsKeptOutOfDeepDungeonFight(this IBattleChara battleChara)
-	{
-		return DataCenter.InCombat && DataCenter.IsInDeepDungeons && Service.Config.DeepDungeonNoPullDamage
-			&& DataCenter.NotFightingYet(battleChara);
-	}
-
 	internal static bool MustNotBeHit(this IBattleChara battleChara, ICollection<long> stopTargets)
 	{
 		return battleChara.HasSpikes() || battleChara.IsGuardedZuEgg() || KillOrder.MustNotBeHit(battleChara)

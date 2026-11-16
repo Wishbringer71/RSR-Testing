@@ -1265,7 +1265,8 @@ dazu die Gruppe.
 MP, ein Astrologe die gespeicherte Heilung von Makrokosmos – der Preis, den der Schalter nennt. Mit „Don't pull new
 enemies" wartet jede Fläche um dich, bis die Gegner in ihrem Wirkgebiet kämpfen; ein Tank, der mit einer Fläche
 ansammeln will, lässt den Schalter aus (ab Werk aus). Einen schlafenden Gegner schützt die Fläche nur, wenn er eine
-Stopp-Markierung trägt oder RSR ihn in den Tiefen Gewölben selbst schlafen gelegt hat (Konzept 23, A834); bis A834 stand
+Stopp-Markierung trägt oder in den Tiefen Gewölben schläft, solange dort die Schlafoption an ist – gleich, wer ihn schlafen
+legte (Konzept 23, A834, A835); bis A834 stand
 hier, Assise wecke keinen Schlafenden mehr – das galt nur mit Markierung (C209).
 
 *Gegenthese 1 (Assise ist eine Heilung):* Ihr Heilanteil ginge mit der Sperre verloren. Nicht widerlegt, aber gewollt:

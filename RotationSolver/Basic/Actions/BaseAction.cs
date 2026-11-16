@@ -401,6 +401,7 @@ public partial class BaseAction : IBaseAction
 		{
 			TankbusterForecast.RecordOwnPress(adjustId, targetId);
 			SleepInterruptWatch.RecordPress(adjustId, Info.CastTime);
+			DeepDungeonCrowd.RecordPress(adjustId, targetId, Info.CastTime);
 		}
 
 		return used;

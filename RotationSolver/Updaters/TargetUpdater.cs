@@ -155,7 +155,6 @@ internal static partial class TargetUpdater
 		// Concept 03, "Tötungsregeln" (A588): which enemies a kill rule holds back, from every battle character - a held
 		// one leaves the list below, so the rules cannot read it.
 		KillOrder.Update(allTargets);
-		DeepDungeonCrowd.Update();
 
 		foreach (var member in allTargets)
 		{
@@ -216,10 +215,10 @@ internal static partial class TargetUpdater
 							continue;
 						}
 
-						// Concept 23, "Gegnerkontrolle" (A834): an enemy RSR put to sleep waits while an awake one can be
-						// attacked.
+						// Concept 23, "Gegnerkontrolle" (A834): a sleeping enemy waits while an awake one can be attacked.
 						if (DeepDungeonCrowd.IsHeldAsleep(member))
 						{
+							DeepDungeonCrowd.NoteAsleep(member);
 							restingHostiles.Add(member);
 							continue;
 						}
@@ -266,17 +265,18 @@ internal static partial class TargetUpdater
 		{
 			hostileTargets.AddRange(parriedHostiles);
 		}
-
-		// A834: and the sleeper RSR laid, once no awake enemy is left to attack.
-		if (hostileTargets.Count == 0)
-		{
-			hostileTargets.AddRange(restingHostiles);
-		}
 		else
 		{
 			TraceParried(parriedHostiles);
 		}
 
+		// A834: and a sleeping one in a deep dungeon, once no awake enemy is left to attack.
+		if (hostileTargets.Count == 0)
+		{
+			hostileTargets.AddRange(restingHostiles);
+		}
+
+		DeepDungeonCrowd.Sleepers = restingHostiles;
 		DataCenter.PartyMembers = partyMembers;
 		DataCenter.AllianceMembers = allianceMembers;
 		DataCenter.AllHostileTargets = hostileTargets;

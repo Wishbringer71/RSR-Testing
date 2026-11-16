@@ -17,11 +17,14 @@ public partial struct ActionTargetInfo
 			return false;
 		}
 
+		// Over the list itself, not an iterator: this runs for every area evaluated in a frame. The cheap reads first; the
+		// enemy test reads the game's object and only for a figure in reach that is not fighting.
 		List<IBattleChara>? caught = null;
-		var all = DataCenter.AllTargets;
-		foreach (var t in aroundPlayer ? all.GetObjectInRadius(EffectRange) : all)
+		foreach (var t in DataCenter.AllTargets)
 		{
-			if (t == null || t.GameObjectId == centre.GameObjectId || t.IsDead || !t.IsEnemy() || !DataCenter.NotFightingYet(t))
+			if (t == null || t.GameObjectId == centre.GameObjectId || t.IsDead
+				|| (aroundPlayer && t.DistanceToPlayer() > EffectRange)
+				|| !DataCenter.NotFightingYet(t) || !t.IsEnemy())
 			{
 				continue;
 			}
@@ -30,6 +33,7 @@ public partial struct ActionTargetInfo
 			{
 				if (GetCanTarget(centre, t))
 				{
+					DeepDungeonCrowd.TraceWait(action.ID, t);
 					return true;
 				}
 
@@ -39,6 +43,18 @@ public partial struct ActionTargetInfo
 			(caught ??= []).Add(t);
 		}
 
-		return caught != null && FilterAffectsByFacing(caught).Count > 0;
+		if (caught == null)
+		{
+			return false;
+		}
+
+		var reached = FilterAffectsByFacing(caught);
+		if (reached.Count == 0)
+		{
+			return false;
+		}
+
+		DeepDungeonCrowd.TraceWait(action.ID, reached[0]);
+		return true;
 	}
 }

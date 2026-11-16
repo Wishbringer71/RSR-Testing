@@ -34,10 +34,25 @@ internal static partial class DataCenter
 	/// <summary>
 	/// Whether an action may not reach an enemy that is not fighting yet: "Don't pull new enemies with AoE" anywhere, and in
 	/// a deep dungeon the option for heals that also deal damage (<paramref name="healsToo"/>) or for damage (concept 23,
-	/// "Gegnerkontrolle", A834).
+	/// "Gegnerkontrolle", A834). A heal does not wait in a deep dungeon while a party member is in the critical class: a
+	/// death there ends the run, the pulled enemy comes seconds later.
 	/// </summary>
 	internal static bool GuardsAgainstPull(bool healsToo)
-		=> Service.Config.NoNewHostiles || (IsInDeepDungeons && (healsToo ? Service.Config.DeepDungeonNoPullHeals : Service.Config.DeepDungeonNoPullDamage));
+	{
+		if (Service.Config.NoNewHostiles)
+		{
+			return true;
+		}
+
+		if (!IsInDeepDungeons)
+		{
+			return false;
+		}
+
+		return healsToo
+			? Service.Config.DeepDungeonNoPullHeals && !DeepDungeonCrowd.PartyInDanger()
+			: Service.Config.DeepDungeonNoPullDamage;
+	}
 
 	/// <summary>
 	/// "Don't pull new enemies" (concept 03, A826, A832, A833; concept 23, A834): whether hitting <paramref name="enemy"/> with
