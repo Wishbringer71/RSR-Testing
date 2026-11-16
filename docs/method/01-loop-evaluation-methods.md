@@ -28,8 +28,8 @@ Aufgenommen sind die SWOT-Bilanz als Form der Abwägung (Stufe 3) und der Auslie
 dritte Hypothese der Falsifikationsstufe und Cynefin als Einordnung, welcher Prüfgrad überhaupt
 erreichbar ist.
 
-**Was nicht geschieht: eine Methodensammlung.** Der Loop hat zehn Stufen und drei
-Querschnittsanforderungen; jede weitere Stufe verteuert jeden Vorgang. Aufgenommen wird nur, wofür
+**Was nicht geschieht: eine Methodensammlung.** Der Loop hat zehn Stufen und vier
+Querschnittsanforderungen, die vierte ist die Chancenfrage (unten); jede weitere Stufe verteuert jeden Vorgang. Aufgenommen wird nur, wofür
 ein Fehlschlag in der eigenen Historie vorliegt.
 
 ## Die Quellenlage, geprüft statt übernommen
@@ -85,9 +85,11 @@ dem Tisch liegen, und der Loop ohne Defekt gar nicht anspringt.
 
 **Warum genau diese Zelle.** Dieses Projekt hat eine ungewöhnlich große Stärkenseite, die im Loop
 nicht vorkommt: eine Gesundheitshistorie über vier Minuten, ein Effekt-Handler, der jeden Treffer
-sieht, eine Vorhersage fremder Casts, eine Diagnoseanzeige. Jede der vier oben belegten Möglichkeiten
-war eine Kreuzung aus einer dieser Stärken mit einer offenen Frage — und jede wurde übersehen, weil
-der Loop bei der offenen Frage begann und nur nach ihrer Behebung suchte.
+sieht, eine Vorhersage fremder Casts, damals dazu eine Diagnoseanzeige. Jede der vier oben belegten
+Möglichkeiten war eine Kreuzung aus einer dieser Stärken mit einer offenen Frage — und jede wurde
+übersehen, weil der Loop bei der offenen Frage begann und nur nach ihrer Behebung suchte. Die
+Diagnoseanzeige zählt heute nicht mehr zu den Stärken: Er nutzt das Diagnosefenster nicht (seine
+Vorgabe, `code.md`, „Option und Beobachtbarkeit“).
 
 **Nicht als Stufe, sondern als Bedingung jeder Stufe.** Eine eigene Stufe stünde an einem Ort und
 wäre damit überspringbar; die Lücke ist aber überall. Die Erhebung (Stufe 1) hat zu fragen, was die
@@ -97,14 +99,15 @@ gegenüberzustellen, den sie heute gar nicht erhebt.
 
 **Denkhilfe innerhalb dieser Anforderung: das Kano-Modell** (Noriaki Kano, 1984) mit seiner
 Unterscheidung in Basis-, Leistungs- und Begeisterungsmerkmale. Es ist kein eigener Schritt, aber es
-benennt, was der heutige Loop strukturell erzeugt: ausschließlich Basismerkmale. `TODO.md` besteht zu
-fast neun Zehnteln aus Defekten — das ist die Signatur eines Verfahrens, das nur auf Fehler anspringt.
+benennt, was der Loop ohne die Chancenfrage strukturell erzeugte: ausschließlich Basismerkmale. `TODO.md`
+bestand damals (A97) zu fast neun Zehnteln aus Defekten — die Signatur eines Verfahrens, das nur auf
+Fehler anspringt.
 
 ### Das Premortem — als dritte Hypothese der Falsifikationsstufe
 
 **Das Werkzeug.** Prospektive Rückschau: Das Vorhaben wird als **bereits gescheitert** unterstellt,
 und die Gründe werden rückwärts gesucht. Der Unterschied zur vorhandenen Falsifikation ist nicht
-graduell. Stufe 6 vertritt heute zwei Hypothesen — *es liegt kein Defekt vor* und *die gewählte Option
+graduell. Stufe 6 vertrat bis A97 zwei Hypothesen — *es liegt kein Defekt vor* und *die gewählte Option
 ist falsch*. Beide fragen nach der **Richtigkeit** der Analyse. Das Premortem fragt nach der
 **Wirkung** der Umsetzung, und das ist eine andere Frage.
 
@@ -138,15 +141,16 @@ die Regel sein muss und nicht der Einzelfall.
 **Gegenprobe an einem Fall, in dem es getragen hat:** Die Aussage „wie oft `IsHostileCastingAOE` im
 Trash-Pull wahr ist, ist von hier aus nicht messbar" stand in A94 als Grenze. Eine Anzeige der drei
 Gefahrenquellen je Mitglied hat sie in A95 aufgehoben. Die Sonde kostete wenige Zeilen; die Grenze war
-keine.
+keine. Heute ist die Sonde keine Anzeige mehr, sondern die Selbstnachsteuerung der Regel mit Zähler und
+Protokolldatei (`CLAUDE.md`, „Erreichbarer Prüfgrad“; `code.md`, „Entscheidung zur Laufzeit“).
 
 ## Was geprüft und nicht aufgenommen wurde
 
 **Die Engpasstheorie** (Eliyahu Goldratt) fragt vor jeder Verbesserung, ob die Stelle der Engpass ist
 — sonst verpufft der Gewinn. Sachlich richtig und hier ohne Beleg: Die Reihenfolge der Arbeit folgt in
-diesem Projekt dem Auftrag des Auftraggebers, nicht einer eigenen Priorisierung, und die Regel dazu
-steht bereits in `CLAUDE.md` („Priorität folgt dem Auftrag, nicht der Fundlage"). Eine zweite
-Priorisierungsregel daneben würde mit der ersten konkurrieren.
+diesem Projekt seinem Auftrag und, innerhalb der offenen Arbeit, der Wirkung im Kampf nach seinem Profil
+(`CLAUDE.md`, „Nutzungsprofil“; `.claude/rules/archiv-todo.md`). Eine zweite Priorisierungsregel daneben
+würde mit dieser konkurrieren.
 
 **Wardley Mapping** (Simon Wardley) trägt Komponenten auf Wertschöpfungskette und Entwicklungsgrad ab
 und ist das stärkste der erwogenen Werkzeuge für die Frage „wohin entwickelt sich das". Nicht
@@ -163,9 +167,9 @@ in der Querschnittsanforderung Kausalität enthalten.
 ## Konsequenzen
 
 **Für den Loop.** Vier Ergänzungen, keine neue Stufe. Die SWOT-Bilanz in Stufe 3, im Review (Stufe 5)
-und in der Definition of Done, die Chancenfrage als vierte Querschnittsanforderung, das Premortem als
-dritte Hypothese in Stufe 6, die Domänenfrage in der Aufwandsregel der REGEL. Alle vier stehen in
-`CLAUDE.md`.
+und in der Definition of Done (`CLAUDE.md`, „Maßstab: das Spielgeschehen“), die Chancenfrage als vierte
+Querschnittsanforderung (`code.md`, „Möglichkeitssinn“), das Premortem als dritte Hypothese in Stufe 6
+(`CLAUDE.md`, „Loop“), die Domänenfrage als erreichbarer Prüfgrad (`CLAUDE.md`, „Prüfgrad“).
 
 **Für die Kosten je Vorgang.** Die Chancenfrage und das Premortem sind je ein Satz Denkarbeit und
 kosten nichts an Werkzeug. Die SWOT-Bilanz kostet je Option die Gegenrichtung – die Lagen, in denen
@@ -175,5 +179,5 @@ Messmittel, und sie ersetzt Aufwand an anderer Stelle — nämlich das nachträg
 Fragen, die im Spiel längst hätten sichtbar sein können.
 
 **Für den Auftraggeber.** Die Ergänzungen betreffen meine Arbeitsweise, nicht das Verhalten des
-Plugins. Sie sind in `CLAUDE.md` eingetragen, weil das die Datei ist, die die Arbeitsweise trägt; wer
+Plugins. Sie stehen in `CLAUDE.md` und `code.md`, den Dateien, die die Arbeitsweise tragen; wer
 sie zurücknehmen will, streicht die Absätze, die sie tragen.

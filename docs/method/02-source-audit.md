@@ -63,7 +63,7 @@ Aus den Befunden der bisherigen Loops; jede mit dem Fall, an dem sie auffiel.
 | Sammlung in der eigenen Aufzählung geändert | Musterdurchgang, 12.11.2026 | durch | 1 Treffer, falsch positiv (Kopie). |
 | Ereignis abonniert, nie abbestellt | Musterdurchgang, 12.11.2026 | durch | kein Treffer. |
 
-Dazu laufen bei jedem Commit die 53 Prüfschritte der CI (`run_ci_checks.py`), darunter Struktur, Basisaufrufe,
+Dazu laufen bei jedem Commit die Prüfschritte der CI (`run_ci_checks.py`; 53 am 12.11.2026, 60 am 16.11.2026), darunter Struktur, Basisaufrufe,
 gelernte Dateien (geschrieben, gelesen, angezeigt), Blattsprache, feste Werte, Konzeptverweise.
 
 ### Lesender Durchgang (Fork-Code nach Bereich)
