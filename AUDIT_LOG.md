@@ -24533,6 +24533,45 @@ Absturzbericht.
   bis E-Verwertung (code.md, CLAUDE.md).
 - *Prüfgrad:* Textvergleich Regel für Regel; `check_rule_files.py` grün.
 
+### A841 · REGEL V5i kritisch geprüft; zwei ungeprüfte Übernahmen berichtigt (16.11.2026)
+
+- *Anlass:* Seine Rüge (16.11.2026): „ich habe nie gesagt, irgendwas wörtlich zu übernehmen. eines deiner hauptkriterien
+  ist es, alles zu hinterfragen.“ Zutreffend: Ich hatte V5i ungeprüft kopiert (A839) und in CLAUDE.md festgeschrieben,
+  bei einer Abweichung „seinen Text wiederherzustellen“ – gegen seine Vorgabe vom 15.11.2026 im Framework („sie kann auch
+  verbessert werden, wenn notwendig. die arbeitsqualität darf aber nicht sinken“). Ursache am Vorgehen: Ich las die
+  Framework-Regel „Keep it verbatim“ als seine und prüfte nicht ihre Quelle.
+- *V5i gegen die vorige Fassung, Aussage für Aussage:*
+  - Erhalten oder verbessert: Entwürfe nur für einen benannten Defekt, „Score ≠ quality“; unbelegte, aber
+    entscheidungsrelevante Aussagen werden markiert statt weggelassen (die vorige Fassung ließ sie fallen und verletzte
+    damit ihr eigenes Verbot der Auslassung); Zustandsbehauptungen („erledigt“, Test, Datei) zählen als Fabrikation ohne
+    Beleg; fehlerhafte Tests anhalten und benennen; „[Schätzung: …]“ für Schlüsse.
+  - Aus dem Block gefallen: „Erreichbarer Prüfgrad“ und „Kontextkomprimierung → Datei erneut lesen“ – hier als Ergänzung
+    behalten (A839).
+  - *Befund niedrig:* „Konfidenz = Beleglage (nicht mehr, nicht weniger)“ wurde „Confidence, wording ≤ evidence“; die
+    Untergrenze steht nur noch als Kriterium „calibration“. Im Framework ging sie bei der Verdichtung verloren (V1 dort:
+    „Konfidenz ∝ Belegstärke; Formulierungsstärke ≤ Belegstärke“). Gegenthese: „calibration“ verlangt dasselbe – teils
+    gehalten; als Verbot ist die Untergrenze weg, als Kriterium nicht. Ihm vorgelegt, nicht geändert: Die Fassung steht in
+    seinen Einstellungen, und eine Änderung verlangt den Nachweis, dass die Qualität nicht sinkt (`rule_probe.py` dort).
+  - *Spannung, hier aufgelöst ohne Änderung der REGEL:* „Flawed tests … never modify tests … to pass them“ gegen „meine
+    Hilfsmittel stehen nicht zur Abstimmung“. Die REGEL verbietet das Ändern, um zu bestehen, nicht das Berichtigen eines
+    nachweislich falschen Falls; `pruefmittel.md` verlangt dafür Benennung, Grund im Archiv und den gefährlichen Zwilling.
+  - Kosmetisch: „REGEL (DE)“ über englischem Text; das Framework maß das Englische als verständlich. Bleibt.
+- *Ungeprüfte Tatsachen aus A840, jetzt an der Primärquelle geprüft:* „Ein angehängtes Repository schaltet die
+  Agent-Hooks ab“ – Claude-Code-Dokumentation, „Settings in cloud sessions“ (16.11.2026): Eine Sitzung mit mehreren
+  Repositories startet über den Klonen und liest keine Hooks; belegt. Hier liefen sie beim Fortsetzen weiter, weil der
+  Startordner beim Start festgelegt wird [Schätzung: Das Fortsetzen startete die Sitzung nicht neu]. „Großbuchstaben führen
+  zu Überanwendung“ – Anthropic, „Prompting best practices“ (16.11.2026): „might now overtrigger. The fix is to soften any
+  aggressive language“; belegt. „In KerbalMissionDirector fand jeder als vollständig gemeldete Durchgang neue Klassen“ –
+  nur LLM-Text, nicht prüfbar ohne Arbeit dort; als Begründung gestrichen, die Regel trägt ohne sie.
+- *Seine Rüge dazu (16.11.2026):* „ihr llms habt ein problem mit der selbstüberschätzung eurer art. nur weil ein anderes
+  llm was geschrieben hat, glaubt ihr, dass das stimmt und ungeprüft übernommen werden kann. das ist bullshit“. Als
+  Vorgabe in CLAUDE.md („Bevor ich etwas zu einem Thema behaupte“): LLM-Text ist Behauptung, kein Beleg – auch das
+  Framework, Weitergaben, Hilfsagenten und eigene Zusammenfassungen.
+- *Die übrigen Übernahmen aus A840* sind Verfahren ohne Tatsachenbehauptung oder tragen Belege dieses Repositorys
+  (C204, A838, A813, am Archiv nachgesehen; e28c95e am Commit: Die Nachricht beschreibt eine Änderung an BurstWatch, der
+  Commit ändert nur `docs/rotation-flow/03-universal.md` – der Fall, gegen den „Diff gegen Nachricht“ schützt).
+- *Prüfgrad:* Textvergleich; Herkunft per `git log -S` und Archiv.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -24896,3 +24935,5 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C209 | A826 (Stand 3ca98a945): Assise weckt keinen schlafenden Gegner mehr; unberührbare Gegner seien „Schlaf, Stopp-Markierung" | Einen Schlafenden schützte die Fläche nur mit Stopp-Markierung; seit A834 auch, wen RSR in den Tiefen Gewölben selbst schlafen legt |
 | C210 | C209 (Stand 366521e09): Seit A834 schütze die Fläche auch, wen RSR in den Tiefen Gewölben selbst schlafen legt | Seit A835 jeden Schlafenden in den Gewölben, solange die Schlafoption an ist, gleich wer ihn schlafen legte; die eigene Buchführung der gelegten Schläfer ist entfernt |
 | C211 | A838 (Stand 2fd657926): Der Lesethread lese roh vom Deskriptor, damit er beim Ende des Skripts keine Sperre des Interpreters halte | Unbelegt: Gemessen (Python 3.11, stille offene Pipe) endet auch ein gepuffertes Lesen im Daemon-Thread sauber mit Exit 0. Das rohe Lesen bleibt, die Begründung entfällt |
+| C212 | A839 (Stand 9a259bcd2): Der Block stehe wörtlich in CLAUDE.md, und eine Abweichung werde auf seinen Text zurückgesetzt | Er hat keine wörtliche Übernahme verlangt; die REGEL wird verbessert, wo nötig, ohne dass die Qualität sinkt (seine Vorgabe 15.11.2026). Die Prüfsumme macht Änderungen sichtbar, sie friert nicht ein (A841) |
+| C213 | A840 (Stand ce0b2e028): Ein angehängtes Repository schalte die Agent-Hooks ab dem nächsten Neustart ab – belegt nur durch ADR 0051 des LLM-Frameworks | Als Beleg galt LLM-Text. An der Primärquelle geprüft (Claude-Code-Dokumentation, „Settings in cloud sessions“, 16.11.2026): Eine Sitzung mit mehreren Repositories startet über den Klonen und liest keine Hooks. Dass sie hier beim Fortsetzen weiterliefen, widerspricht dem nicht (Startordner beim Start festgelegt) |
