@@ -214,8 +214,8 @@ public partial class BeastmasterRotation
 	/// the lowest in rank. With fewer of them than places, the lowest at or above the cap fill one by one while the team is
 	/// endangered: it does not carry the board's measured losses at its rank step with one in reserve, counted on the
 	/// familiars the horn choice sends in - at least the recommended rank (K6) - and unmeasured counts as endangered. A full
-	/// team below the cap that is measured endangered takes, for its weakest without a role, the lowest outside that fights
-	/// stronger - below the cap first (Strengthen). Empty with no familiar behind in rank (<paramref name="laggers"/> 0).
+	/// team below the cap that is measured endangered takes, for its weakest place, the lowest outside that fights
+	/// stronger - below the cap first, a role only for the same role (Strengthen). Empty with no familiar behind in rank (<paramref name="laggers"/> 0).
 	/// <paramref name="learning"/> receives each familiar that lags behind: true when it fights only when too few others live.
 	/// </summary>
 	/// <summary>
@@ -669,7 +669,7 @@ public partial class BeastmasterRotation
 		if (goal == CrucibleGoal.SafeWin)
 		{
 			// The lowest first; while the team is endangered - measured not to carry the board's losses, or unmeasured - the
-			// lowest outside that fights stronger takes the place of its weakest without a role.
+			// lowest outside that fights stronger takes its weakest place, a role only for the same role (Strengthen).
 			var order = ChooseTeam(new List<TeamCandidate>(all), all.Count, weight, interrupting, LastRunTeam(team), out _, int.MaxValue,
 				recommended);
 			chosen = order.Count > size ? order.GetRange(0, size) : order;

@@ -2465,7 +2465,7 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
   Büffel auf Rang 7 hat mehr LP als ein Baumhörnchen auf Rang 8 (A807, unabhängige Prüfung, hoch). Ohne gezeigtes
   Verhältnis LP/VIT zählt der Kampfrang. Er ersetzt den schwächsten Platz (die wenigsten LP; bei gleichen der spätere in
   der Reihenfolge, also der, den die Reihenfolge zuletzt wollte), für den einer außerhalb mehr LP hat und dieselbe Rolle
-  trägt, wo der Platz eine hält (A807: vorher war jeder Rollenträger
+  trägt, wo der Platz eine hält – so auch der Text der Einstellung „Goal of a Crucible run …“ (A807: vorher war jeder Rollenträger
   ausgenommen – ein Heiler auf Rang 7 blieb auch, wenn ein Heiler auf Rang 10 zu Hause stand). *Eine Rolle muss kämpfen:* Die Hornwahl
   setzt einen Begleiter unter dem empfohlenen Rang nur ein, wenn weniger andere leben als Hörner da sind (K6); ein
   Heiler dort fehlte vor dem Boss (unabhängige Prüfung A806, hoch). Darum nimmt jede Rolle zuerst einen Begleiter ab dem
