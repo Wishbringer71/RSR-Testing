@@ -213,8 +213,9 @@ dem man nicht hinsehen darf).
   Spieloption „Auto face target“ schaltet es nur für Aktionen aus seiner eigenen Warteschlange ab. Eine Aktion aus der
   Warteschlange des Spiels läuft in `_updateHook.Original` mit der Option, wie der Spieler sie gesetzt hat, und dreht
   genau aufs Ziel (`UpdateDetour`; 35a908ad7, 13.11.2026, Werkzeugquelle). RSR
-  selbst hat nur Upstreams Liste „Gaze/Stop“ mit vier Aktionen hinter „Stop acting while an enemy casts a Gaze/Stop
-  action“ (ab Werk aus), und sie sperrt nur Zauber.
+  hatte vor der eigenen Regel (unten, „Nicht in einen Blick drehen“, A770) nur Upstreams Liste „Gaze/Stop“ mit fünf
+  Aktionen (#3715, #3719 bis #3722) hinter „Stop acting while an enemy casts a Gaze/Stop action (Experimental)“ (ab Werk
+  aus), und sie sperrt nur Zauber (`AutoStatus.NoCasting`); beides besteht neben der Regel fort.
 - *Lücke, auch mit BossModReborn* (sein Hinweis, 13.11.2026: „In Welt der Dunkelheit besteht das Risiko Doom zu
   bekommen … bmr hat da anscheinend auch keinen Schutz“). Belegt an seinem Mitschnitt vom 13.11.2026, 18:26 bis
   18:28: Angra Mainyu wirkt „Tödlicher Blick“ zweimal zugleich.
@@ -905,10 +906,10 @@ Tankbuster-Ziel, Nascent Flash. Ein Befehl des Spielers (Makro „Defense") wird
   „Hilfe für das Ziel eines Tankbusters", A328), Reflexion auf den Gegner. Ein Flag wird an den Pfaden gemessen, die
   es öffnet; gesperrt wird deshalb die Selbstschutz-Aktion, nicht der Pfad.
 
-**Anlass, sein Protokoll vom 30.09.2026 (Krieger, Build ad73a6a5c):** Bei angekündigten Tankbustern auf Josy Akuma
-und Lyx Parsingreen, die BossModReborn mit „hits you False" meldete, fielen Verdammnis und Schutzwall (19:47:08)
+**Anlass, sein Protokoll vom 30.09.2026 (Krieger, Build ad73a6a5c):** Bei angekündigten Tankbustern auf zwei andere
+Spieler, die BossModReborn mit „hits you False" meldete, fielen Verdammnis und Schutzwall (19:47:08)
 sowie Schutzwall und Abtausch (19:45:03); Verdammnis und Schutzwall auch bei „hits you unknown" vier Sekunden vor
-dem Buster auf Josy Akuma (19:43:11). Im Kampf: Verdammnis (120 s) und Schutzwall (90 s) waren für den Buster auf
+dem Buster auf den ersten der beiden (19:43:11). Im Kampf: Verdammnis (120 s) und Schutzwall (90 s) waren für den Buster auf
 ihn selbst verbraucht. Ursache: Der Tankzweig von `ShouldAddDefenseSingle` öffnet die Einzelabwehr für jeden
 angekündigten Tankbuster und für jeden Cast eines Gegners auf sein eigenes Ziel, gleich wen er trifft; der Zweig
 der Schadensausteiler fragt seit A220 die Maske.
@@ -2925,12 +2926,14 @@ Aussage für Aussage, statisch (Selbstprüfung, kein unabhängiges Audit):
   (`TankbusterTable.Store`); `check_learned_writes.py` hält fest, dass niemand sonst die beiden Tabellen schreibt.
   Zählungen gibt es bei Fläche und Tankbuster ab Stufe 1, bei Serie und Pyretisch mit ihren Stufen; alte Einträge
   zählen als eine Messung.
-- Offen bis zur Beobachtung im Spiel: ob das Feld der Spielversion beim Laden schon lesbar ist. Ist es das nicht,
-  gehen die Messungen bis zur ersten lesbaren in die übernommene Schicht, und die Kopfzeile sagt es.
+- Im Spiel beobachtet (A475, Upload vom 01.11.2026): Das Feld der Spielversion ist lesbar, sobald er eingeloggt ist;
+  vor dem Login steht „NOT READABLE“ in der Kopfzeile, und die Messungen danach tragen die Version (Abschnitt „Stufe 1“,
+  „Im Spiel belegt“).
 
 Prüfgrad: statisch am Code und an den Quellen, Modell gerechnet, die Barriere an seinen ACT-Mitschnitten gemessen;
-Stufen (0) und (1) gebaut und kompiliert, der Code von Stufe 1 außerhalb des Spiels gegen die Läufe des Modells geprüft
-(`revision_harness/run.sh`), im Spiel nicht beobachtet; die übrigen Stufen nicht gebaut.
+Stufen (0) bis (5) gebaut und kompiliert (A452, A456, A481, A492, A493, A494, A496); der Code der Stufen 1 bis 4
+außerhalb des Spiels gegen die Läufe des Modells geprüft (`revision_harness/run.sh`); im Spiel beobachtet ist Stufe 1
+(A475); ob Senkung, Sperrversuche und Anzeige im Spiel gegriffen haben, hält kein Archiveintrag fest (unbelegt).
 
 ## Betroffene
 
