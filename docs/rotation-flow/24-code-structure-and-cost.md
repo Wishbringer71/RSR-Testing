@@ -357,7 +357,8 @@ Sitzung mit Kampf steht keine Zeile „exception:"; steht eine, ist sie eine Urs
   CA1819 in `StatusHelper` – die Felder sind öffentliche Schnittstelle für abgeleitete Rotationen; die übrigen
   CA1508 auf Fork-Zeilen sind falsch positiv (`Player.Object` ist beim Login `null`, obwohl die Signatur es nicht sagt).
 - *Nicht angefasst:* 579 Befunde auf Upstream-Zeilen und die Klone in Upstreams PvP-Rotationen – keine Wirkung im
-  Kampf, jede Zeile Merge-Logistik; PvP liegt außerhalb seines Profils. CA1851 in `ActionTargetInfo`: Die Folge ist an
+  Kampf, jede Zeile Merge-Logistik. PvP gehört seit dem 13.11.2026 zu seinem Profil (CLAUDE.md, „Nutzungsprofil“); ein
+  Klon ändert dort nichts am Kampf, Fehler darin behandelt Konzept 25. CA1851 in `ActionTargetInfo`: Die Folge ist an
   diesen Stellen schon eine Liste, der zweite Lauf kostet keine neue Auswahl.
 - *Keine Prüfung in der CI:* Ein zweiter Build mit allen Regeln kostete jeden Lauf rund 40 s für Befunde ohne Wirkung im
   Kampf; die Zahlen hier sind datiert und werden beim nächsten Audit neu erhoben.

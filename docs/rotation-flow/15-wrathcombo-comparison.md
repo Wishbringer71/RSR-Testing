@@ -29,7 +29,7 @@ sinn für rsr und bringt eine adaptierung was?"
   Divine Caress vor Ablauf von Divine Grace: WrathCombo wirkt es jetzt, sobald es bereit ist, ohne Gesundheitsprüfung;
   `WHM_Reborn` wirkt es auf einen angekündigten Treffer hin und spätestens zwei GCDs vor Ablauf. Das bleibt, weil die
   Barriere so den Schaden trifft.
-- *Ohne Gegenstück, das davon gewinnen würde:* PvP-Aktionen (außerhalb seines Profils); feste Opener (Samurai FRU, eine
+- *Ohne Gegenstück, das davon gewinnen würde:* PvP-Aktionen (der Abgleich mit WrathCombos PvP steht in Konzept 25); feste Opener (Samurai FRU, eine
   7-s-Variante des Tänzers „only for coordinated use", der Trank im Opener); WrathComboS Hotbar-Ersetzung (Rückgabe der
   Basis-Id statt `OriginalHook`, Bereitschaftsprüfung beim Abfangen, Zielumlenkung der Gelehrten-DoTs); Bedienung
   (DTR-Klick, Chatausgabe, entfernte Zieleinstellung des Maschinisten); eine Mehrdeutigkeit mit ECommons' `HasStatus`,

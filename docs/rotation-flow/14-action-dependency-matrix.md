@@ -93,9 +93,12 @@ Baums, sondern quer dazu. Die Matrix zeigt es; eine Entscheidung verlangt es nic
 
 **Abgleich Wirktext ↔ Code:** Nennt der Wirktext eine Statusbedingung und führt die Basisrotation
 dafür weder `StatusNeed` noch `ActionCheck`, steht die Aktion in der Liste. Unter den bewerteten Jobs
-stehen dort Manafont (BLM), Improvised Finish (DNC) und die Eukrasia-Aktionen (SGE); der Blaumagier
-führt weitere, unbewertet. Keiner ist ein Befund, aus demselben Grund: Die Bedingung steht in einer
-Eigenschaft oder einem umschließenden `if`, das der Abgleich nicht verfolgt.
+stehen dort Manafont (BLM), Improvised Finish (DNC) und die Eukrasia-Aktionen (SGE). Keiner ist ein
+Befund, aus demselben Grund: Die Bedingung steht in einer Eigenschaft oder einem umschließenden `if`, das
+der Abgleich nicht verfolgt. Beim Blaumagier stehen Chelonian Gate (Auspicious Trance) und Cold Fog (Touch
+of Frost) dort, ebenfalls ohne Befund: Der Status ist die Bedingung des Folgezaubers, dessen Text im selben
+Wirktext steht (Divine Cataract, White Death), und `BlueMageRotation` verlangt ihn dort über `StatusNeed`
+(Blatt `ActionTransient` 23273 und 23267, xivapi v2, 16.11.2026).
 - Manafont wird in `BLM_Default` und `BLM_RP` nur innerhalb von `if (InAstralFire)` gewirkt.
 - Improvised Finish wirkt `DNC_Reborn` nur unter `ImprovisedFinishPvEReady` — der Knopf von
   Improvisation ist dann Improvised Finish, Improvisation liegt also.
@@ -118,8 +121,9 @@ Eigenschaft oder einem umschließenden `if`, das der Abgleich nicht verfolgt.
   Shroud, …), weil die Texte das vorige Feld in den Namen laufen lassen.
 - **Vom Spiel ausgeblendete Namen:** Hängt ein Combo-Vorgänger von einer Eigenschaft ab, lässt der
   Wirktext ihn leer (wie eine Potenz); dann fehlt die Combo-Kante.
-- **Nicht erfasst:** Zusatzrotationen (`ExtraRotations`), PvP. Blaumagier und Beastmaster werden
-  erzeugt, aber nicht bewertet (begrenzte Jobs, außerhalb seines Profils).
+- **Nicht erfasst:** Zusatzrotationen (`ExtraRotations`), PvP (die PvP-Rotationen prüft Konzept 25 je Job gegen den
+  Job-Guide). Blaumagier und Beastmaster werden erzeugt, der Index kennzeichnet sie als begrenzte Jobs; ihre
+  Kandidaten im Abgleich Wirktext ↔ Code sind bewertet (oben; der Beastmaster hat keinen).
 - **Die Zahlen altern** mit jeder Rotationsänderung; die erzeugten Dateien tragen ihr Datum,
   `--check` zeigt, ob sie noch stimmen.
 
