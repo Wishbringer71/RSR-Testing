@@ -433,7 +433,7 @@ eigenen Liste (`TargetUpdater._outOfDutyPlayers`); vorher standen sie unter `All
 Heiler und Beschwörer, 64 für den Rotmagier. Für alle anderen wurde sie nicht geprüft, sodass ein
 Rotmagier unter 64 — jeder stufensynchronisierte Durchgang durch ältere Inhalte — als lebender Rezzer
 zählte und die Feder zurückhielt, die dort der einzige Weg war. Beide Stellen teilen sich
-dieselben zwei Konstanten; das ist die Konstruktion, die nicht wieder auseinanderläuft. Die Stufe
+dieselben zwei Stufen aus dem Aktionsblatt (`DataCenter.RaiseLevel`, `VerraiseLevel` über `LevelOf`; heute 12 und 64); das ist die Konstruktion, die nicht wieder auseinanderläuft. Die Stufe
 eines Gruppenmitglieds stammt aus `ICharacter.Level`. Dass der Wert in einem synchronisierten Inhalt
 die synchronisierte Stufe meldet, setzt WrathCombo voraus: Es zählt den Spieler nur dann als Teilnehmer
 einer FATE, wenn `LocalPlayer.Level` höchstens deren Höchststufe ist (`InFATE`) — ein anderes Werkzeug,
@@ -507,7 +507,7 @@ Drei Zeitpunkte sind zu unterscheiden, und nur der mittlere ist für die Auswahl
 | Zeitpunkt | Was RSR sieht | Folge für die Zielmenge |
 |---|---|---|
 | Wirken beginnt | den Cast des Wirkenden samt Ziel (`CastTargetObjectId`) | `GetDeath` schließt das Ziel aus, solange ein anderer Spieler den Cast führt (A293) |
-| Wirkung landet | das Ziel trägt `Raise` (148 oder 1140, `StatusHelper.RaiseStatus`) | `GetDeath` schließt es aus (`TargetFilter.cs:112`) |
+| Wirkung landet | das Ziel trägt `Raise` (148 oder 1140, `StatusHelper.RaiseStatus`) | `GetDeath` schließt es aus (`TargetFilter.GetDeath`) |
 | Der Tote nimmt an | keine eigene Meldung nötig | schon vorher ausgeschlossen |
 
 Die Zeit bis zur Annahme durch den Gefallenen ist für die Entscheidung damit ohne Bedeutung: Der
@@ -565,7 +565,8 @@ Zwei Lücken bleiben:
 ### Zielauswahl und `RaiseType`
 
 Geprüft und ohne Befund: `PartyOnly` (Vorgabe) und `PartyHealersOnly` werden in `GetDeathTarget`
-getrennt behandelt, die Allianz-Varianten fügen ohne Doppelzählung hinzu (`deathPartyIds`).
+getrennt behandelt, die Allianz-Varianten fügen ohne Doppelzählung hinzu: Die Allianzliste enthält die eigene Gruppe
+nie (`TargetUpdater.UpdateLists`: Allianz erst im `else` nach `IsParty`, gelesen 16.11.2026); die eigene Menge `deathPartyIds` dafür hat Upstream mit 8eba51387 entfernt (Stand 16.11.2026).
 `GetPriorityDeathTarget` staffelt Tank, Heiler, Ersatzrezzer und Übrige; die Sonderregel für zwei
 tote Tanks ist eine begründete Fallunterscheidung und kein Tippfehler (C36). Die Reihenfolge
 entspricht der Vorgabe des Auftraggebers, wonach eine Feder zuerst einen Heiler aufheben soll.
