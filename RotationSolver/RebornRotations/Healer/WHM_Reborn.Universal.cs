@@ -66,8 +66,8 @@ public sealed partial class WHM_Reborn : WhiteMageRotation
 	/// cast time).
 	///
 	/// The stun of a Holy that has just finished casting may not be in the enemies' status lists yet
-	/// when the next GCD is chosen - cast and recast are equally long, so the next GCD is free the
-	/// moment the cast lands. StunWatch knows it from the effect set, at the length the halving gives
+	/// when the next GCD is chosen - the next GCD is free one second after the cast lands (cast 1.5 s,
+	/// recast 2.5 s; 0.8 s under Presence of Mind), and the lists can lag behind that. StunWatch knows it from the effect set, at the length the halving gives
 	/// that application, and knows the enemies the cast found immune. Until A272 an enemy that was
 	/// neither stunned nor carrying a resistance status counted as about to receive a full four
 	/// seconds; the game shows no such status for the halving, so every pack that could no longer be

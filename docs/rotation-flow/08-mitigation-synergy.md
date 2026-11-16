@@ -1619,7 +1619,7 @@ Belege abgerufen 18.10.2026 (xivapi v2, Blätter `Action` und `Status`, englisch
 - *Feindseligkeit durch Schlaf:* unbelegt; die gefundene Quelle stammt aus Version 1.0.
 
 - *Sanctus und Sanctga* (Wirktexte, `ActionId.resx`): „Deals unaspected damage … to all nearby enemies. Additional
-  Effect: Stun Duration: 4s", Potenz 140 bzw. 150, Umkreis 8 y um den Weißmagier, Wirkzeit wie Schlummer. Eine
+  Effect: Stun Duration: 4s", Potenz 140 bzw. 150, Umkreis 8 y um den Weißmagier, Wirkzeit 1,5 s (Schlummer 2,5 s). Eine
   Betäubung bricht das Wirken eines nicht immunen Gegners ab (Grundlage der Tiefschlag-Regel). Jede weitere
   Betäubung halbiert sich, bis der Gegner vorübergehend immun ist (`StunWatch`, A272).
 - *Abnutzung:* Wiederholter Schlaf auf denselben Gegner hält kürzer, bis er eine Weile widersteht, getrennt von der
@@ -2312,18 +2312,19 @@ Barriere des Dunkelritters — stehen unter „Die Vorgaben des Auftraggebers" u
 
 ### Ein einziger Einschub genügt
 
-Sanctus hat eine Wirkzeit, und die Betäubung beginnt, wo der Zauber landet. Bei GCD und Wirkzeit
-von je 2,5 s und Betäubungsdauern von 4 / 2 / 1 s:
+Sanctus hat eine Wirkzeit, und die Betäubung beginnt, wo der Zauber landet. Sanctus und Sanctga wirken
+1,5 s bei 2,5 s Erholzeit (Blatt `Action`, #139 und #25860, `Cast100ms` 15, `Recast100ms` 25; xivapi,
+16.11.2026). Mit Betäubungsdauern von 4 / 2 / 1 s:
 
 | Verlauf | Betäubungsdeckung | Eingeschobene GCDs |
 |---|---|---|
-| ohne Einschub | **5,5 s** (2,5–7,0 · 7,5–8,5) | 0 |
-| Einschub, solange die Betäubung den nächsten Sanctus überdauert | **7,0 s** (2,5–6,5 · 7,5–9,5 · 10,0–11,0) | 1 |
-| Einschub, solange irgendeine Betäubung läuft | **7,0 s** (2,5–6,5 · 10,0–12,0 · 15,0–16,0) | 3 |
+| ohne Einschub | **5,5 s** (1,5–6,0 · 6,5–7,5) | 0 |
+| Einschub, solange die Betäubung den nächsten Sanctus überdauert | **7,0 s** (1,5–5,5 · 6,5–8,5 · 9,0–10,0) | 1 |
+| Einschub, solange irgendeine Betäubung läuft | **7,0 s** (1,5–5,5 · 9,0–11,0 · 14,0–15,0) | 3 |
 
 Nach der zweiten Anwendung (2 s) landet der nächste Sanctus ohnehin erst nach deren Ende; ein
-Einschub dort kostet einen GCD und bringt nichts. Unter Presence of Mind (GCD und Wirkzeit 2,0 s)
-liefert die Regel lückenlose Deckung von 2 bis 9 s, ebenfalls mit einem Einschub. Die Zahlen stammen
+Einschub dort kostet einen GCD und bringt nichts. Unter Presence of Mind (GCD 2,0 s, Wirkzeit 1,2 s)
+liefert die Regel lückenlose Deckung von 1,2 bis 8,2 s, ebenfalls mit einem Einschub. Die Zahlen stammen
 aus `.github/scripts/audit/stun_coverage.py` (Aufruf mit GCD und Wirkzeit), das die Regel GCD für
 GCD simuliert und einen Selbsttest trägt.
 
@@ -2339,9 +2340,9 @@ bis ein jetzt begonnener Sanctus landet: Rest des GCD plus Wirkzeit (`GetCastTim
 mit Presence of Mind). Gemessen wird die längste laufende Betäubung im Wirkradius — überschrieben
 würde jede, die die Landung überdauert.
 
-**Die Betäubung, die noch nicht in der Statusliste steht.** Wirkzeit und Erholzeit sind gleich lang;
-der nächste GCD ist in dem Moment frei, in dem der erste Sanctus landet, und seine Betäubung steht
-dann womöglich noch nicht in der Statusliste der Gegner. Die Effektmeldung des Sanctus sagt aber schon,
+**Die Betäubung, die noch nicht in der Statusliste steht.** Zwischen der Landung eines Sanctus und
+dem nächsten freien GCD liegt nur eine Sekunde (Erholzeit 2,5 s weniger Wirkzeit 1,5 s), unter Presence of
+Mind 0,8 s; kommt die Statusliste der Gegner verzögert, steht seine Betäubung dann womöglich noch nicht darin. Die Effektmeldung des Sanctus sagt aber schon,
 wen er betäubt hat: `StunWatch` zählt je Gegner die Anwendungen und rechnet die gerade gelandete mit
 der Dauer aus dem Wirktext (`DefensiveValues.DurationOf`, Sanctus 4 s), halbiert je vorheriger
 Anwendung (The Balance: „halving its duration with each application"). Sobald die Betäubung in der
@@ -2370,8 +2371,9 @@ Dutzend Varianten mit Zahlensuffix; welche davon Sanctus anlegt, ist offline nic
   immer auf.
 - *Mindestzahl `StretchHolyMinHostiles`* für die Streckung — Sanctus prüft seine Zielzahl selbst.
   Die Einstellung gilt weiter für das Aussetzen bei der Barriere des Dunkelritters.
-- *H2 aus A19*, die Ablehnung von `Restzeit > ein GCD`, rechnete ohne Wirkzeit. Mit Wirkzeit gleich
-  GCD ist sie dieselbe Bedingung wie die jetzige.
+- *H2 aus A19*, die Ablehnung von `Restzeit > ein GCD`, rechnete ohne Wirkzeit. Mit den Werten des Blatts
+  liefert sie im Modell dieselbe Deckung (7,0 s, ein Einschub); gefragt wird trotzdem gegen die Landung, weil
+  das die Frage seiner Vorgabe ist und unter jeder Wirkzeit stimmt.
 
 Anlass war seine Beobachtung vom 29.09.2026: Das zweite Sanctus fiel sofort, statt die Betäubung auslaufen
 zu lassen. Diese drei Wege und der Vergleich mit einer noch nicht stehenden Betäubung ließen es fallen.

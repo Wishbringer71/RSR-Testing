@@ -24844,6 +24844,26 @@ Dalamud-Log. Die vorige Logdatei stammt vom 12.11.2026.
   wie lange zu spät kam. Was sie nicht beantwortet: welche Prüfung ablehnte.
 - *Prüfgrad:* Mitschnittanalyse, Code gelesen; Ursache nicht belegt.
 
+### A849 · Konzept 08: Wirkzeit von Sanctus nach dem Blatt (16.11.2026)
+
+- *Anlass:* Beim Durchgang zu Konzept 10 (A844) gefunden: Konzept 10 nennt 1,5 s Wirkzeit für Sanctus, Konzept 08 rechnet
+  mit 2,5 s. Seine Frage (16.11.2026): „sanctga / sanctus hat einen stun, der abnehmende dauer hat. oder wo hast du da
+  probleme gesehen?“ – die abnehmende Dauer (4 / 2 / 1 s) war richtig erfasst, die Wirkzeit nicht.
+- *Beleg:* Blatt `Action`, #139 (Holy) und #25860 (Holy III): `Cast100ms` 15, `Recast100ms` 25 (xivapi, 16.11.2026).
+- *Wirkung im Kampf:* keine. Die Regel liest die Wirkzeit zur Laufzeit (`GetCastTime`, angepasst). Falsch waren die
+  Modellzahlen in Konzept 08, die Begründung „Wirkzeit und Erholzeit gleich lang, der nächste GCD ist frei, sobald der
+  Zauber landet“ (zwischen Landung und GCD liegt 1 s, unter Presence of Mind 0,8 s), „Wirkzeit wie Schlummer“ (Schlummer
+  2,5 s) und derselbe Satz im Kommentar von `WHM_Reborn.Universal.cs`.
+- *Neu gerechnet* (`stun_coverage.py 2.5 1.5` und `2.0 1.2`): ohne Einschub 5,5 s, mit der Regel 7,0 s bei einem Einschub,
+  unter Presence of Mind lückenlos 1,2 bis 8,2 s mit einem Einschub. Das Ergebnis der Regel bleibt; die Zahlen ändern sich.
+  Das Modell vergleicht seither mit einer Toleranz: Bei genau gleicher Landung zählte es durch Rundung (5,2 − 4,0 > 1,2)
+  einen zweiten Einschub, den der Code (Vergleich mit `<=`) nicht macht. Der Selbsttest trägt die Werte des Blatts und
+  schlägt ohne die Toleranz fehl.
+- *Mein Fehler:* Im Durchgang zu Konzept 08 (A844) nannte ich die Betäubungstabelle „am Code bestätigt“, geprüft habe ich
+  sie nur gegen das Skript mit den Werten des Konzepts, nicht gegen das Blatt (Widerruf C217). Ursache am Vorgehen: Eine
+  Zahl, die ein Modell aus einer Eingabe rechnet, ist erst belegt, wenn die Eingabe es ist.
+- *Prüfgrad:* Blatt, Modell mit Selbsttest, Compile, CI.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -25214,3 +25234,5 @@ geben den Stand vom 14.10.2026 wieder.
 | C213 | A840 (Stand ce0b2e028): Ein angehängtes Repository schalte die Agent-Hooks ab dem nächsten Neustart ab – belegt nur durch ADR 0051 des LLM-Frameworks | Als Beleg galt LLM-Text. An der Primärquelle geprüft (Claude-Code-Dokumentation, „Settings in cloud sessions“, 16.11.2026): Eine Sitzung mit mehreren Repositories startet über den Klonen und liest keine Hooks. Dass sie hier beim Fortsetzen weiterliefen, widerspricht dem nicht (Startordner beim Start festgelegt) |
 | C214 | A827 (Stand bis A845): Das Feld `ObjectIndex` einer gehaltenen Kampffigur sei lesbar, weil ihr Speicherblock bestehen bleibe | Beim Ausloggen gibt das Spiel den Speicher frei; das Lesen beendete am 16.11.2026 das Spiel (A845) | Widerrufen |
 | C215 | A801 (Stand bis A846): Der Tödliche Strahl des Taurus (#48143) sei ein Blick, der nur Schaden mache | Er ist ein Raidwide mit Verhängnis auf alle (BossModReborn und BossMod `RaidwideCast`, Konzept 21 A683); RSR hielt ihn nur über den Namen eines anderen Blicks für einen (A846) |
+| C216 | A231 (Stand bis A849): Sanctus habe 2,5 s Wirkzeit bei 2,5 s Erholzeit, der nächste GCD sei frei, sobald er landet | Blatt `Action`: Wirkzeit 1,5 s, Erholzeit 2,5 s; zwischen Landung und GCD liegt 1 s (A849) |
+| C217 | A844, Zeile zu Konzept 08 (Stand bis A849): Die Betäubungstabelle aus `stun_coverage.py 2.5 2.5` sei am Code bestätigt | Geprüft war nur das Skript mit den Werten des Konzepts; Sanctus wirkt 1,5 s, nicht 2,5 s (A849) |

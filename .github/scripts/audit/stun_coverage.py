@@ -18,12 +18,15 @@ question also yields during the first stun's last 1.5 s and after the 2 s applic
 the next cast lands after the stun anyway, and spends two GCDs for nothing.
 
 Usage: python3 .github/scripts/audit/stun_coverage.py [gcd_seconds] [cast_seconds]
+       Holy's own values: 2.5 1.5, under Presence of Mind 2.0 1.2 (sheet Action, A848).
 """
 import sys
 
 # Sanctus/Holy applies 4 s, halved on the second application, quartered on the third.
 DURATIONS = [4.0, 2.0, 1.0]
 HORIZON = 30.0
+# Float noise in the GCD grid (5.2 - 4.0 > 1.2): a rule compared at exactly the landing must not flip on it.
+EPS = 1e-9
 
 
 def simulate(gcd, should_insert, durations=None, horizon=HORIZON, cast=0.0):
@@ -102,6 +105,16 @@ def self_test():
     # Presence of Mind shortens cast and recast alike; the same rule still spends one GCD.
     total, _, inserted = simulate(2.0, lambda r, a: r > 2.0, cast=2.0)
     assert abs(total - 7.0) < 1e-9 and inserted == 1, (total, inserted)
+    # The sheet's values (A848): Holy and Holy III cast 1.5 s against a 2.5 s recast, 1.2 s and 2.0 s under
+    # Presence of Mind. The rule asks whether a cast started now would land inside the stun; a stun that ends
+    # exactly as the cast lands is not held (the code compares with <=), so the comparison carries the
+    # float tolerance the code does not need.
+    total, _, inserted = simulate(2.5, lambda r, a: False, cast=1.5)
+    assert abs(total - 5.5) < 1e-9 and inserted == 0, (total, inserted)
+    total, _, inserted = simulate(2.5, lambda r, a: r > 1.5 + EPS, cast=1.5)
+    assert abs(total - 7.0) < 1e-9 and inserted == 1, (total, inserted)
+    total, _, inserted = simulate(2.0, lambda r, a: r > 1.2 + EPS, cast=1.2)
+    assert abs(total - 7.0) < 1e-9 and inserted == 1, (total, inserted)
     print('self-test ok: budget, insertion count, rejected rule, short GCD, cast time\n')
 
 
@@ -110,7 +123,7 @@ if __name__ == '__main__':
     gcd = float(sys.argv[1]) if len(sys.argv) > 1 else 2.5
     cast = float(sys.argv[2]) if len(sys.argv) > 2 else 0.0
     RULES['insert if remaining > 1 GCD (rejected)'] = lambda r, a, g=gcd: r > g
-    RULES['insert while the next cast would land inside it (fork)'] = lambda r, a, c=cast: r > c
+    RULES['insert while the next cast would land inside it (fork)'] = lambda r, a, c=cast: r > c + EPS
 
     print(f'GCD {gcd:.2f} s, cast {cast:.2f} s, stun durations {DURATIONS}, budget {sum(DURATIONS):.1f} s\n')
     print(f'{"coverage":>9}  {"GCDs spent":>10}  rule')

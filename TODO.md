@@ -20,7 +20,6 @@ BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Ze
 (Beispiel seiner Beobachtung: der Raptor gegen Feuer, bevor feueranfällige Gegner da waren; A581).
 
 1. Burstphasen und Weben aus der Puppensitzung klären.
-2. Konzept 08: Wirkzeit von Sanctus.
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -42,12 +41,6 @@ und Samurai (Senei 60 s) zu spät; der zweite pünktlich (A848, Puppensitzung vo
 gemeinsamer Burst-Zustand, Webfenster. Sein Hinweis (16.11.2026) verlangt die Klärung an der Puppe. Nächster Schritt: die
 Zeile „ready but unused over the fight“ (Build ab 6992f82af) je betroffenem Job an der Puppe nennt die ablehnende
 Prüfung; danach Loop je Grund. Konzept 03, „Bereit, aber nicht genutzt“.
-
-### Konzept 08: Wirkzeit von Sanctus · R
-
-Im Kampf ohne Wirkung (die Regel liest die Wirkzeit aus dem Spiel). Konzept 08, Kommentar in `WHM_Reborn.Universal.cs`
-und Selbsttest von `stun_coverage.py` rechnen mit 2,5 s Wirkzeit; das Blatt nennt 1,5 s (Recast 2,5 s), Konzept 10
-ebenso. Nächster Schritt: Zahlen und Text nachziehen, A231 widerrufen.
 
 ## Technische Schuld
 
