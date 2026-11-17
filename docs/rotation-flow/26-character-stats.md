@@ -138,13 +138,46 @@ als obere Schranke: Es zeigt, was die Grenzen des Sets kosten, und kürzt die Su
 freien Rest die beste gefundene nicht mehr erreicht, fällt weg). Ergebnis je Platz: Wert und Grad, ob vorhanden, ob
 zusätzlicher Platz mit Chance; je Wert die Punkte bis zur nächsten Stufe; der Gewinn gegenüber den angelegten Melds.
 
+## Was zuerst zählt, je Rolle
+
+Seine Vorgabe (17.11.2026): „bei tanks ist schaden erst an zweiter stelle, an erster stelle steht durchhaltevermögen. also
+schaden einstecken oder mitigieren. bei heilern zählt heilvermögen an erster stelle, schaden auch an zweiter. bei allen
+anderen ist schaden an erster stelle und durchhaltevermögen bzw. dass man besser geheilt werden kann an zweiter.“
+
+Was die Materia-Werte je Rolle bewirken (akhmorning 7.0: Unbeugsamkeit „a Tank only linear multiplier that affects all of
+your outgoing and incoming damage, as well as outgoing healing. It does not affect the heals you receive. It does nothing for
+non-tanks“; Entschlossenheit „affects all of your outgoing damage and healing“; Direkter Treffer „does not affect heals“;
+Frömmigkeit „a Healer only function“):
+
+| Rolle | an erster Stelle | Materia dafür | an zweiter Stelle | Materia dafür |
+|---|---|---|---|---|
+| Tank | Durchhalten: Schaden einstecken und mindern | Unbeugsamkeit (erlittener Schaden, Koeffizient 200) | Schaden | Kritisch, Entschlossenheit, Direkt, Unbeugsamkeit (ausgeteilt, 112) |
+| Heiler | Heilvermögen: Heilung je Einsatz und MP, sie zu bezahlen | Entschlossenheit, Kritisch, Zaubertempo (HoT-Stärke, Wirkzeit), Frömmigkeit (MP) | Schaden | Direkt, dazu dieselben |
+| alle anderen | Schaden | Kritisch, Entschlossenheit, Direkt, Tempo | Durchhalten, besser geheilt werden | keine: kein Materia-Wert wirkt für sie auf erlittenen Schaden oder empfangene Heilung; Konstitution (LP) nur über Ausrüstung und Essen |
+
+**Bewertung als Rangfolge:** Zuerst das Optimum des ersten Ziels; unter den Belegungen, die es erreichen, das beste des
+zweiten. Wegen der Sprünge erreichen oft viele Belegungen dieselbe Stufe des ersten Ziels – dort entscheidet das zweite.
+- *Tank:* Faktor des erlittenen Schadens aus Unbeugsamkeit zuerst; LP und Verteidigung bewegt Materia nicht. Dann Schaden wie
+  bei allen.
+- *Heiler:* Heilfaktor f(Entschlossenheit) · (1 + Chance_krit · (Schaden_krit − 1)) und MP je Tick; wie beide zueinander stehen,
+  hängt am Inhalt (wie viel MP er braucht) – die Mindestfrömmigkeit bleibt seine Vorgabe, darüber zählt der Heilfaktor. Dann
+  Schaden (Direkt).
+- *Alle anderen:* Schaden; das zweite Ziel greift bei der Materia nicht, nur im Hinweis zum Essen (Konstitution bei gleichem
+  Schaden).
+- *Geteilte Gegenstände:* Jeder Job bewertet nach seiner Rolle; ein Stück, das nur eine Rolle trägt, folgt ihr ganz.
+- *Gegenposition:* Seine allgemeine Regel gewichtet Sicherheit mit der Wahrscheinlichkeit, dass der Schaden eintritt
+  (CLAUDE.md, „Spielweise“). Eine strenge Rangfolge setzt beim Tank alle Materia auf Unbeugsamkeit, auch wo ein Inhalt kaum
+  trifft. Ab Werk gilt seine Rangfolge; als Option eine Gewichtung zwischen erstem und zweitem Ziel, mit der Rangfolge als
+  Voreinstellung (CLAUDE.md: seine Regel ist die Voreinstellung, kein Grund, die Option zu verwerfen).
+
 ## Was eine Empfehlung braucht
 
 - *Bestand:* die Gearsets mit Schritt 1 (siehe „Geteilte Gegenstände“), die angelegte Ausrüstung
   (`InventoryType.EquippedItems`) als laufendes Set; die Werte des Charakters
   (`PlayerState.Attributes`, Konzept 03) als Gegenprobe der Summe; Job und Stufe (Stufenwerte, Rolle für Unbeugsamkeit).
-- *Bewertung:* der erwartete Schadensfaktor aus den Werten, die Materia bewegt: f(Entschlossenheit) · f(Unbeugsamkeit, nur
-  Tanks) · (1 + Chance_krit · (Schaden_krit − 1)) · (1 + 0,25 · Chance_direkt), dazu das Tempo (unten). Hauptwert und
+- *Bewertung:* je Rolle in der Rangfolge aus „Was zuerst zählt, je Rolle“; der Schadensfaktor aus den Werten, die Materia
+  bewegt: f(Entschlossenheit) · f(Unbeugsamkeit, nur Tanks) · (1 + Chance_krit · (Schaden_krit − 1)) · (1 + 0,25 ·
+  Chance_direkt), dazu das Tempo (unten). Hauptwert und
   Waffenschaden bewegt Materia auf Stufe 100 nicht; sie sind für den Vergleich zweier Melds ein gemeinsamer Faktor und fallen
   heraus – der unbelegte Faktor des Hauptwerts trägt die Empfehlung also nicht.
 - *Tempo:* Mehr Tempo bringt GCDs je Zeit und stärkere DoTs und Autoangriffe, aber ob eine Tempostufe einem Job nützt, hängt
@@ -174,10 +207,8 @@ zusätzlicher Platz mit Chance; je Wert die Punkte bis zur nächsten Stufe; der 
   GCD-Stufe fest bleibt: Die Empfehlung ändert dann nie das Tempo, sondern verteilt nur Kritisch, Direkt, Entschlossenheit
   und Unbeugsamkeit. Hält für den Fall, dass der Spieler eine andere Stufe will – dann wählt er sie, und die Empfehlung
   rechnet für diese.
-- *Antithese gegen „Schaden zuerst“:* Seine Regel „Sicherheit der Gruppe vor Schaden“ (CLAUDE.md, „Spielweise“): Für Tanks
-  mindert Unbeugsamkeit den erlittenen Schaden, für Heiler hält Frömmigkeit MP. Die Empfehlung rechnet deshalb für Tanks
-  Unbeugsamkeit mit ihren beiden Wirkungen und nimmt bei Heilern eine Mindestfrömmigkeit als Vorgabe; die Gewichtung von
-  Schutz gegen Schaden ist seine Entscheidung (Option mit Voreinstellung nach seiner Regel).
+- *Antithese gegen „Schaden zuerst“:* durch seine Vorgabe entschieden – je Rolle ein erstes und ein zweites Ziel (siehe
+  „Was zuerst zählt, je Rolle“).
 - *Antithese gegen 1 und 2:* Character Panel Refined zeigt die Stufen schon. Für 2 hält das nicht: Es empfiehlt keine Melds.
 
 ## Prüfweg

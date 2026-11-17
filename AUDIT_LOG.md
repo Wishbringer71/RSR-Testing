@@ -25502,6 +25502,10 @@ Dalamud-Log. Die vorige Logdatei stammt vom 12.11.2026.
   Fending), Rüstung bei Nahkämpfern je Paar (Maiming DRG RPR, Striking MNK SAM BST, Scouting NIN VPR), bei Tanks je Rolle,
   Waffe je Job. Konzept 26: Sets aus den Gearsets (`RaptureGearsetModule`), ein Stück je Gegenstand über die Sets, gemeinsame
   Bewertung über alle Jobs, die es tragen, Gewicht je Job ab Werk gleich.
+- *Seine Vorgabe (17.11.2026):* je Rolle ein erstes und ein zweites Ziel – Tank Durchhalten vor Schaden, Heiler
+  Heilvermögen vor Schaden, alle anderen Schaden vor Durchhalten. Am Artefakt (akhmorning 7.0): Unbeugsamkeit nur für Tanks,
+  wirkt nicht auf empfangene Heilung; Direkt nicht auf Heilung; Frömmigkeit nur für Heiler – für die übrigen Rollen wirkt keine
+  Materia auf ihr zweites Ziel. Konzept 26: Rangfolge statt Gewichtung ab Werk, Gewichtung als Option.
 - *Messweg-Befund:* Die Suche bei xivapi mit `LevelItem=790` lieferte auch Gegenstände der Stufe 1 (Weathered Coif) – der
   Filter trägt nicht; Stufe und Werte habe ich deshalb je Zeile direkt abgerufen. Ob es auf 780/790 Ausrüstung mit
   Overmelding gibt (gefertigte), ist so nicht belegt.
