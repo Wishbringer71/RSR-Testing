@@ -119,7 +119,9 @@ tragen kann, sagt `Item.ClassJobCategory`; Stand Stufe 780/790 (Blatt, 17.11.202
 
 Das ist die Stufung aus CLAUDE.md, „Universell zuerst“, am Gegenstand: Je mehr Jobs ihn tragen, desto allgemeiner seine
 Materia; die Spezialisierung auf den Job trägt das enger geteilte. Die Sets kommen aus seinen Gearsets (`RaptureGearsetModule`:
-bis zu 100, je Job, je 14 Gegenstände mit Materia und Graden; FFXIVClientStructs 80cb4a7); ein Gegenstand, der in mehreren
+bis zu 100, je Job, je 14 Felder mit Materia und Graden; FFXIVClientStructs 80cb4a7). Werte tragen davon höchstens 12:
+Waffe, Schild (nur Paladin), Kopf, Körper, Hände, Beine, Füße, Ohrringe, Halskette, Armreif, zwei Ringe – sonst 11; das Feld
+Gürtel ist seit dem Wegfall der Gürtel leer, der Seelenkristall trägt keine Werte (seine Frage, 17.11.2026); ein Gegenstand, der in mehreren
 Sets steht (gleiche Zeile und Qualität, gleiche Materia), ist ein Stück und bekommt eine Belegung. Steht dieselbe Zeile mit
 verschiedener Materia in zwei Sets, sind es zwei Stücke.
 
@@ -151,7 +153,7 @@ zusätzlicher Platz mit Chance; je Wert die Punkte bis zur nächsten Stufe; der 
   und jeder Tempopunkt über ihrer Schwelle zählt nur mit seiner DoT- und Autoangriffsstärke.
 - *Lösung (Schritt 2):* Melds hängen voneinander ab (Grenzen je Gegenstand, Sprünge über das ganze Set); einzeln die beste
   Materia je Platz zu wählen verfehlt das Optimum, wo ein Punkt eine Stufe verfehlt. Die Belegungen aus Schritt 1 sind je
-  Gegenstand wenige, über elf Gegenstände viele: Über die Gegenstände hinweg werden die erreichbaren Summen fortgeschrieben,
+  Gegenstand wenige, über 11 oder 12 Gegenstände viele: Über die Gegenstände hinweg werden die erreichbaren Summen fortgeschrieben,
   dominierte verworfen, mit dem freien Optimum als Schranke; am Ende jede Summe ohne Essen exakt bewertet. Für das beste Set
   dann jedes Essen einzeln: Wert mit Essen = Wert + min(Obergrenze, ⌊Wert · Anteil⌋), bewertet wie oben.
 
