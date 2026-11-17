@@ -85,14 +85,9 @@ internal static class HealFromOthers
 
 	private static bool CarriesHealOverTimeOfOthers(IBattleChara member, uint statusId, ulong playerId)
 	{
-		if (member.StatusList == null)
+		foreach (ref readonly var status in member.GetStatuses())
 		{
-			return false;
-		}
-
-		foreach (var status in member.StatusList)
-		{
-			if (status == null || status.StatusId == 0)
+			if (status.StatusId == 0)
 			{
 				continue;
 			}
@@ -100,7 +95,7 @@ internal static class HealFromOthers
 			var matches = statusId != 0
 				? status.StatusId == statusId
 				: StatusHelper.IsAnyHealOverTime((StatusID)status.StatusId);
-			if (matches && !StatusHelper.IsPlayerOrOwned(status.SourceId, playerId))
+			if (matches && !StatusHelper.IsPlayerOrOwned(status.SourceObject.ObjectId, playerId))
 			{
 				return true;
 			}

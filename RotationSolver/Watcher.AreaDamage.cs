@@ -400,7 +400,7 @@ public static partial class Watcher
 				// game answers a spell its kind is immune to, and that is learned (OwnHitWatch).
 				else if (e.type == ActionEffectType.Invulnerable)
 				{
-					invulnerable = HasInvincibility(target);
+					invulnerable = target.HasInvincibleStatus();
 				}
 				// A fully resisted status (52, 55), as the sleep and stun watches read it.
 				else if (e.type is ActionEffectType.FullResistStatus or ActionEffectType.FullResistStatus2)
@@ -421,11 +421,6 @@ public static partial class Watcher
 					diminishes || resisted == null ? new List<uint>() : resisted, promised);
 			}
 		}
-	}
-
-	private static bool HasInvincibility(IBattleChara target)
-	{
-		return target.HasInvincibleStatus();
 	}
 
 	// The statuses an own action puts on its target by the rotation's setting, where its effect text names no chance for

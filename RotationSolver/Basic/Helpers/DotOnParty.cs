@@ -1,6 +1,8 @@
 using ECommons.ExcelServices;
 using RotationSolver.Basic.Configuration;
 
+using GameStatus = FFXIVClientStructs.FFXIV.Client.Game.Status;
+
 namespace RotationSolver.Basic.Helpers;
 
 /// <summary>
@@ -109,19 +111,19 @@ internal static class DotOnParty
 
 		foreach (var member in DataCenter.PartyMembers)
 		{
-			if (!member.IsAlive() || member.StatusList == null)
+			if (!member.IsAlive())
 			{
 				continue;
 			}
 
-			foreach (var status in member.StatusList)
+			foreach (ref readonly var status in member.GetStatuses())
 			{
 				if (!IsEnemyDot(status))
 				{
 					continue;
 				}
 
-				var key = new Instance(member.EntityId, status.StatusId, status.SourceId);
+				var key = new Instance(member.EntityId, status.StatusId, status.SourceObject.ObjectId);
 				_ = _present.Add(key);
 				_seen[key] = _seen.TryGetValue(key, out var seen)
 					? seen with { Last = now }
@@ -202,7 +204,7 @@ internal static class DotOnParty
 		var now = DateTime.Now;
 		foreach (var member in DataCenter.PartyMembers)
 		{
-			if (!member.IsAlive() || member.MaxHp == 0 || member.StatusList == null
+			if (!member.IsAlive() || member.MaxHp == 0
 				|| !TryDamageAhead(member, area, now, out var tick, out var left, out var measured, out var learnedAll))
 			{
 				continue;
@@ -215,7 +217,7 @@ internal static class DotOnParty
 			// as long as all of them run: once the first ends, that size is no longer what comes.
 			var hotLeft = float.MaxValue;
 			var anyHot = false;
-			foreach (var status in member.StatusList)
+			foreach (ref readonly var status in member.GetStatuses())
 			{
 				if (status.StatusId != 0 && StatusHelper.IsHealOverTime((StatusID)status.StatusId))
 				{
@@ -290,14 +292,9 @@ internal static class DotOnParty
 	/// <summary>Whether every enemy damage over time on <paramref name="member"/> is one Esuna clears.</summary>
 	internal static bool OnlyDispellable(IBattleChara member)
 	{
-		if (member.StatusList == null)
+		foreach (ref readonly var status in member.GetStatuses())
 		{
-			return false;
-		}
-
-		foreach (var status in member.StatusList)
-		{
-			if (IsEnemyDot(status) && (!status.CanDispel() || BorneByAnother(member, status.StatusId)))
+			if (IsEnemyDot(status) && (!StatusHelper.CanDispel(status, 1 + DataCenter.DefaultGCDRemain) || BorneByAnother(member, status.StatusId)))
 			{
 				return false;
 			}
@@ -312,14 +309,14 @@ internal static class DotOnParty
 	{
 		foreach (var other in DataCenter.PartyMembers)
 		{
-			if (other == null || other.GameObjectId == member.GameObjectId || other.StatusList == null)
+			if (other == null || other.GameObjectId == member.GameObjectId)
 			{
 				continue;
 			}
 
-			foreach (var status in other.StatusList)
+			foreach (ref readonly var status in other.GetStatuses())
 			{
-				if (status != null && status.StatusId == statusId)
+				if (status.StatusId == statusId)
 				{
 					return true;
 				}
@@ -359,9 +356,9 @@ internal static class DotOnParty
 		var earliest = DateTime.MaxValue;
 		var learnedNewer = 0f;
 		var any = false;
-		foreach (var status in member.StatusList)
+		foreach (ref readonly var status in member.GetStatuses())
 		{
-			if (!_seen.TryGetValue(new Instance(member.EntityId, status.StatusId, status.SourceId), out var seen))
+			if (!_seen.TryGetValue(new Instance(member.EntityId, status.StatusId, status.SourceObject.ObjectId), out var seen))
 			{
 				continue;
 			}
@@ -437,9 +434,9 @@ internal static class DotOnParty
 	}
 
 	// An enemy's damage over time: the status says so in its own text, and nobody of the party put it on.
-	private static bool IsEnemyDot(Dalamud.Game.ClientState.Statuses.IStatus status)
+	private static bool IsEnemyDot(in GameStatus status)
 	{
-		return status.StatusId != 0 && !_party.Contains(status.SourceId)
+		return status.StatusId != 0 && !_party.Contains(status.SourceObject.ObjectId)
 			&& StatusHelper.IsDamageOverTime([(StatusID)status.StatusId]);
 	}
 
@@ -467,17 +464,17 @@ internal static class DotOnParty
 		var count = 0;
 		foreach (var member in DataCenter.PartyMembers)
 		{
-			if (member.EntityId != entityId || member.StatusList == null)
+			if (member.EntityId != entityId)
 			{
 				continue;
 			}
 
-			foreach (var status in member.StatusList)
+			foreach (ref readonly var status in member.GetStatuses())
 			{
 				if (IsEnemyDot(status))
 				{
 					count++;
-					instance = new Instance(entityId, status.StatusId, status.SourceId);
+					instance = new Instance(entityId, status.StatusId, status.SourceObject.ObjectId);
 				}
 			}
 		}

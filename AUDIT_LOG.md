@@ -24984,6 +24984,15 @@ Dalamud-Log. Die vorige Logdatei stammt vom 12.11.2026.
     `BeirutaSGE` (drei von drei gefunden): kein Fall; die beiden Treffer lesen nach `CanUse`, außerhalb des Suchfensters.
   - Schnitter: `IsPartyBurst` über `AnyPartyMemberHasStatus`, Verhalten gleich.
   - Release-Text: Name der Sicherungsdatei und der Flächenschlaf (A850) nachgetragen.
+- *Code-Review des Merges (17.11.2026, 831ea19aa..50f52bf3e, acht Befunde):* Vier behoben – `IsStatusNeeded` prüfte die
+  Statusliste des Spielers nur auf null und legte sie dafür je Aktion und Frame an; `DotOnParty`, `HealReduction`,
+  `HealFromOthers` und `TargetUpdater.HealTarget` liefen je Frame und Mitglied über Dalamuds `StatusList` (eine Liste und ein
+  Objekt je Status) und lesen jetzt `GetStatuses` mit `CanDispel`/`IsDangerous` aus Upstream; `Watcher.AreaDamage` hielt eine
+  eigene Unverwundbarkeitsliste neben `HasInvincibleStatus`. Im Kampf gleich, ohne Anlagen im Heilpfad (Konzept 24, „Spieldaten
+  lesen“). Nicht geändert: Upstreams 15-ms-Zwischenspeicher der Priorität und seine eigene Konstante dafür (höchstens ein Frame
+  alt, Upstream-Code ohne Wirkung im Kampf), ein Zählindex beim Dezimalkomma (keine Wirkung), der entfernte Schutz in `DoAction`
+  (er übersprang den Druck, solange die Statusliste des Spielers fehlte; die Statusleser dahinter gehen jetzt über `GetStatuses`,
+  das ohne Figur oder Struktur eine leere Folge liefert). Prüfgrad: Compile 0/0, Prüfskripte 60/0.
 - *Sein Hinweis zur Bibliothek* (gemeinsamer, robuster Teil vor direktem Lesen): im Loop mit Antithesen in Konzept 24,
   „Spieldaten lesen: gemeinsame Bibliothek oder direkt“.
 - *Seine Präzisierung zum Sync* (Konzepte, Ziel von Upstream, Synergien je Änderung): in `.claude/skills/upstream-sync/SKILL.md`.

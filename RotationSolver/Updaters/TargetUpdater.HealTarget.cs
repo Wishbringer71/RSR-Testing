@@ -22,18 +22,19 @@ internal static partial class TargetUpdater
 		var spreadDotsWait = DataCenter.HasHostilesInRange
 			&& DataCenter.CurrentRotation is RotationSolver.Basic.Rotations.CustomRotation { HasGroupHealOverTime: true };
 		_dotBearers.Clear();
+		var minRemaining = 1 + DataCenter.DefaultGCDRemain;
 		if (spreadDotsWait)
 		{
 			foreach (var member in DataCenter.PartyMembers)
 			{
-				if (member?.StatusList == null)
+				if (member == null)
 				{
 					continue;
 				}
 
-				foreach (var status in member.StatusList)
+				foreach (ref readonly var status in member.GetStatuses())
 				{
-					if (status != null && status.CanDispel() && StatusHelper.IsDamageOverTime([(StatusID)status.StatusId]))
+					if (StatusHelper.CanDispel(status, minRemaining) && StatusHelper.IsDamageOverTime([(StatusID)status.StatusId]))
 					{
 						_dotBearers[status.StatusId] = _dotBearers.GetValueOrDefault(status.StatusId) + 1;
 					}
@@ -45,16 +46,10 @@ internal static partial class TargetUpdater
 		float lethalDist = float.MaxValue, worseDist = float.MaxValue, listedDist = float.MaxValue, otherDist = float.MaxValue;
 		foreach (var person in candidates)
 		{
-			var statusList = person.StatusList;
-			if (statusList == null)
-			{
-				continue;
-			}
-
 			bool kills = false, turnsWorse = false, isListed = false, any = false;
-			foreach (var status in statusList)
+			foreach (ref readonly var status in person.GetStatuses())
 			{
-				if (status == null || !status.CanDispel())
+				if (!StatusHelper.CanDispel(status, minRemaining))
 				{
 					continue;
 				}
@@ -71,7 +66,7 @@ internal static partial class TargetUpdater
 				}
 
 				any = true;
-				isListed |= status.IsDangerous();
+				isListed |= StatusHelper.IsDangerous(status, minRemaining);
 				turnsWorse |= StatusHelper.TurnsWorseOnExpiry((StatusID)status.StatusId);
 			}
 

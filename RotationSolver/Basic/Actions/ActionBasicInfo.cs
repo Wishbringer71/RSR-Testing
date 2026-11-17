@@ -603,7 +603,7 @@ public readonly partial struct ActionBasicInfo
 		// provides ("Number of GCDs before the DOT/Status effect is reapplied"); read here it locked
 		// every consumer out of the last GCDs of its own window, and any "use it before it runs out"
 		// rule with it.
-		return Player.Object.StatusList != null && !skipStatusNeed && _action.Setting.StatusNeed != null && Player.Object.WillStatusEnd(NeededStatusMargin, _action.Setting.StatusFromSelf, _action.Setting.StatusNeed);
+		return !skipStatusNeed && _action.Setting.StatusNeed != null && Player.Object.WillStatusEnd(NeededStatusMargin, _action.Setting.StatusFromSelf, _action.Setting.StatusNeed);
 	}
 
 	private bool IsStatusProvided(bool skipStatusProvideCheck)

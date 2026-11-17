@@ -69,7 +69,7 @@ internal static class HealReduction
 		}
 
 		var factor = 1f;
-		foreach (var status in member.StatusList)
+		foreach (ref readonly var status in member.GetStatuses())
 		{
 			if (status.StatusId != 0 && _measured.TryGetValue(status.StatusId, out var m) && m.Count > 0)
 			{
@@ -107,7 +107,7 @@ internal static class HealReduction
 			}
 
 			var bears = false;
-			foreach (var status in member.StatusList)
+			foreach (ref readonly var status in member.GetStatuses())
 			{
 				if (status.StatusId != 0 && reducing.Contains(status.StatusId))
 				{
@@ -142,7 +142,7 @@ internal static class HealReduction
 		foreach (var (member, amount) in _bearers)
 		{
 			var share = Math.Min(1.0, amount / (double)baseline);
-			foreach (var status in member.StatusList)
+			foreach (ref readonly var status in member.GetStatuses())
 			{
 				if (status.StatusId == 0 || !reducing.Contains(status.StatusId))
 				{

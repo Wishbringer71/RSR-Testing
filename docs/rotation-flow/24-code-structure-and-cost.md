@@ -201,7 +201,12 @@ statische Bedingung, die ihre Werte als Zustand bekommt, damit der allgemeine We
 Status über die ganze Gruppe und Unverwundbarkeit fragt der Fork über die gemeinsamen Funktionen von `StatusHelper`, die
 Upstream 7.5.8.4 eingeführt hat (`AnyPartyMemberHasStatus`, `HasInvincibleStatus`), statt eigener Schleifen über
 `StatusList`: der Tank-Limit-Break auf der Gruppe (Konzept 09) und die Unverwundbarkeit eines getroffenen Ziels (Konzept 08).
-Im Kampf gleich, ohne ein Objekt je Status.
+Im Kampf gleich, ohne ein Objekt je Status. Ebenso lesen die Schleifen, die je Frame über die Status der Gruppe laufen,
+die Status über `StatusHelper.GetStatuses` statt über Dalamuds `StatusList` (Code-Review des Merges, 17.11.2026): DoTs
+auf der Gruppe (`DotOnParty`), gemessene Heilminderung (`HealReduction`), Heilung anderer (`HealFromOthers`), die Wahl
+des Reinigungsziels (`TargetUpdater.HealTarget`) und die Statusbedingung jeder Aktion (`ActionBasicInfo.IsStatusNeeded`,
+wie Upstream ohne die zusätzliche Prüfung der Liste). Jede `StatusList` legte ein Objekt für die Liste und eines je Status
+an. Die übrigen Fork-Stellen laufen seltener (bei einem Ereignis, im Fenster) und bleiben auf Dalamuds Weg.
 *Nicht angewandt:* das Fensterverhalten der Infofenster – zwei der drei Fenster gehören Upstream, und eine gemeinsame
 Hilfe nur im Fork-Fenster spart nichts.
 
