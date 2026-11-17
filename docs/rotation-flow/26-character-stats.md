@@ -153,7 +153,7 @@ Frömmigkeit „a Healer only function“):
 |---|---|---|---|---|
 | Tank | Durchhalten: Schaden einstecken und mindern | Unbeugsamkeit (erlittener Schaden, Koeffizient 200) | Schaden | Kritisch, Entschlossenheit, Direkt, Unbeugsamkeit (ausgeteilt, 112) |
 | Heiler | Heilvermögen: Heilung je Einsatz | Entschlossenheit, Kritisch, Zaubertempo (HoT-Stärke, Wirkzeit) | Schaden, an dritter Stelle MP | Direkt, dazu dieselben; Frömmigkeit (nur MP) zuletzt |
-| alle anderen | Schaden | Kritisch, Entschlossenheit, Direkt, Tempo | Durchhalten, besser geheilt werden | keine: kein Materia-Wert wirkt für sie auf erlittenen Schaden oder empfangene Heilung; Konstitution (LP) nur über Ausrüstung und Essen |
+| alle anderen | Schaden | Kritisch, Entschlossenheit, Direkt, Tempo | Durchhalten, besser geheilt werden | keine nach akhmorning: kein Materia-Wert wirkt für sie auf erlittenen Schaden oder empfangene Heilung (der Text der Entschlossenheit lässt es offen, siehe „Offen“); Konstitution (LP) nur über Ausrüstung und Essen |
 
 **Bewertung als Rangfolge:** Zuerst das Optimum des ersten Ziels; unter den Belegungen, die es erreichen, das beste des
 zweiten. Wegen der Sprünge erreichen oft viele Belegungen dieselbe Stufe des ersten Ziels – dort entscheidet das zweite.
@@ -233,3 +233,10 @@ zweiten. Wegen der Sprünge erreichen oft viele Belegungen dieselbe Stufe des er
 - Der Faktor des Hauptwerts je Stufe (Werkzeugtabelle „after some testing“): für die Empfehlung ohne Belang (fällt heraus),
   für jede Aussage über absoluten Schaden unbelegt.
 - Ob Hast (BaseParam 47) einen Wert trägt, zeigt die Spur aus Konzept 03 (A872).
+- Ob Entschlossenheit (und Unbeugsamkeit) auch empfangene Heilung hebt (seine Frage, 17.11.2026). Der Text des Spiels lässt es
+  offen (`BaseParam` 44, deutsch: „desto höher … die Höhe der durch Magie geheilten LP“; englisch: „the amount of HP restored
+  by healing spells“; 19: „regenerierte LP“); akhmorning sagt für beide „It does not affect the heals you receive“ –
+  Community-Forschung, nicht von mir gemessen. Prüfweg: dieselbe Heilaktion desselben Heilers auf ihn, ohne kritische Treffer,
+  unter zwei seiner Sets mit verschiedener Entschlossenheit; die Streuung einer Heilung (±5 %, akhmorning) verlangt viele
+  Treffer je Set. Bis dahin gilt die Aussage der Quelle, und für die Rollen außer Tank und Heiler wirkt keine Materia auf ihr
+  zweites Ziel.
