@@ -25603,11 +25603,20 @@ area-heals … bei schilden mit gleichzeitiger heilung wirkt nur der heilanteil�
   diesen Gegenstand nicht.“ (LogMessage), die normale Fassung; die hochwertige ging je eine Sekunde später (Mitschnitt).
   Kein Defekt, wie A790.
 
-*Umfang (Stand dieses Eintrags):* Sitzungen 2 von 2 neuen; Vorhersagen 47 von 47 maschinell, 4 von Hand; Kämpfe 42
-von 42 in der Übersicht (Zone, Job, Dauer, Tode), Schaden, Leerlauf, Abklingzeiten und Abbrüche für die zwei
-Shinryu-Kämpfe, die er nannte, Abbrüche für alle 42; Zeilenarten 148 Gruppen gezählt, inhaltlich geprüft die Gruppen zu
-Kampfbeginn, Essen, Tod, Wiederbelebung (Reiryu), Stellung, Tränken, Bereit-aber-ungenutzt der beiden Shinryu-Kämpfe;
-gelernte Tabellen noch nicht verglichen.
+- *Alle 42 Kämpfe* (6 624 s, 2 709 GCDs): GCD-Leerlauf, während die Gruppe Gegner traf, ohne eigene Todeszeit und mit
+  der Wirkzeit langer Zauber (Wiederbeleben 7,56 s) als Belegung: 270,3 s, davon über 4 s in zwölf Kämpfen. Die großen
+  Lücken sind Mechanik: Windurst 21:01:47–21:02:39 „Am Boden“ (Status 1963) auf allen (51,2 s); Limitless Blue,
+  Clyteum, San d'Oria und Windurst unanvisierbare Bosse (Zeile 34 auf 00 im Augenblick, in dem Blendga abbrach).
+  Wiederbelebung je Tod in Weißmagierkämpfen: 19 Tode; der eine ohne Belebung im Kampf (M4, 19:07) war nach 3,1 s
+  belebt und nicht angenommen; 69,8 s in Windurst fielen in „Am Boden“. Gelernte Tabellen: 12 Dateien geändert, alle
+  Werte steigen oder ersetzen übernommene durch die erste saubere Messung der Spielversion (Vidohunir 0,095 → 1,51,
+  Fläche #44390 0,204 → 0,887, Akh Morn als Serie 2,49 → 2,81); plausibel am Mitschnitt.
+
+*Umfang:* Sitzungen 2 von 2 neuen; Vorhersagen 47 von 47 maschinell, 4 von Hand; Kämpfe 42 von 42 (Zone, Job, Dauer,
+Tode, Leerlauf, Abbrüche, Wiederbelebungen), Schaden, Abklingzeiten und Stellungen für die 2 Shinryu-Kämpfe als
+Schadensausteiler; Zeilenarten 148 von 148 Gruppen gezählt und gesichtet; gelernte Tabellen 12 von 12 geänderten
+Dateien. Nicht je Entscheidung geprüft: jede einzelne Heilung der 37 Weißmagierkämpfe; geprüft sind ihre Spurzeilen
+(kritische Klasse, Heilung vor Treffern, Notfallheilung, Abbruch, Halten) und das Ergebnis (Tode, Wiederbelebung).
 
 *Prüfgrad:* Messung an Spur und Mitschnitt, Spielblätter (BNpcBase, Action, LogMessage), FFLogs-Rangliste; Code
 statisch. Code unverändert außer dem Prüfskript.
