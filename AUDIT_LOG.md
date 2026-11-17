@@ -25099,6 +25099,23 @@ Dalamud-Log. Die vorige Logdatei stammt vom 12.11.2026.
 - *Ursachen:* unbelegt; welche Prüfung jeweils ablehnte, nennt die Spur ab Build 33778ad29.
 - *Prüfgrad:* Mitschnittanalyse mit Modell, an drei Abläufen von Hand gegengeprüft (Maschinist, Samurai, Beschwörer).
 
+### A858 · Seine Vorgabe: „vollständig“ heißt jedes Element, keine Stichprobe (17.11.2026)
+
+- *Vorgabe (17.11.2026):* „und wenn ich vollständig und umfassend sage, dann hast du das zukünftig auch zu beachten und nicht
+  nur stichproben zu nehmen“. Eingetragen in CLAUDE.md, „Wenn er etwas sagt“.
+- *Anlass:* zweimal am selben Tag gebrochen – die Puppensitzung erst über 60 s, dann nur über Aktionen ab 60 s Recast
+  ausgewertet und als ausgewertet gemeldet (A856, C221, A857).
+- *LLM-Framework* (Branch actual-work-since-2026-11-16, e559894, 16.11.2026, nur gelesen) nach Ideen gelesen: keine Regel
+  dazu. Seine Präzisierung vom selben Tag: „der framework ist scheiße, er ist keine quelle der wahrheit. hat maximal
+  ideen“ – eingetragen in CLAUDE.md, „Grenzen und Löschungen“; meine erste Fassung dieses Eintrags führte das Framework als
+  Stütze der Regel an. Dazu seine Rüge: „selber denken und prüfen bildet, nicht das einfache nachplappern“ – eingearbeitet
+  in die Regel zu LLM-Text (CLAUDE.md, „Bevor ich etwas zu einem Thema behaupte“). Die Vollständigkeitsregel trägt aus dem
+  Fall selbst: Eine Stichprobe meldet Befunde nur aus dem, was sie zeigt, und alles außerhalb gilt dann stillschweigend als
+  geprüft (A856: Schnitter und Piktomant fielen so heraus).
+- *Durchsetzung:* Die Regel zur Eskalation verlangt nach zwei Brüchen eine deterministische; ob ein Hook die Vollständigkeit
+  prüfen kann (etwa eine Pflichtzeile „Umfang“ im Bericht, wenn seine Nachricht „vollständig“, „umfassend“ oder „alle“
+  enthält), steht als Punkt im TODO.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

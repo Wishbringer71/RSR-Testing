@@ -65,6 +65,13 @@ und „Cooldown“, deren Teil die Zeile damals nicht nannte (A855). Nächster S
 Status, einer Combo oder einzeln (ein Horn zur Zeit) nutzbar sind und deshalb zu Recht warten; für die übrigen die
 Ablehnung am Code bestimmen, mit dem nächsten Upload an den Teilgründen bestätigen. Konzept 21.
 
+### Vollständigkeit deterministisch durchsetzen · R
+
+Wirkung: Seine Aufträge „vollständig“, „umfassend“, „alle“ wurden zweimal nur in Stichproben ausgeführt (A858). Nächster
+Schritt: Anforderung schriftlich, dann prüfen, ob ein Hook (Stop-Hook: Pflichtzeile „Umfang: n von n“, wenn seine
+Nachricht diese Wörter trägt) die Regel trägt oder nur eine Form erzwingt; Selbsttest beider Seiten. CLAUDE.md, „Wenn er
+etwas sagt“; `.claude/rules/regeldateien.md`.
+
 ## Technische Schuld
 
 Ohne Wirkung im Kampf oder bewusst eingegangen; je Kosten und Auflösungsbedingung.
