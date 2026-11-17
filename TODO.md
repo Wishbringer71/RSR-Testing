@@ -19,7 +19,8 @@ auswahl und das timing der beschwörung" – je Kampf aller fünf Bretter (Gegne
 BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Zeitpunkt ihres Aufrufs im Loop prüfen
 (Beispiel seiner Beobachtung: der Raptor gegen Feuer, bevor feueranfällige Gegner da waren; A581).
 
-Keine offene Arbeit; was auf Daten oder auf ihn wartet, steht unten.
+Zuerst der Pull ohne Countdown (Sicherheit: ein Wipe), dann die Zauber vor dem Loslaufen, dann die Tinktur des
+Schnitters; was auf Daten oder auf ihn wartet, steht unten.
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -30,11 +31,26 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
 
 ## Defekte
 
-Keine offenen Defekte.
+- **Pull ohne Countdown: Ruinga auf Shinryus Herz während der Bereitschaftsanfrage** (A877). Im Kampf: Shinryu
+  (Unreal), 17.11.2026 19:14 – der Beschwörer griff 0,7 s vor dem Kampfbeginn als Erster an, beide Schwingen schlugen
+  ihn, er starb nach 8 s, danach die Gruppe. Ob RSR gedrückt hat, ist unbelegt; die Spur schreibt keinen Angriff
+  außerhalb des Kampfes. Ort: Angriffsfreigabe und Feindziel außerhalb des Kampfes (`ObjectHelper.IsAttackable`,
+  `DataCenter.HostileTarget`). Nächster Schritt: am Code klären, unter welchen Bedingungen RSR in einer Gruppe ohne
+  Countdown einen Gegner angreift, der noch nicht kämpft, dann Loop. **N**. Konzept 03.
+- **Zauber beginnen, kurz bevor er losläuft** (A877). Im Kampf: Am 17.11.2026 brachen 113 Zauber ab, 69,4 s Wirkzeit
+  (Weißmagier 38,8 s, Schnitter 11,9 s, Beschwörer 7,9 s), in der Zeit hätte ein Sofortzauber gelegen; 16 davon (7,0 s)
+  als neuer Start binnen 3 s nach einem Abbruch, 30 in den ersten 0,25 s. Ort: `ActionBasicInfo.CastStartBlockedNow`.
+  Nächster Schritt: Loop in Konzept 03, „Bewegungssperre beim Wirken und die KI von BossMod“ – eine Wartezeit nach
+  einem eigenen Abbruch durch Bewegung (BossMod hält dafür fest 0,5 s, `CastSettleHold`), gelernt statt fest, und ob
+  die Bewegungseingabe vor der Fahrt der Figur lesbar ist. **N**. Konzept 03.
 
 ## Offene Arbeit
 
-Keine offene Arbeit.
+- **Schnitter ohne Tinktur in Shinryu** (A877). Im Kampf: 621 s mit fünf Arkanen Kreisen ohne Tinktur; der Beschwörer
+  trank seine im selben Inhalt. Ob er eine Stärketinktur besitzt und welcher Grund hielt, ist unbelegt: Die allgemeine
+  Regel (`UseBurstMedicine`) schreibt ihren Grund nicht. Nächster Schritt: die Gründe am Code (`TinctureAllowedHere`,
+  `TinctureWaitsForLaterBurst`, Bestand) und je Kampf eine Spurzeile mit dem haltenden Grund. **N**. Konzept 03, „In der
+  Lernphase“.
 
 ## Technische Schuld
 
@@ -108,11 +124,6 @@ nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigt
 - **Nebenprojekt: Charakterwerte, Stufen und Materia-Empfehlung** (A874, A875). Konzept 26 steht; seine Angabe
   (17.11.2026): „nebenthema zuende. wird irgendwann von mir neu angesprochen“. Auflösung: sein neuer Auftrag.
 
-- **Eigene Geschwindigkeit: Feststellung am ersten Upload prüfen** (A872). Zu Kampfbeginn stehen Schnelligkeit,
-  Zaubertempo, Hast, das Essen und die GCD-Tabelle in der Spur. Auflösung: nächster Upload ab Build e19e615c1 – Vorhersagen
-  `own-speed-at-combat-start`, `food-end-names-gcd`; was Hast (BaseParam 47) führt; danach Weben und Abdrift seiner
-  Mitschnitte mit den festgestellten statt angesetzten Zeiten neu rechnen (A857, A871). Konzept 03, „Die eigene
-  Geschwindigkeit“.
 
 - **Maschinist: Schachmatt sperrt Doppelschach** (A868). Ist Schachmatt gewählt, aber gesperrt, kommt auch Doppelschach
   nicht – an der Puppe nach einem Jobwechsel rund 30 s ohne Ability [Schätzung: im Inhalt kaum]. Ort:

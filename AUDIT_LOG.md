@@ -25538,6 +25538,80 @@ Dalamud-Log. Die vorige Logdatei stammt vom 12.11.2026.
   Spielthread. Ohne weiteren Befund.
 - *Prüfgrad:* Code gelesen, Compile, Prüfskripte; nichts im Spiel.
 
+### A877 · Upload vom 17.11.2026 abends: Shinryu als Beschwörer und Schnitter, Reiryu, Vorhersagen, Pull ohne Countdown (17.11.2026)
+
+Sein Auftrag (17.11.2026): „vollständig im loop auswerten gegenüber allen konzepten“; dazu im selben Zug seine Fragen:
+„und auch rotation, da beschwörer und schnitter in shinryu unreal relativ schwach waren trotz top gear“, „ist eigentlich
+in shinryu die anpassung drin, dass ich als heiler die adds vollständig heile … aber nur, wenn du mir durch simulation
+bestätigen kannst, dass es so läuft“, „wenn stellungsangriffe nicht funktionierten.... warum nicht? true north wurde
+anscheinend nicht genutzt und hinter boss kann man da nicht stehen“, sein Hinweis „auf adds keine schilde und keine
+area-heals … bei schilden mit gleichzeitiger heilung wirkt nur der heilanteil“ und „und auch keine area-schilde“.
+
+- *Dateien:* `DefenseTrace.log` mit fünf Sitzungen; die ersten drei (16.11., db7bbea3d und c0f3d49b4) lagen schon in A86x
+  vor, neu sind zwei Sitzungen vom 17.11.2026 auf 6a4af80c4 (17:40–18:43, 18:43–21:50, beide mit „trace ended“ bzw.
+  sauberem Wechsel). ACT-Mitschnitt 17:39–21:50: 42 Kämpfe – Weißmagier 37, Beschwörer 3, Schnitter 1, dazu ein
+  Kampf von 6 s als Beschwörer –, Inhalte: Thok ast Thok (Extrem), Limitless Blue (Schwer), Clyteum, M1 und M4 (AAC),
+  Shinryu (Unreal) dreimal, Alexander – Faust des Sohnes, San d'Oria und Windurst (Allianz), Oberwelt.
+- *Shinryu, Schaden* (Rohschaden je Sekunde aus ACT, Begleiter dem Besitzer zugerechnet): Beschwörer 16 798 (19:15,
+  590 s; Platz 3 von 4 Schadensausteilern, Drachenritter 18 269, Viper 17 853, Schwarzmagier 16 193); Schnitter 17 116
+  (21:38, 621 s; Platz 2 hinter dem Samurai mit 19 882). FFLogs, Shinryu (Unreal), Begegnung 3013, Metrik dps, je
+  Charakter der beste Kill (17.11.2026, Werkzeugquelle): Beschwörer 642 von 3 429 besser, Median rund 15 789; Schnitter
+  1 697 von 3 252 besser, Median rund 17 188. Der Beschwörer lag also im besten Fünftel, der Schnitter im Median.
+  Der Inhalt setzt die Gegenstandsstufe auf 695 herab (Spielmeldung im Mitschnitt, 19:14:27): Seine Ausrüstung über
+  695 trug dort nichts.
+- *Shinryu, Verluste:* Leerlauf über die GCD-Länge, während die Gruppe Gegner traf: Beschwörer 19,3 s, Schnitter 10,4 s;
+  ohne Treffer der Gruppe (Phasenwechsel) 95,7 bzw. 95,9 s. Abklingzeiten: Gleißender Schein 5 von 5, Energieentzug 9
+  von 9, zehn Demi-Beschwörungen; Arkaner Kreis 5 von 5 (1,8 s Abdrift), Völlerei 9 von 9, Seelenschlitzer 18 von
+  rund 19. Abgebrochene Zauber: Beschwörer 9 (Wirbelströmung dreimal, Rubin-Ritus viermal, Ruinga zweimal; 7,9 s),
+  Schnitter 22 (Communio sechsmal, davon viermal binnen 2 s, Harpe achtmal, Seelensaat siebenmal; 11,9 s). Keine
+  Tinktur beim Schnitter; der Beschwörer trank seine (HQ, 10 s nach Beginn).
+- *Stellungsangriffe:* Shinryu, Schwanz, Herz und beide Schwingen (BNpcBase 19934, 19935, 19940, 19941, 19942, 19946–19949)
+  führt das Spielblatt als `IsOmnidirectional`. Jeder Galgen und Richtpfahl auf sie trägt im Mitschnitt den Bonus im
+  Effektfeld (7 % bei den Henkers-Varianten, 9 % sonst), obwohl er vor dem Boss stand. RSR fragte deshalb richtig
+  nicht nach Echtem Norden (`HasPositional`). Ein Galgen auf Hakkinryu (19943, nicht omnidirektional) blieb ohne Bonus
+  (Spur 21:44:20: „-134,0° inside its side, true north no – miss“); warum Echter Norden dort nicht kam, ist unbelegt.
+  *Korrektur im Gespräch:* Meine Zwischenmeldung „nur 5 von 37 getroffen“ beruhte auf dem Winkel allein; der Bonus im
+  Effektfeld widerlegt sie.
+- *Reiryu (Konzept 07):* In beiden Kämpfen erkannte RSR in allen vier Wellen alle vier Reiryu bei 1/105 448 LP, jede
+  Welle endete nach 14,4 bis 24,9 s ohne eine, die ihren Zauber überdauerte, einmal war die Frist knapp und rief
+  Nichtheiler (21:47, als Schnitter ohne Einzelheilung). Den Heilerpfad hat kein Kampf ausgeführt; außerhalb des Spiels
+  ist er nicht ausführbar (Objekttabelle, `ActionManager`). Die Heiler seiner Gruppen nutzten je Welle Benediktion
+  (105 448), Afflatus solatii, Tetragrammaton, Vitra, Physick, Adloquium, Revitalisierung. Sein Hinweis zu Schilden und
+  Flächen ist erfüllt: Alle reinen Einzelschilde erlauben nur Gruppenmitglieder (`CanTargetAlly`, Liste in Konzept 07),
+  Flächen tragen einen Radius. Meine Zwischenmeldung, Göttlicher Segen könne auf eine Reiryu gehen, war falsch; sie
+  stand vor der Prüfung des Spielblatts.
+- *Vorhersagen* (`evaluate_predictions.py`): PASS own-speed-at-combat-start, burstwatch-no-general-actions,
+  burstwatch-basiccheck-named, burstwatch-cooldown-named, burst-held-traced, manafont-every-cycle, exception-none,
+  hook-no-fault, raise-no-enemy-label, gaze-no-hit-after-turn; FAIL gcd-ordinary-spell-speed und food-end-names-gcd –
+  beide am Muster, nicht am Spiel: Die Spur schreibt Zahlen in der Kultur des Clients („2,35 s“), die Muster lasen nur
+  den Punkt. Von Hand beobachtet: „ordinary GCD 2,35 s (spell), weaponskill 2,50 s“ und „ordinary GCD 2,40 -> 2,42 s“.
+  Offen, weil nicht gespielt: mch-checkmate-hides-double-check (kein Maschinist), bst-horn-waits-for-lock,
+  bst-axe-waits-for-tp (kein Beastmaster) und die übrigen Crucible- und Blickvorhersagen. Klasse: vier Muster lasen nur
+  den Punkt (auch gaze-refused-names-gaze, A809, hätte bei Eintritt immer verfehlt); alle vier berichtigt,
+  `evaluate_predictions.py` weist ein solches Muster jetzt ab (f6009734b).
+- *Eigene Geschwindigkeit (A872):* Jede der 41 Zeilen „combat started“ trägt Werte, Essen und GCD-Tabelle; Hast 80 unter
+  Geistesgegenwart (19:55:18, GCD 1,90 s); Essen nach dem Kampfbeginn gegessen und zweimal im Kampf geendet, jeweils
+  zur Zeit des Statusendes im Mitschnitt; zwei Enden außerhalb des Kampfes ohne Zeile. Der Wartepunkt im TODO ist
+  geschlossen; Konzept 03 nachgezogen.
+- *Tode:* drei eigene im Mitschnitt. 19:14 Shinryu: Ruinga auf Shinryus Herz um 19:14:35,975 begann während der
+  Bereitschaftsanfrage des Tanks, ohne Countdown, als erster Angriff des Kampfes; beide Schwingen schlugen ihn, Tod nach
+  8 s, danach die Gruppe (Defekt im TODO, ob RSR drückte, unbelegt). 19:35 M4 (Schwergewicht) ohne Quelle im Mitschnitt;
+  19:47 Alexander durch Ratfix Blinkdings bei fünf weiteren Toten der Gruppe. Je Tod im Weißmagierkampf zwei Zeilen
+  „RSR off“: Zwischen ihnen schaltete etwas RSR wieder ein, während er tot lag; welcher Befehl, schreibt die Spur nicht,
+  eine Wirkung im Kampf hat es nicht (nach der Wiederbelebung „on again“ wie vorgesehen).
+- *Tränke:* „item refused by the game … status 583 (HQ 0)“ für Ultratrank und Juwelenremedium: 583 heißt „Du besitzt
+  diesen Gegenstand nicht.“ (LogMessage), die normale Fassung; die hochwertige ging je eine Sekunde später (Mitschnitt).
+  Kein Defekt, wie A790.
+
+*Umfang (Stand dieses Eintrags):* Sitzungen 2 von 2 neuen; Vorhersagen 47 von 47 maschinell, 4 von Hand; Kämpfe 42
+von 42 in der Übersicht (Zone, Job, Dauer, Tode), Schaden, Leerlauf, Abklingzeiten und Abbrüche für die zwei
+Shinryu-Kämpfe, die er nannte, Abbrüche für alle 42; Zeilenarten 148 Gruppen gezählt, inhaltlich geprüft die Gruppen zu
+Kampfbeginn, Essen, Tod, Wiederbelebung (Reiryu), Stellung, Tränken, Bereit-aber-ungenutzt der beiden Shinryu-Kämpfe;
+gelernte Tabellen noch nicht verglichen.
+
+*Prüfgrad:* Messung an Spur und Mitschnitt, Spielblätter (BNpcBase, Action, LogMessage), FFLogs-Rangliste; Code
+statisch. Code unverändert außer dem Prüfskript.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

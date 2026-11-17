@@ -2112,15 +2112,19 @@ Augenblick. Eine eigene Prüfung der Ausrüstung je Frame gibt es deshalb nicht 
 
 **Feststellen statt annehmen** (sein Auftrag, 17.11.2026: „da du immer igendwelche sekundenwerte für GCDs ANNIMMST. Also ist
 das eine methode zur FESTSTELLUNG“; Ziel: Schnelligkeit und Zaubertempo für das Weben, nicht Schaden): Zu Beginn jedes
-Kampfs schreibt RSR (`OwnSpeed`) in die Zeile „combat started“ Schnelligkeit, Zaubertempo und Hast (BaseParam 47; welchen
-Wert der Client dort führt, ist unbelegt, die erste Spur zeigt es) aus Ausrüstung, Materia und Essen, das Essen nach Bestand, Effekt und Dauer (Gericht, Qualität, Restzeit, jeder Wert mit Anteil und Obergrenze) oder
+Kampfs schreibt RSR (`OwnSpeed`) in die Zeile „combat started“ Schnelligkeit, Zaubertempo und Hast (BaseParam 47: 100 ohne
+Hast, 80 unter Geistesgegenwart mit ihren 20 % – im Upload vom 17.11.2026 um 19:55:18 mit GCD 1,90 statt 2,38 s, A877) aus Ausrüstung, Materia und Essen, das Essen nach Bestand, Effekt und Dauer (Gericht, Qualität, Restzeit, jeder Wert mit Anteil und Obergrenze) oder
 „no food“, und je GCD der Rotation (Stufe erreicht, eingeschaltet, laufender Modus, jede Aktion, zu der das Spiel auflöst,
 einmal) Abklingzeit und Wirkzeit, wie das Spiel sie bei diesem Tempo gibt, zusammengefasst je Paar. Endet das Essen im
 Kampf, liest RSR den Status zum gemerkten Ende erneut: Isst er nach, gilt das neue Ende; sonst folgt eine Zeile „food ended
 in combat“ mit den Werten davor und danach und der GCD-Länge danach. Ohne Essen liest RSR im Kampf je Frame die Status des
 Spielers; isst er, folgt „food eaten in combat“ mit Gericht, Effekt und Dauer. Hast steht in der Zeile, löst aber keine
-aus: Was der Client in ihrer Zeile führt, ist unbelegt, und ein Tempo-Buff könnte sie bewegen, während das Essen endet. Damit werte ich seine Mitschnitte mit festgestellten statt angesetzten Zeiten aus (A857 rechnete mit 2,5 s für GCDs
+aus: Ein Tempo-Buff bewegt sie (Geistesgegenwart, oben), auch während das Essen endet. Damit werte ich seine Mitschnitte mit festgestellten statt angesetzten Zeiten aus (A857 rechnete mit 2,5 s für GCDs
 mit eigener Abklinggruppe und mit einem Tempofaktor aus dem Median, C223).
+Im Spiel beobachtet (Upload vom 17.11.2026, Build 6a4af80c4, 41 Kampfbeginne, A877): jede Zeile mit Werten, Essen und
+Tabelle; „food eaten in combat“ 0 s nach dem Kampfbeginn, im ACT-Mitschnitt 0,4 s später; zweimal „food ended in
+combat“ zur selben Zeit wie das Statusende im Mitschnitt, mit Zaubertempo 1604 → 1501 und GCD 2,36 → 2,38 s, unter
+Stufensynchronisation 545 → 496 und 2,40 → 2,42 s; zweimal endete das Essen außerhalb des Kampfes, ohne Zeile.
 
 **Weben:** Die Webregel nimmt keine Sekunde an. Ihre Größen sind der Rest des laufenden GCD (Abklinggruppe 58 des Spiels),
 die Wirkzeit (`GetAdjustedCastTime`), die Sperre, die der Server gab, der gemessene Rest danach, und „Action ahead“ als
