@@ -33,5 +33,19 @@
   "kind": "each",
   "situation": "ready but unused over the fight: .*(Schachmatt [0-9.]+ s.*Doppelschach [0-9.]+ s|Doppelschach [0-9.]+ s.*Schachmatt [0-9.]+ s)",
   "match": "Doppelschach [0-9.]+ s in [0-9]+ \\(not asked\\)"
+ },
+ {
+  "id": "bst-horn-waits-for-lock",
+  "archive": "A869",
+  "kind": "each",
+  "situation": "ready but unused over the fight: .*Kampfhorn I [0-9,.]+ s in [0-9]+ \\(refused",
+  "match": "Kampfhorn I [0-9,.]+ s in [0-9]+ \\(refused( (Cooldown:AnimationLock|CastRunsIntoGCD|BasicCheck:Casting|BasicCheck:ChannelStartBarred) [0-9]+)+\\)"
+ },
+ {
+  "id": "bst-axe-waits-for-tp",
+  "archive": "A869",
+  "kind": "each",
+  "situation": "ready but unused over the fight: .*Hieblawine [0-9,.]+ s in [0-9]+ \\(refused",
+  "match": "Hieblawine [0-9,.]+ s in [0-9]+ \\(refused( (BasicCheck:(GameStatus|ActionManager|StatusNeed)|Cooldown:AnimationLock) [0-9]+)+\\)"
  }
 ]

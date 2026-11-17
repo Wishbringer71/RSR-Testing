@@ -19,9 +19,7 @@ auswahl und das timing der beschwörung" – je Kampf aller fünf Bretter (Gegne
 BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Zeitpunkt ihres Aufrufs im Loop prüfen
 (Beispiel seiner Beobachtung: der Raptor gegen Feuer, bevor feueranfällige Gegner da waren; A581).
 
-1. Beastmaster: Fähigkeiten im Crucible lange bereit, aber nicht genutzt (seine Vorgabe, 17.11.2026: „du hast ihn weiter
-   zu verfolgen, aber die prio habe ich festgelegt“).
-2. Maschinist: Schachmatt sperrt Doppelschach (wartet auf die nächste Puppensitzung).
+1. Maschinist: Schachmatt sperrt Doppelschach (wartet auf die nächste Puppensitzung).
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -44,15 +42,6 @@ Keine offenen Defekte.
 - *Nächster Schritt:* Hypothese mit der nächsten Puppensitzung nach einem Jobwechsel prüfen (Vorhersage in A868); trifft
   sie zu, Konzept 03 fortschreiben und den Rückfall bauen.
 - *Konzept:* 03, „Bereit, aber nicht genutzt“.
-
-### Beastmaster: Fähigkeiten im Crucible lange bereit, aber nicht genutzt · R
-
-Im Kampf: In fünf Crucible-Kämpfen seines Uploads vom 16.11.2026 abends standen Kampfhorn I bis III, Dressur, Axtwirbel,
-Hiebsturm, Hieblawine, Borgen, Entfesseln und Gezieferpanzer 26 bis 96 s bereit (nicht an der Puppe: „beastmaster war
-in der puppensitzung nicht an der puppe“, sein Hinweis vom 17.11.2026), ohne zu kommen; abgelehnt mit „BasicCheck“
-und „Cooldown“, deren Teil die Zeile damals nicht nannte (A855). Nächster Schritt: prüfen, welche davon nur unter einem
-Status, einer Combo oder einzeln (ein Horn zur Zeit) nutzbar sind und deshalb zu Recht warten; für die übrigen die
-Ablehnung am Code bestimmen, mit dem nächsten Upload an den Teilgründen bestätigen. Konzept 21.
 
 ### Vollständigkeit deterministisch durchsetzen · R
 
@@ -129,6 +118,11 @@ Reborn"); beides kostet im Spiel, solange nicht beide Installationen gebraucht w
 nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigter Name bleibt.
 
 ## Warten auf Daten oder Fremde
+
+- **Beastmaster: Teilgründe der Wartezeiten im Crucible bestätigen** (A869). Jede Wartezeit vom 16.11.2026 folgt einer
+  Bedingung des Spiels oder der Rotation; die Teilgründe nannte die Zeile damals nicht. Auflösung: nächster Crucible-Upload
+  ab Build 33778ad29, Vorhersagen `bst-horn-waits-for-lock`, `bst-axe-waits-for-tp`; ein anderer Teilgrund → Loop an
+  dieser Aktion. Konzept 01, „Bereit, aber nicht genutzt im Crucible".
 
 - **Absturz einer zweiten Installation am 11.11.2026, 21:18** (A736). Das Spiel endete als Dunkelritter in der
   Azim-Steppe 0,5 s nach Kampfbeginn, ohne die Plugins zu entladen; Build b184ee7fc (08.11.2026). Das `DefenseTrace.log`

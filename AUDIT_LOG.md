@@ -25356,6 +25356,28 @@ Dalamud-Log. Die vorige Logdatei stammt vom 12.11.2026.
   widerlegt sie.
 - *Prüfgrad:* Mitschnittanalyse, Code gelesen.
 
+### A869 · Beastmaster: Fähigkeiten im Crucible bereit, aber nicht genutzt – Bedingungen, kein Defekt (17.11.2026)
+
+- *Daten:* `DefenseTrace.log` vom 16.11.2026 abends (Build db7bbea3d), fünf Crucible-Kämpfe, je eine Zeile „ready but
+  unused over the fight"; alle Beastmaster-Aktionen darin mit Zeit, Abschnitten und Ablehnungen.
+- *Spielblätter* (xivapi v2, 17.11.2026): Hörner 1 s Wirkzeit, 2 s Recast, eigene Gruppen 4 bis 6, Wirktext „recast timer
+  cooldown will begin once your familiar has retreated"; Äxte Gruppe 16, 5 s, „Minimum TP Gauge Cost: 100"; Dressur
+  Gruppe 19, 3 s, 100 TP; Entfesseln und Borgen „only … under the effect of One with Nature"; Seelenschmerz,
+  Schuppenpanzer, Gezieferpanzer nur unter ihrem Bund (Gezieferpanzer deutsch: „Bedingung: Innerer Gezieferling aktiv").
+- *Code:* `BST_Reborn.CallNextHorn` fragt Hörner nur ohne aktiven Begleiter; `AttackAbility` fragt Äxte und Dressur nach
+  TP und Instinkten, Entfesseln oder Borgen nach `EffectiveNature`, Scheidender Schlag nur mit folgendem Horn.
+  `CooldownCheck`: Bei freier Gruppe und einer Ladung lehnt nur `Cooldown:AnimationLock` ab (Recast und NoCharge
+  verlangen eine belegte Gruppe, ChargesKept eine Restzeit, GcdRecast einen GCD).
+- *Ergebnis:* Jede Wartezeit folgt einer Bedingung des Spiels oder einer Regel der Rotation (Konzept 01, „Bereit, aber
+  nicht genutzt im Crucible"). Kein Defekt belegbar. Die Messzeile zählt beim Beastmaster deshalb fast immer; ihr Wert
+  liegt in den Teilgründen.
+- *Vorhersage:* nächster Upload aus dem Crucible ab Build 33778ad29, `DefenseTrace.log`, Zeile „ready but unused over the
+  fight": Kampfhorn I nur mit `Cooldown:AnimationLock`, `CastRunsIntoGCD` oder einer Wirkzeitsperre abgelehnt
+  (`bst-horn-waits-for-lock`); Hieblawine nur mit `BasicCheck:GameStatus`, `BasicCheck:ActionManager`,
+  `BasicCheck:StatusNeed` oder `Cooldown:AnimationLock` (`bst-axe-waits-for-tp`). Ein anderer Teil widerlegt die Zuordnung
+  für diese Aktion.
+- *Prüfgrad:* Spur, Spielblätter, Code; Teilgründe als Schluss aus dem Code [Schätzung bis zum nächsten Upload].
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

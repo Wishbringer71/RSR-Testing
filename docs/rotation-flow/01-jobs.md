@@ -849,6 +849,28 @@ the Unbroken"); er hat ihn am 31.10.2026 genannt („z.B. Optimierung beastmaste
   aber ohne Referenz und ohne einen Mitschnitt von ihm wäre das eine Annahme. Mit seinem ersten Mitschnitt als
   Beastmaster (ACT oder DefenseTrace) wird das gemessen.
 
+**Bereit, aber nicht genutzt im Crucible (A869):** In fünf Kämpfen seines Uploads vom 16.11.2026 abends nannte die
+Messzeile (Konzept 03, „Bereit, aber nicht genutzt") 26 bis 96 s für die Hörner, die Äxte, Dressur, Borgen, Entfesseln,
+die Panzer und Seelenschmerz. Sie zählt eine Aktion als bereit, sobald ihre Abklinggruppe frei ist; beim Beastmaster
+hängt fast jede an einer weiteren Bedingung des Spiels oder der Rotation, und jede Wartezeit ist eine davon:
+- *Kampfhorn I bis III:* Ein Begleiter zur Zeit; die Abklingzeit eines Horns beginnt erst mit dem Rückzug seines
+  Begleiters (Wirktext). `CallNextHorn` fragt nur bei `ActiveBattlehorn == 0`; solange ein Begleiter kämpft, stehen die
+  übrigen Hörner „bereit" und warten zu Recht. Die Ablehnung „Cooldown" bei freier Gruppe ist die Animationssperre nach
+  dem Rückzug – bei einer freien Gruppe ohne Ladungen bleibt in `CooldownCheck` kein anderer Teil.
+- *Äxte, Dressur:* mindestens 100 TP (Wirktext); die Instinkte (`NaturalInstinct`, `MasteredInstinct`) entscheiden, ob TP
+  des Spielers oder des Begleiters zählen. Ohne TP lehnt das Spiel ab („BasicCheck").
+- *Entfesseln, Borgen:* nur unter Eins mit der Natur, das jedes Horn einmal gewährt; `EffectiveNature` gibt es je Horn
+  einer der beiden, die andere wartet bis zum nächsten Horn.
+- *Seelenschmerz, Schuppenpanzer, Gezieferpanzer:* nur unter ihrem Bund aus Borgen (Wirktext „Bedingung: Innerer
+  Gezieferling aktiv"); Schuppenpanzer in Gefahr und als Abwehr, Gezieferpanzer nur gegen Rückstoß.
+- *Scheidender Schlag:* schickt den Begleiter fort; erst wenn ein anderes Horn folgen kann (R1, B6) und weder Eins mit
+  der Natur noch Gefahr oder Deckung ihn hält.
+- *Anspornen, Anfeuern:* Instinktstapel und TP-Grenzen. *Zähnefletschen, Provozieren:* die Deckung durch den Begleiter
+  nach der Abwägung seiner und der eigenen Lebenspunkte (A530), Zähnefletschen dazu das Kampfzeichen von Brett 1.
+Kein Defekt belegbar. Die Teilgründe (`BasicCheck:<Teil>`, `Cooldown:<Teil>`) nennt die Zeile erst ab Build 33778ad29;
+der nächste Upload aus dem Crucible bestätigt oder widerlegt die Zuordnung (Vorhersagen
+`bst-horn-waits-for-lock`, `bst-axe-waits-for-tp`).
+
 **Die Leiste liest RSR aus ClientStructs (A621):** TP, TP des Begleiters, aktives Horn, Kompass, Kombozahl,
 Verwandtschaft und Instinkte kommen aus `JobGaugeManager.Instance()->Beastmaster` (FFXIVClientStructs
 `BeastmasterGauge`, in Dalamuds Verteilung vom 20.10.2026), nicht mehr aus Upstreams eigener Kopie mit festen
