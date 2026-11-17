@@ -19,5 +19,12 @@
   "kind": "absent",
   "situation": "ready but unused over the fight",
   "match": "Cooldown [0-9]"
+ },
+ {
+  "id": "gcd-ordinary-spell-speed",
+  "archive": "A865",
+  "kind": "present",
+  "situation": "ordinary GCD .* \\(spell\\)",
+  "match": "ordinary GCD (\\d\\.\\d\\d) s \\(spell\\), weaponskill (?!\\1 s)\\d\\.\\d\\d s"
  }
 ]

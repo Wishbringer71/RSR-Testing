@@ -302,10 +302,6 @@
    "member": "internal static float CastSeconds(this Action action) => action.Cast100ms / CastUnitsPerSecond;"
   },
   {
-   "file": "RotationSolver/Basic/Helpers/ActionManagerHelper.cs",
-   "member": "public static float GetDefaultAdjustedRecastTime()"
-  },
-  {
    "file": "RotationSolver/Basic/Helpers/IActionHelper.cs",
    "member": "internal static bool LastActionMovedForward()"
   },

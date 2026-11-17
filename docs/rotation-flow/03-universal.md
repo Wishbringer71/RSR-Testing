@@ -2059,6 +2059,42 @@ Addition. Je Frame wird nichts angelegt.
 - *„zone: least 0":* Eine Antwort im selben Frame wie die Anfrage zählt mit 0 ms. Weil der Abzug je Aktion an der
   eigenen Verzögerung endet, ändert das nichts.
 
+### Die eigene Geschwindigkeit: Ausrüstung, Materia, Essen
+
+Geltender Stand (A865): RSR rechnet GCD-Länge, Wirkzeit und Abklingzeit nicht selbst aus Werten, sondern liest sie aus dem
+Spiel – die laufende GCD-Länge aus der Abklinggruppe 58, die Wirkzeit aus `GetAdjustedCastTime`, die Abklingzeit einer
+Aktion aus `GetAdjustedRecastTime`. Darin stecken Schnelligkeit und Zaubertempo aus Ausrüstung und Materia, Essen, solange
+sein Status wirkt, und jeder Tempo-Buff (Ley Lines, Shifu, Paeon); läuft das Essen ab, ändert das Spiel den Wert im selben
+Augenblick. Eine eigene Prüfung der Ausrüstung je Frame gibt es deshalb nicht und braucht es nicht.
+- *Sein Hinweis (17.11.2026):* „die geschwindigkeit von aktionen wird auch durch das Equipment und das melding beeinflusst“;
+  Ausrüstung ändert sich im Kampf nicht („nur zu beginn des kampfes“); Essen wirkt je nach Gericht auf Schnelligkeit,
+  Zaubertempo, Konstitution oder kritische Treffer und ist ein Status mit Ablaufzeit („wie lange und ob die statuseffekte
+  aktiv sind“).
+- *Befund am Code:* Läuft kein GCD – zwischen zwei Pulls, außer Reichweite, vor dem ersten GCD –, stand für die Länge der
+  zuletzt gelaufene GCD, sonst die Länge einer Waffenfertigkeit. Beides ist falsch: Der letzte GCD kann ein verkürzter sein
+  (Tanzschritt 1,0 s, Enshroud und Brandschuss 1,5 s), und eine Waffenfertigkeit trägt für Zauberer und Heiler ihr
+  Zaubertempo nicht. Im Kampf: Vorläufe und Fenster, die in GCDs rechnen (zwei GCDs vor Living Dead, „in einem GCD“), fielen
+  dann zu kurz oder für Zauberer um ihren Tempoanteil zu lang aus.
+- *Gewählt:* Läuft kein GCD, gilt die Länge, die das Spiel jetzt für einen gewöhnlichen GCD der eigenen Art rechnet – für
+  Heiler und Magier einen Zauber (Cure, Zeile 120, Recast 2,5 s), sonst eine Waffenfertigkeit (Heated Split Shot); also mit
+  Ausrüstung, Materia, Essen und Buffs dieses Augenblicks. Läuft ein GCD, bleibt seine Länge maßgeblich.
+- *Antithese, geprüft:* Die Vorausschau „in n GCDs“ ganz auf die gewöhnliche Länge umzustellen, wäre falsch: Innerhalb einer
+  Phase verkürzter GCDs sind auch die nächsten verkürzt (Tanzschritte bis zum Finale, Enshroud bis Communio); dort ist die
+  laufende Länge die richtige. Zweite Antithese: Der gemerkte letzte GCD trug Tempo-Buffs, die gerade wirkten – die Länge
+  des Spiels trägt sie ebenso, sie rechnet mit dem Zustand dieses Augenblicks. Dritte: Im Ruhezustand mitten in einer Phase
+  verkürzter GCDs (Tänzer wartet zwischen zwei Schritten) wäre die gewöhnliche Länge zu lang; die Lücke ist ohne GCD, die
+  Rechnung greift erst wieder mit dem nächsten Schritt, der den Wert des Spiels liefert.
+- *Tragende Annahme und Messweg:* Das Spiel rechnet die angepasste Abklingzeit eines Zaubers auch für einen Job, der ihn
+  nicht hat – für die Waffenfertigkeit gilt das seit A240 bei jedem Job, für den Zauber ist es nicht gemessen. Die Zeile
+  „combat started“ nennt deshalb die gewöhnliche Länge und ihre Art samt der Länge einer Waffenfertigkeit; bei einem
+  Zauberer mit Zaubertempo müssen beide verschieden sein (Vorhersage A865).
+- *Ohne Bedarf:* Essen über seinen Status samt Restzeit zu verfolgen – das Spiel rechnet es in jeden gelesenen Wert ein, und
+  ein Ablauf zeigt sich im nächsten Wert. Ein Vorlauf, der über das Ende des Essens hinausreicht, rechnet mit dem Tempo von
+  jetzt; Essen hält 30 bis 60 Minuten, der längste Vorlauf in GCDs wenige Sekunden.
+- *Abgrenzung:* Gegnerische Wirkzeiten kommen aus dem Blatt oder der Wirkleiste des Gegners und hängen nicht an der eigenen
+  Geschwindigkeit. Upstreams `RPR_Reborn` rechnet für Sacrificium einen GCD als 2,5 s; bei der Schnelligkeit des Schnitters
+  ist der Unterschied unter 0,1 s, ohne Wirkung im Kampf.
+
 ## Bereit, aber nicht genutzt
 
 Geltender Stand (A820): Kommt ein Cooldown, der eine eigene Abklinggruppe hat, im Kampf länger als einen GCD nicht,

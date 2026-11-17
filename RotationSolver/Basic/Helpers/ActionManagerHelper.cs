@@ -2,7 +2,7 @@
 
 namespace RotationSolver.Basic.Helpers
 {
-	internal static class ActionManagerHelper
+	internal static partial class ActionManagerHelper
 	{
 		private static unsafe ActionManager* GetActionManager()
 		{
@@ -28,15 +28,6 @@ namespace RotationSolver.Basic.Helpers
 		public static unsafe float GetDefaultRecastTime()
 		{
 			return GetRecastTime(ActionType.Action, (uint)ActionID.HeatedSplitShotPvE);
-		}
-
-		/// <summary>
-		/// The length of one GCD at the player's speed as the game computes it for a weaponskill, whether or not
-		/// a GCD is running.
-		/// </summary>
-		public static float GetDefaultAdjustedRecastTime()
-		{
-			return ActionManager.GetAdjustedRecastTime(ActionType.Action, (uint)ActionID.HeatedSplitShotPvE) / 1000f;
 		}
 
 		/// <summary>

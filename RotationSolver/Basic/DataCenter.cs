@@ -1168,8 +1168,10 @@ internal static partial class DataCenter
 	/// pulls, before the first GCD of a fight - it reads 0. Every reader asks for the length of a GCD (a lead
 	/// time, a window, a throttle, "the first n GCDs of combat"), and 0 shut each of them: the defence trace of
 	/// 01.10.2026 holds the same decision two and three times within 50 ms, past a throttle of one GCD (A240).
-	/// So the last length the game reported stands in while the timer is idle, and before the first GCD the
-	/// adjusted recast of a weaponskill does - the game's own figure for the player's speed.
+	/// So while the timer is idle the game's own figure for an ordinary GCD of the player's kind stands in - a spell for
+	/// healers and casters, a weaponskill otherwise, at the speed of this moment (A865: the last GCD could be a shortened
+	/// one, a dance step or an Enshroud GCD, and a weaponskill left a caster's spell speed out). The last reported length
+	/// stays as the stand-in only where the game gives no figure.
 	/// </remarks>
 	public static float DefaultGCDTotal
 	{
@@ -1182,7 +1184,8 @@ internal static partial class DataCenter
 				return running;
 			}
 
-			return _lastGcdTotal > 0f ? _lastGcdTotal : Math.Max(0f, ActionManagerHelper.GetDefaultAdjustedRecastTime());
+			var ordinary = ActionManagerHelper.GetDefaultAdjustedRecastTime();
+			return ordinary > 0f ? ordinary : Math.Max(0f, _lastGcdTotal);
 		}
 	}
 

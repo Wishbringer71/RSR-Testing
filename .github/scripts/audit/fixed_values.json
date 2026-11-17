@@ -707,8 +707,8 @@
    "reason": "Upstream's enemy count for Bloodwhetting in the defence beside its option (RawSingleTargets, here SoloIntuition), drawn into one property so two paths cannot disagree (A226); upstream's rule (A340)."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/ActionManagerHelper.cs",
-   "code": "return ActionManager.GetAdjustedRecastTime(ActionType.Action, (uint)ActionID.HeatedSplitShotPvE) / 1000f;",
+   "file": "RotationSolver/Basic/Helpers/ActionManagerHelper.Universal.cs",
+   "code": "return ActionManager.GetAdjustedRecastTime(ActionType.Action, reference) / 1000f;",
    "values": [
     "1000"
    ],

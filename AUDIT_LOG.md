@@ -25266,6 +25266,34 @@ Dalamud-Log. Die vorige Logdatei stammt vom 12.11.2026.
   über `StatusNameOf` (Zeile sicher gelesen), Upstreams `GetStatusName` unverändert.
 - *Prüfgrad:* Compile 0/0, Prüfskripte; die Wirkung der Messzeile erst am nächsten Upload (Vorhersagen A855).
 
+### A865 · Eigene Geschwindigkeit aus Ausrüstung, Materia und Essen in den Zeitrechnungen (17.11.2026)
+
+- *Sein Hinweis mit Auftrag (17.11.2026):* Ausrüstung und Materia ändern die Geschwindigkeit, im vollen Loop mit Antithese;
+  dazu: Ausrüstung ändert sich im Kampf nicht (keine Prüfung je Frame), Essen wirkt je nach Gericht auf Schnelligkeit,
+  Zaubertempo, Konstitution oder kritische Treffer und hat eine Ablaufzeit.
+- *Research, jede Zeitrechnung des Forks:* GCD-Länge aus der laufenden Abklinggruppe 58, Wirkzeit aus `GetAdjustedCastTime`,
+  Abklingzeit aus `GetAdjustedRecastTime` – Werte des Spiels mit Ausrüstung, Materia, Essen und Tempo-Buffs. Blattzeiten
+  (`Cast100ms`, `Recast100ms`) nur als Merkmal „hat eine Wirkzeit“, für gegnerische Wirkzeiten oder als Verhältnis
+  (`DotPlanner` in GCDs, Blaumagier-Vergleich). Feste Sekunden: Countdown-Zeiten, Mudra-Sperre, Verzögerung des
+  DoT-Auftrags, Upstreams 2,5 s für Sacrificium in `RPR_Reborn` (unter 0,1 s Unterschied).
+- *Befund:* `DefaultGCDTotal` ohne laufenden GCD = der zuletzt gelaufene GCD (kann ein verkürzter sein: Tanzschritt 1,0 s,
+  Enshroud, Brandschuss 1,5 s), vor dem ersten GCD = eine Waffenfertigkeit (für Zauberer und Heiler ohne Zaubertempo).
+- *Optionen:* 0 belassen; 1 `GCDTime(n)` ganz auf die gewöhnliche Länge; 2 Ruhezustand auf die gewöhnliche Länge der eigenen
+  Art. *Antithese gegen 1, hält:* Innerhalb einer Phase verkürzter GCDs sind die nächsten auch verkürzt; die laufende Länge
+  ist dort richtig. *Gewählt 2:* ohne laufenden GCD die Länge des Spiels für einen Zauber (Cure) bei Heilern und Magiern, sonst
+  für eine Waffenfertigkeit; der letzte Wert nur, wo das Spiel keinen liefert. Der Member zog dabei in
+  `ActionManagerHelper.Universal.cs` (Fork-Platzierung).
+- *Ohne Bedarf:* Essen samt Restzeit selbst zu verfolgen – das Spiel rechnet es in jeden Wert ein, sein Ablauf zeigt sich im
+  nächsten; Ausrüstung je Frame zu lesen – RSR liest sie nicht, sondern die fertigen Zeiten.
+- *Falsifikation:* „kein Defekt“ widerlegt (Ruhezustand in jedem Kampf, Zaubertempo bei Zauberern); „Option falsch“ hängt an der
+  Annahme, dass das Spiel die Abklingzeit eines Zaubers für jeden Job rechnet – nicht gemessen; „ausgeliefert, nichts ändert
+  sich“ möglich, weil der Unterschied klein ist.
+- *Messmittel:* „combat started“ nennt die gewöhnliche GCD-Länge, ihre Art und die einer Waffenfertigkeit.
+- *Vorhersage:* In `DefenseTrace.log` des nächsten Uploads mit einem Zauberer oder Heiler mit Zaubertempo zeigt eine Zeile
+  „combat started; ordinary GCD x s (spell), weaponskill y s“ x ≠ y (`predictions/2026-11-17.json`, gcd-ordinary-spell-speed);
+  x = y bei Zaubertempo in der Ausrüstung widerlegt die Annahme.
+- *Prüfgrad:* Code gelesen, Compile 0/0, Prüfskripte; im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

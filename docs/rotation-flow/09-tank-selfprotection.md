@@ -2266,9 +2266,9 @@ Heilung.** Im ungünstigsten Fall muss der laufende GCD auslaufen und ein Zauber
 Wirkzeit darauf fertig werden — zusammen zwei GCDs. Der Vorlauf muss daher mindestens
 zwei GCDs betragen. Wie viele Sekunden das sind, steht nicht fest: Gemessen wird die
 **tatsächliche** Erholzeit des Spielers, die das Spiel meldet
-(`DataCenter.DefaultGCDTotal`; läuft kein GCD, die Länge, die das Spiel für einen Waffenskill rechnet,
-`ActionManagerHelper.GetDefaultAdjustedRecastTime`, A240), also
-verkürzt Zaubertempo den Vorlauf mit. Gegen die zehn Sekunden von Living Dead
+(`DataCenter.DefaultGCDTotal`; läuft kein GCD, die Länge, die das Spiel für einen gewöhnlichen GCD der eigenen Art
+rechnet, `ActionManagerHelper.GetDefaultAdjustedRecastTime`, A240, A865), also
+verkürzen Schnelligkeit und Zaubertempo den Vorlauf mit. Gegen die zehn Sekunden von Living Dead
 (`ActionId.resx`, Aktion 3638) ist es rund die halbe Phase.
 
 **Der Vorlauf greift nicht, solange der Tod noch erreichbar ist** — das ist Fall 1e der

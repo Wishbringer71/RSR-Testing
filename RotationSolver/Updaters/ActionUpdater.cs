@@ -151,8 +151,12 @@ internal static partial class ActionUpdater
 			_startCombatTime = now;
 			DataCenter.EnemyHitPlayerThisFight = false;
 			// Every combat in the trace, independent of the paths that write in it: a session without these lines did not
-			// write at all, one with them and nothing else wrote nothing on its paths (A417).
-			DefenseTrace.Line("combat started");
+			// write at all, one with them and nothing else wrote nothing on its paths (A417). The ordinary GCD at the speed of
+			// this moment, beside a weaponskill's, shows that a caster's spell speed is in it (concept 03, A865).
+			var spellJob = DataCenter.Role is JobRole.Healer or JobRole.RangedMagical;
+			DefenseTrace.Line($"combat started; ordinary GCD {ActionManagerHelper.GetDefaultAdjustedRecastTime():F2} s "
+				+ $"({(spellJob ? "spell" : "weaponskill")}), weaponskill "
+				+ $"{ActionManager.GetAdjustedRecastTime(ActionType.Action, (uint)ActionID.HeatedSplitShotPvE) / 1000f:F2} s");
 		}
 		else if (lastInCombat && !DataCenter.InCombat)
 		{
