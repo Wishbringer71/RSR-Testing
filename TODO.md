@@ -19,7 +19,7 @@ auswahl und das timing der beschwörung" – je Kampf aller fünf Bretter (Gegne
 BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Zeitpunkt ihres Aufrufs im Loop prüfen
 (Beispiel seiner Beobachtung: der Raptor gegen Feuer, bevor feueranfällige Gegner da waren; A581).
 
-1. Nebenprojekt: Charakterwerte, Stufen und Materia-Empfehlung – Konzept steht, Bau auf seinen Auftrag.
+Keine offene Arbeit; was auf Daten oder auf ihn wartet, steht unten.
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -34,14 +34,7 @@ Keine offenen Defekte.
 
 ## Offene Arbeit
 
-### Nebenprojekt: Charakterwerte, Stufen und Materia-Empfehlung · N
-
-- *Sein Auftrag (17.11.2026):* „als nebenprojekt: genaue formeln ermitteln, welche characterwerte wann welche bonis bringen.
-  anscheinend gibt es auch eine quantifizierung bei den werten mit sprüngen, ab welchem wert erst wieder eine verbesserung
-  eintritt. das könnte grundlage sein für empfehlungen, welche materia man für optimalen schaden in angelegte
-  ausrüstungssets zu stehen wäre. hierzu recherche im netz, bei plugins und daraus ein konzept erstellen.“
-- *Stand:* Konzept 26 (Formeln, Stufen, Materia, Optionen, Prüfweg). Bauen erst auf seinen Auftrag.
-- *Nächster Schritt:* sein Auftrag zur Umsetzung; vorher prüfbar ohne Code nur am Charakterfenster (Prüfweg in 26).
+Keine offene Arbeit.
 
 ## Technische Schuld
 
@@ -111,6 +104,9 @@ Reborn"); beides kostet im Spiel, solange nicht beide Installationen gebraucht w
 nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigter Name bleibt.
 
 ## Warten auf Daten oder Fremde
+
+- **Nebenprojekt: Charakterwerte, Stufen und Materia-Empfehlung** (A874, A875). Konzept 26 steht; seine Angabe
+  (17.11.2026): „nebenthema zuende. wird irgendwann von mir neu angesprochen“. Auflösung: sein neuer Auftrag.
 
 - **Eigene Geschwindigkeit: Feststellung am ersten Upload prüfen** (A872). Zu Kampfbeginn stehen Schnelligkeit,
   Zaubertempo, Hast, das Essen und die GCD-Tabelle in der Spur. Auflösung: nächster Upload ab Build e19e615c1 – Vorhersagen
