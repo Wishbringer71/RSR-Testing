@@ -169,7 +169,8 @@ internal static partial class TargetUpdater
 						continue;
 					}
 
-					if (member.DistanceToPlayer() < 48 && member.CanSeeFrom(playerEye.Value))
+					if (member.DistanceToPlayer() < 48 && member.CanSeeFrom(playerEye.Value)
+						&& (ignoreInvincibility || !member.HasInvincibleStatus()))
 					{
 						// Concept 03, "Gegner, die keine Fläche treffen darf" (A572): what no attack may hit, area ones
 						// included - whether or not it is a target.
@@ -178,29 +179,9 @@ internal static partial class TargetUpdater
 							untouchableHostiles.Add(member);
 						}
 
-						if (!ignoreInvincibility)
+						if (!ignoreInvincibility && member.HasInvincibleStatus())
 						{
-							var hasInvincible = false;
-							var statusList = member.StatusList;
-
-							if (statusList != null)
-							{
-								var statusCount = statusList.Length;
-								for (var i = 0; i < statusCount; i++)
-								{
-									var status = statusList[i];
-									if (status != null && status.StatusId != 0 && status.IsInvincible())
-									{
-										hasInvincible = true;
-										break;
-									}
-								}
-							}
-
-							if (hasInvincible)
-							{
-								continue;
-							}
+							continue;
 						}
 
 						// Concept 03, "Gegner mit Stacheln" (A571): spikes that damage attackers keep an enemy out of the
@@ -634,21 +615,17 @@ internal static partial class TargetUpdater
 			var closestDangerousDist = float.MaxValue;
 			IBattleChara? closestNonDangerous = null;
 			var closestNonDangerousDist = float.MaxValue;
+			var minRemaining = 1 + DataCenter.DefaultGCDRemain;
 
 			foreach (var person in dispelNow)
 			{
 				var hasDangerous = false;
-				var statusList = person.StatusList;
-				if (statusList != null)
+				foreach (ref readonly var status in person.GetStatuses())
 				{
-					for (int i = 0, n = statusList.Length; i < n; i++)
+					if (StatusHelper.IsDangerous(status, minRemaining))
 					{
-						var status = statusList[i];
-						if (status != null && status.IsDangerous())
-						{
-							hasDangerous = true;
-							break;
-						}
+						hasDangerous = true;
+						break;
 					}
 				}
 
@@ -692,29 +669,19 @@ internal static partial class TargetUpdater
 			return;
 		}
 
+		var minRemaining = 1 + DataCenter.DefaultGCDRemain;
 		foreach (var member in members)
 		{
-			try
+			// Each Esuna another player is already casting on him removes one of these; only what is
+			// left after them is ours to take (A293).
+			var leftToOthers = DataCenter.EsunasByOthers.GetValueOrDefault(member.GameObjectId);
+			foreach (ref readonly var status in member.GetStatuses())
 			{
-				if (member.StatusList != null)
+				if (StatusHelper.CanDispel(status, minRemaining) && leftToOthers-- <= 0)
 				{
-					// Each Esuna another player is already casting on him removes one of these; only what is
-					// left after them is ours to take (A293).
-					var leftToOthers = DataCenter.EsunasByOthers.GetValueOrDefault(member.GameObjectId);
-					for (var i = 0; i < member.StatusList.Length; i++)
-					{
-						var status = member.StatusList[i];
-						if (status != null && status.CanDispel() && leftToOthers-- <= 0)
-						{
-							targetList.Add(member);
-							break;
-						}
-					}
+					targetList.Add(member);
+					break;
 				}
-			}
-			catch (NullReferenceException ex)
-			{
-				PluginLog.Error($"NullReferenceException in AddDispelTargets for member {member?.ToString()}: {ex.Message}");
 			}
 		}
 	}

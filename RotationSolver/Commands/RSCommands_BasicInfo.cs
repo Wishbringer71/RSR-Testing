@@ -60,9 +60,12 @@ namespace RotationSolver.Commands
 				if (parts.Length > 1)
 				{
 					var value = parts[1];
-					if (Enum.TryParse(typeof(TargetingType), value, true, out var parsedEnumSet))
+					if (int.TryParse(value, out var parsedIndex))
 					{
-						var targetingTypeSet = (TargetingType)parsedEnumSet;
+						index = parsedIndex;
+					}
+					else if (Enum.TryParse<TargetingType>(value, true, out var targetingTypeSet))
+					{
 						var idx = Service.Config.TargetingTypes.IndexOf(targetingTypeSet);
 						if (idx >= 0)
 						{
@@ -78,23 +81,6 @@ namespace RotationSolver.Commands
 							Svc.Chat.PrintError($"{targetingTypeSet} is not in TargetingTypes list.");
 							return;
 						}
-					}
-					else if (int.TryParse(value, out index))
-					{
-						// Apply it here like the name form above does. Leaving it to
-						// UpdateTargetingIndex would only work while RSR is already running, since
-						// that call sits behind AdjustStateType's DataCenter.State guard - which is
-						// exactly the case where this argument is not given.
-						var types = Service.Config.TargetingTypes;
-						if (types.Count > 0)
-						{
-							index = ((index % types.Count) + types.Count) % types.Count;
-							Service.Config.TargetingIndex = index;
-						}
-					}
-					else
-					{
-						index = -1;
 					}
 				}
 

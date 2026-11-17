@@ -395,13 +395,12 @@ public static partial class Watcher
 
 				if (effect.GetSpecificTypeEffect(ActionEffectType.Knockback, out var entry))
 				{
-					var knock = Svc.Data.GetExcelSheet<Knockback>()?.GetRow(entry.value);
-					if (knock != null)
+					if (Svc.Data.GetExcelSheet<Knockback>().TryGetRow(entry.value, out var knock))
 					{
 						DataCenter.KnockbackStart = DateTime.Now;
-						if (knock.Value.Speed > 0)
+						if (knock.Speed > 0)
 						{
-							DataCenter.KnockbackFinished = DateTime.Now + TimeSpan.FromSeconds(knock.Value.Distance / (float)knock.Value.Speed);
+							DataCenter.KnockbackFinished = DateTime.Now + TimeSpan.FromSeconds(knock.Distance / (float)knock.Speed);
 						}
 
 						if (set.Action.HasValue && Service.Config.RecordKnockbackies
@@ -840,8 +839,7 @@ public static partial class Watcher
 			}
 			DataCenter.MPGain = mpGain;
 
-			DataCenter.EffectTime = DateTime.Now;
-			DataCenter.EffectEndTime = DateTime.Now.AddSeconds(set.Header.AnimationLockTime + 1);
+			DataCenter.StartEffectTime(set.Header.AnimationLockTime + 1);
 
 			// After the effect window is set: the cast waits for its confirmation as long as the heal
 			// projection waits for the server's health update, and no longer.

@@ -162,13 +162,16 @@ public partial class CustomRotation
 	private static bool UseMpPotion(IAction nextGCD, bool waitForTincture, out IAction? act)
 	{
 		act = null;
+		if (!Service.Config.UseMpPotions)
+		{
+			return false;
+		}
 
 		// An MP potion blocks the next tincture for its whole recast (A502).
 		if (waitForTincture)
 		{
 			return false;
 		}
-
 		MpPotionItem? best = null;
 		foreach (var a in MpPotions)
 		{
@@ -191,6 +194,12 @@ public partial class CustomRotation
 
 	private static bool UseHpPotion(IAction nextGCD, bool waitForTincture, out IAction? act)
 	{
+		act = null;
+		if (!Service.Config.UseHpPotions)
+		{
+			return false;
+		}
+
 		HpPotionItem? best = null;
 		var bestIsEmergency = false;
 
