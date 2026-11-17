@@ -25186,6 +25186,21 @@ Dalamud-Log. Die vorige Logdatei stammt vom 12.11.2026.
   includes his rebuke.“ 7 Prohibited: „Substitution: doing an adjacent task instead of the one asked.“
 - *Prüfgrad:* Textprüfung je Aussage gegen Fälle dieser Sitzung und des Archivs; nicht geändert.
 
+### A861 · REGEL geändert: sieben Stellen aus A860 (17.11.2026)
+
+- *Vorgabe (17.11.2026):* „DU WIRST SIE ÄNDERN WENN BEDARF BESTEHT!!!!“, „WENN BEDARF BESTEHT!“ – eingeordnet als Vorgabe; sie
+  ersetzt das Vorlegen jeder Änderung (CLAUDE.md, Absatz zu `check_rule_files.py`). Bedarf heißt ein benannter Fall, in dem
+  die REGEL fehlt, unklar ist oder einer Regel hier widerspricht.
+- *Geändert*, je mit dem Fall aus A860: Vollständigkeit über jedes Element der genannten Menge (A856); C ist seine aktuelle
+  Absicht, eine neue Angabe aktualisiert sie (sechs Präzisierungen am 17.11.); nach drei Entwürfen mit Restdefekt antworten und
+  ihn nennen (A857); Bias bestimmt als Neuigkeit, Bestätigung, Anker (seine Rüge zum zuletzt Bearbeiteten); Verbot, den Auftrag
+  durch eine Nachbaraufgabe zu ersetzen (A855, A856); Rückfrage nur, wenn seine Worte, das Repository und seine Vorgaben nichts
+  entscheiden (CLAUDE.md, „Bevor ich ihn frage“); seine Rüge zählt als Konflikt und macht den Fall kritisch.
+- *Nicht geändert, ohne Bedarf:* „Score ≠ quality“ und die Überschrift „REGEL (DE)“ – kein Fall, in dem sie schadeten.
+- *Prüfsumme:* `regel.sha256` neu aufgezeichnet (d8273358…). Seine Einstellungen tragen V5i, bis er den neuen Wortlaut übernimmt;
+  den Wortlaut hat er im Bericht.
+- *Prüfgrad:* `check_rule_files.py`, 61 Prüfungen; Wirkung auf die Arbeit erst an den nächsten Aufträgen zu sehen.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
