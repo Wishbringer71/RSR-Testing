@@ -70,14 +70,6 @@ public static partial class StatusHelper
 	/// <summary>Whether the character carries a status that nullifies the crowd control Purify lifts.</summary>
 	internal static bool IsCrowdControlImmune(this IBattleChara battleChara)
 	{
-		foreach (ref readonly var status in battleChara.GetStatuses())
-		{
-			if (status.StatusId != 0 && NullifiesCrowdControl(status.StatusId))
-			{
-				return true;
-			}
-		}
-
-		return false;
+		return Carries(battleChara, static id => NullifiesCrowdControl(id));
 	}
 }

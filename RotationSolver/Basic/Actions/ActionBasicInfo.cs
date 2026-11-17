@@ -407,6 +407,8 @@ public readonly partial struct ActionBasicInfo
 
 	internal readonly unsafe bool BasicCheck(bool skipStatusProvideCheck, bool skipStatusNeed, bool skipComboCheck, bool skipCastingCheck, bool checkActionManager = false, TargetType targetOverride = default)
 	{
+		// A refusal path without a named part reports the plain check, never the part another action left (A864).
+		BasicRefusal = "BasicCheck";
 		if (Player.Object == null)
 		{
 			return RefuseBasic("BasicCheck:NoPlayer");

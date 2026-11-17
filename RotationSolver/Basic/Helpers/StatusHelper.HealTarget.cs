@@ -269,15 +269,7 @@ public static partial class StatusHelper
 	// A573: whether the character carries a status that ends only at full HP.
 	private static bool HasStatusEndedByFullHealing(IBattleChara character)
 	{
-		foreach (ref readonly var status in character.GetStatuses())
-		{
-			if (status.StatusId != 0 && EndsWhenFullyHealed(status.StatusId))
-			{
-				return true;
-			}
-		}
-
-		return false;
+		return Carries(character, static id => EndsWhenFullyHealed(id));
 	}
 
 	/// <summary>

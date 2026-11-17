@@ -23,23 +23,28 @@ import re
 import sys
 from pathlib import Path
 
-ROOTS = [Path('RotationSolver'), Path('RotationSolver.Basic')]
+ROOTS = [Path('RotationSolver')]
 
-ALLOWED_FILES = {
-    Path('RotationSolver/Basic/Rotations/Duties/DutyRotation.cs'),
-    Path('RotationSolver/UI/MainWindow/MainWindow_Debug.cs'),
+# Upstream's own lines, counted: one more in the same file is a new reader and is reported (A864).
+ALLOWED_COUNTS = {
+    Path('RotationSolver/Basic/Rotations/Duties/DutyRotation.cs'): 1,
+    Path('RotationSolver/UI/MainWindow/MainWindow_Debug.cs'): 2,
 }
 
 ALLOWED_DIRS = (Path('RotationSolver/ExtraRotations'),)
 
-ACCESS = re.compile(r'\.StatusList\b')
-LINE_COMMENT = re.compile(r'//.*$')
+# A member access (.StatusList) or a property pattern ({ StatusList: ... }).
+ACCESS = re.compile(r'\.StatusList\b|[{,]\s*StatusList\s*:')
+# Strings first, so that a // or /* inside one does not hide the code after it; then comments. Newlines are kept.
+TOKENS = re.compile(r'@"(?:[^"]|"")*"|\$?"(?:\\.|[^"\\\n])*"|\'(?:\\.|[^\'\\\n])\'|//[^\n]*|/\*.*?\*/', re.DOTALL)
 
 
 def strip_comments(text):
-    """Drops line comments and block comments, keeping line numbers."""
-    text = re.sub(r'/\*.*?\*/', lambda m: '\n' * m.group(0).count('\n'), text, flags=re.DOTALL)
-    return '\n'.join(LINE_COMMENT.sub('', line) for line in text.split('\n'))
+    """Blanks string and character literals and drops comments, keeping line numbers."""
+    def blank(m):
+        token = m.group(0)
+        return '\n' * token.count('\n') if token.startswith('/') else '""' + '\n' * token.count('\n')
+    return TOKENS.sub(blank, text)
 
 
 def check(text):
@@ -52,7 +57,8 @@ def check(text):
 
 
 def allowed(path):
-    return path in ALLOWED_FILES or any(parent in path.parents for parent in ALLOWED_DIRS)
+    """Whole directories left alone (the foreign rotations)."""
+    return any(parent in path.parents for parent in ALLOWED_DIRS)
 
 
 def self_test():
@@ -63,6 +69,9 @@ def self_test():
         'null check': 'if (chara.StatusList == null)',
         'pattern': 'if (player?.StatusList is not { } list)',
         'indexed': 'var s = enemy.StatusList[i];',
+        'property pattern': 'if (target is { StatusList: { } list })',
+        'after a string with //': 'var url = "https://x"; foreach (var s in c.StatusList) { }',
+        'after a string with /*': 'var p = "a/*b"; var l = chara.StatusList;',
     }
     for name, text in defects.items():
         if not check(text):
@@ -88,11 +97,25 @@ def self_test():
         raise AssertionError('a foreign rotation was not left alone')
     if allowed(Path('RotationSolver/Basic/Helpers/StunWatch.cs')):
         raise AssertionError('a fork file was let through')
-    if allowed(Path('RotationSolver/Basic/Rotations/Duties/DutyRotation.Extra.cs')):
-        raise AssertionError('an allowed file name let a sibling through')
+    if allowed(Path('RotationSolver/Basic/Rotations/Duties/DutyRotation.cs')):
+        raise AssertionError('an upstream file was let through whole instead of by its count')
+    if over_count(Path('RotationSolver/Basic/Rotations/Duties/DutyRotation.cs'), [587]):
+        raise AssertionError("upstream's own line was reported")
+    if not over_count(Path('RotationSolver/Basic/Rotations/Duties/DutyRotation.cs'), [587, 900]):
+        raise AssertionError('a second reader in an upstream file went unnoticed')
+    if not over_count(Path('RotationSolver/Basic/Rotations/Duties/DutyRotation.Extra.cs'), [1]):
+        raise AssertionError('a sibling of an allowed file was let through')
+    if check('var s = "x.StatusList";\nvar t = \'.\';'):
+        raise AssertionError('a StatusList inside a string was reported')
 
-    print('self-test ok: five forms of a StatusList read are caught, the span form, comments and similar\n'
-          '  names are not, and only the two upstream files and the foreign rotations are left alone')
+    print('self-test ok: eight forms of a StatusList read are caught (dotted, property pattern, after a string\n'
+          '  with // or /*), the span form, comments, strings and similar names are not; upstream keeps exactly\n'
+          '  its own lines, and only the foreign rotations are left alone whole')
+
+
+def over_count(path, lines):
+    """Whether these finding lines in this file exceed what upstream keeps there."""
+    return len(lines) > ALLOWED_COUNTS.get(path, 0)
 
 
 def main():
@@ -107,8 +130,9 @@ def main():
             if 'obj' in path.parts or 'bin' in path.parts or allowed(path):
                 continue
             seen += 1
-            for line in check(path.read_text(encoding='utf-8-sig')):
-                found.append('%s:%d' % (path, line))
+            lines = check(path.read_text(encoding='utf-8-sig'))
+            if over_count(path, lines):
+                found += ['%s:%d' % (path, line) for line in lines]
 
     if seen == 0:
         print('no source file found - run from the repository root')

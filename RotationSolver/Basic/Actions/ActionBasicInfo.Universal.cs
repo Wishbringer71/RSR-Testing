@@ -141,6 +141,8 @@ public readonly partial struct ActionBasicInfo
 	/// </summary>
 	internal static string BasicRefusal { get; private set; } = "BasicCheck";
 
+	// Set at the start of BasicCheck and by each named refusal.
+
 	private static bool RefuseBasic(string part)
 	{
 		BasicRefusal = part;

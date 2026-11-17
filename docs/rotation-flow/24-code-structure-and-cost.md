@@ -211,9 +211,12 @@ an. Dasselbe gilt für jede andere Fork-Stelle, die Status liest: Die meisten la
 Schadensbonus, Tankbuster-Vorhersage, Blicke, Reinigungsfrist, Schlaf in den Tiefen Gewölben, Sperre der eigenen
 Fähigkeiten –, die übrigen bei einem Ereignis, und keine braucht etwas, das nur Dalamuds Objekt liefert: Name und Flags
 des Status kommen aus dem Statusblatt (`TryGetStatusRow`, Clientsprache wie `GameData`), die Quelle aus
-`SourceObject.ObjectId`. Alle lesen deshalb `GetStatuses`. Nebenbei entfällt ein Absturzweg: `ParriesPlayerSide`,
-`DiesToNextHit`, `SpikeOf` und `IsCrowdControlImmune` liefen ohne Prüfung über die Liste, die Dalamud für eine Figur ohne
-Statusverwaltung als `null` liefert; `GetStatuses` gibt dann eine leere Folge. Dalamuds Weg bleibt nur in Upstreams
+`SourceObject.ObjectId`. Alle lesen deshalb `GetStatuses`; wo nur die Bedingung je Status abweicht, über die eine Schleife
+`StatusHelper.Carries` mit der Bedingung als Parameter. Nebenbei entfällt ein Absturzweg: Dalamuds Getter ist nie `null`, er
+legt die Liste um `GetStatusManager()` an und liest bei einer Figur ohne Statusverwaltung über einen Nullzeiger (goatcorp/
+Dalamud, `BattleChara.cs`, 17.11.2026) – die Prüfungen auf `null` an diesen Stellen schützten nie. `GetStatuses` liest das
+Feld der Figur selbst und ruft keine virtuelle Funktion; die Zielwahl lässt Figuren ohne Statusverwaltung ohnehin aus
+(`HasNativeState`). Dalamuds Weg bleibt nur in Upstreams
 Zeilen – der Phantomjob in Kreszentia (`DutyRotation`, gedrosselt) und das Diagnosefenster –, weil jede Fork-Zeile dort
 Merge-Logistik wäre und keine je Frame im Kampf läuft.
 *Prüfmittel:* `check_status_list.py` weist jede Stelle mit `.StatusList` außerhalb dieser beiden Dateien und der fremden

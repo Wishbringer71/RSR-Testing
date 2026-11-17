@@ -202,14 +202,6 @@ internal static class DeepDungeonCrowd
 	/// <summary>Whether <paramref name="enemy"/> carries damage over time from anyone: its next tick would wake it.</summary>
 	internal static bool TakesDamageOverTime(IBattleChara enemy)
 	{
-		foreach (ref readonly var status in enemy.GetStatuses())
-		{
-			if (status.StatusId != 0 && StatusHelper.IsDamageOverTime([(StatusID)status.StatusId]))
-			{
-				return true;
-			}
-		}
-
-		return false;
+		return StatusHelper.Carries(enemy, static id => StatusHelper.IsDamageOverTime([(StatusID)id]));
 	}
 }

@@ -10,6 +10,11 @@ namespace RotationSolver.Basic.Helpers;
 
 public static partial class StatusHelper
 {
+	/// <summary>The name of a status in the client's language, empty without a row (A864: the sheet's row read safely, as every
+	/// other status reader does).</summary>
+	internal static string StatusNameOf(uint statusId)
+		=> TryGetStatusRow(statusId, out var row) ? row.Name.ExtractText() : string.Empty;
+
 	/// <summary>
 	/// Which attacks this status turns back on whoever makes them, by its own text in the English status sheet: spikes,
 	/// counters and reflections (concept 03, "Gegner mit Stacheln", A571, A588). "physical" in the text narrows it to

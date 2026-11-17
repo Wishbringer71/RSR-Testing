@@ -10,6 +10,8 @@ public readonly partial struct ActionCooldownInfo
 	/// </summary>
 	internal static string CooldownRefusal { get; private set; } = "Cooldown";
 
+	// Set at the start of CooldownCheck and by each named refusal.
+
 	private static bool RefuseCooldown(string part)
 	{
 		CooldownRefusal = part;

@@ -501,7 +501,8 @@ internal static class TankbusterForecast
 		}
 		catch (Exception)
 		{
-			// A status list that throws (an object going away) answers nothing.
+			// Since A854 the statuses come from the native array, which throws nothing managed; kept against a future reader
+			// that does, it answers nothing then.
 		}
 
 		return longest;
@@ -541,7 +542,7 @@ internal static class TankbusterForecast
 		}
 		catch (Exception)
 		{
-			// A status list that throws (an object going away) answers nothing.
+			// As in LongestCopy: nothing managed is thrown since A854; kept against a future reader that does.
 			return -1f;
 		}
 

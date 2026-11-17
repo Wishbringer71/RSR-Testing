@@ -223,6 +223,8 @@ public readonly partial struct ActionCooldownInfo : ICooldown
 	/// <returns>True if the action can be used; otherwise, false.</returns>
 	internal bool CooldownCheck(bool isEmpty, byte gcdCountForAbility)
 	{
+		// A refusal path without a named part reports the plain check, never the part another action left (A864).
+		CooldownRefusal = "Cooldown";
 		if (!_action.Info.IsGeneralGCD)
 		{
 			if (IsCoolingDown)

@@ -2083,13 +2083,16 @@ lässt.
 - *Anforderung:* Ein verschobener Burst kostet den ganzen Kampf. Der Zwei-Minuten-Zyklus läuft danach neben den Buffs
   der Gruppe, und im ersten Fenster fehlen Burst und Trank. Ob die Rotation absichtlich wartet (Ladungen sammeln,
   Fenster abwarten) oder eine Prüfung sie sperrt, muss aus der Spur hervorgehen, ohne dass er etwas einschaltet.
-- *Was zählt:* jede Aktion der laufenden Rotation, die der Job hat (Jobkategorie des Spielblatts, `IsInJob`), die ein
-  Spieler als Job- oder Rollenaktion lernt (Spalte `IsPlayerAction`) und die zum laufenden Modus gehört (`IsPvP`), mit einer
+- *Was zählt:* jede Aktion der laufenden Rotation, die der Job hat (Jobkategorie des Spielblatts, `IsInJob`), deren
+  Jobkategorie weder fehlt noch „Alle Klassen“ ist (Zeilen 0 und 1) und die zum laufenden Modus gehört (`IsPvP`), mit einer
   eigenen Abklinggruppe neben dem GCD (Spielblatt `CooldownGroup`, `AdditionalCooldownGroup`). Ohne die beiden Spalten
   stand in jeder der 118 Zeilen seines Uploads vom 16.11.2026 abends dieselbe Gruppe – Teleport, Rückführung, Entziffern,
   Ausgraben und acht Fahrzeugaktionen (Kategorie „Alle Klassen“ oder keine) –, beim Weißmagier dazu PvP-Aktionen
-  (Wunder der Natur, Diablose); die Burst-Aktionen gingen darin unter (A855). Die Jobspalte (`ClassJob`) trennt nicht:
-  Rollenaktionen haben keine, und Beastskin des Beastmasters steht unter dem Abenteurer (xivapi, 17.11.2026).
+  (Wunder der Natur, Diablose); die Burst-Aktionen gingen darin unter (A855). Die Spalte `IsPlayerAction` trennt nicht:
+  Über alle 1491 PvE-Aktionen aus `ActionId.resx` (xivapi, 17.11.2026) tragen 245 Job- und Rollenaktionen mit eigener
+  Abklinggruppe sie falsch, darunter Sternenmuse, Sol-Bahamut, Phönix, Finishing Move und Umbral Draw – der Filter von A855
+  hätte gerade den Burst des Piktomanten und des Beschwörers ausgeblendet (A864). Die Jobspalte (`ClassJob`) trennt ebenso
+  wenig: Rollenaktionen haben keine, und Beastskin des Beastmasters steht unter dem Abenteurer.
   Heilfähigkeiten bleiben: Steht ein Heil-oGCD bereit, während ein GCD heilt, kostet das einen Schadens-GCD. Ohne die Jobkategorie
   nannte die Zeile beim Weißmagier Rollenaktionen anderer Rollen als „not asked" (Interject, Peloton; Upload vom
   15.11.2026 nachmittags, A828), denn die Rotation führt die Rollenaktionen aller Rollen. Dazu gehören Abilities und GCDs mit eigenem Recast wie Technischer

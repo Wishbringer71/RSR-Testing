@@ -4,7 +4,7 @@
   "archive": "A855",
   "kind": "absent",
   "situation": "ready but unused over the fight",
-  "match": "(Teleport|Rückführung|Entziffern|Ausgraben|Return|Decipher|Dig) [0-9]"
+  "match": "(Teleport|Rückführung|Entziffern|Ausgraben|Return|Decipher|Dig|Großflammenwerfer|Megastrahl|Rotorbrecher|Laserschwert|Doppelraketenschlag|Dampfausstoß|Auftanken|3000-Tonzen-Geschoss|Visier|Analysieren) [0-9]"
  },
  {
   "id": "burstwatch-basiccheck-named",

@@ -25243,6 +25243,29 @@ Dalamud-Log. Die vorige Logdatei stammt vom 12.11.2026.
   neue Angabe, Loop-Abgleich, Uploads, `code.md`, `konzepte.md`, die übrigen Dateien.
 - *Prüfsumme* neu (03be1697…). Code-Review der Codeänderungen dieser Sitzung: A864.
 
+### A864 · Code-Review der Codeänderungen vom 17.11.2026; Messzeile verlor echte Burst-Aktionen (17.11.2026)
+
+- *Umfang:* 00938dcd3..b2adf3f4c (Statusleser auf `GetStatuses`, Teilgründe von `BasicCheck` und `CooldownCheck`, Filter der
+  Messzeile, `check_status_list.py`, Vorhersagen). Zehn Befunde eines Hilfsagenten; jeder hier am Artefakt geprüft.
+- *Hoch, bestätigt – Filter `IsPlayerAction` (A855):* Über alle 1491 PvE-Aktionen aus `ActionId.resx` (xivapi, 17.11.2026)
+  tragen 245 Job- und Rollenaktionen mit eigener Abklinggruppe `IsPlayerAction` falsch, darunter Sternenmuse und die lebenden
+  Musen, Sol-Bahamut, Phönix, Sunflare, Finishing Move, Umbral Draw. Die Messzeile hätte genau den Burst des Piktomanten und
+  des Beschwörers ausgeblendet. Ich hatte den Filter an neun Aktionen geprüft statt an allen. Jetzt nach der Jobkategorie
+  (Zeilen 0 und 1: keine, „Alle Klassen“ – Teleport, Ausgraben, Entziffern, Fahrzeugaktionen).
+- *Mittel, bestätigt:* (1) Die Teilgründe lagen in statischen Zeichenketten ohne Rücksetzung; ein künftiger Rückweg ohne Namen
+  hätte den Grund einer anderen Aktion gemeldet. Jetzt am Anfang jeder Prüfung auf den allgemeinen Grund gesetzt. (2) Konzept
+  24 und A854 nannten Dalamuds `StatusList` für eine Figur ohne Statusverwaltung `null`; Dalamud legt sie um
+  `GetStatusManager()` an und liest dann über einen Nullzeiger (`BattleChara.cs`, 17.11.2026; C224). (4) Fünf Schleifen
+  wiederholten `StatusHelper.Carries` mit anderer Bedingung; jetzt über sie (Bedingungen als statische Lambdas, ohne Anlage).
+  (5)–(7) `check_status_list.py`: `//` und `/*` in Zeichenketten verbargen Code, die Mustersyntax `{ StatusList: … }` ging
+  durch, Upstreams Dateien waren ganz frei; jetzt Zeichenketten zuerst, beide Formen, Upstreams Zeilen gezählt, Selbsttest
+  beider Seiten; der nicht vorhandene Ordner `RotationSolver.Basic` ist gestrichen. (8) Die Vorhersage nannte nur vier der
+  zwölf Fremdaktionen; jetzt alle mit ihren Namen aus dem Upload.
+- *Niedrig, bestätigt:* (3) Die Fehlerbehandlungen um die Statusschleifen fangen seit A854 nichts mehr; Kommentare berichtigt,
+  sie bleiben gegen einen künftigen Leser. (9) Statusnamen wurden auf drei Wegen gelesen; die Spurzeile der Stacheln jetzt
+  über `StatusNameOf` (Zeile sicher gelesen), Upstreams `GetStatusName` unverändert.
+- *Prüfgrad:* Compile 0/0, Prüfskripte; die Wirkung der Messzeile erst am nächsten Upload (Vorhersagen A855).
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -25621,3 +25644,4 @@ geben den Stand vom 14.10.2026 wieder.
 | C221 | A856 (Stand 953113764): Das Weben sei über die ganzen Kämpfe unauffällig, die Auswertung umfasse alle Jobs | Ausgewiesen waren nur Aktionen ab 60 s Recast, das Weben war aus A820 übernommen. Schnitter (Doppel-Weave im Enshroud) und Piktomant verzögern messbar (A857) |
 | C222 | A859 (Stand 45c9a2575): Die REGEL V5i sei geprüft | Geprüft war ein Satz; die übrigen Aussagen nicht. Vollständig in A860 |
 | C223 | A857 (Stand 7440f1087): Der Schnitter verzögere durch zwei Weaves im Enshroud zweimal um rund 0,95 s, der Piktomant um 7,7 s durch Weaves | Fehler des Tempomodells (Status-Recast, fester Recast); am Rohabstand keine Verzögerung außer einer Abwehr an der Puppe (A862) |
+| C224 | A854 und Konzept 24 (Stand bis b2adf3f4c): Dalamuds `StatusList` sei für eine Figur ohne Statusverwaltung `null` | Der Getter legt sie um `GetStatusManager()` an und liest dann über einen Nullzeiger; die Prüfungen auf `null` schützten nie (A864) |

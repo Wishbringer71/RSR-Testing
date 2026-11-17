@@ -162,11 +162,12 @@ internal static class BurstWatch
 
 		foreach (var action in rotation.AllBaseActions)
 		{
-			// A828: only what the job has - the rotation carries the role actions of every role. A855: and only what a
-			// player learns as a job or role action - not Teleport, Dig or a duty's vehicle actions ("All Classes" or no
-			// category), which stood in every line; the mode (PvE or PvP) is compared per frame.
+			// A828: only what the job has - the rotation carries the role actions of every role. A855, A864: not Teleport, Dig
+			// or a duty's vehicle actions, which stood in every line - their job category is "All Classes" (row 1) or none
+			// (row 0); IsPlayerAction would also drop Starry Muse, Solar Bahamut and other real cooldowns. The mode (PvE or
+			// PvP) is compared per frame.
 			var row = action.Action;
-			if (!row.IsInJob() || !row.IsPlayerAction || row.CooldownGroup == ActionHelper.GCDCooldownGroup
+			if (!row.IsInJob() || row.ClassJobCategory.RowId <= 1 || row.CooldownGroup == ActionHelper.GCDCooldownGroup
 				|| DefensiveValues.For(action.ID) != default
 				|| action.Setting.SpecialType is not (SpecialActionType.None or SpecialActionType.MeleeRangedAttack)
 				|| _byId.ContainsKey(action.ID))

@@ -154,15 +154,7 @@ public static partial class ObjectHelper
 	/// </summary>
 	internal static bool DiesToNextHit(this IBattleChara battleChara)
 	{
-		foreach (ref readonly var status in battleChara.GetStatuses())
-		{
-			if (status.StatusId != 0 && StatusHelper.DiesToAnyHit(status.StatusId))
-			{
-				return true;
-			}
-		}
-
-		return false;
+		return StatusHelper.Carries(battleChara, static id => StatusHelper.DiesToAnyHit(id));
 	}
 
 	/// <summary>The status by which <see cref="HasSpikes"/> leaves this enemy alone, or null.</summary>

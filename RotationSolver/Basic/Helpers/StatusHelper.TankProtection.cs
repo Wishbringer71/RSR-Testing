@@ -263,7 +263,8 @@ public static partial class StatusHelper
 		return Carries(battleChara, IsDamageUp);
 	}
 
-	private static bool Carries(IBattleChara battleChara, Func<uint, bool> isOfKind)
+	/// <summary>Whether <paramref name="battleChara"/> carries a status for which <paramref name="isOfKind"/> holds; the one loop for such questions (concept 24).</summary>
+	internal static bool Carries(IBattleChara battleChara, Func<uint, bool> isOfKind)
 	{
 		foreach (ref readonly var status in battleChara.GetStatuses())
 		{
