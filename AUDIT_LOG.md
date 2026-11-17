@@ -24923,6 +24923,23 @@ Dalamud-Log. Die vorige Logdatei stammt vom 12.11.2026.
   Veröffentlichungen und Zähler. Ohne Wirkung.
 - Alle sechs mit `--record` auf den neuen Stand gesetzt.
 
+### A852 · Namen anderer Spielfiguren in alten Commits: keine nachträgliche Prüfung (17.11.2026)
+
+- *Befund (16.11.2026, A844):* Ein Commit vom 01.10.2026 (`c56540754`, A233 und Konzept 13) übernahm zwei Figurennamen
+  aus seinem Protokoll, um zu zeigen, auf wen ein Tankbuster ging; die Rolle hätte dasselbe gesagt. Die Regel dagegen
+  entstand erst am 25.10. (A364, meine Ableitung, keine Vorgabe von ihm) und wurde nicht rückwirkend angewandt. Aus den
+  aktuellen Dateien entfernt in `360f3ae8b`; in der Versionsgeschichte des öffentlichen Repositorys stehen sie weiter. Die
+  übrigen Treffer der Namenssuche in der Geschichte sind Spieldaten (`BNpcName.resx`, Upstream) und „Feo Ul“, die Figur
+  des Poisonfruit-Weihrauchs (Konzept 23) – keine Spielernamen; aus meiner Namensliste genommen.
+- *Sein Hinweis (17.11.2026):* „nachträgliche prüfung nicht notwendig es sind characternamen aus dem spiel, keine realen
+  namen aus dem leben“. Eingeordnet als Hinweis mit Präzisierung des Umfangs: Die Versionsgeschichte wird nicht
+  umgeschrieben, alte Stände werden nicht nachgeprüft. Die Regel selbst bleibt als meine Arbeitsweise (Rolle statt Name),
+  weil sie nichts kostet und im Kampf mehr sagt; eingetragen in `.claude/skills/upload-auswertung/SKILL.md`.
+- *Gegenposition, von ihm entschieden:* Ein Figurenname gehört zu einem Spielkonto und lässt sich über die öffentliche
+  Charaktersuche des Herstellers einem Spieler zuordnen; ob er damit als personenbezogenes Datum gilt, ist unbelegt
+  (keine Rechtsquelle geprüft). Das LLM-Framework (`S-Fremddaten`, a389fe0) nennt Namen Dritter allgemein; seine Angabe
+  grenzt das für Spielfiguren in diesem Repository ab.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

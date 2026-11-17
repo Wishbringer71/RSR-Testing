@@ -16,7 +16,10 @@ Anlass: Er lädt Dateien hoch, mit oder ohne Frage dazu.
 - Was er hochlädt – `DefenseTrace.log`, die gelernten Dateien, ACT-Mitschnitte –, werte ich jedes Mal auch allgemein aus,
   wenn er eine bestimmte Frage dazu stellt (seine Vorgabe, 25.10.2026): erst seine Frage, dann alle übrigen Kämpfe,
   Zeilenarten und Dateien. Grund: Eine Frage zu einem Boss lässt den Rest des Abends ungeprüft.
-- Namen anderer Spieler aus seinen Dateien kommen in keine Datei des Repositorys (A364).
+- Namen anderer Spielfiguren aus seinen Dateien schreibe ich in keine Datei des Repositorys, sondern ihre Rolle („der
+  andere Tank“): Sie sagt im Kampf, was der Name nicht sagt (meine Ableitung, A364). Es sind Namen von Spielfiguren,
+  keine realen Namen; eine nachträgliche Prüfung oder ein Umschreiben der Versionsgeschichte ist dafür nicht nötig
+  (sein Hinweis, 17.11.2026).
 - Eine Frage oder Meldung, deren Log er nachreichen will, prüfe ich sofort im vollen Loop, nicht erst mit dem Log, und
   wenn das Log da ist, prüfe ich das Ergebnis daran erneut (seine Vorgabe, 07.11.2026: „vorab im vollen kritischen loop
   prüfen, und auch nach einspielung der logs"). Grund: Ohne Log ruht sonst die Arbeit, und ohne zweite Prüfung bleibt
