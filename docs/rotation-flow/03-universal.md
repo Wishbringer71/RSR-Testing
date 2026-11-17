@@ -936,6 +936,23 @@ dieser einen Ordnung zusammen. Folge: Ein neues Add ohne DoT erhält ihn vor der
 Restzeit unter einem GCD, fehlt der DoT dort höchstens einen GCD lang; Kandidat für die Erneuerung ist er ohnehin
 erst, wenn er in höchstens zwei GCDs ausläuft (Voreinstellung).
 
+**Kein DoT auf Gegner, die bald sterben – gemessen** (seine Frage, 17.11.2026: „gerade bei mehreren gegnern ist doch die
+nutzung dot schneller, oder?“, und sein Einwand: „wenn alle denken, dass der gegner bald stirbt und ihre aktionen
+einstellen, wird er nie sterben“). `DotPlanner` setzt den DoT nur, wenn Direkttreffer und Ticks bis zum geschätzten Tod
+mehr bringen als der Füller im selben GCD; beim Weißmagier (Dia 85 und 85 je 3 s, Glare III 350) liegt die Grenze bei rund
+zehn Sekunden Restleben. Der Einwand trifft die Rotation nicht in der Form, in der er gestellt ist: Der GCD wird nicht
+eingestellt, sondern geht in den Füller, der auf den sterbenden Gegner mehr bringt; der Gegner fällt damit nicht später.
+Er trifft aber die Schätzung: Sie rechnet den LP-Verlauf der letzten Sekunden fort, und der enthält den Burst der
+Gruppe. Endet der Burst, lebt der Gegner länger als geschätzt. *Gemessen* in seinen Läufen durch Pilgers Pfad (ACT,
+15. und 16.11.2026, Weißmagier): 1.048 Glare III auf Gegner mit Dia, 34 ohne; davon starben 24 binnen 6 s und 7 binnen
+10 s (Verzicht richtig), 3 lebten 10 bis 16 s (Verzicht falsch, je etwa 75 bis 160 Potenz verloren; der deutlichste
+Fall: Afflatus Misery und der Burst eines Beschwörers ergaben neun Sekunden geschätzt, der Gegner lebte 16). Die
+nachsteuernde Restzeit (`GetCorrectedTTK`) hilft hier nicht: Sie lernt je Gegner, und im Burst lag die Schätzung zuerst
+zu lang, ihr Ausgleich hätte sie weiter verkürzt. *Erwogen und nicht gebaut:* die Restzeit für DoTs vorsichtiger, über
+ein längeres Fenster, schätzen – das kippt auch die sieben richtigen Fälle unter zehn Sekunden (je etwa 95 Potenz
+Verlust); gegen 3 Fehler in rund drei Stunden steht kein messbarer Gewinn. Abschalten lässt es sich mit „Time DoT
+refreshes from DoT ticks and time to kill (Experimental)“.
+
 **Wann DoTs überhaupt auf mehreren Gegnern fallen** (sein Hinweis, 16.10.2026): im Wall-to-Wall, solange der Tank
 zieht; in der Stun-Streckung des Weißmagiers zwischendurch; bei weniger als drei Gegnern, dann auf alle. Ab drei Gegnern
 stehen Flächenangriffe an (RSR: Fläche vor DoT, Konzept 02). The Balance deckt sich damit: „When doing trash pulls, Aero
