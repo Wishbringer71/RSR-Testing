@@ -24940,6 +24940,34 @@ Dalamud-Log. Die vorige Logdatei stammt vom 12.11.2026.
   (keine Rechtsquelle geprüft). Das LLM-Framework (`S-Fremddaten`, a389fe0) nennt Namen Dritter allgemein; seine Angabe
   grenzt das für Spielfiguren in diesem Repository ab.
 
+### A853 · Upstream 7.5.8.4: Status direkt gelesen, zwölf Konflikte, Push gesperrt (17.11.2026)
+
+- *Upstream* 7e6c4720e/866988a7e (16.11.2026, „Core tune up“): Status und Ziele werden direkt aus der Spielstruktur gelesen
+  (`StatusHelper.GetStatuses`, ohne Dalamuds `StatusList`), Zwischenspeicher für die Zielpriorität (15 ms, wie der Fork mit
+  `FrameCacheMs`), Kosten aus den Schleifen der Zielwahl gezogen; dazu „/rotation Auto 1“ nach Position, Dezimalkomma in
+  Befehlen, Sicherung einer unlesbaren Konfiguration, „Hide all warnings“.
+- *Konflikte in `main` aufgelöst (12 Dateien, 23 Blöcke), je gegen Konzept und Fork-Regel:*
+  - `IsFromPlayer`: die Fork-Lösung bleibt (Konzept 03, „Vom Spieler heißt auch“, A325, A514) auf Upstreams Statustyp –
+    Upstreams Fassung suchte je fremdem Status wieder in der ganzen Objekttabelle und zählte Strahlende Ägis nach dem
+    Austausch des Karfunkels als fremd.
+  - „/rotation Auto 1“ und die Sicherung der Konfiguration: Upstreams Lösung ersetzt die des Forks (gleiche Wirkung, weniger
+    Fork-Zeilen; die Sicherung prüft zusätzlich Datei und Ordner und heißt jetzt `RotationSolver_LoadFailed.json`).
+  - Esuna anderer Spieler (A293), unberührbare Gegner vor der Unverwundbarkeit (A572), Doom und volle Heilung, die Frist
+    der vorgemerkten Heilung (jetzt `_effectEndTick`) und `HealOverTimeLeft` laufen auf Upstreams neuen Lesern.
+  - Synergie übernommen: Der Kegeltest des Forks (`InFacingCone`) nutzt Upstreams `CosAlpha` statt `Math.Cos` je Aufruf.
+  - Beschwörer: Fork-Stand (A500, Teildatei `SMN_Reborn.AreaDamage.cs`); Tränke: Upstreams Schalter-Vorabprüfung und die
+    Tinkturregel (A502) zusammen.
+- *Stand:* `main` gemergt und auf 7.5.8.4 angehoben (lokal 2540b0feb, 98dead520), Build ohne Fehler und Warnung, 59 Prüfungen
+  grün außer `check_release_note` (vorbestehend in `main`: Release-Text dort vor 7.5.8.3+wsh1).
+- *Blocker:* Der Pre-Push-Hook (`check_commit_identity.py --pre-push`, seit 14.11.2026) prüft jeden Commit, der noch nicht
+  auf `origin` liegt, auch Upstreams, und lehnt deren Autoren ab; die CI prüft laut derselben Datei nur
+  `upstream/main..HEAD`. Erster Upstream-Sync seit dem Hook, daher erst jetzt sichtbar. Die Behebung (Upstreams Commits
+  ausnehmen, Selbsttest für beide Seiten) hat die Rechteprüfung der Sitzung als Lockerung einer Schutzprüfung abgewiesen;
+  sie liegt bei ihm. Bis dahin sind `main` und der Arbeits-Branch ohne Upstream 7.5.8.4.
+- *Sein Hinweis zur Bibliothek* (gemeinsamer, robuster Teil vor direktem Lesen): im Loop mit Antithesen in Konzept 24,
+  „Spieldaten lesen: gemeinsame Bibliothek oder direkt“.
+- *Seine Präzisierung zum Sync* (Konzepte, Ziel von Upstream, Synergien je Änderung): in `.claude/skills/upstream-sync/SKILL.md`.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

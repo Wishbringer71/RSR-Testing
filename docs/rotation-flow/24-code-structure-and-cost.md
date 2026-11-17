@@ -363,6 +363,43 @@ Sitzung mit Kampf steht keine Zeile „exception:"; steht eine, ist sie eine Urs
 - *Keine Prüfung in der CI:* Ein zweiter Build mit allen Regeln kostete jeden Lauf rund 40 s für Befunde ohne Wirkung im
   Kampf; die Zahlen hier sind datiert und werden beim nächsten Audit neu erhoben.
 
+### Spieldaten lesen: gemeinsame Bibliothek oder direkt
+
+*Sein Hinweis (17.11.2026):* „entweder passt der rsr entwickler sein plugin an den gamepatch bei größeren umbauten im
+spiel an, oder die entwickler von dalamud oder ecommons oder structs. da mehrere plugins auf den gemeinsamen libraries
+basieren, ist eher der robuste und allgemeine teil zu bevorzugen. prüfe im loop mit antithese". Anlass: Upstream 7.5.8.4
+liest die Status einer Figur direkt aus FFXIVClientStructs (`StatusHelper.GetStatuses`) statt über Dalamuds
+`StatusList`.
+
+*Grundlagen (belegt):*
+- Dalamuds `StatusList` liest dieselbe Struktur über dieselbe Bibliothek (`StatusManager`, `NumValidStatuses`; Dalamud
+  43b3411, `StatusList.cs`) und legt je Zugriff ein Objekt für die Liste und eines je Status an (`new Status(address)`).
+- Speicherabstände stehen in keinem der beiden Wege in RSR; der JIT liest sie aus der geladenen ClientStructs. Die
+  Verschiebung von `NumValidStatuses` mit 7.2 (0x2E8 → 0x3D8, ClientStructs 9cdd35dd, 25.03.2025) traf beide Wege gleich
+  und keinen davon.
+- Was nur den direkten Weg trifft, sind umbenannte oder entfernte Member: `Status.SourceId` wurde am 25.07.2025 zum Fehler
+  erklärt und am 10.08.2025 entfernt (ClientStructs 76f44d77, 4a5ebdf0), nach Monaten als Warnung; Dalamuds
+  `IStatus.SourceId` blieb. Ein Plugin, das das Feld direkt las, fiel nach dem Dalamud-Update bis zum Neubau aus.
+- RSR hängt schon heute direkt an ClientStructs: 97 Dateien, 63 davon vom Fork (gezählt 17.11.2026).
+
+*These (sein Hinweis):* Der allgemeine Teil wird von den Bibliotheken für alle Plugins nachgezogen, also ist er der
+robustere. Für Umbenennungen zwischen zwei RSR-Builds trifft das zu (Beleg `SourceId`).
+*Antithese 1 – Kosten je Frame:* Dalamuds Weg legt bei jeder Statusprüfung Objekte an; RSR prüft Status hunderte Male je
+Frame (A325). Das ist Speicherbereinigung im Spielthread (oben, „Struktur und Kosten“). Wie viel davon die Statusprüfung
+trägt, ist nicht gemessen (unbelegt; Upstream nennt „drastically improved performance … on larger pulls and weaker
+hardware“ ohne Zahl).
+*Antithese 2 – das Risiko ist angekündigt und abgedeckt:* ClientStructs entfernt einen Member erst nach einer Zeit als
+Warnung. Er baut den Branch vor dem Spielen; ein entfernter Member wird dann ein Fehler beim Bauen, nicht im Kampf. Der
+Abgleich mit Upstream prüft die Referenzen gegen die laufende Dalamud-Fassung (Skill `upstream-sync`, `RefCheck`).
+*Antithese 3 – Logistik:* Zurück zu Dalamuds Weg hieße, Upstreams Kerndatei dauerhaft abweichend zu führen; jeder Sync
+brächte Konflikte an derselben Stelle.
+*Ergebnis:* Upstreams direkter Weg bleibt, eingeschränkt auf die zentrale Stelle: Status liest der Fork nur über
+`StatusHelper` (dort `GetStatuses`), nicht mit eigenen ClientStructs-Zugriffen in Regeln, damit eine Umbenennung an einer
+Stelle zu beheben ist. Seine These gilt, wo der allgemeine Weg nichts kostet: Für jeden neuen Zugriff auf Spieldaten nimmt
+der Fork zuerst Dalamud oder ECommons, ClientStructs nur, wo es dort keinen Weg gibt oder er je Frame anlegt.
+*Preis:* Für Nutzer eines fertigen Releases fällt die Statusprüfung aus, wenn Dalamud einen genutzten Member entfernt,
+bevor RSR neu erscheint; dasselbe gilt heute schon für jeden der übrigen ClientStructs-Zugriffe.
+
 ## Wie es gemessen bleibt
 
 - Die Arbeitsregeln daraus stehen in `.claude/rules/code.md`, „Struktur und Kosten", und greifen schon im Konzept: Die
