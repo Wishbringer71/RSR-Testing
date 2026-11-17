@@ -21,6 +21,7 @@ BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Ze
 
 1. Beastmaster: Fähigkeiten im Crucible lange bereit, aber nicht genutzt (seine Vorgabe, 17.11.2026: „du hast ihn weiter
    zu verfolgen, aber die prio habe ich festgelegt“).
+2. Maschinist: Schachmatt sperrt Doppelschach (wartet auf die nächste Puppensitzung).
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -34,6 +35,15 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
 Keine offenen Defekte.
 
 ## Offene Arbeit
+
+### Maschinist: Schachmatt sperrt Doppelschach
+
+- *Wirkung:* Ist Schachmatt gewählt, aber gesperrt, kommt auch Doppelschach nicht – an der Puppe nach einem Jobwechsel
+  rund 30 s ohne Ability [Schätzung: im Inhalt kaum, nur wenn eine Gruppe aus anderem Grund sperrt]. **N**, **U**.
+- *Ort:* `MCH_Reborn.AttackAbility`, Auswahl `whichToUse` ohne Rückfall.
+- *Nächster Schritt:* Hypothese mit der nächsten Puppensitzung nach einem Jobwechsel prüfen (Vorhersage in A868); trifft
+  sie zu, Konzept 03 fortschreiben und den Rückfall bauen.
+- *Konzept:* 03, „Bereit, aber nicht genutzt“.
 
 ### Beastmaster: Fähigkeiten im Crucible lange bereit, aber nicht genutzt · R
 

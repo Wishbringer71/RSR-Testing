@@ -2114,8 +2114,13 @@ lässt.
     lief, Doppelschach eine Ladung hielt und der Laufstabilisator bereit stand; die GCDs liefen weiter. Laufstabilisator,
     Wildfeuer und Schachmatt kamen direkt nach dem zweiten Luftanker. Ausgeschlossen sind das Weben im Ganzen (88
     Abilities in 77 GCDs über den Kampf) und die offene Abwehrflagge: Nach „single defence open, nothing chosen" läuft
-    die Wahl weiter zu `AttackAbility`. Offen bleibt, welche Prüfung in `CanUse` die Abilities ablehnte; genau das
-    schreibt die Zeile unten.
+    die Wahl weiter zu `AttackAbility`. Erklärt (A867, A868): Den Laufstabilisator sperrte die Gruppe des Vorjobs bis
+    47,5 s, die Überhitzung folgt ihm (51,0 s). Schachmatt kam bei 53,4 s, seine Gruppe 16 lief nach dem Dunkelritter
+    bis 56,9 s [Schätzung: die Sperre lag in dieser Gruppe; die 3,5 s Abstand erklärt die Messung nicht]. Offen bleibt
+    Doppelschach: `usedUp` ist mit Auto-Burst wahr, die Ladung hätte kommen müssen. Hypothese: `MCH_Reborn` wählt vor der
+    Abfrage nach der längeren abgelaufenen Abklingzeit zwischen Schachmatt und Doppelschach und fragt im Zweig „Ricochet"
+    nur Schachmatt; ist es gesperrt, kommt keine von beiden. Die Messzeile zeigt das in der nächsten Puppensitzung nach
+    einem Jobwechsel als Doppelschach „not asked".
 - *Ursache des späten ersten Bursts an der Puppe (A867):* keine Rotation, sondern der Jobwechsel. Abklinggruppen sind
   Nummern, die verschiedene Jobs für verschiedene Aktionen nutzen, und die Gruppe läuft beim Wechsel weiter. In der
   Puppensitzung vom 15.11.2026 endete die Gruppe der Burst-Aktion jedes betroffenen Jobs zu der Zeit, zu der die Aktion kam,
@@ -2124,6 +2129,11 @@ lässt.
   Sternenmuse 21,8 gegen 20,9, Wut 19,6 gegen 18,1); die zweite kam pünktlich. RSR liest dieselbe Gruppe des Spiels und
   hielt nichts zurück. Für Puppensitzungen nach einem Jobwechsel zählt der erste Burst erst, wenn die Gruppen des Vorjobs
   frei sind; die Messzeile nennt den Fall als `Cooldown:Recast`.
+- *Abdrift über den Kampf (A868):* Wo eine Fähigkeit länger bereit stand, lag es an der Rotation selbst und war gewollt:
+  Eröffnung (Bohrer, Justieren, Schlagfänge nur bis 11 s), Zurückhaltung für den Burst (Trance und Einfache
+  Choreographie um die Komplexe, die letzte Ladung Schattenbringer bis zum Zwei-Minuten-Burst) oder Reichweite (Arret-Stoß,
+  solange der Rotmagier 5,5 Yalm und weiter von der Puppe stand). Gezählt wird je Abklinggruppe mit allen ihren Aktionen –
+  nach Namen getrennt zählte die Einfache Choreographie ohne Finishing Move und erschien als Abdrift.
 - *Anforderung:* Ein verschobener Burst kostet den ganzen Kampf. Der Zwei-Minuten-Zyklus läuft danach neben den Buffs
   der Gruppe, und im ersten Fenster fehlen Burst und Trank. Ob die Rotation absichtlich wartet (Ladungen sammeln,
   Fenster abwarten) oder eine Prüfung sie sperrt, muss aus der Spur hervorgehen, ohne dass er etwas einschaltet.

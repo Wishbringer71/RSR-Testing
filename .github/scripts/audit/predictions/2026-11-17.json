@@ -26,5 +26,12 @@
   "kind": "present",
   "situation": "ordinary GCD .* \\(spell\\)",
   "match": "ordinary GCD (\\d\\.\\d\\d) s \\(spell\\), weaponskill (?!\\1 s)\\d\\.\\d\\d s"
+ },
+ {
+  "id": "mch-checkmate-hides-double-check",
+  "archive": "A868",
+  "kind": "each",
+  "situation": "ready but unused over the fight: .*(Schachmatt [0-9.]+ s.*Doppelschach [0-9.]+ s|Doppelschach [0-9.]+ s.*Schachmatt [0-9.]+ s)",
+  "match": "Doppelschach [0-9.]+ s in [0-9]+ \\(not asked\\)"
  }
 ]

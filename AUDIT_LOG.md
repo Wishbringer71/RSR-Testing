@@ -25327,16 +25327,34 @@ Dalamud-Log. Die vorige Logdatei stammt vom 12.11.2026.
 
 ### A868 · Abdrift einzelner Fähigkeiten in der Puppensitzung: bewusste Zurückhaltung, kein Defekt (17.11.2026)
 
-- *Je Fall am Code:* Maschinist Bohrer (`usedUp: false` sammelt, im Burst `usedUp: true`), Justieren (wartet auf die
-  Werkzeug-GCDs); Revolverklinge Schlagfänge (zweite Ladung nur unter Ohne Gnade oder kurz vor dem Kappen); Dunkelritter
-  Schattenbringer (zweite Ladung nur im Zwei-Minuten-Burst); Tänzer Trance (nur wenn die Komplexe Choreographie nicht binnen
-  35 s bereit ist), Einfache Choreographie (folgt dem Tanzablauf); Rotmagier Arret-Stoß und Präparation (sammeln für Ermutigen;
-  Arret-Stoß braucht Nahkampfreichweite – an der Puppe aus der Distanz, seine Regel gegen Bewegung für Schaden).
-- *Verlust:* nur gekappte Ladungen zählen – Bohrer 11 s, Justieren 7 s über 220 s; Arret-Stoß 46 s über 406 s durch die
-  Reichweite. Krieger (Urbefreiung 20 s) und Piktomant (Sternenmuse 22 s): Gruppe des Vorjobs (A867).
-- *Folge:* TODO-Punkt geschlossen. Ob das Sammeln gegen The Balance richtig liegt, ist eine Frage je Rotation, keine der
-  Puppensitzung; ohne Befund am Spielgeschehen kein Anlass.
-- *Prüfgrad:* Code gelesen, Mitschnittanalyse.
+- *Verfahren:* ACT-Mitschnitt vom 15.11.2026, je Abklinggruppe (mit allen Aktionen der Gruppe: Finishing Move zur Einfachen
+  Choreographie, Displacement zu Arret-Stoß) die Zeit, in der alle Ladungen bereit standen, mit Lage im Ablauf; Abstand
+  Spieler–Puppe aus den Positionsfeldern der Zeilen 21/22. Dazu die Bedingung jeder Fähigkeit im Code der Rotation.
+- *Nur zu Kampfbeginn voll:* Maschinist Bohrer (0–11 s) und Justieren (0–7 s), Revolverklinge Schlagfänge (0–11 s): die
+  Eröffnung setzt andere Aktionen zuerst; danach keine Sekunde mit vollen Ladungen. Rotmagier Präparation 0–67 s: Gruppe des
+  Vorjobs (A867).
+- *Zurückhaltung im Burstplan, je Fall am Code:* Tänzer Trance 128–175 s – erst Tanz (Einfache Choreographie bei 128 s), dann
+  hält `!TechnicalStepPvE.Cooldown.WillHaveOneCharge(35)` sie für die Komplexe Choreographie (164 s), danach wartet sie auf
+  Teufelstanz und Technischen Abschluss zusammen (171 s), genutzt 175 s. Einfache Choreographie 158–176 s: `UseStandardStep`
+  hält sie, solange die Komplexe binnen 5 s bereit ist; die Ladung geht danach als Finishing Move nach Trance. Dunkelritter
+  Schattenbringer 134–192 s: eine von zwei Ladungen bereit; `usedUp: true` nur im Zwei-Minuten-Burst (Lebender Schatten
+  189 s), sonst hält die Rotation die letzte Ladung.
+- *Reichweite:* Rotmagier Arret-Stoß, volle Ladungen 0–7 s (Eröffnung, 4,7 Yalm), 147–180 s und 355–361 s. Im mittleren
+  Abschnitt stand er durchgehend 5,5 Yalm vom Mittelpunkt der Puppe, im letzten über 6 Yalm; eingesetzt wurde Arret-Stoß aus
+  4,7 Yalm und bei 180 s, sobald er auf 4,2 Yalm herankam. Die Rotation hat keine weitere Sperre (`usedUp` ist bei vollen
+  Ladungen wahr). Dass 5,5 Yalm außerhalb der Reichweite liegt: [Schätzung: Reichweite 3 Yalm von Rand zu Rand, der Radius
+  der Puppe ist nicht gemessen; der Mitschnitt zeigt Nutzung bis 4,7 und keine bei 5,5]. Kein Eingriff: Seine Regel
+  schließt Bewegung für Schaden aus.
+- *Folge:* TODO-Punkt geschlossen; Krieger (Urbefreiung) und Piktomant (Sternenmuse) erklärt A867. Ob das Sammeln jeder
+  Rotation gegen The Balance richtig liegt, ist eine Frage je Rotation; ohne Befund am Spielgeschehen kein Anlass.
+- *Maschinist, 30 s ohne Ability (A824):* Laufstabilisator und Überhitzung erklärt A867; Doppelschach nicht – `usedUp` ist
+  mit Auto-Burst wahr. Hypothese im Konzept 03: Die Wahl zwischen Schachmatt und Doppelschach nach abgelaufener Abklingzeit
+  fällt nicht auf das andere zurück, wenn das gewählte gesperrt ist; das trifft nur, wenn eine Gruppe aus anderem Grund
+  sperrt (nach einem Jobwechsel), im Inhalt [Schätzung: kaum]. TODO-Punkt „Maschinist: Schachmatt sperrt Doppelschach“.
+- *Vorhersage:* `DefenseTrace.log`, nächste Puppensitzung mit Maschinist nach einem anderen Job: „ready but unused over the
+  fight“ nennt Doppelschach mit „not asked“, solange Schachmatt gesperrt ist – dann hält die Hypothese; ein anderer Grund
+  widerlegt sie.
+- *Prüfgrad:* Mitschnittanalyse, Code gelesen.
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
@@ -25717,3 +25735,4 @@ geben den Stand vom 14.10.2026 wieder.
 | C222 | A859 (Stand 45c9a2575): Die REGEL V5i sei geprüft | Geprüft war ein Satz; die übrigen Aussagen nicht. Vollständig in A860 |
 | C223 | A857 (Stand 7440f1087): Der Schnitter verzögere durch zwei Weaves im Enshroud zweimal um rund 0,95 s, der Piktomant um 7,7 s durch Weaves | Fehler des Tempomodells (Status-Recast, fester Recast); am Rohabstand keine Verzögerung außer einer Abwehr an der Puppe (A862) |
 | C224 | A854 und Konzept 24 (Stand bis b2adf3f4c): Dalamuds `StatusList` sei für eine Figur ohne Statusverwaltung `null` | Der Getter legt sie um `GetStatusManager()` an und liest dann über einen Nullzeiger; die Prüfungen auf `null` schützten nie (A864) |
+| C225 | A868 (Stand 83becb70b): Arret-Stoß 46 s „durch die Reichweite“, Bohrer 11 s und Justieren 7 s als Verlust des Sammelns; Trance nicht genannt | 7 s davon Eröffnung aus 4,7 Yalm; Bohrer und Justieren nur zu Kampfbeginn voll; Trance 47 s voll im Burstplan. Gemessen je Abklinggruppe, A868 |
