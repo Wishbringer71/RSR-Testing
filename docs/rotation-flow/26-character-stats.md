@@ -73,11 +73,42 @@ Wert ohne Essen genau so zurück). Solange Wert · Anteil unter der Obergrenze b
 den Anteil des Essens obendrauf; darüber bringt das Essen nichts mehr dazu. Die Empfehlung rechnet das Essen mit, das gerade
 wirkt.
 
+## Erst was einsetzbar ist, dann das Optimum
+
+Seine Präzisierung (17.11.2026): „man müsste für das set das optimum herausfinden und dann schauen, was wo einsetzbar ist.
+bzw. umgekehrt. welche felder erlauben, wo welche materia einzusetzen, ob overmelding überhaupt bei dem gegenstand geht, so
+dass man erst einmal sieht, was man überhaupt einsetzen könnte, und daraus halt die optimale kombination zu ermitteln“.
+
+**Schritt 1 – je angelegtem Gegenstand, was einsetzbar ist** (alles aus Spiel und Blättern, nichts angenommen):
+- *Plätze:* `Item.MateriaSlotCount` feste Plätze; `Item.IsAdvancedMeldingPermitted`, ob zusätzliche Plätze gehen; höchstens
+  fünf Materia je Gegenstand (`InventoryItem` führt fünf Felder `Materia` und `MateriaGrades`). Beispiel (Blatt, 17.11.2026):
+  die Raid-Helme der Stufe 730 („Augmented Quetzalli“) haben 2 feste Plätze, kein Overmelding.
+- *Grade je Platz:* feste Plätze und der erste zusätzliche jeden Grad bis XII (+54), die weiteren zusätzlichen höchstens XI
+  (+18) (consolegameswiki). Ein zusätzlicher Platz kann misslingen; die Chance hängt an Platz, Grad und Qualität (dort 17, 10,
+  7, 5 % ab Grad V bei HQ) – für das Optimum ohne Belang, für den Preis nicht: Die Empfehlung nennt sie.
+- *Raum je Wert:* Grenze des Gegenstands für den Wert aus dem Spiel (`InventoryItem.GetParameterMaxValue(BaseParam, Item)`,
+  FFXIVClientStructs) minus sein Wert ohne Materia (`GetParameterValue(…, includeMateria: false, …)`). Die Formel aus Gear
+  Planner bleibt Gegenprobe. Im Beispiel: Kritisch 236 an der Grenze 236, also kein Raum; Direkt 165, Raum 71; jeder Wert,
+  den der Helm nicht trägt, Raum 236.
+- *Belegung:* welche Materia schon in welchem Platz sitzt (`Materia`, `MateriaGrades`), damit die Empfehlung den Umbau nennt
+  (Herauslösen kann die Materia zerstören; Quelle des Satzes: consolegameswiki, nicht geprüft).
+- *Bestand an Materia:* wie viele Steine jeder Art und jedes Grades er im Inventar hat; die Empfehlung rechnet wahlweise
+  nur mit vorhandenen oder nennt, was fehlt.
+
+Daraus die Menge der möglichen Belegungen je Gegenstand: für jeden Platz ein Wert (oder leer) mit dem höchsten erlaubten
+Grad, was über den Raum geht, verfällt. Ein niedrigerer Grad lohnt nur, wo er den Raum genauer füllt und ein anderer Platz
+den Rest trägt; die Aufzählung prüft auch ihn.
+
+**Schritt 2 – das Optimum darin:** über alle Gegenstände die erreichbaren Summen je Wert, bewertet wie unten, mit dem
+laufenden Essen. **Umgekehrt** dient das freie Optimum – die beste Verteilung derselben Zahl Punkte ohne Plätze und Grenzen –
+als obere Schranke: Es zeigt, was die Grenzen des Sets kosten, und kürzt die Suche (eine Teilbelegung, die selbst mit dem
+freien Rest die beste gefundene nicht mehr erreicht, fällt weg). Ergebnis je Platz: Wert und Grad, ob vorhanden, ob
+zusätzlicher Platz mit Chance; je Wert die Punkte bis zur nächsten Stufe; der Gewinn gegenüber den angelegten Melds.
+
 ## Was eine Empfehlung braucht
 
-- *Bestand:* angelegte Ausrüstung je Platz (`InventoryType.EquippedItems`): Gegenstand, Qualität, Werte, vorhandene Materia
-  je Platz, Zahl der festen Plätze, ob zusätzliche Plätze möglich sind; die Werte des Charakters (`PlayerState.Attributes`,
-  Konzept 03) als Gegenprobe; Job und Stufe (Stufenwerte, Rolle für Unbeugsamkeit und Faktoren).
+- *Bestand:* angelegte Ausrüstung (`InventoryType.EquippedItems`) mit Schritt 1; die Werte des Charakters
+  (`PlayerState.Attributes`, Konzept 03) als Gegenprobe der Summe; Job und Stufe (Stufenwerte, Rolle für Unbeugsamkeit).
 - *Bewertung:* der erwartete Schadensfaktor aus den Werten, die Materia bewegt: f(Entschlossenheit) · f(Unbeugsamkeit, nur
   Tanks) · (1 + Chance_krit · (Schaden_krit − 1)) · (1 + 0,25 · Chance_direkt), dazu das Tempo (unten). Hauptwert und
   Waffenschaden bewegt Materia auf Stufe 100 nicht; sie sind für den Vergleich zweier Melds ein gemeinsamer Faktor und fallen
@@ -86,12 +117,10 @@ wirkt.
   an seiner Rotation (Buff-Fenster, die eine feste Zahl GCDs fassen; A873 für das Weben). Gear Planner beantwortet das mit
   einer Simulation je Job. Ohne Simulation bleibt die GCD-Stufe eine Vorgabe des Spielers – die heutige oder eine gewählte –,
   und jeder Tempopunkt über ihrer Schwelle zählt nur mit seiner DoT- und Autoangriffsstärke.
-- *Lösung:* Melds sind abhängig voneinander (Grenzen je Gegenstand, Sprünge über das ganze Set); einzeln die beste Materia je
-  Platz zu wählen verfehlt das Optimum, wo ein Punkt eine Stufe verfehlt. Die Zahl der Möglichkeiten ist je Gegenstand klein
-  (Plätze mal Werte, gekappt an der Grenze), über elf Gegenstände groß. Gangbar: je Gegenstand die Verteilungen auf die Werte
-  aufzählen (welcher Wert wie viele Punkte bekommt), dann über die Gegenstände hinweg die erreichbaren Summen fortschreiben
-  und dominierte Summen verwerfen; am Ende jede Summe mit dem Essen exakt bewerten. Ergebnis: die Materia je Platz und der
-  Gewinn gegenüber den angelegten Melds in Prozent Schaden, dazu je Wert die Punkte bis zur nächsten Stufe.
+- *Lösung (Schritt 2):* Melds hängen voneinander ab (Grenzen je Gegenstand, Sprünge über das ganze Set); einzeln die beste
+  Materia je Platz zu wählen verfehlt das Optimum, wo ein Punkt eine Stufe verfehlt. Die Belegungen aus Schritt 1 sind je
+  Gegenstand wenige, über elf Gegenstände viele: Über die Gegenstände hinweg werden die erreichbaren Summen fortgeschrieben,
+  dominierte verworfen, mit dem freien Optimum als Schranke; am Ende jede Summe mit dem Essen exakt bewertet.
 
 ## Wege zur Empfehlung
 
@@ -121,8 +150,8 @@ wirkt.
 - Die Formeln gegen das Spiel: Das Charakterfenster zeigt Chance und Schaden kritischer Treffer, Chance direkter Treffer und
   den GCD; je Formel muss der Wert aus `PlayerState.Attributes` genau den angezeigten ergeben. Der Wert von `Main` lässt sich
   so an der Entschlossenheit prüfen (sie nutzt ihn), bevor eine Empfehlung auf ihm steht.
-- Die Grenzen gegen das Spiel: Das Meld-Fenster färbt einen Wert über der Grenze rot (consolegameswiki); die gerechnete
-  Grenze je Gegenstand muss mit der Färbung übereinstimmen.
+- Die Grenzen: `GetParameterMaxValue` des Spiels gegen die Formel aus Gear Planner je angelegtem Gegenstand; dazu die rote
+  Färbung im Meld-Fenster (consolegameswiki).
 - Die Lösung gegen eine vollständige Aufzählung an einem kleinen Set (zwei, drei Gegenstände), wo das Durchprobieren aller
   Melds geht.
 

@@ -25481,6 +25481,18 @@ Dalamud-Log. Die vorige Logdatei stammt vom 12.11.2026.
   Option 2 (Melds ohne Simulation bei fester GCD-Stufe). Bau auf seinen Auftrag.
 - *Prüfgrad:* Quellen gelesen und gegeneinander gehalten; nichts am Spiel geprüft.
 
+### A875 · Konzept 26: erst was einsetzbar ist, dann das Optimum (17.11.2026)
+
+- *Seine Präzisierung (17.11.2026):* je Gegenstand feststellen, welche Plätze welche Materia erlauben und ob Overmelding
+  geht, daraus die optimale Kombination; „bzw. umgekehrt“.
+- *Befund:* Das Spiel liefert die Grenze je Wert und Gegenstand selbst (`InventoryItem.GetParameterMaxValue`) und den Wert mit
+  oder ohne Materia (`GetParameterValue`, FFXIVClientStructs 80cb4a7); das Blatt `Item` die festen Plätze
+  (`MateriaSlotCount`) und das Overmelding (`IsAdvancedMeldingPermitted`; Raid-Helme 730: 2 Plätze, keins); `InventoryItem`
+  fünf Materia-Felder. Damit ist Schritt 1 ganz aus Spiel und Blättern; die Formel der Grenze wird Gegenprobe.
+- *Konzept 26:* Schritt 1 (Plätze, Grade je Platz, Raum je Wert, Belegung, Bestand an Materia), Schritt 2 (Optimum über die
+  erreichbaren Summen), umgekehrt das freie Optimum als Schranke und als Maß dessen, was die Grenzen kosten.
+- *Prüfgrad:* Blätter und Quelltext von ClientStructs gelesen; nichts am Spiel geprüft.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
