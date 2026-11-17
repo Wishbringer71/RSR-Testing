@@ -19,7 +19,7 @@ auswahl und das timing der beschwörung" – je Kampf aller fünf Bretter (Gegne
 BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Zeitpunkt ihres Aufrufs im Loop prüfen
 (Beispiel seiner Beobachtung: der Raptor gegen Feuer, bevor feueranfällige Gegner da waren; A581).
 
-1. Eigene Geschwindigkeit: Ausrüstung, Materia, Essen – Weben und Rotationen (sein Auftrag, 17.11.2026).
+Keine offene Arbeit; was auf Daten wartet, steht unten.
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -34,21 +34,7 @@ Keine offenen Defekte.
 
 ## Offene Arbeit
 
-### Eigene Geschwindigkeit: Ausrüstung, Materia, Essen – Weben und Rotationen · N, R
-
-- *Seine Vorgaben (17.11.2026):* „die geschwindigkeit von aktionen wird auch durch das Equipment und das melding
-  beeinflusst, das genauer betrachten und analysieren. evtl. ist ingame die eigene geschwindigkeit (Kampf/Casting) durch das
-  gear mit zu berücksichtigen. im vollen loop. kritisch mit antithese“; „equipment kann nicht während des kämpfens geändert
-  werden. daher ist hier eine prüfung bei jedem bild überflüssig. nur zu beginn des kampfes. weiterhin ändern auch
-  nahrungseffekte die geschwindigkeit. es kommt da auf das essen an. manche geschwindigkeit, manche castgeschwindigkeit,
-  manche konstitution oder critical hits.“; „essen wiederum ist ein temporärer buff mit ablaufzeit. daher muss geprüft
-  werden, wie lange und ob die statuseffekte aktiv sind.“; „danach todo zu food, equipment, kampf- und castgeschwindigkeit
-  bearbeiten, sowie inwieweit diese punkte das weaving verbessern könnten und ggfls. auch rotationen optimieren könnten.
-  das alles als konzept, audit, codereviews in vollständigen kritischen loops mit antithese“.
-- *Stand:* A865 liest GCD-, Wirk- und Abklingzeiten fertig aus dem Spiel; die Prüfung des Essens (ob und wie lange) fehlt,
-  A865 hatte sie gegen seine Vorgabe als „ohne Bedarf“ geführt (C226).
-- *Nächster Schritt:* Konzept 03, „Die eigene Geschwindigkeit“: Ausrüstung zu Kampfbeginn, Essen mit Status und Restzeit,
-  Wirkung auf Weben und Rotationen (alle Jobs), Optionen mit SWOT und Antithesen; dann Code, Audit, Code-Review.
+Keine offene Arbeit.
 
 ## Technische Schuld
 
@@ -118,6 +104,12 @@ Reborn"); beides kostet im Spiel, solange nicht beide Installationen gebraucht w
 nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigter Name bleibt.
 
 ## Warten auf Daten oder Fremde
+
+- **Eigene Geschwindigkeit: Feststellung am ersten Upload prüfen** (A872). Zu Kampfbeginn stehen Schnelligkeit,
+  Zaubertempo, Hast, das Essen und die GCD-Tabelle in der Spur. Auflösung: nächster Upload ab Build e19e615c1 – Vorhersagen
+  `own-speed-at-combat-start`, `food-end-names-gcd`; was Hast (BaseParam 47) führt; danach Weben und Abdrift seiner
+  Mitschnitte mit den festgestellten statt angesetzten Zeiten neu rechnen (A857, A871). Konzept 03, „Die eigene
+  Geschwindigkeit“.
 
 - **Maschinist: Schachmatt sperrt Doppelschach** (A868). Ist Schachmatt gewählt, aber gesperrt, kommt auch Doppelschach
   nicht – an der Puppe nach einem Jobwechsel rund 30 s ohne Ability [Schätzung: im Inhalt kaum]. Ort:
