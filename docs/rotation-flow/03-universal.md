@@ -2130,6 +2130,21 @@ weniger Platz, ein langsamerer mehr Platz und weniger GCDs; die 0,02 s des Essen
 Fenster auf 0,02 s genau passt (an der Puppe hielten drei Weaves bei 2,45 s ohne messbaren Verzug, A871). Fest bleibt nur
 das Fenster vor der ersten Messung einer Sperre (0,5 s, Upstream, A753).
 
+**Wie stark das Tempo sich ändern müsste** (seine Frage, 17.11.2026; A873): Ein GCD ohne Wirkzeit trägt n Weaves, solange
+(n + 1) Webfenster in ihn passen – die Sperre des GCD selbst und je Weave eine. Das Webfenster ist die Sperre des Servers
+(meist 0,6 s, sie bleibt) plus der Rest nach der Verkürzung; gemessen in seinen 403 Kämpfen vom 15. und 16.11.2026 im Median
+0,635 s (Rest im Mittel 11 bis 12 ms). Daraus:
+- *Ein dritter Weave* braucht einen GCD ab 4 · 0,635 = 2,54 s. Das langsamste Tempo der Ausrüstung (Grundwert 420) gibt
+  2,50 s; mehr Tempo verkürzt nur. Über das Tempo ist ein dritter Weave also nie zu gewinnen, nur über ein kürzeres
+  Webfenster: bei 2,50 s höchstens 0,625 s, bei seinen gemessenen 2,44 bis 2,49 s höchstens 0,61 bis 0,62 s.
+- *Der zweite Weave* geht verloren unter 3 · 0,635 = 1,91 s. Gemessen an der Puppe (15.11.2026, Median der Abstände
+  zwischen zwei Sofort-GCDs ohne Weave): Mönch 1,96 s (0,06 s Abstand), Ninja 2,10, Viper 2,13, Samurai 2,14, alle übrigen
+  2,36 bis 2,49 s. Beim Mönch reicht ein Webfenster ab 0,66 s – im Bereich seiner Kämpfe (0,60 bis 0,70 s) –, und der zweite
+  Weave schiebt den GCD; ein Tempo, das den Mönch unter 1,91 s brächte, läge rund 600 Punkte Schnelligkeit über seinem
+  heutigen [Schätzung aus der Formel mit 20 % Hast: 1,96 s entspricht ungehastet 2,45 s, 1,91 s etwa 2,38 s].
+- *Folge:* Für das Weben zählt das Webfenster, nicht das Tempo. Die Webregel rechnet mit dem gemessenen Fenster und dem
+  echten GCD-Rest und lässt einen Weave aus, der nicht passt.
+
 **Angenommene Sekunden im Code** (Durchsicht 17.11.2026): `DotPlanner` nimmt 2,5 s nur, wenn das Spiel keine GCD-Länge
 liefert; `RPR_Reborn` hält Sacrificium, solange Arkaner Kreis binnen 2,5 s bereit wird – ein Zeitfenster bis zum Buff, kein
 GCD (unter Enshroud läuft der GCD mit 1,5 s; A865 nannte den Unterschied fälschlich „unter 0,1 s“, C227); die Raise-Regel

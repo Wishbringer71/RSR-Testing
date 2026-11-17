@@ -25453,6 +25453,21 @@ Dalamud-Log. Die vorige Logdatei stammt vom 12.11.2026.
   vergleichen.
 - *Prüfgrad:* Compile 0/0, Prüfskripte; im Spiel nicht beobachtet.
 
+### A873 · Wie stark sich das Tempo ändern müsste, damit sich das Weben ändert (17.11.2026)
+
+- *Seine Frage (17.11.2026):* „wie stark müsste sich denn die geschwindigkeit ändern, damit sich das weaving verbessern
+  könnte?“; sein Hinweis, Funktionen sollten die Animationssperre entfernen – sie entfernen den Anteil der Netzlaufzeit; die
+  Sperre des Servers bleibt (A753).
+- *Gemessen:* Zeilen „action timing over the fight“ in seinen Spuren vom 15. und 16.11.2026 nachmittags und abends, 403
+  Kämpfe: Webfenster Median 0,635 s (0,60 bis 0,70 s, ein Ausreißer 1,14 s), Rest nach der Sperre im Mittel Median 11 und
+  12 ms. GCD je Job an der Puppe (ACT 15.11.2026, Median zwischen zwei Sofort-GCDs mit 2,5 s im Blatt ohne Weave): Mönch 1,96,
+  Ninja 2,10, Viper 2,13, Samurai 2,14, Rotmagier, Beschwörer, Schwarzmagier, Piktomant je 2,36, Barde und Maschinist 2,44,
+  Revolverklinge und Tänzer 2,45, Paladin, Dunkelritter, Krieger, Schnitter 2,46, Dragoon 2,49 s; Heiler ohne solche Abstände.
+- *Ergebnis:* drei Weaves ab 2,54 s – über das Tempo nicht erreichbar (langsamster GCD 2,50 s); zwei bis 1,91 s – der Mönch
+  liegt 0,06 s darüber und verliert den zweiten Weave bei einem Webfenster ab 0,66 s. Konzept 03, „Wie stark das Tempo sich
+  ändern müsste“.
+- *Prüfgrad:* Mitschnitt- und Spuranalyse, Formel akhmorning 7.0; die Tempo-Umrechnung des Mönchs ist eine Schätzung.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
