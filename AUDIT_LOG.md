@@ -25056,9 +25056,9 @@ Dalamud-Log. Die vorige Logdatei stammt vom 12.11.2026.
 - *Weben:* unauffällig über die ganzen Kämpfe (A820 bestätigt: 1,14 Fähigkeiten je GCD beim Maschinisten, keine GCD-
   Verzögerung durch Sperren außer mit Abwehr an der Puppe).
 - *Burst:* Der erste Einsatz der Zwei-Minuten-Aktion kommt zu spät bei Maschinist (Laufstabilisator und Wildfeuer 49 s),
-  Tänzer (Technischer Schritt 44 s, Devilment 50 s), Rotmagier (Ermutigen 73 s), Dunkelritter (Lebender Schatten 68 s),
+  Tänzer (Komplexe Choreographie 44 s, Todestango 50 s), Rotmagier (Ermutigen 73 s), Dunkelritter (Schattenschemen 68 s),
   Samurai (Senei 56 s); jeder spätere Einsatz im Takt. Der erste Einsatz anderer 120-s-Aktionen derselben Jobs kommt
-  pünktlich (Ikishoten 9 s, Delirium 14 s, Manafikation 30 s). Beim Samurai geht die Wahl bei 17, 28, 38, 47 und 51 s an
+  pünktlich (Ikishoten 9 s, Blutdelirium 14 s, Manafizierung 30 s). Beim Samurai geht die Wahl bei 17, 28, 38, 47 und 51 s an
   Senei vorbei zu Shinten: `CanUse` lehnt Senei ab, obwohl Kenki reicht. Beim Maschinisten kommt 30 s lang keine
   Fähigkeit außer dem automatischen Schuss; Laufstabilisator, Wildfeuer und Schachmatt folgen direkt dem zweiten
   Luftanker.
@@ -25069,6 +25069,35 @@ Dalamud-Log. Die vorige Logdatei stammt vom 12.11.2026.
 - *Ursache:* unbelegt. Sie liegt in `BasicCheck` oder `CooldownCheck` der jeweiligen Aktion; welche Teilprüfung, nennt die
   Spur erst ab Build 33778ad29 (`BasicCheck:<Teil>`, `Cooldown:<Teil>`, A855).
 - *Prüfgrad:* Mitschnittanalyse, Code gelesen; Ursache nicht belegt.
+
+### A857 · Puppensitzung vom 15.11.2026, vollständig: Weben und Abklingzeiten aller 20 Jobs (17.11.2026)
+
+- *Anlass:* seine Frage (17.11.2026): „ich hatte ALLE jobs an der puppe. ALLE ausgewertet?“ – nein: A856 wies nur Aktionen ab
+  60 s Recast aus, ließ Aktionen fort, die das Modell nicht trug, und übernahm das Weben aus A820 (C221).
+- *Verfahren:* ACT-Mitschnitt, je Job der ganze Kampf. GCD-Abstand gegen den erwarteten (Recast der GCD-Gruppe, bei eigener
+  Abklinggruppe 2,5 s; Tempo als Median der fünf benachbarten einfachen Abstände; Wirkbeginn aus Zeile 20 des Mitschnitts,
+  also mit Dualcast, Präparation und Tripelzauber richtig), Verzögerungen nach Zahl der Weaves dazwischen. Je Fähigkeit
+  mit eigenem Recast ab 20 s: erster Einsatz, Einsätze, Abstände über dem Recast. Der Beastmaster-Abschnitt (vier Aktionen)
+  ist kein Puppenkampf; Weiser (75 s) und Gelehrter (91 s) sind kurz, das Tempo des Weisen (0,74) ist nicht verlässlich.
+- *Weben (GCD-Verzögerung durch Weaves je Kampf):* 0,1 bis 2,1 s bei Viper, Dragoon, Barde, Paladin, Revolverklinge,
+  Dunkelritter, Maschinist, Tänzer, Rotmagier, Krieger, Samurai, Astrologe, Mönch, Ninja, Schwarzmagier. Auffällig:
+  - Schnitter: zwei Weaves (Lemurenschleier, Sacrificium) im 1,5-s-GCD unter Enshroud schieben den nächsten GCD je um
+    rund 0,95 s, zweimal; dazu nach Communio zweimal rund 1,0 s ohne Weave.
+  - Piktomant: 7,7 s mit Weaves, darunter Stumpfsinn (Abwehr an der Puppe, A818) und Sternenmuse vor Sternenprisma (1,2 s).
+- *GCD-Lücken ohne Weave:* Beschwörer 16,3 s um Karfunkel-Beschwörungen (Rückhalt durch `RadiantAegisDueBeforeDemi`, A818
+  behoben), Schwarzmagier 11,8 s (größte nach Feuka vor Verzweiflung und Flare-Stern, 2,2 s), Ninja 6,3 s (Raiton vor Raiju,
+  je rund 0,26 s), Barde und Gelehrter je eine Lücke von 5 s.
+- *Erster Zwei-Minuten-Burst:* zu spät bei Maschinist 49 s, Tänzer 44/50 s, Rotmagier 73 s, Dunkelritter 68 s, Samurai 56 s,
+  Beschwörer 50 s (A818); später als die übrigen bei Krieger (Urbefreiung 20 s) und Piktomant (Sternenmuse 22 s) – ob gegen
+  The Balance zu spät, unbelegt. Pünktlich: Dragoon 6 s, Barde 13 bis 17 s, Paladin 11 s, Revolverklinge 10 s, Ninja 6 s,
+  Mönch 9 s, Schnitter 12 s, Viper 3 s.
+- *Abdrift über den Kampf, Kandidaten:* Rotmagier Arret-Stoß (+104 s in vier Abständen) und Präparation (erst bei 67 s,
+  +105 s); Dunkelritter Schattenbringer (+58 s einmal); Tänzer Trance (+47 s einmal) und Einfache Choreographie (+25 s);
+  Maschinist Bohrer (+23 s) und Justieren (+13 s); Revolverklinge Schlagfänge (+10 s).
+- *Gebunden, kein Befund:* Salz und Schwärze, Stardiver, Bahamut-Aktionen, Mog-Motive, Ninjutsu, Ladungsaktionen in ihrer
+  Grenze, Abwehr, Bewegung, True North, Lucid Dreaming nach MP, Swiftcast für Wiederbelebungen (seine Regel), Barden-Lieder.
+- *Ursachen:* unbelegt; welche Prüfung jeweils ablehnte, nennt die Spur ab Build 33778ad29.
+- *Prüfgrad:* Mitschnittanalyse mit Modell, an drei Abläufen von Hand gegengeprüft (Maschinist, Samurai, Beschwörer).
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
@@ -25445,3 +25474,4 @@ geben den Stand vom 14.10.2026 wieder.
 | C218 | Konzept 14, Maschinist- und Weißmagier-Tabelle, Zeile „Trank im Opener“/„Trank“ (Stand A779 bis A849): Schnitter-Text („nach Shadow of Death im Opener“, „Der 2-Minuten-Burst des Schnitters …“) als Abgleich dieser Jobs; Schnitter-Zeile mit Schalter „Opener“ (A775) | Ersetzungen trafen die falsche Zeile; die Jobs haben eigene Trankregeln, der Schnitter-Schalter ist seit A780 entfernt (A844, Zeile 14) |
 | C219 | A846, „Flächenschlaf (G6, gebaut)“ (Stand bis A850): Ein schon schlafender Gegner im Kreis zähle gegen die Wahl | Gezählt wurden nur Schläfer in der Liste der Ziele; gehaltene Schläfer stehen dort nicht (`TargetUpdater`, `DeepDungeonCrowd.Sleepers`), die Zählung war für sie 0. Behoben in A850 |
 | C220 | A853, Konzept 24, „Spieldaten lesen“ (Stand 00938dcd3): Die übrigen Fork-Stellen, die Status lesen, liefen seltener (bei einem Ereignis, im Fenster) | Nicht gemessen; die meisten laufen je Frame und Figur (Zielwahl, Betäubung, Tankschutz, Blicke). Berichtigt und umgestellt in A854 |
+| C221 | A856 (Stand 953113764): Das Weben sei über die ganzen Kämpfe unauffällig, die Auswertung umfasse alle Jobs | Ausgewiesen waren nur Aktionen ab 60 s Recast, das Weben war aus A820 übernommen. Schnitter (Doppel-Weave im Enshroud) und Piktomant verzögern messbar (A857) |
