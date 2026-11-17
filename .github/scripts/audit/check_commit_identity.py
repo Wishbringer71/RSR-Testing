@@ -106,15 +106,17 @@ def outgoing_offenders(updates: str) -> list[str]:
         if len(parts) != 4 or parts[1] == zero:
             continue
         local, remote = parts[1], parts[3]
-        span = [local, "--not", "--remotes"] if remote == zero else [f"{remote}..{local}"]
+        # Upstream's commits are not the fork's to answer for; the CI checks only upstream/main..HEAD, and so does this.
+        span = [local, "--not", "--remotes"] if remote == zero else [f"{remote}..{local}", "--not", "--remotes=upstream"]
         log = git("log", f"--format=%h{SEPARATOR}%an{SEPARATOR}%ae{SEPARATOR}%cn{SEPARATOR}%ce{SEPARATOR}%s", *span)
         for line in log.splitlines():
             found += [f"{line.split(SEPARATOR)[0]} {o}" for o in offending_addresses(line)]
     return found
 
 
-def push_refused(name: str, mail: str) -> bool:
-    """Push a commit by this identity to a throwaway remote through .githooks/pre-push; True when refused."""
+def push_refused(name: str, mail: str, from_upstream: bool = False) -> bool:
+    """Push a commit by this identity to a throwaway remote through .githooks/pre-push; True when refused. With
+    from_upstream the commit is also reachable from upstream/main, as after merging an upstream release."""
     import pathlib
     import tempfile
     hooks = pathlib.Path(__file__).resolve().parents[3] / ".githooks"
@@ -135,6 +137,8 @@ def push_refused(name: str, mail: str) -> bool:
         # --no-verify stands for every way past pre-commit, cherry-pick among them.
         run("commit", "-q", "--allow-empty", "--no-verify", "-m", "next", cwd=work,
             GIT_AUTHOR_NAME=name, GIT_AUTHOR_EMAIL=mail, GIT_COMMITTER_NAME=name, GIT_COMMITTER_EMAIL=mail)
+        if from_upstream:
+            run("update-ref", "refs/remotes/upstream/main", "HEAD", cwd=work)
         return run("push", "-q", "origin", "HEAD:refs/heads/main", cwd=work).returncode != 0
 
 
@@ -201,12 +205,17 @@ def self_test() -> None:
         if push_refused(name, mail) != refused:
             print(f"SELF-TEST FAILED on pre-push, {what}: expected {'refused' if refused else 'accepted'}")
             sys.exit(2)
+    # An upstream release merged into the fork carries upstream's authors; the CI does not check them, nor may the hook.
+    if push_refused("Upstream Author", "author@example.com", from_upstream=True):
+        print("SELF-TEST FAILED on pre-push: a commit reachable from upstream/main was refused")
+        sys.exit(2)
     print(
         "self-test ok: the published identities and GitHub's own merge committer are accepted;\n"
         "  a leaking author, a leaking committer, the address that actually leaked, one that\n"
         "  merely starts with an allowed address and a machine's user.name are each caught;\n"
         "  the hooks refuse the same for a commit and for a merge without conflict, and pre-push refuses\n"
-        "  it in a real push of a commit that went past pre-commit; the hook's Python choice finds one\n"
+        "  it in a real push of a commit that went past pre-commit, but not upstream's commits; the hook's\n"
+        "  Python choice finds one\n"
         "  that starts and none without one"
     )
 
