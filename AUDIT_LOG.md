@@ -25487,10 +25487,15 @@ Dalamud-Log. Die vorige Logdatei stammt vom 12.11.2026.
   geht, daraus die optimale Kombination; „bzw. umgekehrt“.
 - *Befund:* Das Spiel liefert die Grenze je Wert und Gegenstand selbst (`InventoryItem.GetParameterMaxValue`) und den Wert mit
   oder ohne Materia (`GetParameterValue`, FFXIVClientStructs 80cb4a7); das Blatt `Item` die festen Plätze
-  (`MateriaSlotCount`) und das Overmelding (`IsAdvancedMeldingPermitted`; Raid-Helme 730: 2 Plätze, keins); `InventoryItem`
+  (`MateriaSlotCount`) und das Overmelding (`IsAdvancedMeldingPermitted`; Kappe der Stufe 790, Zeile 49603, und 780, Zeile
+  49526: je 2 Plätze, keins – sein Hinweis vom 17.11.2026: der Stand ist 790, ohne 790er Beute 780; mein erstes Beispiel nahm
+  Stufe 730 ohne Grund); `InventoryItem`
   fünf Materia-Felder. Damit ist Schritt 1 ganz aus Spiel und Blättern; die Formel der Grenze wird Gegenprobe.
 - *Konzept 26:* Schritt 1 (Plätze, Grade je Platz, Raum je Wert, Belegung, Bestand an Materia), Schritt 2 (Optimum über die
   erreichbaren Summen), umgekehrt das freie Optimum als Schranke und als Maß dessen, was die Grenzen kosten.
+- *Messweg-Befund:* Die Suche bei xivapi mit `LevelItem=790` lieferte auch Gegenstände der Stufe 1 (Weathered Coif) – der
+  Filter trägt nicht; Stufe und Werte habe ich deshalb je Zeile direkt abgerufen. Ob es auf 780/790 Ausrüstung mit
+  Overmelding gibt (gefertigte), ist so nicht belegt.
 - *Prüfgrad:* Blätter und Quelltext von ClientStructs gelesen; nichts am Spiel geprüft.
 
 ## B · Commit-Register (Fork vs. `upstream/main`)

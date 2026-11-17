@@ -81,15 +81,18 @@ dass man erst einmal sieht, was man überhaupt einsetzen könnte, und daraus hal
 
 **Schritt 1 – je angelegtem Gegenstand, was einsetzbar ist** (alles aus Spiel und Blättern, nichts angenommen):
 - *Plätze:* `Item.MateriaSlotCount` feste Plätze; `Item.IsAdvancedMeldingPermitted`, ob zusätzliche Plätze gehen; höchstens
-  fünf Materia je Gegenstand (`InventoryItem` führt fünf Felder `Materia` und `MateriaGrades`). Beispiel (Blatt, 17.11.2026):
-  die Raid-Helme der Stufe 730 („Augmented Quetzalli“) haben 2 feste Plätze, kein Overmelding.
+  fünf Materia je Gegenstand (`InventoryItem` führt fünf Felder `Materia` und `MateriaGrades`). Beispiel aus dem heutigen
+  Stand (Blatt `Item`, 17.11.2026; Stufe 790, ohne 790er Beute 780): „Augmented Bygone Brass Cap of Fending“ (Zeile 49603,
+  Stufe 790) und „Bygone Brass Cap of Fending“ (49526, Stufe 780) haben je 2 feste Plätze, kein Overmelding.
 - *Grade je Platz:* feste Plätze und der erste zusätzliche jeden Grad bis XII (+54), die weiteren zusätzlichen höchstens XI
   (+18) (consolegameswiki). Ein zusätzlicher Platz kann misslingen; die Chance hängt an Platz, Grad und Qualität (dort 17, 10,
   7, 5 % ab Grad V bei HQ) – für das Optimum ohne Belang, für den Preis nicht: Die Empfehlung nennt sie.
 - *Raum je Wert:* Grenze des Gegenstands für den Wert aus dem Spiel (`InventoryItem.GetParameterMaxValue(BaseParam, Item)`,
   FFXIVClientStructs) minus sein Wert ohne Materia (`GetParameterValue(…, includeMateria: false, …)`). Die Formel aus Gear
-  Planner bleibt Gegenprobe. Im Beispiel: Kritisch 236 an der Grenze 236, also kein Raum; Direkt 165, Raum 71; jeder Wert,
-  den der Helm nicht trägt, Raum 236.
+  Planner bleibt Gegenprobe. Im Beispiel (790): Unbeugsamkeit 269 als größter Wert an der Grenze, kein Raum;
+  Entschlossenheit 188, Raum 81 – eine Materia XII (+54) passt, eine zweite verlöre 27 Punkte; jeder Wert, den die Kappe nicht
+  trägt, Raum 269. Bei 780: 263 und 184, Raum 79. Die Grenze gleich dem größten Wert ist hier abgelesen, nicht vom Spiel
+  bestätigt; `GetParameterMaxValue` entscheidet.
 - *Belegung:* welche Materia schon in welchem Platz sitzt (`Materia`, `MateriaGrades`), damit die Empfehlung den Umbau nennt
   (Herauslösen kann die Materia zerstören; Quelle des Satzes: consolegameswiki, nicht geprüft).
 - *Bestand an Materia:* wie viele Steine jeder Art und jedes Grades er im Inventar hat; die Empfehlung rechnet wahlweise
