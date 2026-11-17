@@ -60,6 +60,15 @@ Punkte darüber bis dahin sind ohne Wirkung. Der GCD springt gröber als seine T
 Länge um 0,01 s etwa alle vier Tempostufen (akhmorning). Kleine Stufen (Direkter Treffer, 5 Punkte) verschwenden fast nichts,
 große (Entschlossenheit 20, Unbeugsamkeit 25, Tempo 21 und GCD rund 86) viel.
 
+**Keine feste Reihenfolge der Schadenswerte** (seine Frage, 17.11.2026: „also ist bei schaden wahrscheinlich crit vor direkt
+vor entschlossenheit?“). Gerechnet mit den Formeln oben, Gewinn an Schaden durch +108 Punkte (zwei Materia XII) an drei
+Beispielen [Schätzung: die Werte sind gewählt, nicht seine]: Kritisch 2500, Direkt 1500, Entschlossenheit 2000 – Kritisch
+0,55 %, Direkt 0,52 %, Entschlossenheit 0,56 %; 3000/1800/2300 – 0,58 / 0,49 / 0,55 %; 3300/1200/2600 – 0,53 / 0,51 / 0,54 %.
+Die drei liegen auf wenige Hundertstel Prozent beieinander, und die Sprünge der Stufen entscheiden, welcher vorn liegt;
+Kritisch gewinnt mit eigener Höhe (Chance und Stärke wachsen zusammen), Entschlossenheit verliert mit eigener Höhe. Dazu
+kommen je Job sichere kritische oder direkte Treffer (Werkzeugquelle Gear Planner, `autoDhitBonusDmg`), die das Verhältnis
+verschieben. Eine feste Reihenfolge gibt es deshalb nicht; die Empfehlung rechnet jede Belegung mit den exakten Formeln.
+
 **Materia** (Blatt `Materia`; consolegameswiki): je Grad +1, +2, +3, +4, +6, +16, +8, +24, +12, +36, +18, +54 (I bis XII)
 für jeden Kampfwert. Grade VI, VIII, X und XII nur in die festen Plätze und den ersten zusätzlichen Platz, in die weiteren
 zusätzlichen Plätze die Grade darunter (XI = +18). Je Gegenstand und Wert gilt eine Grenze; was darüber hinausgeht, wirkt
