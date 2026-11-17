@@ -25116,6 +25116,34 @@ Dalamud-Log. Die vorige Logdatei stammt vom 12.11.2026.
   prüfen kann (etwa eine Pflichtzeile „Umfang“ im Bericht, wenn seine Nachricht „vollständig“, „umfassend“ oder „alle“
   enthält), steht als Punkt im TODO.
 
+### A859 · Alles aus dem LLM-Framework Übernommene hinterfragt (17.11.2026)
+
+- *Vorgabe (17.11.2026):* „ich denke, dass alles vom framework übernommene zu hinterfragen ist“; dazu seine Präzisierung,
+  das Framework sei keine Quelle der Wahrheit, höchstens eine für Ideen (A858).
+- *Erhoben:* die REGEL V5i (A839), die 16 Übernahmen aus A840 und jede Regelstelle, die das Framework als Beleg nannte
+  (CLAUDE.md drei, `pruefmittel.md` zwei, `archiv-todo.md` eine, `regeldateien.md` eine). Je Übernahme die Frage: Trägt
+  sie hier aus eigener Sache – ein Fall dieses Repositorys oder eine Primärquelle?
+- *Trägt mit eigenem Fall* (Framework-Beleg durch den Fall ersetzt): Diff gegen Nachricht (e28c95e, A841); jeder Defekt
+  eine Klasse (A838, A854); Lauf rot → Ursache messen (33778ad29, GitHub-Störung); Selbsttest beide Seiten und gefährlicher
+  Zwilling, Ausgangsstand und Regressionsfall (`check_status_list.py`, A854); keine Umgehung (Pre-Push-Hook, A853); erster
+  Laufzeitkontakt vor dem Weiterbauen (A855, A856 – als Fall, gegen den die Regel schützt); Eskalation in einen Hook
+  (`concept_first.py`, d3cca8881). Schon vorher mit eigenem Beleg: eigene Sitzung für andere Repositories (Dokumentation von
+  Claude Code), erfolglose Suche (A750), Prüfer ist ein LLM (C204), Surrogat (seit A286), Weiterarbeit nach dem Stop-Hook
+  (seine Rüge, 07.11.2026), Großbuchstaben (Anthropic-Dokumentation).
+- *Teils getragen:* die Defektklassen des Audits – drei mit eigenem Fall (C220, die nicht sinkenden Crucible-Lasten und
+  Trefferserien, A854); die übrigen sechs stehen als Prüfliste ohne eigenen Fall, so gekennzeichnet.
+- *Ohne eigenen Fall, als meine Ableitung gekennzeichnet:* neue Abhängigkeit prüfen (Grund: ein erinnerter Paketname kann
+  zu einem fremden Paket führen, das mit dem Build ins Spiel kommt).
+- *Entfernt:* „Einen Lauf, den es nicht gibt, kündige ich nicht an“ – kein eigener Fall, und die REGEL verbietet dasselbe
+  schon (Zustandsbehauptung ohne Beleg). Bilanz: ohne den Satz geht kein Schutz verloren.
+- *REGEL V5i* (seine Entscheidung, in seinen Einstellungen; geprüft, nicht geändert): „Complete = complete for intent, not
+  topic“ lässt sich als Erlaubnis lesen, den Umfang auf das vermutete Ziel zu verengen – genau das tat ich heute zweimal
+  (A856) [Schätzung: Der Satz hat dazu beigetragen; belegen lässt es sich nicht]. Seine Vorgabe zu „vollständig“ (A858) geht
+  ihm jetzt vor. „Ambiguous intent → ask“ steht neben seinen Rügen gegen Rückfragen: kein Widerspruch, solange es um seine
+  Absicht geht und nicht um eine Entscheidung, die das Repository beantwortet. Die übrigen Aussagen decken sich mit
+  Regeln, die hier aus eigenen Fällen stammen.
+- *Prüfgrad:* Textprüfung je Stelle, Herkunft über `git log -S` und Archiv, `check_rule_files.py` und 61 Prüfungen grün.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
