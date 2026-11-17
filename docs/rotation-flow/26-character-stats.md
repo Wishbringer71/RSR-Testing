@@ -152,16 +152,21 @@ Frömmigkeit „a Healer only function“):
 | Rolle | an erster Stelle | Materia dafür | an zweiter Stelle | Materia dafür |
 |---|---|---|---|---|
 | Tank | Durchhalten: Schaden einstecken und mindern | Unbeugsamkeit (erlittener Schaden, Koeffizient 200) | Schaden | Kritisch, Entschlossenheit, Direkt, Unbeugsamkeit (ausgeteilt, 112) |
-| Heiler | Heilvermögen: Heilung je Einsatz und MP, sie zu bezahlen | Entschlossenheit, Kritisch, Zaubertempo (HoT-Stärke, Wirkzeit), Frömmigkeit (MP) | Schaden | Direkt, dazu dieselben |
+| Heiler | Heilvermögen: Heilung je Einsatz | Entschlossenheit, Kritisch, Zaubertempo (HoT-Stärke, Wirkzeit) | Schaden, an dritter Stelle MP | Direkt, dazu dieselben; Frömmigkeit (nur MP) zuletzt |
 | alle anderen | Schaden | Kritisch, Entschlossenheit, Direkt, Tempo | Durchhalten, besser geheilt werden | keine: kein Materia-Wert wirkt für sie auf erlittenen Schaden oder empfangene Heilung; Konstitution (LP) nur über Ausrüstung und Essen |
 
 **Bewertung als Rangfolge:** Zuerst das Optimum des ersten Ziels; unter den Belegungen, die es erreichen, das beste des
 zweiten. Wegen der Sprünge erreichen oft viele Belegungen dieselbe Stufe des ersten Ziels – dort entscheidet das zweite.
 - *Tank:* Faktor des erlittenen Schadens aus Unbeugsamkeit zuerst; LP und Verteidigung bewegt Materia nicht. Dann Schaden wie
   bei allen.
-- *Heiler:* Heilfaktor f(Entschlossenheit) · (1 + Chance_krit · (Schaden_krit − 1)) und MP je Tick; wie beide zueinander stehen,
-  hängt am Inhalt (wie viel MP er braucht) – die Mindestfrömmigkeit bleibt seine Vorgabe, darüber zählt der Heilfaktor. Dann
-  Schaden (Direkt).
+- *Heiler:* Heilfaktor f(Entschlossenheit) · (1 + Chance_krit · (Schaden_krit − 1)) zuerst, dann Schaden (Direkt), dann MP
+  je Tick aus Frömmigkeit. Seine Präzisierung (17.11.2026): Frömmigkeit ist nur MP-Regeneration (Blatt `BaseParam` 6: „Affects
+  MP regeneration … Only applicable when in battle and role is Healer“; akhmorning: „a Healer only function that linearly
+  increases the passive MP recovered“ – ein weiterer Vorteil steht in keiner der Quellen), und dass ein Heiler kaum noch MP
+  hat, ist selten, außer wenn viele zu beleben waren; „daher ist manaregeneration sogar drittrangig“. Seine Mitschnitte
+  stützen das (11. bis 16.11.2026, alle Heiler-Aktionen): 21 von 17 509 unter 20 % MP, alle in zwei Episoden mit drei
+  Wiederbelebungen kurz davor (Pilgers Pfad 15.11.2026, Welt der Dunkelheit 13.11.2026). In den Tiefen Gewölben zählt die
+  Ausrüstung ohnehin nicht (Konzept 23).
 - *Alle anderen:* Schaden; das zweite Ziel greift bei der Materia nicht, nur im Hinweis zum Essen (Konstitution bei gleichem
   Schaden).
 - *Geteilte Gegenstände:* Jeder Job bewertet nach seiner Rolle; ein Stück, das nur eine Rolle trägt, folgt ihr ganz.

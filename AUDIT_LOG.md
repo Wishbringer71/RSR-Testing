@@ -25506,6 +25506,10 @@ Dalamud-Log. Die vorige Logdatei stammt vom 12.11.2026.
   Heilvermögen vor Schaden, alle anderen Schaden vor Durchhalten. Am Artefakt (akhmorning 7.0): Unbeugsamkeit nur für Tanks,
   wirkt nicht auf empfangene Heilung; Direkt nicht auf Heilung; Frömmigkeit nur für Heiler – für die übrigen Rollen wirkt keine
   Materia auf ihr zweites Ziel. Konzept 26: Rangfolge statt Gewichtung ab Werk, Gewichtung als Option.
+- *Seine Präzisierung (17.11.2026):* Frömmigkeit ist nur MP-Regeneration (Blatt `BaseParam` 6, akhmorning; kein weiterer
+  Vorteil in den Quellen) und beim Heiler drittrangig. Gemessen an seinen ACT-Mitschnitten 11. bis 16.11.2026 (Zeilen 21/22,
+  MP des Spielers): 21 von 17 509 Heiler-Aktionen unter 20 % MP, nur in zwei Episoden mit gehäuften Wiederbelebungen (Pilgers
+  Pfad 15.11.2026 16:13 bis 16:21, drei Raises; Welt der Dunkelheit 13.11.2026 18:27:58 bis 18:28:31, drei Raises).
 - *Messweg-Befund:* Die Suche bei xivapi mit `LevelItem=790` lieferte auch Gegenstände der Stufe 1 (Weathered Coif) – der
   Filter trägt nicht; Stufe und Werte habe ich deshalb je Zeile direkt abgerufen. Ob es auf 780/790 Ausrüstung mit
   Overmelding gibt (gefertigte), ist so nicht belegt.
