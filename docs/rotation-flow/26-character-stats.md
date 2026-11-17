@@ -108,6 +108,28 @@ Daraus die Menge der möglichen Belegungen je Gegenstand: für jeden Platz ein W
 Grad, was über den Raum geht, verfällt. Ein niedrigerer Grad lohnt nur, wo er den Raum genauer füllt und ein anderer Platz
 den Rest trägt; die Aufzählung prüft auch ihn.
 
+**Geteilte Gegenstände** (sein Hinweis, 17.11.2026: „bedenke, dass accessoires über mehrere jobs gleich sind. die werte eher
+allgemeiner für die möglichen jobs. spezialierung dann bei dem anderen equip auf den konkreten job“). Wer einen Gegenstand
+tragen kann, sagt `Item.ClassJobCategory`; Stand Stufe 780/790 (Blatt, 17.11.2026):
+- Schmuck je Rollengruppe: „of Slaying“ MNK DRG SAM RPR BST, „of Aiming“ BRD NIN MCH DNC VPR, „of Casting“ BLM SMN RDM BLU
+  PCT, „of Healing“ alle Heiler, „of Fending“ alle Tanks.
+- Rüstung enger: „of Maiming“ DRG RPR, „of Striking“ MNK SAM BST, „of Scouting“ NIN VPR; bei Tanks, Heilern und Magiern auch
+  die Rüstung je ganzer Rolle („of Fending“, Kopf 790: alle sechs Tank-Klassen und -Jobs).
+- Die Waffe gehört einem Job.
+
+Das ist die Stufung aus CLAUDE.md, „Universell zuerst“, am Gegenstand: Je mehr Jobs ihn tragen, desto allgemeiner seine
+Materia; die Spezialisierung auf den Job trägt das enger geteilte. Die Sets kommen aus seinen Gearsets (`RaptureGearsetModule`:
+bis zu 100, je Job, je 14 Gegenstände mit Materia und Graden; FFXIVClientStructs 80cb4a7); ein Gegenstand, der in mehreren
+Sets steht (gleiche Zeile und Qualität, gleiche Materia), ist ein Stück und bekommt eine Belegung. Steht dieselbe Zeile mit
+verschiedener Materia in zwei Sets, sind es zwei Stücke.
+
+Bewertet wird gemeinsam: Für eine Belegung des geteilten Stücks wählt jeder Job, der es trägt, das Beste in seinen übrigen
+Gegenständen; zählt die Summe seiner Gewinne über diese Jobs. Weil jeder Job seine eigenen Gegenstände in Schritt 2 ohnehin
+über die erreichbaren Summen löst, ist das exakt und nicht „erst Schmuck, dann der Rest“ der Reihe nach – die Reihe nach würde
+den Schmuck für einen Job festlegen, dem ein anderer die bessere Verteilung abnähme. Gewicht je Job ab Werk gleich; wer einen
+Job häufiger spielt, kann ihn höher gewichten (seine Wahl, er spielt alle Kampfjobs, den Maschinisten öfter – CLAUDE.md,
+„Nutzungsprofil“). Tempostufe und Rolle (Unbeugsamkeit, Frömmigkeit) gelten je Job, nicht je Gegenstand.
+
 **Schritt 2 – das Optimum darin:** über alle Gegenstände die erreichbaren Summen je Wert, bewertet wie unten, ohne Essen
 (siehe „Essen“); danach der Hinweis zum Essen für das gefundene Set. **Umgekehrt** dient das freie Optimum – die beste Verteilung derselben Zahl Punkte ohne Plätze und Grenzen –
 als obere Schranke: Es zeigt, was die Grenzen des Sets kosten, und kürzt die Suche (eine Teilbelegung, die selbst mit dem
@@ -116,7 +138,8 @@ zusätzlicher Platz mit Chance; je Wert die Punkte bis zur nächsten Stufe; der 
 
 ## Was eine Empfehlung braucht
 
-- *Bestand:* angelegte Ausrüstung (`InventoryType.EquippedItems`) mit Schritt 1; die Werte des Charakters
+- *Bestand:* die Gearsets mit Schritt 1 (siehe „Geteilte Gegenstände“), die angelegte Ausrüstung
+  (`InventoryType.EquippedItems`) als laufendes Set; die Werte des Charakters
   (`PlayerState.Attributes`, Konzept 03) als Gegenprobe der Summe; Job und Stufe (Stufenwerte, Rolle für Unbeugsamkeit).
 - *Bewertung:* der erwartete Schadensfaktor aus den Werten, die Materia bewegt: f(Entschlossenheit) · f(Unbeugsamkeit, nur
   Tanks) · (1 + Chance_krit · (Schaden_krit − 1)) · (1 + 0,25 · Chance_direkt), dazu das Tempo (unten). Hauptwert und
