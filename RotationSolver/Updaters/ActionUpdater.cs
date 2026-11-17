@@ -138,6 +138,7 @@ internal static partial class ActionUpdater
 		UpdateMoving(now);
 		UpdateLifetime(now);
 		BurstWatch.Frame();
+		OwnSpeed.Frame(now);
 	}
 
 	private static DateTime _startCombatTime = DateTime.MinValue;
@@ -153,13 +154,17 @@ internal static partial class ActionUpdater
 			// Every combat in the trace, independent of the paths that write in it: a session without these lines did not
 			// write at all, one with them and nothing else wrote nothing on its paths (A417). The ordinary GCD at the speed of
 			// this moment, beside a weaponskill's, shows that a caster's spell speed is in it (concept 03, A865).
+			// The speeds and the meal with its values and remaining time, read once here (concept 03, A872).
 			var spellJob = DataCenter.Role is JobRole.Healer or JobRole.RangedMagical;
-			DefenseTrace.Line($"combat started; ordinary GCD {ActionManagerHelper.GetDefaultAdjustedRecastTime():F2} s "
+			var ordinary = ActionManagerHelper.GetDefaultAdjustedRecastTime();
+			DefenseTrace.Line($"combat started; ordinary GCD {ordinary:F2} s "
 				+ $"({(spellJob ? "spell" : "weaponskill")}), weaponskill "
-				+ $"{ActionManager.GetAdjustedRecastTime(ActionType.Action, (uint)ActionID.HeatedSplitShotPvE) / 1000f:F2} s");
+				+ $"{ActionManager.GetAdjustedRecastTime(ActionType.Action, (uint)ActionID.HeatedSplitShotPvE) / 1000f:F2} s; "
+				+ OwnSpeed.CombatStarted(now, ordinary));
 		}
 		else if (lastInCombat && !DataCenter.InCombat)
 		{
+			OwnSpeed.CombatEnded();
 			DefenseTrace.Line($"combat ended after {(now - _startCombatTime).TotalSeconds:F0} s");
 			DataCenter.LastPullSeconds = (float)(now - _startCombatTime).TotalSeconds;
 			DataCenter.LastPullTerritoryId = DataCenter.Territory?.Id ?? 0;

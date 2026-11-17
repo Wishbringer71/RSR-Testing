@@ -25416,6 +25416,43 @@ Dalamud-Log. Die vorige Logdatei stammt vom 12.11.2026.
 - *Prüfgrad:* Mitschnittanalyse; dass ACT eine Aktion bei ihrer Wirkung stempelt, verschiebt die Zuordnung eines Weaves
   zur Lücke nicht.
 
+### A872 · Eigene Geschwindigkeit feststellen statt annehmen: Werte, Essen, GCD-Tabelle zu Kampfbeginn (17.11.2026)
+
+- *Seine Vorgaben (17.11.2026):* Essen ist ein Buff, „auf bestand, effekt und dauer“ zu prüfen; Ausrüstung nur zu Beginn des
+  Kampfs; Ziel sind Schnelligkeit und Zaubertempo für das Weben, nicht Schaden („ich will aber hier nicht schaden messen,
+  sondern geschwindigkeit und castgeschwindigkeit für weaving“); „da du immer igendwelche sekundenwerte für GCDs ANNIMMST.
+  Also ist das eine methode zur FESTSTELLUNG“. Nicht Teil: Essen erneuern (sein Grund: richtiges Essen je Job, Überschreiben
+  beim Jobwechsel). Sein Hinweis: Essen geht im Kampf, seit 1.0.
+- *Mein Fehler im Ablauf:* Ich begann mit Schadens- und Heilmessung und mit einer Erneuerung des Essens, statt zuerst
+  festzustellen, wo die Werte stehen und was sie bedeuten (seine Rügen in dieser Folge). Die Grundlagen stehen jetzt in
+  Konzept 03, „Die eigene Geschwindigkeit“.
+- *Grundlagen:* Status 48 „Gut gesättigt“, Parameter = `ItemFood`-Zeile + 10000 bei HQ (seine Mitschnitte: 0x2966 = 598 HQ,
+  Tandoori-Raptor); `ItemAction` Daten 48, Zeile, 1800 s; `BaseParam` 1 bis 73 mit Namen (englisch, deutsch);
+  `PlayerState.Attributes` je BaseParam (ClientStructs 80cb4a7); Formeln akhmorning 7.0 (Tempo, Kritisch, Direkt,
+  Entschlossenheit, Unbeugsamkeit, Frömmigkeit, Verteidigung); `ParamGrow` 100: BaseSpeed 420, LevelModifier 2780.
+- *In seinen Mitschnitten:* neun Abläufe des Essens vom 11. bis 16.11.2026, drei im Kampf.
+- *Weben:* Die Webregel liest jede Größe fertig aus dem Spiel oder misst sie; die Werte änderten keine Entscheidung.
+- *Gebaut:* `OwnSpeed` – zu Kampfbeginn Schnelligkeit, Zaubertempo, Hast, das Essen (Gericht, Qualität, Restzeit, Werte mit
+  Anteil und Obergrenze) oder „no food“ und die GCD-Tabelle der Rotation (Abklingzeit/Wirkzeit des Spiels je Paar); zum
+  gemerkten Ende des Essens erneutes Lesen; „food ended in combat“ mit Werten davor/danach und GCD danach; „food eaten in
+  combat“, wenn er im Kampf isst, ohne dass ein Essen lief. Feste Zahlen nur Kennungen (BaseParam 45 bis 47, HQ-Versatz
+  10000), als Ausnahmen geführt.
+- *Code-Review (high, 17.11.2026), fünf Befunde, alle behoben:* GCD-Tabelle ohne Filter des Modus (PvP-GCDs in PvE); eine
+  Aktion und ihre Ersetzung doppelt; Essen im Kampf ohne Essen zu Beginn ungesehen; Hast als Auslöser der Endzeile; zwei
+  parallele Listen für einen Datensatz.
+- *Audit (17.11.2026), Durchgang 1 mechanisch:* Compile 0/0, 61 Prüfschritte grün, feste Zahlen nur als geführte Kennungen.
+  *Durchgang 2 je Defektklasse:* Zustand ohne Rücksetzung – Kampfbeginn setzt Ende, Ausstand und Werte neu, Kampfende das
+  Ende; früherer Zweig verdeckt späteren – der Zweig „ohne Essen“ greift nur ohne gemerktes Ende, nach erkanntem Ende bleibt
+  das alte Ende stehen, bis die Zeile geschrieben ist; Nebenläufigkeit – nur der Spielthread; Text gegen Code – Konzept 03
+  und Kommentare gegen den Code gelesen; gemischte Einheiten – Millisekunden des Spiels, in der Zeile über `TimeSpan` in
+  Sekunden. Ohne Befund.
+- *Vorhersage:* nächster Upload, `DefenseTrace.log`: jede Zeile „combat started“ trägt „skill speed“, „spell speed“ und
+  „GCDs recast/cast“ (`own-speed-at-combat-start`); läuft sein Essen im Kampf ab, folgt „food ended in combat“ mit der
+  GCD-Länge davor und danach (`food-end-names-gcd`); beim Tandoori-Raptor muss das Zaubertempo danach kleiner sein und der
+  GCD eines Zauberers um eine bis zwei Hundertstel länger – das vergleiche ich von Hand, der Ausdruck kann keine Zahlen
+  vergleichen.
+- *Prüfgrad:* Compile 0/0, Prüfskripte; im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -25797,3 +25834,4 @@ geben den Stand vom 14.10.2026 wieder.
 | C224 | A854 und Konzept 24 (Stand bis b2adf3f4c): Dalamuds `StatusList` sei für eine Figur ohne Statusverwaltung `null` | Der Getter legt sie um `GetStatusManager()` an und liest dann über einen Nullzeiger; die Prüfungen auf `null` schützten nie (A864) |
 | C225 | A868 (Stand 83becb70b): Arret-Stoß 46 s „durch die Reichweite“, Bohrer 11 s und Justieren 7 s als Verlust des Sammelns; Trance nicht genannt | 7 s davon Eröffnung aus 4,7 Yalm; Bohrer und Justieren nur zu Kampfbeginn voll; Trance 47 s voll im Burstplan. Gemessen je Abklinggruppe, A868 |
 | C226 | A865 und Konzept 03, „Die eigene Geschwindigkeit“ (Stand a1cef7cdb): Essen samt Restzeit zu verfolgen sei ohne Bedarf | Seine Vorgabe vom 17.11.2026 verlangt es („daher muss geprüft werden, wie lange und ob die statuseffekte aktiv sind“); die Stelle ersetzte seine Vorgabe durch meine Abwägung. Wieder offen im TODO, „Eigene Geschwindigkeit“ |
+| C227 | A865 und Konzept 03 (Stand a1cef7cdb): Upstreams 2,5 s für Sacrificium unterschieden sich beim Schnitter um unter 0,1 s vom GCD | Unter Enshroud läuft der GCD mit 1,5 s; die 2,5 s sind ein Zeitfenster bis Arkaner Kreis, kein GCD (A872) |

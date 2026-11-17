@@ -47,5 +47,19 @@
   "kind": "each",
   "situation": "ready but unused over the fight: .*Hieblawine [0-9,.]+ s in [0-9]+ \\(refused",
   "match": "Hieblawine [0-9,.]+ s in [0-9]+ \\(refused( (BasicCheck:(GameStatus|ActionManager|StatusNeed)|Cooldown:AnimationLock) [0-9]+)+\\)"
+ },
+ {
+  "id": "own-speed-at-combat-start",
+  "archive": "A872",
+  "kind": "each",
+  "situation": "combat started; ordinary GCD",
+  "match": "skill speed [0-9]+, spell speed [0-9]+, haste [0-9]+; (no food|food [0-9]+).*; GCDs recast/cast"
+ },
+ {
+  "id": "food-end-names-gcd",
+  "archive": "A872",
+  "kind": "each",
+  "situation": "food ended in combat",
+  "match": "ordinary GCD [0-9.]+ -> [0-9.]+ s"
  }
 ]

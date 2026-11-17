@@ -2622,6 +2622,46 @@
    "status": "exception",
    "loop": "A846",
    "reason": "The event parameter the game's own start button of the Crucible's board choice (XBMStageDetailList) carries, measured twice in his trace of 16.11.2026; no sheet names a window's event parameters. RSR matches it against the event the button itself holds, so a changed parameter finds no button and leaves the start to him (A846)."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/OwnSpeed.cs",
+   "code": "private const int SkillSpeedParam = 45;",
+   "values": [
+    "45"
+   ],
+   "status": "exception",
+   "loop": "A872",
+   "reason": "Row of the sheet BaseParam (Skill Speed), the index PlayerState.Attributes uses; an identifier of the game like an ActionID, not a figure (A872)."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/OwnSpeed.cs",
+   "code": "private const int SpellSpeedParam = 46;",
+   "values": [
+    "46"
+   ],
+   "status": "exception",
+   "loop": "A872",
+   "reason": "Row of the sheet BaseParam (Spell Speed), the index PlayerState.Attributes uses; an identifier, not a figure (A872)."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/OwnSpeed.cs",
+   "code": "private const int HasteParam = 47;",
+   "values": [
+    "47"
+   ],
+   "status": "exception",
+   "loop": "A872",
+   "reason": "Row of the sheet BaseParam (Haste), the index PlayerState.Attributes uses; an identifier, not a figure (A872)."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/OwnSpeed.cs",
+   "code": "private const ushort HighQualityParam = 10000;",
+   "values": [
+    "10000"
+   ],
+   "status": "exception",
+   "loop": "A872",
+   "reason": "Offset of a high quality meal in the status parameter of Well Fed (ItemFood row + 10000), measured in his ACT logs (0x2966 = row 598, HQ); no sheet states it (A872)."
   }
  ]
 }

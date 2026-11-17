@@ -2088,9 +2088,76 @@ Augenblick. Eine eigene Prüfung der Ausrüstung je Frame gibt es deshalb nicht 
   nicht hat – für die Waffenfertigkeit gilt das seit A240 bei jedem Job, für den Zauber ist es nicht gemessen. Die Zeile
   „combat started“ nennt deshalb die gewöhnliche Länge und ihre Art samt der Länge einer Waffenfertigkeit; bei einem
   Zauberer mit Zaubertempo müssen beide verschieden sein (Vorhersage A865).
-- *Ohne Bedarf:* Essen über seinen Status samt Restzeit zu verfolgen – das Spiel rechnet es in jeden gelesenen Wert ein, und
-  ein Ablauf zeigt sich im nächsten Wert. Ein Vorlauf, der über das Ende des Essens hinausreicht, rechnet mit dem Tempo von
-  jetzt; Essen hält 30 bis 60 Minuten, der längste Vorlauf in GCDs wenige Sekunden.
+- *Seine Vorgaben (17.11.2026):* Essen ist ein Buff und wird „auf bestand, effekt und dauer“ geprüft; die Ausrüstung nur
+  „zu beginn des kampfes“, nicht je Bild; dazu, „inwieweit diese punkte das weaving verbessern könnten und ggfls. auch
+  rotationen optimieren könnten“. Nicht Teil des Auftrags: das Essen zu erneuern (seine Präzisierung, 17.11.2026: „rsr
+  braucht essen nicht zu erneuern, das war kein teil der anfrage“; sein Grund: RSR müsste das richtige Essen wählen und
+  überschriebe beim Jobwechsel das Essen des einen Jobs durch das eines anderen – „zu komplex und daher erst einmal kein
+  teil deines auftrages“). Sein Hinweis: Essen geht auch im Kampf, seit 1.0.
+
+**Grundlagen** (Quellen je Punkt):
+- *Essen* (Spielblätter, xivapi v2, 17.11.2026): Status „Gut gesättigt“ (48). Sein Parameter ist die Zeile in `ItemFood`,
+  plus 10000 bei hoher Qualität – in seinen Mitschnitten `0x2966` = 10598, Zeile 598, der Tandoori-Raptor (Zaubertempo,
+  Konstitution, Frömmigkeit je +10 %, höchstens 103, 143, 62 bei HQ). `ItemFood` führt je Gericht drei Werte mit Anteil
+  und Obergrenze, getrennt für NQ und HQ; die Dauer einer Mahlzeit steht in `ItemAction` (Daten 48, Zeile, 1800 s). Zwei
+  Mahlzeiten stapeln bis 60 Minuten (consolegameswiki, „Food“; seine Mitschnitte: 2531 s und 3528 s nach erneutem Essen).
+- *Tempo* (akhmorning, „Speed“, Stand 7.0): GCD = ⌊GCD₀ · (1000 + ⌈130 · (420 − Tempo) / 2780⌉) / 10000⌋ / 100 auf
+  Stufe 100, eine Stufe alle 21,38 Punkte; außer Essen hebt kein Buff Schnelligkeit oder Zaubertempo, Tempo-Buffs wirken
+  über einen eigenen Hast-Wert. Der Tandoori-Raptor verkürzt so einen 2,5-s-GCD um 0,02 s (2,49 auf 2,47 s bei 520 und
+  623 Zaubertempo).
+- *Ausrüstung:* Die Werte des Spielers stehen in `PlayerState.Attributes` je BaseParam (45 Schnelligkeit, 46 Zaubertempo;
+  FFXIVClientStructs 80cb4a7, Werkzeugquelle). Im Kampf ändern sie sich nur durch Essen (sein Hinweis).
+- *In seinen Mitschnitten* (11. bis 16.11.2026): Das Essen lief neunmal ab, dreimal im Kampf (Alexandria, Leuchtturm von
+  Ridorana, die Puppe in Mist), einmal in Pilgers Pfad mit zehn Minuten ohne Essen danach.
+
+**Feststellen statt annehmen** (sein Auftrag, 17.11.2026: „da du immer igendwelche sekundenwerte für GCDs ANNIMMST. Also ist
+das eine methode zur FESTSTELLUNG“; Ziel: Schnelligkeit und Zaubertempo für das Weben, nicht Schaden): Zu Beginn jedes
+Kampfs schreibt RSR (`OwnSpeed`) in die Zeile „combat started“ Schnelligkeit, Zaubertempo und Hast (BaseParam 47; welchen
+Wert der Client dort führt, ist unbelegt, die erste Spur zeigt es) aus Ausrüstung, Materia und Essen, das Essen nach Bestand, Effekt und Dauer (Gericht, Qualität, Restzeit, jeder Wert mit Anteil und Obergrenze) oder
+„no food“, und je GCD der Rotation (Stufe erreicht, eingeschaltet, laufender Modus, jede Aktion, zu der das Spiel auflöst,
+einmal) Abklingzeit und Wirkzeit, wie das Spiel sie bei diesem Tempo gibt, zusammengefasst je Paar. Endet das Essen im
+Kampf, liest RSR den Status zum gemerkten Ende erneut: Isst er nach, gilt das neue Ende; sonst folgt eine Zeile „food ended
+in combat“ mit den Werten davor und danach und der GCD-Länge danach. Ohne Essen liest RSR im Kampf je Frame die Status des
+Spielers; isst er, folgt „food eaten in combat“ mit Gericht, Effekt und Dauer. Hast steht in der Zeile, löst aber keine
+aus: Was der Client in ihrer Zeile führt, ist unbelegt, und ein Tempo-Buff könnte sie bewegen, während das Essen endet. Damit werte ich seine Mitschnitte mit festgestellten statt angesetzten Zeiten aus (A857 rechnete mit 2,5 s für GCDs
+mit eigener Abklinggruppe und mit einem Tempofaktor aus dem Median, C223).
+
+**Weben:** Die Webregel nimmt keine Sekunde an. Ihre Größen sind der Rest des laufenden GCD (Abklinggruppe 58 des Spiels),
+die Wirkzeit (`GetAdjustedCastTime`), die Sperre, die der Server gab, der gemessene Rest danach, und „Action ahead“ als
+Anteil der GCD-Länge des Spiels (`DataCenter.CalculatedActionAhead`). Schnelligkeit und Zaubertempo stecken in den ersten
+beiden schon; ein eigener Leser der Werte änderte keine Entscheidung. Was Tempo am Weben ändert: Ein schnellerer GCD lässt
+weniger Platz, ein langsamerer mehr Platz und weniger GCDs; die 0,02 s des Essens verschieben die Zahl der Weaves nur, wo ein
+Fenster auf 0,02 s genau passt (an der Puppe hielten drei Weaves bei 2,45 s ohne messbaren Verzug, A871). Fest bleibt nur
+das Fenster vor der ersten Messung einer Sperre (0,5 s, Upstream, A753).
+
+**Angenommene Sekunden im Code** (Durchsicht 17.11.2026): `DotPlanner` nimmt 2,5 s nur, wenn das Spiel keine GCD-Länge
+liefert; `RPR_Reborn` hält Sacrificium, solange Arkaner Kreis binnen 2,5 s bereit wird – ein Zeitfenster bis zum Buff, kein
+GCD (unter Enshroud läuft der GCD mit 1,5 s; A865 nannte den Unterschied fälschlich „unter 0,1 s“, C227); die Raise-Regel
+mit Swiftcast lässt 0,5 s Rest zu (Upstream); `DPSTaken` polstert die Zeitspanne um 2,5 s (Upstream, kein GCD).
+
+**Rotationen:** 82 feste Sekundenschwellen in den Reborn-Rotationen (Abklingzeit und Statusdauer, 17.11.2026); 48 von 9 s
+an richten Fähigkeiten an Buff-Fenstern von 60 oder 120 s aus und hängen am Tempo nicht. Die 34 von 1 bis 6 s (etwa „wird
+in 3 s bereit“) meinen einen oder zwei GCDs: Ausrüstungsstufen verschieben sie um Hundertstel, eine dauernde Hast (Viper,
+Ninja, Samurai, Mönch) um bis zu 15 % – mit der die Autoren sie gespielt haben. Ein Befund im Kampf liegt nicht vor; die
+GCD-Tabelle der Spur macht ihn messbar.
+
+- *Optionen:* 0 nur die Zeiten des Spiels (Stand A865); 1 dazu die Feststellung in der Spur (gewählt); 2 zusätzlich
+  Vorläufe über das Ende des Essens mit dem Tempo danach rechnen; 3 Tempo aus den Werten und der Formel selbst rechnen.
+  - *1, Stärken:* Jede Auswertung steht auf den Zeiten, mit denen RSR rechnete; endet das Essen im Kampf, steht da, was
+    es am GCD änderte. *Schwächen:* keine Wirkung im Kampf. *Kosten:* zu Kampfbeginn ein Statuslesen und je GCD der
+    Rotation zwei Abfragen beim Spiel; je Frame mit Essen ein Zeitvergleich, ohne Essen ein Lesen der eigenen Status (die
+    Spanne des Spiels, nichts angelegt).
+  - *2, Antithese gegen 1, verworfen:* korrigierte unter 0,1 s einmal je Mahlzeit und bräuchte an jeder Vorlaufstelle eine
+    zweite GCD-Rechnung.
+  - *3, Antithese gegen 1, verworfen:* Die Formel (Stufenwerte aus `ParamGrow`: 420 und 2780 auf Stufe 100) gibt nur den
+    GCD ohne Hast; die Zeiten des Spiels tragen Hast, Merkmale und Buffs dazu. Die Formel bleibt Gegenprobe der Spur.
+  - *Antithese gegen „ohne Prüfung je Bild“:* Isst er im Kampf, ändert sich der Bestand ohne Zutun von RSR. Abgefangen
+    über das erneute Lesen zum gemerkten Ende.
+- *Falsifikation:* „kein Defekt“ – richtig für die Zeiten, falsch für seine Vorgabe (A865 prüfte das Essen nicht, meine
+  Auswertungen setzten Sekunden an); „Option falsch“ – hielte, wenn RSR eine Zeit selbst rechnete; es liest sie fertig;
+  „ausgeliefert, und nichts ändert sich“ – im Kampf ja, gewollt: Die Feststellung dient der Auswertung.
+- *Messweg:* Zeile „combat started“ mit „skill speed …, spell speed …, haste …“, dem Essen oder „no food“ und „GCDs
+  recast/cast“; Zeilen „food ended in combat“ und „food eaten in combat“. Vorhersagen in A872.
 - *Abgrenzung:* Gegnerische Wirkzeiten kommen aus dem Blatt oder der Wirkleiste des Gegners und hängen nicht an der eigenen
   Geschwindigkeit. Upstreams `RPR_Reborn` rechnet für Sacrificium einen GCD als 2,5 s; bei der Schnelligkeit des Schnitters
   ist der Unterschied unter 0,1 s, ohne Wirkung im Kampf.
