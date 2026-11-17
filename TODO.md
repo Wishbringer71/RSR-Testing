@@ -19,7 +19,7 @@ auswahl und das timing der beschwörung" – je Kampf aller fünf Bretter (Gegne
 BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Zeitpunkt ihres Aufrufs im Loop prüfen
 (Beispiel seiner Beobachtung: der Raptor gegen Feuer, bevor feueranfällige Gegner da waren; A581).
 
-Keine offene Arbeit; was auf Daten wartet, steht unten.
+1. Nebenprojekt: Charakterwerte, Stufen und Materia-Empfehlung – Konzept steht, Bau auf seinen Auftrag.
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -34,7 +34,14 @@ Keine offenen Defekte.
 
 ## Offene Arbeit
 
-Keine offene Arbeit.
+### Nebenprojekt: Charakterwerte, Stufen und Materia-Empfehlung · N
+
+- *Sein Auftrag (17.11.2026):* „als nebenprojekt: genaue formeln ermitteln, welche characterwerte wann welche bonis bringen.
+  anscheinend gibt es auch eine quantifizierung bei den werten mit sprüngen, ab welchem wert erst wieder eine verbesserung
+  eintritt. das könnte grundlage sein für empfehlungen, welche materia man für optimalen schaden in angelegte
+  ausrüstungssets zu stehen wäre. hierzu recherche im netz, bei plugins und daraus ein konzept erstellen.“
+- *Stand:* Konzept 26 (Formeln, Stufen, Materia, Optionen, Prüfweg). Bauen erst auf seinen Auftrag.
+- *Nächster Schritt:* sein Auftrag zur Umsetzung; vorher prüfbar ohne Code nur am Charakterfenster (Prüfweg in 26).
 
 ## Technische Schuld
 

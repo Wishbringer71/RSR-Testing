@@ -25468,6 +25468,19 @@ Dalamud-Log. Die vorige Logdatei stammt vom 12.11.2026.
   ändern müsste“.
 - *Prüfgrad:* Mitschnitt- und Spuranalyse, Formel akhmorning 7.0; die Tempo-Umrechnung des Mönchs ist eine Schätzung.
 
+### A874 · Nebenprojekt Charakterwerte: Recherche und Konzept 26 (17.11.2026)
+
+- *Sein Auftrag (17.11.2026):* Formeln, Stufensprünge, Grundlage für Materia-Empfehlungen; Recherche im Netz und bei Plugins,
+  daraus ein Konzept.
+- *Recherche:* Blätter `BaseParam`, `ParamGrow`, `Materia` (xivapi v2); akhmorning 7.0 (Formelseiten je Wert); Character
+  Panel Refined 0e4b68c (MIT; Stufen je Wert, Stufentabelle 1 bis 100, Grenzen je Platz); Gear Planner 0f457ce (`xivmath.ts`,
+  `meldsolver.ts`; ohne Lizenzdatei, nur gelesen); consolegameswiki „Materia“. Übereinstimmend: alle Formeln der Tabelle in
+  Konzept 26; `Main` 440 nur in Werkzeugquellen.
+- *Ergebnis:* Konzept 26 mit Formeln, Punkten je Stufe, Materia-Regeln, Bewertung (Hauptwert und Waffenschaden fallen beim
+  Vergleich zweier Melds heraus), Lösungsweg über erreichbare Summen, Optionen 0 bis 3 mit Antithesen, Prüfweg. Empfohlen:
+  Option 2 (Melds ohne Simulation bei fester GCD-Stufe). Bau auf seinen Auftrag.
+- *Prüfgrad:* Quellen gelesen und gegeneinander gehalten; nichts am Spiel geprüft.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
