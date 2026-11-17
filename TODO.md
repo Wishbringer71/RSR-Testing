@@ -64,6 +64,14 @@ und „Cooldown“, deren Teil die Zeile damals nicht nannte (A855). Nächster S
 Status, einer Combo oder einzeln (ein Horn zur Zeit) nutzbar sind und deshalb zu Recht warten; für die übrigen die
 Ablehnung am Code bestimmen, mit dem nächsten Upload an den Teilgründen bestätigen. Konzept 21.
 
+### Eigene Geschwindigkeit aus Ausrüstung und Materia in allen Zeitrechnungen · R
+
+Sein Hinweis mit Auftrag (17.11.2026): „die geschwindigkeit von aktionen wird auch durch das Equipment und das melding
+beeinflusst, das genauer betrachten und analysieren. evtl. ist ingame die eigene geschwindigkeit (Kampf/Casting) durch das
+gear mit zu berücksichtigen. im vollen loop. kritisch mit antithese“. Im Kampf: Wo RSR eine GCD-Länge, Wirkzeit oder ein
+Webfenster mit festen 2,5 s oder der Blattzeit rechnet statt mit der Zeit nach Schnelligkeit und Zaubertempo, kommen
+Aktionen zu früh oder zu spät. Nächster Schritt: jede Zeitrechnung im Code erheben und gegen die Quelle prüfen. Konzept 03.
+
 ### Vollständigkeit deterministisch durchsetzen · R
 
 Wirkung: Seine Aufträge „vollständig“, „umfassend“, „alle“ wurden zweimal nur in Stichproben ausgeführt (A858). Nächster

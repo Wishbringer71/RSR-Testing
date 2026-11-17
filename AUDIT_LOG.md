@@ -25213,6 +25213,36 @@ Dalamud-Log. Die vorige Logdatei stammt vom 12.11.2026.
 - *Folge:* Kein Webdefekt in der Puppensitzung außer Abwehr-Weaves an der Puppe (A818 behoben). Der TODO-Punkt verliert den
   Schnitter; die Abdrift-Kandidaten bleiben (Modell für Abklingzeiten, nicht für das Tempo).
 
+### A863 · REGEL erneut geprüft, mit Antithesen; Audit der Regeldateien gegen sie (17.11.2026)
+
+- *Auftrag (17.11.2026):* „REGEL ERNEUT KRITISCH PRÜFEN, WAS WIRKLICH VERBESSERUNGEN BRINGT UND WO UNSCHÄRFE ZU ABWEICHUNGEN
+  FÜHREN KANN. kritisch im vollen loop mit antithese. audit, codereview“.
+- *Je Aussage, mit Antithese:*
+  - Entwurf: unbestimmt; heute brauchte das Webmodell vier Fassungen, die dritte war falsch (C223). Gegen die Grenze von drei
+    spricht nichts, solange das Berichtigen einer Messung kein Entwurf ist – sonst hätte A861 den bekannten Fehler stehen lassen.
+    Jetzt: Entwurf = ganze Fassung der Antwort; Messung berichtigen ist Belegarbeit.
+  - „Score ≠ quality“: wessen Score – jetzt „A self-assigned score is no evidence of quality“.
+  - A861 „a new statement updates C“: Antithese hält – „updates“ liest sich als Ersetzen; so ließ ich den Beastmaster fallen
+    (seine Rüge: „du hast ihn weiter zu verfolgen“). Jetzt: ergänzt C, ersetzt nur, wo sie es sagt (wie CLAUDE.md, „Getroffene
+    Entscheidungen“).
+  - A861 „Complete = every element of the set his intent names“: Antithese hält – ohne „not topic“ fehlt der Schutz gegen das
+    Ausufern (Fall: der Beastmaster-Umbau neben dem Auftrag, A855). Jetzt: jedes Element dessen, wonach er fragt, über die ganze
+    Ausdehnung, nichts außerhalb.
+  - Sycophancy: deckte nur seinen Irrtum, nicht das reflexhafte Zustimmen zu seiner Kritik; jetzt „check it before agreeing“.
+  - Bias: Die Liste aus A861 las sich abschließend; jetzt „among them“.
+  - Substitution: Antithese „jeder Defekt ist eine Klasse“ verlangt Nachbararbeit – aufgelöst: Nachbararbeit nach dem Auftrag
+    oder ins TODO, nie an seiner Stelle.
+  - Aufwand: Die Einstufung lag bei mir, und ich stufte heute zu niedrig; jetzt „In doubt, the higher level“.
+  - Ohne Bedarf: Fabrikation, Zitat, Auslassung (heute gebrochen, Wortlaut eindeutig), die übrigen Verbote und Pflichten,
+    Form, Persistenz.
+- *Audit, Durchgang 1 (17.11.2026, Stand 466f21590):* alle zehn Regeldateien (CLAUDE.md, sechs unter `.claude/rules/`, drei
+  Skills) auf Stellen zu Rückfrage, Vollständigkeit, Messmittel, neuer Angabe, Umfang durchsucht, jeder Treffer gelesen.
+- *Audit, Durchgang 2:* hoch – „Erreichbarer Prüfgrad“ ließ den Werkzeugbau an die Stelle vorhandener Daten treten (A855,
+  A856); jetzt: Daten zuerst ganz auswerten, ein Messmittel kommt dazu. Mittel – die Vollständigkeitsregel bei seinen Worten
+  doppelte die REGEL; jetzt Auslöser mit Verweis. Niedrig – Beschreibung unter dem Block nachgezogen. Ohne Befund: Rückfrage,
+  neue Angabe, Loop-Abgleich, Uploads, `code.md`, `konzepte.md`, die übrigen Dateien.
+- *Prüfsumme* neu (03be1697…). Code-Review der Codeänderungen dieser Sitzung: A864.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
