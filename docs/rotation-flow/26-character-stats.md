@@ -83,7 +83,9 @@ dass man erst einmal sieht, was man überhaupt einsetzen könnte, und daraus hal
 - *Plätze:* `Item.MateriaSlotCount` feste Plätze; `Item.IsAdvancedMeldingPermitted`, ob zusätzliche Plätze gehen; höchstens
   fünf Materia je Gegenstand (`InventoryItem` führt fünf Felder `Materia` und `MateriaGrades`). Beispiel aus dem heutigen
   Stand (Blatt `Item`, 17.11.2026; Stufe 790, ohne 790er Beute 780): „Augmented Bygone Brass Cap of Fending“ (Zeile 49603,
-  Stufe 790) und „Bygone Brass Cap of Fending“ (49526, Stufe 780) haben je 2 feste Plätze, kein Overmelding.
+  Stufe 790) und „Bygone Brass Cap of Fending“ (49526, Stufe 780) haben je 2 feste Plätze, kein Overmelding. Sein Hinweis
+  (17.11.2026): Overmelding geht meist nur bei selbst gefertigter Ausrüstung, auf 780/790 ist es eher unwahrscheinlich; das
+  Feld entscheidet je Gegenstand, die Empfehlung rechnet zusätzliche Plätze nur, wo es sie erlaubt.
 - *Grade je Platz:* feste Plätze und der erste zusätzliche jeden Grad bis XII (+54), die weiteren zusätzlichen höchstens XI
   (+18) (consolegameswiki). Ein zusätzlicher Platz kann misslingen; die Chance hängt an Platz, Grad und Qualität (dort 17, 10,
   7, 5 % ab Grad V bei HQ) – für das Optimum ohne Belang, für den Preis nicht: Die Empfehlung nennt sie.
