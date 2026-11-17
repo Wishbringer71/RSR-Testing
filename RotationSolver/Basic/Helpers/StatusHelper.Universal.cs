@@ -10,6 +10,21 @@ namespace RotationSolver.Basic.Helpers;
 
 public static partial class StatusHelper
 {
+	/// <summary>Whether <paramref name="battleChara"/> carries a status for which <paramref name="isOfKind"/> holds; the one loop for such
+	/// questions, used by tank protection, healing targets, raise, PvP and deep dungeons (concept 24).</summary>
+	internal static bool Carries(IBattleChara battleChara, Func<uint, bool> isOfKind)
+	{
+		foreach (ref readonly var status in battleChara.GetStatuses())
+		{
+			if (status.StatusId != 0 && isOfKind(status.StatusId))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	/// <summary>The name of a status in the client's language, empty without a row (A864: the sheet's row read safely, as every
 	/// other status reader does).</summary>
 	internal static string StatusNameOf(uint statusId)

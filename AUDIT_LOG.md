@@ -25515,6 +25515,29 @@ Dalamud-Log. Die vorige Logdatei stammt vom 12.11.2026.
   Overmelding gibt (gefertigte), ist so nicht belegt.
 - *Prüfgrad:* Blätter und Quelltext von ClientStructs gelesen; nichts am Spiel geprüft.
 
+### A876 · TODO-Ablauf: Konzepte, Audit und Code-Review über alles seit dem letzten Durchgang (17.11.2026)
+
+- *Anlass:* sein Auftrag (17.11.2026): „jetzt weiter in todo im vollen loop“. Offene Arbeit leer, keine Auflösungsbedingung
+  der technischen Schuld erfüllt (je Eintrag gelesen: Bozja, Beiruta, Aquapolis nicht genannt; keine Quelle für Schildanteile
+  und Geschwister-Ids; kein Kampfleser der Schadensarten; die übrigen ohne Anlass). Nach dem Ablauf im TODO („dann
+  konzeptverbesserungen durchgehen, audit, codereview“) folgt der Durchgang.
+- *Umfang:* alles seit dem letzten vollständigen Konzeptdurchgang (A844, Stand 81ce91927): Konzepte 01, 03, 09, 11, 12, 24,
+  26, README, Release-Text; Code in 74 Dateien. Davon geprüft: Upstream 7.5.8.4 und Statusleser (A854), Messzeile und
+  Teilgründe (A864), `OwnSpeed` (A872). Ohne Review waren `d101ca7eb` (die Korrekturen aus A864) und `0b575558a` (A865).
+- *Code-Review dieser beiden:* alle 22 Rückwege von `BasicCheck` benannt, ein geschachtelter Aufruf einer anderen Aktion
+  überschreibt den Grund nicht dauerhaft; die neuen Lambdas statisch, die Spans auf dem Stack, nichts je Frame angelegt;
+  `DefaultGCDTotal` nimmt den Wert des Spiels, den letzten GCD nur ohne ihn. Befund (niedrig): `StatusHelper.Carries`, die
+  eine Schleife für fünf Bereiche, stand in der Teildatei des Tankschutzes – nach `StatusHelper.Universal.cs` verschoben.
+- *Konzepte, Durchgang 2 je geänderter Stelle:* 09 (Vorlauf von Living Dead, A865), 11 und 12 (Zeilenangaben, von der CI
+  gehalten), 24 (Statusleser, C224 eingearbeitet), 01 (Beastmaster, A869), 03 (Messzeile, eigene Geschwindigkeit, Abdrift,
+  Weben – heute je Abschnitt am Code geprüft), 26 (Recherche, Quellen je Aussage). Befund: der Release-Text nannte A865
+  nicht, obwohl es im Kampf wirkt – eingetragen.
+- *Audit, Durchgang 1:* Compile 0/0, 61 Prüfschritte grün. *Durchgang 2* je Defektklasse über den Code des Umfangs: Zustand
+  ohne Rücksetzung (Teilgründe, `OwnSpeed`) – beide setzen zurück; Text gegen Code – Kommentare der Teilgründe, `Carries`,
+  `DefaultGCDTotal` stimmen; früherer Zweig verdeckt späteren – `OwnSpeed.Frame` geprüft (A872); Nebenläufigkeit – nur der
+  Spielthread. Ohne weiteren Befund.
+- *Prüfgrad:* Code gelesen, Compile, Prüfskripte; nichts im Spiel.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

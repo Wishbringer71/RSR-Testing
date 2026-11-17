@@ -15,6 +15,12 @@ What this release changes in the fight. For the whole distance from upstream, se
   Mortal Ray in the Crucible, which hits everyone with Doom - no longer turns you away or holds your actions back. A
   gaze's own helper casts, which carry no mark of their own, still count.
 
+- **Lead times before the first GCD follow your own speed.** While no GCD runs - before the first one of a pull, between
+  pulls, out of range - RSR took the last GCD it had seen, which could be a shortened one such as a dance step or an
+  Enshroud GCD, or for healers and casters a weaponskill's length without their spell speed. It now takes the game's
+  length of an ordinary GCD of your kind, with gear, materia, food and haste in it, so windows counted in GCDs start on
+  time from the first press.
+
 ## Deep dungeons
 
 - **Aggro control of its own.** Three options under Deep dungeon, on by default, leave every other content as it was -
