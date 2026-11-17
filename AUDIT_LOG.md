@@ -25294,6 +25294,17 @@ Dalamud-Log. Die vorige Logdatei stammt vom 12.11.2026.
   x = y bei Zaubertempo in der Ausrüstung widerlegt die Annahme.
 - *Prüfgrad:* Code gelesen, Compile 0/0, Prüfskripte; im Spiel nicht beobachtet.
 
+### A866 · Quellen am Auftragsende: drei neue Stände ausgewertet (17.11.2026)
+
+- Upstream: kein neuer Commit gegen `upstream/main` (gemessen 17.11.2026).
+- *dajoey/lalalazy* d2a94c617 → ba2a0682c: PvPSolver übernimmt Upstreams Status- und Zielprüfungen aus 866988a7ee – derselbe
+  Stand, den der Fork mit 7.5.8.4 direkt trägt (A853); nichts Neues.
+- *LTS-FFXIV/RebornMaterial* 0d61c054c → 561edc1aa: Zeilenumbruch von Zahlen in zwei Widgets (`M3Scope`, `RowActions`); die
+  Bibliothek kommt über Upstream, kein Handlungsbedarf hier bis zum nächsten Sync.
+- *ofnature/Daedalus* fcf1bb9cc → f376e950f: nur ein Verweis in `repo.json`.
+- *priestkos/FrontlineAdvisor:* nicht erreichbar (Stand 301a95e, 13.11.2026); ohne neuen Stand nichts auszuwerten.
+- Aufgezeichnet mit `check_source_updates.py --record`.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
