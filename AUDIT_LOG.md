@@ -24964,6 +24964,11 @@ Dalamud-Log. Die vorige Logdatei stammt vom 12.11.2026.
   `upstream/main..HEAD`. Erster Upstream-Sync seit dem Hook, daher erst jetzt sichtbar. Die Behebung (Upstreams Commits
   ausnehmen, Selbsttest für beide Seiten) hat die Rechteprüfung der Sitzung als Lockerung einer Schutzprüfung abgewiesen;
   sie liegt bei ihm. Bis dahin sind `main` und der Arbeits-Branch ohne Upstream 7.5.8.4.
+- *Behoben (17.11.2026, sein Auftrag: „du hast diese regel anscheinend eingeführt. also bist du verantwortlich, dass sie
+  funktioniert oder gelockert wird“):* Der Pre-Push-Modus nimmt Commits aus, die von `upstream/*` erreichbar sind – dieselbe
+  Menge wie die CI (`upstream/main..HEAD`). Fork-Commits mit fremder Identität lehnt er weiter ab. Selbsttest um einen echten
+  Push eines Upstream-Commits mit fremdem Autor ergänzt; am alten Stand schlägt er an („a commit reachable from
+  upstream/main was refused“), am neuen nicht. In `main` und im Arbeits-Branch.
 - *Sein Hinweis zur Bibliothek* (gemeinsamer, robuster Teil vor direktem Lesen): im Loop mit Antithesen in Konzept 24,
   „Spieldaten lesen: gemeinsame Bibliothek oder direkt“.
 - *Seine Präzisierung zum Sync* (Konzepte, Ziel von Upstream, Synergien je Änderung): in `.claude/skills/upstream-sync/SKILL.md`.
