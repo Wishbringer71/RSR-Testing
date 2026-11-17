@@ -133,4 +133,17 @@ public readonly partial struct ActionBasicInfo
 			|| (DateTime.Now > DataCenter.KnockbackStart && DateTime.Now < DataCenter.KnockbackFinished)
 			|| (DataCenter.NoPoslock && DataCenter.IsMoving && !skipCastingCheck)
 			|| DataCenter.BMRForceCancelCast || DataCenter.BMRIsMoving;
+
+	/// <summary>
+	/// The part of <see cref="BasicCheck"/> that refused last, as a fixed string <c>BasicCheck:&lt;part&gt;</c>, for the reason
+	/// <c>CanUse</c> reports (concept 03, "Bereit, aber nicht genutzt", A855): "BasicCheck" alone covers some twenty checks,
+	/// and the trace line of a cooldown that stood ready could not say which one held it. Game thread, like the check.
+	/// </summary>
+	internal static string BasicRefusal { get; private set; } = "BasicCheck";
+
+	private static bool RefuseBasic(string part)
+	{
+		BasicRefusal = part;
+		return false;
+	}
 }

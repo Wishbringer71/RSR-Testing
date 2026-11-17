@@ -6,7 +6,7 @@ namespace RotationSolver.Basic.Actions;
 /// <summary>
 /// The action cooldown information.
 /// </summary>
-public readonly struct ActionCooldownInfo : ICooldown
+public readonly partial struct ActionCooldownInfo : ICooldown
 {
 	private readonly IBaseAction _action;
 
@@ -231,14 +231,14 @@ public readonly struct ActionCooldownInfo : ICooldown
 				{
 					if (!WillHaveOneChargeGCD(0, 0))
 					{
-						return false;
+						return RefuseCooldown("Cooldown:GcdRecast");
 					}
 				}
 				else
 				{
 					if (!HasOneCharge && RecastTimeRemainOneChargeRaw > DataCenter.DefaultGCDRemain)
 					{
-						return false;
+						return RefuseCooldown("Cooldown:Recast");
 					}
 				}
 			}
@@ -247,16 +247,21 @@ public readonly struct ActionCooldownInfo : ICooldown
 			{
 				if (RecastTimeRemain > DataCenter.DefaultGCDRemain + (DataCenter.DefaultGCDTotal * gcdCountForAbility))
 				{
-					return false;
+					return RefuseCooldown("Cooldown:ChargesKept");
 				}
 			}
 		}
 
 		if (!_action.Info.IsRealGCD)
 		{
-			if (Player.AnimationLock > 0f || !HasOneCharge)
+			if (Player.AnimationLock > 0f)
 			{
-				return false;
+				return RefuseCooldown("Cooldown:AnimationLock");
+			}
+
+			if (!HasOneCharge)
+			{
+				return RefuseCooldown("Cooldown:NoCharge");
 			}
 		}
 		return true;

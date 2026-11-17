@@ -1,0 +1,23 @@
+[
+ {
+  "id": "burstwatch-no-general-actions",
+  "archive": "A855",
+  "kind": "absent",
+  "situation": "ready but unused over the fight",
+  "match": "(Teleport|Rückführung|Entziffern|Ausgraben|Return|Decipher|Dig) [0-9]"
+ },
+ {
+  "id": "burstwatch-basiccheck-named",
+  "archive": "A855",
+  "kind": "absent",
+  "situation": "ready but unused over the fight",
+  "match": "BasicCheck [0-9]"
+ },
+ {
+  "id": "burstwatch-cooldown-named",
+  "archive": "A855",
+  "kind": "absent",
+  "situation": "ready but unused over the fight",
+  "match": "Cooldown [0-9]"
+ }
+]

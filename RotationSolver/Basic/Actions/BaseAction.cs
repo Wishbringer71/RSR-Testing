@@ -215,12 +215,12 @@ public partial class BaseAction : IBaseAction
 
 		if (!Info.BasicCheck(skipStatusProvideCheck, skipStatusNeed, skipComboCheck, skipCastingCheck, checkActionManagerDirectly, targetOverride))
 		{
-			return ActionTracer.Reject(this, "BasicCheck");
+			return ActionTracer.Reject(this, ActionBasicInfo.BasicRefusal);
 		}
 
 		if (!Cooldown.CooldownCheck(usedUp, gcdCountForAbility))
 		{
-			return ActionTracer.Reject(this, "Cooldown");
+			return ActionTracer.Reject(this, ActionCooldownInfo.CooldownRefusal);
 		}
 
 		// An ability with a cast time ends its cast before the window kept free ahead of the GCD, as that window keeps

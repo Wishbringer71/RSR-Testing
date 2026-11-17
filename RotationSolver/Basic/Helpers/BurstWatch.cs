@@ -4,8 +4,8 @@ using System.Text;
 namespace RotationSolver.Basic.Helpers;
 
 /// <summary>
-/// Cooldowns that stood ready in a fight and did not come (concept 03, "Bereit, aber nicht genutzt", A820). Every action of
-/// the running rotation with a recast group of its own beside the GCD - abilities and GCDs like Technical Step - counts
+/// Cooldowns that stood ready in a fight and did not come (concept 03, "Bereit, aber nicht genutzt", A820). Every job or
+/// role action of the running rotation for the current mode with a recast group of its own beside the GCD - abilities and GCDs like Technical Step - counts
 /// while a charge of it is ready, the player is in combat and a hostile is in range; defence and movement do not. Each
 /// stretch longer than a GCD is added up with the reasons <c>CanUse</c> refused it for (<see cref="Refused"/>, fed by
 /// <see cref="ActionTracer.Reject"/>), and one trace line per fight names them. It decides nothing: it shows where a
@@ -16,6 +16,7 @@ internal static class BurstWatch
 	private sealed class Watched(IBaseAction action)
 	{
 		public readonly IBaseAction Action = action;
+		public readonly bool IsPvP = action.Action.IsPvP;
 		public readonly Dictionary<string, int> Reasons = [];
 		public float Current;
 		public float Held;
@@ -63,12 +64,13 @@ internal static class BurstWatch
 		}
 
 		var hostileNear = DataCenter.HasHostilesInRange;
+		var pvp = DataCenter.IsPvP;
 		var gcd = DataCenter.DefaultGCDTotal;
 		for (var i = 0; i < _watched.Count; i++)
 		{
 			var watched = _watched[i];
 			var action = watched.Action;
-			if (hostileNear && action.EnoughLevel && action.IsEnabled && action.Cooldown.HasOneCharge)
+			if (hostileNear && watched.IsPvP == pvp && action.EnoughLevel && action.IsEnabled && action.Cooldown.HasOneCharge)
 			{
 				watched.Current += delta;
 				continue;
@@ -160,9 +162,11 @@ internal static class BurstWatch
 
 		foreach (var action in rotation.AllBaseActions)
 		{
-			// A828: only what the job has - the rotation carries the role actions of every role.
+			// A828: only what the job has - the rotation carries the role actions of every role. A855: and only what a
+			// player learns as a job or role action - not Teleport, Dig or a duty's vehicle actions ("All Classes" or no
+			// category), which stood in every line; the mode (PvE or PvP) is compared per frame.
 			var row = action.Action;
-			if (!row.IsInJob() || row.CooldownGroup == ActionHelper.GCDCooldownGroup
+			if (!row.IsInJob() || !row.IsPlayerAction || row.CooldownGroup == ActionHelper.GCDCooldownGroup
 				|| DefensiveValues.For(action.ID) != default
 				|| action.Setting.SpecialType is not (SpecialActionType.None or SpecialActionType.MeleeRangedAttack)
 				|| _byId.ContainsKey(action.ID))

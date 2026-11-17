@@ -409,7 +409,7 @@ public readonly partial struct ActionBasicInfo
 	{
 		if (Player.Object == null)
 		{
-			return false;
+			return RefuseBasic("BasicCheck:NoPlayer");
 		}
 
 		if (DataCenter.Orbonne && (_action.ID == 14415 || _action.ID == 14414) && IsActionCheckValid() && ActionManagerStatusValid())
@@ -421,12 +421,13 @@ public readonly partial struct ActionBasicInfo
 		// or unlock of the job, so the checks below would refuse it; the game says whether the player's form has it now.
 		if (_action.Setting.IsTransformationAction)
 		{
-			return IsActionCheckValid() && ActionManagerStatusValid() && !NeedsCasting(skipCastingCheck);
+			return (IsActionCheckValid() && ActionManagerStatusValid() && !NeedsCasting(skipCastingCheck))
+				|| RefuseBasic("BasicCheck:Transformation");
 		}
 
 		if (!EnoughLevel)
 		{
-			return false;
+			return RefuseBasic("BasicCheck:Level");
 		}
 
 		var type = ActionHelper.GetActionCate(_action.Action);
@@ -436,7 +437,7 @@ public readonly partial struct ActionBasicInfo
 			{
 				if (StatusHelper.PlayerHasStatus(false, StatusID.Pacification_620))
 				{
-					return false;
+					return RefuseBasic("BasicCheck:Pacification");
 				}
 			}
 
@@ -444,71 +445,95 @@ public readonly partial struct ActionBasicInfo
 			{
 				if (StatusHelper.PlayerHasStatus(false, StatusID.Silence))
 				{
-					return false;
+					return RefuseBasic("BasicCheck:Silence");
 				}
 			}
 		}
 
 		if (IsLimitBreak && !IBaseAction.LimitBreakPathRunning)
 		{
-			return false;
+			return RefuseBasic("BasicCheck:LimitBreakPath");
 		}
 
 		if (!IsActionEnabled())
 		{
-			return false;
+			return RefuseBasic("BasicCheck:Disabled");
 		}
 
 		if (!IsOnSlot)
 		{
-			return false;
+			return RefuseBasic("BasicCheck:NotOnSlot");
 		}
 
 		if (!HasEnoughMP())
 		{
-			return false;
+			return RefuseBasic("BasicCheck:MP");
 		}
 
 		if (!LeavesMpForRaise())
 		{
-			return false;
+			return RefuseBasic("BasicCheck:MpForRaise");
 		}
 
 		if (!IsQuestUnlocked())
 		{
 			BasicWarningHelper.AddSystemWarning($"Do your class quests, action not unlocked: {Name}");
-			return false;
+			return RefuseBasic("BasicCheck:QuestLocked");
 		}
 
 		if (!_action.Setting.IgnoresBadStatus && (IsRealGCD || IsAbility)
 			&& Array.IndexOf(ConfigurationHelper.BadStatusAction, (ActionStatus)ActionManager.Instance()->GetActionStatus(ActionType.Action, AdjustedID)) >= 0)
 		{
-			return false;
+			return RefuseBasic("BasicCheck:GameStatus");
 		}
 
-		if (IsStatusNeeded(skipStatusNeed) || IsStatusProvided(skipStatusProvideCheck))
+		if (IsStatusNeeded(skipStatusNeed))
 		{
-			return false;
+			return RefuseBasic("BasicCheck:StatusNeed");
+		}
+
+		if (IsStatusProvided(skipStatusProvideCheck))
+		{
+			return RefuseBasic("BasicCheck:StatusProvided");
 		}
 
 		if (_action.Info.BreaksCombo && !IsComboValid(skipComboCheck))
 		{
-			return false;
+			return RefuseBasic("BasicCheck:Combo");
 		}
 
 		if (!IsActionJobValid())
 		{
-			return false;
+			return RefuseBasic("BasicCheck:Job");
 		}
 
 		if (checkActionManager && !ActionManagerStatusValid())
 		{
-			return false;
+			return RefuseBasic("BasicCheck:ActionManager");
 		}
 
-		return !NeedsCasting(skipCastingCheck) && (!IsGeneralGCD || !IsStatusProvidedDuringGCD()) && IsActionCheckValid() && IsRotationCheckValid()
-			// A channel that ends upon moving does not start where BossMod forbids the spot: its first step ends it (A651).
-			&& !MovementLock.ChannelStartBarred(AdjustedID);
+		if (NeedsCasting(skipCastingCheck))
+		{
+			return RefuseBasic("BasicCheck:Casting");
+		}
+
+		if (IsGeneralGCD && IsStatusProvidedDuringGCD())
+		{
+			return RefuseBasic("BasicCheck:StatusProvidedDuringGCD");
+		}
+
+		if (!IsActionCheckValid())
+		{
+			return RefuseBasic("BasicCheck:ActionCheck");
+		}
+
+		if (!IsRotationCheckValid())
+		{
+			return RefuseBasic("BasicCheck:RotationCheck");
+		}
+
+		// A channel that ends upon moving does not start where BossMod forbids the spot: its first step ends it (A651).
+		return !MovementLock.ChannelStartBarred(AdjustedID) || RefuseBasic("BasicCheck:ChannelStartBarred");
 	}
 
 	private bool NeedsCasting(bool skipCastingCheck)

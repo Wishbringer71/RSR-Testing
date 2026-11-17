@@ -25025,6 +25025,25 @@ Dalamud-Log. Die vorige Logdatei stammt vom 12.11.2026.
   in Parade, Stacheln, Tod beim nächsten Treffer und PvP-Immunität. Prüfgrad: Compile 0/0, Prüfskripte 61/0; die
   Gleichwertigkeit statisch an Dalamuds Quelle, nicht im Spiel beobachtet.
 
+### A855 · Messzeile „ready but unused“: Fremdaktionen heraus, Teilgründe von Grund- und Abklingprüfung (17.11.2026)
+
+- *Anlass:* TODO „Burstphasen und Weben aus der Puppensitzung klären“; die BurstWatch-Zeilen seines Uploads vom 16.11.2026
+  abends (118 Kämpfe, Build ab 6992f82af) hatte A846 nicht ausgewertet. Sie enthalten keinen der Jobs der Puppensitzung.
+- *Befund 1:* In jeder Zeile standen Teleport, Rückführung, Entziffern, Ausgraben und acht Fahrzeugaktionen (Kategorie „Alle
+  Klassen“ oder keine), beim Weißmagier dazu PvP-Aktionen (Wunder der Natur, Diablose). Ursache: Der Filter las nur die
+  Jobkategorie, die für „Alle Klassen“ jeden Job trifft. Behoben mit den Spalten `IsPlayerAction` und `IsPvP` (xivapi,
+  17.11.2026: alle Burst-Aktionen aus A848, Rollenaktionen und Blaumagier-Zauber wahr; Teleport, Ausgraben, Entziffern,
+  Fahrzeugaktionen falsch). Die Jobspalte trennt nicht (Rollenaktionen ohne, Beastskin unter dem Abenteurer).
+- *Befund 2:* „BasicCheck“ und „Cooldown“ bündelten rund zwanzig und fünf Teilprüfungen; Geistesgegenwart stand je Kampf
+  3 bis 6 s bereit mit rund hundert „BasicCheck“, in seinen Crucible-Kämpfen Kampfhörner und Dressur 40 bis 90 s mit
+  „Cooldown“ – welche Teilprüfung, sagte die Zeile nicht, und die nächste Puppensitzung hätte an derselben Stelle geendet.
+  Jetzt `BasicCheck:<Teil>` und `Cooldown:<Teil>` als feste Zeichenketten; Reihenfolge und Kurzschluss der Prüfungen
+  unverändert. Heilfähigkeiten bleiben in der Zeile (Konzept 03).
+- *Im Kampf:* nichts, es misst. Prüfgrad: Compile 0/0, Prüfskripte 61/0.
+- *Vorhersage:* In `DefenseTrace.log` des nächsten Uploads nennt keine Zeile „ready but unused over the fight“ Teleport,
+  Rückführung, Entziffern oder Ausgraben, und kein Grund steht als bloßes „BasicCheck“ oder „Cooldown“ mit Zahl
+  (`predictions/2026-11-17.json`; am Upload vom 16.11. schlagen alle drei an).
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

@@ -2083,8 +2083,14 @@ lässt.
 - *Anforderung:* Ein verschobener Burst kostet den ganzen Kampf. Der Zwei-Minuten-Zyklus läuft danach neben den Buffs
   der Gruppe, und im ersten Fenster fehlen Burst und Trank. Ob die Rotation absichtlich wartet (Ladungen sammeln,
   Fenster abwarten) oder eine Prüfung sie sperrt, muss aus der Spur hervorgehen, ohne dass er etwas einschaltet.
-- *Was zählt:* jede Aktion der laufenden Rotation, die der Job hat (Jobkategorie des Spielblatts, `IsInJob`), mit einer
-  eigenen Abklinggruppe neben dem GCD (Spielblatt `CooldownGroup`, `AdditionalCooldownGroup`). Ohne die Jobkategorie
+- *Was zählt:* jede Aktion der laufenden Rotation, die der Job hat (Jobkategorie des Spielblatts, `IsInJob`), die ein
+  Spieler als Job- oder Rollenaktion lernt (Spalte `IsPlayerAction`) und die zum laufenden Modus gehört (`IsPvP`), mit einer
+  eigenen Abklinggruppe neben dem GCD (Spielblatt `CooldownGroup`, `AdditionalCooldownGroup`). Ohne die beiden Spalten
+  stand in jeder der 118 Zeilen seines Uploads vom 16.11.2026 abends dieselbe Gruppe – Teleport, Rückführung, Entziffern,
+  Ausgraben und acht Fahrzeugaktionen (Kategorie „Alle Klassen“ oder keine) –, beim Weißmagier dazu PvP-Aktionen
+  (Wunder der Natur, Diablose); die Burst-Aktionen gingen darin unter (A855). Die Jobspalte (`ClassJob`) trennt nicht:
+  Rollenaktionen haben keine, und Beastskin des Beastmasters steht unter dem Abenteurer (xivapi, 17.11.2026).
+  Heilfähigkeiten bleiben: Steht ein Heil-oGCD bereit, während ein GCD heilt, kostet das einen Schadens-GCD. Ohne die Jobkategorie
   nannte die Zeile beim Weißmagier Rollenaktionen anderer Rollen als „not asked" (Interject, Peloton; Upload vom
   15.11.2026 nachmittags, A828), denn die Rotation führt die Rollenaktionen aller Rollen. Dazu gehören Abilities und GCDs mit eigenem Recast wie Technischer
   Schritt. Ausgenommen sind Abwehr (`DefensiveValues`), Bewegung und alles außerhalb des Kampfes oder ohne Gegner in
@@ -2094,7 +2100,17 @@ lässt.
 - *Wann gezählt wird:* solange eine Ladung bereit ist und die Aktion nicht kommt. Eine Zeile entsteht nur, wenn die Zeit
   einen GCD übersteigt.
 - *Gründe:* Jede Ablehnung über `ActionTracer.Reject` wird je Aktion gezählt (der Grund ist eine feste Zeichenkette).
-  Fragt die Rotation die Aktion gar nicht, steht „not asked".
+  Fragt die Rotation die Aktion gar nicht, steht „not asked". Die Grundprüfung (`ActionBasicInfo.BasicCheck`) nennt die
+  Teilprüfung, die abgelehnt hat, als `BasicCheck:<Teil>` – Stufe, Slot, MP, Nutzbarkeitsauskunft des Spiels, benötigter
+  oder schon gegebener Status, Combo, Wirkzeit, Prüfung der Aktion, Prüfung der Rotation und die übrigen. Grund (A855):
+  Im Upload vom 16.11.2026 abends stand für Geistesgegenwart je Kampf rund hundertmal „BasicCheck“, und welche der rund
+  zwanzig Teilprüfungen das war, blieb offen; die Puppensitzung, die den späten ersten Burst klären soll, hätte an
+  derselben Stelle geendet. Ebenso nennt die Abklingprüfung (`ActionCooldownInfo.CooldownCheck`) ihren Teil als
+  `Cooldown:<Teil>`: Animationssperre (`AnimationLock`, vorübergehend nach jeder Aktion), keine Ladung (`NoCharge`),
+  zurückgehaltene Ladungen (`ChargesKept`: die Rotation fragt ohne `usedUp`, und die volle Ladung ist noch nicht in Sicht)
+  und die Abklingzeit selbst (`Recast`, `GcdRecast`). Beim Beastmaster standen im selben Upload Kampfhörner und Dressur
+  40 bis 90 s bereit, abgelehnt mit „Cooldown“ – ob Sperre oder zurückgehaltene Ladung, sagte die Zeile nicht. Die
+  Teilnamen sind feste Zeichenketten, der Pfad legt nichts an.
 - *Ort und Kosten:* `BurstWatch`, einmal je Frame im Kampf über die vorab gefilterte Liste der Rotation (einige Dutzend
   Aktionen, je ein Abklingvergleich). Je Ablehnung kommt ein Wörterbuchzugriff hinzu. Nichts wird je Frame angelegt;
   die Zeile entsteht einmal je Kampf.
