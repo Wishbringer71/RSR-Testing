@@ -19,11 +19,8 @@ auswahl und das timing der beschwörung" – je Kampf aller fünf Bretter (Gegne
 BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Zeitpunkt ihres Aufrufs im Loop prüfen
 (Beispiel seiner Beobachtung: der Raptor gegen Feuer, bevor feueranfällige Gegner da waren; A581).
 
-1. Burstphasen und Weben aus der Puppensitzung klären (seine Festlegung, 17.11.2026: „du solltest als nächtes die
-   burstphasen und das weaving an der puppensitzung auswerten“; vor dem Beastmaster-Vorrang). Umfang (seine Vorgabe,
-   17.11.2026): „alles prüfen, nicht nur 60s“ – jeder Kampf ganz, jeder Job der Sitzung.
-2. Puppensitzung: Abdrift einzelner Fähigkeiten.
-3. Beastmaster: Fähigkeiten im Crucible lange bereit, aber nicht genutzt (seine Vorgabe, 17.11.2026: „du hast ihn weiter
+1. Puppensitzung: Abdrift einzelner Fähigkeiten (Rangfolge seiner Festlegung vom 17.11.2026).
+2. Beastmaster: Fähigkeiten im Crucible lange bereit, aber nicht genutzt (seine Vorgabe, 17.11.2026: „du hast ihn weiter
    zu verfolgen, aber die prio habe ich festgelegt“).
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
@@ -38,15 +35,6 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
 Keine offenen Defekte.
 
 ## Offene Arbeit
-
-### Burstphasen und Weben aus der Puppensitzung klären · R
-
-Im Kampf: Der erste Burst kommt bei Maschinist (49 s), Tänzer (50 s), Rotmagier (73 s), Dunkelritter (Living Shadow 68 s)
-und Samurai (Senei 60 s) zu spät; der zweite pünktlich (A848, Puppensitzung vom 15.11.). Ausgeschlossen: Tinktur,
-gemeinsamer Burst-Zustand, Webfenster, Zeit bis zum Tod, fork-weite Fensterregel (A856, alle Jobs und ganze Kämpfe). Der
-Samurai übergeht Senei bei fünf Webfenstern zugunsten von Shinten. Nächster Schritt: Puppensitzung mit Build ab 33778ad29;
-die Zeile „ready but unused over the fight“ nennt dann die Teilprüfung (`BasicCheck:<Teil>`, `Cooldown:<Teil>`); danach
-Loop je Grund. Konzept 03, „Bereit, aber nicht genutzt“.
 
 ### Puppensitzung: Abdrift einzelner Fähigkeiten · R
 

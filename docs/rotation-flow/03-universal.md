@@ -2116,6 +2116,14 @@ lässt.
     Abilities in 77 GCDs über den Kampf) und die offene Abwehrflagge: Nach „single defence open, nothing chosen" läuft
     die Wahl weiter zu `AttackAbility`. Offen bleibt, welche Prüfung in `CanUse` die Abilities ablehnte; genau das
     schreibt die Zeile unten.
+- *Ursache des späten ersten Bursts an der Puppe (A867):* keine Rotation, sondern der Jobwechsel. Abklinggruppen sind
+  Nummern, die verschiedene Jobs für verschiedene Aktionen nutzen, und die Gruppe läuft beim Wechsel weiter. In der
+  Puppensitzung vom 15.11.2026 endete die Gruppe der Burst-Aktion jedes betroffenen Jobs zu der Zeit, zu der die Aktion kam,
+  auf eine Sekunde genau (Schattenschemen 67,8 s gegen 67,0 s, Laufstabilisator 48,5 gegen 47,5, Komplexe Choreographie
+  44,3 gegen 43,3, Präparation und Ermutigen 67,2 und 73,4 gegen 67,2 und 73,4, Hissatsu: Senei 56,2 gegen 56,2,
+  Sternenmuse 21,8 gegen 20,9, Wut 19,6 gegen 18,1); die zweite kam pünktlich. RSR liest dieselbe Gruppe des Spiels und
+  hielt nichts zurück. Für Puppensitzungen nach einem Jobwechsel zählt der erste Burst erst, wenn die Gruppen des Vorjobs
+  frei sind; die Messzeile nennt den Fall als `Cooldown:Recast`.
 - *Anforderung:* Ein verschobener Burst kostet den ganzen Kampf. Der Zwei-Minuten-Zyklus läuft danach neben den Buffs
   der Gruppe, und im ersten Fenster fehlen Burst und Trank. Ob die Rotation absichtlich wartet (Ladungen sammeln,
   Fenster abwarten) oder eine Prüfung sie sperrt, muss aus der Spur hervorgehen, ohne dass er etwas einschaltet.

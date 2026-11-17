@@ -25305,6 +25305,26 @@ Dalamud-Log. Die vorige Logdatei stammt vom 12.11.2026.
 - *priestkos/FrontlineAdvisor:* nicht erreichbar (Stand 301a95e, 13.11.2026); ohne neuen Stand nichts auszuwerten.
 - Aufgezeichnet mit `check_source_updates.py --record`.
 
+### A867 · Später erster Burst an der Puppe: die Abklinggruppe des Vorjobs lief weiter (17.11.2026)
+
+- *Hypothese:* Abklinggruppen sind Nummern, die Jobs für verschiedene Aktionen teilen; läuft eine Gruppe beim Jobwechsel
+  weiter, ist die Burst-Aktion des neuen Jobs mit derselben Nummer gesperrt, bis die Gruppe endet – der erste Burst kommt
+  spät, der zweite pünktlich, andere 120-s-Aktionen mit freier Gruppe pünktlich. Genau das Muster aus A848, A856, A857.
+- *Messung (ACT, 15.11.2026, alle 21 Abschnitte):* je Aktion mit eigener Gruppe ab 30 s Recast der erste Einsatz gegen das
+  Ende der Gruppe aus der letzten Aktion derselben Nummer in einem früheren Job (Zeit plus Recast aus dem Blatt). Treffer auf
+  höchstens 1,5 s: Schattenschemen 67,8/67,0, Laufstabilisator 48,5/47,5, Komplexe Choreographie 44,3/43,3, Präparation
+  67,2/67,2, Ermutigen 73,4/73,4, Hissatsu: Senei 56,2/56,2, Sternenmuse 21,8/20,9, Wut 19,6/18,1, Völlerei 12,0/12,0,
+  Blutdelirium 14,2/14,2, dazu Rollenaktionen (Zermürben, Reflexion, Schutzwall). Gegenprobe: Manafizierung 29,8 s gegen
+  59,0 s nach dem Blatt – Schildsamba hat durch ein Merkmal 90 s statt 120 s, mit 90 s frei bei 29 s; die Hypothese hält.
+- *Nicht erklärt:* Gleißender Schein (49,5 s gegen 35,8 s) und Sol-Bahamut (50,2 gegen 16,5) beim Beschwörer – der Rückhalt
+  durch `RadiantAegisDueBeforeDemi` an der Puppe (A820, behoben mit A818); Körperparade und Lucid Dreaming folgen Bewegung und MP.
+- *Folge:* kein Defekt einer Rotation. RSR liest die Gruppe des Spiels (`GetRecastGroupDetail`) und setzte jede Aktion, sobald
+  sie frei war. Der TODO-Punkt „Burstphasen und Weben aus der Puppensitzung klären“ ist geschlossen (Weben: A862). Für
+  künftige Puppensitzungen nach einem Jobwechsel zählt der erste Burst erst nach dem Ende der Gruppen des Vorjobs.
+- *Prüfgrad:* Mitschnittanalyse über alle Abschnitte; dass das Spiel die Gruppe über den Jobwechsel hält, ist aus der
+  Übereinstimmung geschlossen [Schätzung: die Spielfunktion liest dieselbe Gruppe], nicht an der Dokumentation des Herstellers
+  belegt.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
