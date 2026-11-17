@@ -25144,6 +25144,48 @@ Dalamud-Log. Die vorige Logdatei stammt vom 12.11.2026.
   Regeln, die hier aus eigenen Fällen stammen.
 - *Prüfgrad:* Textprüfung je Stelle, Herkunft über `git log -S` und Archiv, `check_rule_files.py` und 61 Prüfungen grün.
 
+### A860 · REGEL V5i Aussage für Aussage geprüft (17.11.2026)
+
+- *Anlass:* seine Rüge (17.11.2026): „regel v5io IST zu prüfen. wieder fehler!“ – A859 nannte die REGEL „geprüft“ nach einem
+  einzigen Satz (C222). Geprüft jetzt jede Aussage: was sie verlangt, ob sie hier an einem eigenen Fall trägt, Lücke,
+  Widerspruch zu CLAUDE.md. Die REGEL steht in seinen Einstellungen; Änderungen sind ihm vorgelegt, nicht vorgenommen.
+- *Trägt, mit eigenem Fall:*
+  - „New draft only for a named defect“: Die Modellfehler dieser Sitzung (Recast durch Schnelligkeit, Wirkzeit bei Dualcast)
+    wurden je benannt und je einmal behoben (A857).
+  - „Fabrication … state claim without source“: verletzt mit „x22 Ladungen“ und „alle Jobs ausgewertet“ (A856, C221) –
+    die Regel ist richtig, ich habe sie gebrochen.
+  - „Inference → [Schätzung]“, „Gap → weiß nicht“, „Confidence = evidence, both ways“: in A856 und A857 angewandt.
+  - „Citation: check reference against source“: verletzt bei elf selbst gebildeten deutschen Namen (A857).
+  - „Sycophancy: user wrong → contradict in sentence 1“, „Omission: failure“, „Correction: re-check like original“,
+    „Adversarial“, „Causal“, „Stress test“: getragen; „Evaluative → counterposition“ bei seiner Frage nach der Ursache.
+  - „Flawed tests: STOP“: getragen; das Berichtigen eines nachweislich falschen Falls regelt `pruefmittel.md` (A841).
+  - „Persistence“: nach der Komprimierung dieser Sitzung angewandt.
+- *Lücken und Widersprüche:*
+  1. „Complete = complete for intent, not topic“ (so schon in der vorigen Fassung): erlaubt, den Umfang auf ein vermutetes
+     Ziel zu verengen; so verengte ich zweimal (A856). Gegen seine Vorgabe zu „vollständig“ (A858).
+  2. „C stays original intent“ (ebenso schon vorher): Er präzisiert oft mitten im Zug (17.11.2026 sechsmal); wörtlich
+     gelesen hielte die Regel an der ersten Absicht fest. CLAUDE.md, „Wenn er etwas sagt“, verlangt das Gegenteil.
+  3. „Max 3 drafts per stage“ und „Stop when no defect left“: Was nach dem dritten Entwurf mit verbliebenem Defekt gilt,
+     sagt sie nicht. Fall: das Webmodell brauchte drei Fassungen, die dritte trug noch die Weisen-Unschärfe (A857).
+  4. „Bias.“ – ein Wort ohne Bestimmung, nicht prüfbar. Eigener Fall mit Inhalt: seine Rüge „wehe du nimmst wieder nur das
+     letzte bearbeitete“ (Neuigkeitsverzerrung), dazu Bestätigungsverzerrung (Quellen suchen, die stützen).
+  5. „Ambiguous intent → ask“ neben CLAUDE.md, „Bevor ich ihn frage“ (erst fragen, wenn Repository, Quellen und seine
+     Vorgaben nichts entscheiden): Die REGEL hat Vorrang und ließe Rückfragen zu, die er Beleidigung nannte.
+  6. „Effort … Critical = … user conflict“: Rügt er, ist der Fall kritisch und verlangt aktive Quellenprüfung; heute
+     arbeitete ich nach mehreren Rügen im Normalmodus weiter. Die Regel ist richtig; dass „user conflict“ eine Rüge
+     einschließt, steht nicht da.
+  7. Fehlt: das Ersetzen des Auftrags durch eine Nachbaraufgabe. Heute baute ich das Messmittel um statt die Puppensitzung
+     auszuwerten (A855, A856). „C stays intent“ und die Loop-Stufe „Abgleich“ decken es nur mittelbar.
+  8. „Score ≠ quality“: ohne Bezug, wessen Score; nicht prüfbar, aber ohne Schaden.
+  9. Überschrift „REGEL (DE)“ über englischem Text: kosmetisch.
+- *Vorschläge an ihn* (im Bericht vom 17.11.2026 vorgelegt): 1 „Complete = every element of the set the intent names;
+  any narrowing stated with its scope.“ 2 „C = his current intent: a new statement from him updates C; never drift by
+  myself.“ 3 „After 3 drafts with a defect left: answer, name the defect.“ 4 „Bias: recency (only the last item worked on),
+  confirmation (only supporting sources), anchoring (first reading kept).“ 5 „Ambiguous intent → ask only if his words,
+  the repository and his standing instructions do not settle it; otherwise decide and state the reading.“ 6 „Critical
+  includes his rebuke.“ 7 Prohibited: „Substitution: doing an adjacent task instead of the one asked.“
+- *Prüfgrad:* Textprüfung je Aussage gegen Fälle dieser Sitzung und des Archivs; nicht geändert.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -25520,3 +25562,4 @@ geben den Stand vom 14.10.2026 wieder.
 | C219 | A846, „Flächenschlaf (G6, gebaut)“ (Stand bis A850): Ein schon schlafender Gegner im Kreis zähle gegen die Wahl | Gezählt wurden nur Schläfer in der Liste der Ziele; gehaltene Schläfer stehen dort nicht (`TargetUpdater`, `DeepDungeonCrowd.Sleepers`), die Zählung war für sie 0. Behoben in A850 |
 | C220 | A853, Konzept 24, „Spieldaten lesen“ (Stand 00938dcd3): Die übrigen Fork-Stellen, die Status lesen, liefen seltener (bei einem Ereignis, im Fenster) | Nicht gemessen; die meisten laufen je Frame und Figur (Zielwahl, Betäubung, Tankschutz, Blicke). Berichtigt und umgestellt in A854 |
 | C221 | A856 (Stand 953113764): Das Weben sei über die ganzen Kämpfe unauffällig, die Auswertung umfasse alle Jobs | Ausgewiesen waren nur Aktionen ab 60 s Recast, das Weben war aus A820 übernommen. Schnitter (Doppel-Weave im Enshroud) und Piktomant verzögern messbar (A857) |
+| C222 | A859 (Stand 45c9a2575): Die REGEL V5i sei geprüft | Geprüft war ein Satz; die übrigen Aussagen nicht. Vollständig in A860 |
