@@ -71,9 +71,11 @@ Gegenstandsstufe aus eben diesem größten Wert); Materia darin wirkt nicht.
 **Essen** erhöht einen Wert um min(Obergrenze, ⌊Wert · Anteil⌋) (`ItemFood`; Konzept 03; Character Panel Refined rechnet den
 Wert ohne Essen genau so zurück). Solange Wert · Anteil unter der Obergrenze bleibt, bringt jeder Materiapunkt in diesem Wert
 den Anteil des Essens obendrauf; darüber bringt das Essen nichts mehr dazu. Sein Hinweis (17.11.2026): „essen kann wechseln
-oder ausbleiben“. Die Materia bleibt, das Essen nicht: Die Empfehlung rechnet deshalb zuerst ohne Essen und dann je Essen,
-das er nennt oder das gerade wirkt, und zeigt, ob das Optimum dabei wechselt – wo ein Essen seine Obergrenze erreicht, kann
-eine andere Verteilung besser sein als ohne. Welches Ergebnis er übernimmt, ist seine Wahl.
+oder ausbleiben“; seine Präzisierung: „es kann dann höchsten ein hinweis sein, welches essen am sinnvollsten für mehr dmg
+wäre“. Die Materia bleibt, das Essen nicht: Die Materia-Empfehlung rechnet ohne Essen. Getrennt davon ein Hinweis, welches
+Essen mit diesem Set und den empfohlenen Melds den meisten Schaden brächte – aus den Mahlzeiten mit Kampfwerten (`ItemFood`,
+NQ und HQ), zuerst die, die er im Inventar hat, dazu die beste insgesamt; je Essen der Gewinn in Prozent. Das Essen ändert
+die Empfehlung der Materia nicht.
 
 ## Erst was einsetzbar ist, dann das Optimum
 
@@ -107,7 +109,7 @@ Grad, was über den Raum geht, verfällt. Ein niedrigerer Grad lohnt nur, wo er 
 den Rest trägt; die Aufzählung prüft auch ihn.
 
 **Schritt 2 – das Optimum darin:** über alle Gegenstände die erreichbaren Summen je Wert, bewertet wie unten, ohne Essen
-und je Essen (siehe „Essen“); die Summen sind dieselben, nur die Bewertung am Ende wechselt. **Umgekehrt** dient das freie Optimum – die beste Verteilung derselben Zahl Punkte ohne Plätze und Grenzen –
+(siehe „Essen“); danach der Hinweis zum Essen für das gefundene Set. **Umgekehrt** dient das freie Optimum – die beste Verteilung derselben Zahl Punkte ohne Plätze und Grenzen –
 als obere Schranke: Es zeigt, was die Grenzen des Sets kosten, und kürzt die Suche (eine Teilbelegung, die selbst mit dem
 freien Rest die beste gefundene nicht mehr erreicht, fällt weg). Ergebnis je Platz: Wert und Grad, ob vorhanden, ob
 zusätzlicher Platz mit Chance; je Wert die Punkte bis zur nächsten Stufe; der Gewinn gegenüber den angelegten Melds.
@@ -127,9 +129,8 @@ zusätzlicher Platz mit Chance; je Wert die Punkte bis zur nächsten Stufe; der 
 - *Lösung (Schritt 2):* Melds hängen voneinander ab (Grenzen je Gegenstand, Sprünge über das ganze Set); einzeln die beste
   Materia je Platz zu wählen verfehlt das Optimum, wo ein Punkt eine Stufe verfehlt. Die Belegungen aus Schritt 1 sind je
   Gegenstand wenige, über elf Gegenstände viele: Über die Gegenstände hinweg werden die erreichbaren Summen fortgeschrieben,
-  dominierte verworfen, mit dem freien Optimum als Schranke; am Ende jede Summe ohne Essen und je Essen exakt bewertet. Eine
-  Summe, die ohne Essen dominiert ist, kann mit Essen vorn liegen; verworfen wird deshalb nur, was in jeder der Bewertungen
-  dominiert ist.
+  dominierte verworfen, mit dem freien Optimum als Schranke; am Ende jede Summe ohne Essen exakt bewertet. Für das beste Set
+  dann jedes Essen einzeln: Wert mit Essen = Wert + min(Obergrenze, ⌊Wert · Anteil⌋), bewertet wie oben.
 
 ## Wege zur Empfehlung
 
@@ -138,7 +139,7 @@ zusätzlicher Platz mit Chance; je Wert die Punkte bis zur nächsten Stufe; der 
 - *1 – Stufen anzeigen:* je Wert der nächste und vorige Stufenwert und die Punkte ohne Wirkung, aus dem angelegten Set. Stärke:
   klein, exakt, ohne Annahme über Rotationen. Schwäche: keine Empfehlung; deckt sich mit Character Panel Refined.
 - *2 – Melds empfehlen ohne Simulation (empfohlen):* Bewertung wie oben bei fester GCD-Stufe, Lösung über die Summen.
-  Stärke: im Spiel, aus dem angelegten Set, ohne und mit jedem Essen, für jeden Job gleich (Ebene „alle“), Sprünge und Grenzen
+  Stärke: im Spiel, aus dem angelegten Set, unabhängig vom Essen, dazu der Hinweis auf das beste Essen, für jeden Job gleich (Ebene „alle“), Sprünge und Grenzen
   exakt. Schwäche: Tempo nur als gewählte Stufe; Jobs, deren Wert stark an der Tempostufe hängt, brauchen die Wahl des
   Spielers.
 - *3 – Melds mit Simulation:* wie Gear Planner, je Job eine Rotationssimulation. Stärke: beantwortet auch das Tempo. Schwäche:
