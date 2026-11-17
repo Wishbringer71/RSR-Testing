@@ -2,7 +2,11 @@
 """Stop hook (.claude/settings.json). Two rules of CLAUDE.md stood as text only and were broken and rebuked several
 times: a turn does not end on an announcement ("Bevor ich einen Zug beende"), and the chat is German ("Sprache und
 Namen"; C130). This checks the final message of every turn against both, and against an empty one (a turn that ended
-after a tool call without a result). Patterns and the empty case follow KerbalMissionDirector's tools/stop_guard.py;
+after a tool call without a result). A third rule, completeness ("Wenn er etwas sagt"), was broken twice (A856, A857:
+a dummy session reported as evaluated after a sample): when his last own message asks for it - "vollständig",
+"umfassend", "alle", "alles" -, the final message states the extent in a line "Umfang: ..." (A870). The hook cannot
+check that the stated extent is true; it turns a silent narrowing into a stated one, which he can check.
+Patterns and the empty case follow KerbalMissionDirector's tools/stop_guard.py;
 a message that ends on a question is no announcement. Neither is a close that names what the next step waits for
 from him, nor one written while background work is in flight (`background_tasks`), whose end wakes the turn again
 (both from KSP-MyContracts, 27.10.2026). On a finding it hands the reason back as
@@ -62,9 +66,46 @@ def prose(message):
     return message
 
 
-def findings(message, waiting=False):
+# His words that ask for every element of a set (CLAUDE.md, "Wenn er etwas sagt"); "allerdings" is none of them.
+COMPLETE = re.compile(r"\b(?:vollständig\w*|umfassend\w*|alle[nrs]?)\b", re.I)
+EXTENT = re.compile(r"^\s*(?:[-*]\s*)?(?:\*\*)?Umfang(?:\*\*)?\s*:", re.M)
+# Text the harness wraps around or into a message: reminders, commands, notifications - not his words.
+TAGGED = re.compile(r"<(system-reminder|command-[\w-]+|local-command-[\w-]+|task-notification)>.*?</\1>", re.S)
+
+
+def his_last_words(path):
+    """The text of his last own message in the session transcript, or "" - not tool results, reminders, notifications,
+    summaries or messages of other sessions."""
+    last = ""
+    try:
+        lines = open(path, encoding="utf-8").read().splitlines()
+    except (OSError, TypeError):
+        return last
+    for line in lines:
+        try:
+            entry = json.loads(line)
+        except ValueError:
+            continue
+        if entry.get("type") != "user" or entry.get("isMeta") or entry.get("isCompactSummary"):
+            continue
+        if "origin" in entry and (entry.get("origin") or {}).get("kind") != "human":
+            continue
+        content = (entry.get("message") or {}).get("content")
+        if isinstance(content, list):
+            if any(isinstance(c, dict) and c.get("type") == "tool_result" for c in content):
+                continue
+            content = " ".join(c.get("text", "") for c in content if isinstance(c, dict))
+        if not isinstance(content, str):
+            continue
+        text = TAGGED.sub(" ", content).strip()
+        if text:
+            last = text
+    return last
+
+
+def findings(message, waiting=False, asked=""):
     """The reasons to go on. waiting: background work is in flight and its end wakes the turn, so naming what comes
-    after it is no announcement."""
+    after it is no announcement. asked: his last own message."""
     if not message.strip():
         return ["Der Zug endet ohne Ergebnis: Die letzte Nachricht ist leer, der Zug endete nach einem Tool-Aufruf. "
                 "CLAUDE.md, „Bevor ich einen Zug beende“: Ergebnis, Blocker oder eine Frage, die nur er beantworten kann."]
@@ -85,6 +126,11 @@ def findings(message, waiting=False):
         out.append(f"Die letzte Nachricht endet mit einer Ankündigung ({what}). CLAUDE.md, „Bevor ich einen Zug "
                    f"beende“: Ein Zug endet mit einem Ergebnis, einem Blocker oder einer Frage, die nur er beantworten "
                    f"kann; angekündigte Arbeit beginnt im selben Zug.")
+    word = COMPLETE.search(asked or "")
+    if word and not EXTENT.search(message):
+        out.append(f"Seine Nachricht verlangt jedes Element („{word.group(0)}“), die letzte Nachricht nennt keinen Umfang. "
+                   f"CLAUDE.md, „Wenn er etwas sagt“: eine Zeile „Umfang: …“ je Menge – erfasst von gesamt –, jede "
+                   f"Verengung mit Umfang und Grund.")
     return out
 
 
@@ -109,7 +155,8 @@ def record(data, found):
 
 def hook(data):
     found = [] if data.get("stop_hook_active") else findings(data.get("last_assistant_message") or "",
-                                                             waiting=bool(data.get("background_tasks")))
+                                                             waiting=bool(data.get("background_tasks")),
+                                                             asked=his_last_words(data.get("transcript_path")))
     record(data, found)
     if not found:
         return None
@@ -176,6 +223,37 @@ def self_test():
         failed.append("waiting on background work is no announcement")
     if hook({"last_assistant_message": "Recherchen laufen; danach arbeite ich sie ein.", "background_tasks": []}) is None:
         failed.append("without background work the same close is an announcement")
+    complete = {
+        "'alle' without an extent is found": ("Die Auswertung ist fertig.", "werte alle jobs aus", 1),
+        "'vollständig' with an extent passes": ("Fertig.\n\nUmfang: 20 von 20 Jobs, jeder Kampf ganz.",
+                                                "vollständig auswerten", 0),
+        "an extent in a list item passes": ("Fertig.\n\n- **Umfang:** 5 von 5 Kämpfen", "ALLE ausgewertet?", 0),
+        "'allerdings' asks for nothing": ("Fertig.", "allerdings nur der Maschinist", 0),
+        "no such word asks for nothing": ("Fertig.", "prüf den Maschinisten", 0),
+        "the word in the answer only does not count": ("Alle Jobs sind fertig.", "prüf den Maschinisten", 0),
+    }
+    failed += [name for name, (msg, asked, n) in complete.items() if len(findings(msg, asked=asked)) != n]
+    with tempfile.TemporaryDirectory() as tmp:
+        path = Path(tmp) / "t.jsonl"
+        rows = [
+            {"type": "user", "origin": {"kind": "human"}, "message": {"content": "werte alle Jobs aus"}},
+            {"type": "user", "message": {"content": [{"type": "tool_result", "content": "alle"}]}},
+            {"type": "user", "origin": {"kind": "task-notification"}, "message": {"content": "alle fertig"}},
+            {"type": "user", "isMeta": True, "message": {"content": "alle Regeln"}},
+            {"type": "user", "isCompactSummary": True, "message": {"content": "alle Jobs"}},
+            {"type": "user", "origin": {"kind": "human"}, "message": {"content": [
+                {"type": "text", "text": "<system-reminder>alle Regeln</system-reminder>prüf den Maschinisten"}]}},
+        ]
+        path.write_text("\n".join(json.dumps(r) for r in rows) + "\n", encoding="utf-8")
+        if his_last_words(str(path)) != "prüf den Maschinisten":
+            failed.append(f"his last words are his own message without reminders: {his_last_words(str(path))!r}")
+        path.write_text("\n".join(json.dumps(r) for r in rows[:5]) + "\n", encoding="utf-8")
+        if his_last_words(str(path)) != "werte alle Jobs aus":
+            failed.append("notifications, tool results, meta and summaries are not his words")
+        if hook({"last_assistant_message": "Die Auswertung ist fertig.", "transcript_path": str(path)}) is None:
+            failed.append("the hook reads his words from the transcript")
+        if his_last_words(None) != "" or his_last_words(str(Path(tmp) / "missing.jsonl")) != "":
+            failed.append("no transcript asks for nothing")
     with tempfile.TemporaryDirectory() as tmp:
         base = {"session_id": "t", "scratchpad_dir": tmp}
         hook({**base, "last_assistant_message": "Die Prüfung ist grün."})
@@ -186,8 +264,8 @@ def self_test():
     if failed:
         print("self-test FAILED: " + "; ".join(failed))
         return 1
-    print(f"self-test ok: {len(cases) + 5} cases - announcement at the end, trailing colon, English, code left out, "
-          f"continuation let through")
+    print(f"self-test ok: {len(cases) + len(complete) + 9} cases - announcement at the end, trailing colon, English, "
+          f"code left out, continuation let through, extent when he asks for every element")
     return 0
 
 

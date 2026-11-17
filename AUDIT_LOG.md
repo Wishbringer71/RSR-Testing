@@ -25378,6 +25378,28 @@ Dalamud-Log. Die vorige Logdatei stammt vom 12.11.2026.
   für diese Aktion.
 - *Prüfgrad:* Spur, Spielblätter, Code; Teilgründe als Schluss aus dem Code [Schätzung bis zum nächsten Upload].
 
+### A870 · Vollständigkeit: Umfangszeile am Zugende, durchgesetzt im Stop-Hook (17.11.2026)
+
+- *Anforderung:* Sagt er „vollständig“, „umfassend“, „alle“ oder „alles“, gilt jedes Element (CLAUDE.md, „Wenn er etwas
+  sagt“). Zweimal gebrochen (A856, A857): Die Puppensitzung galt als ausgewertet nach 60 s, dann nach Aktionen ab 60 s
+  Recast. Schaden: Er hält ein Ergebnis für vollständig, das einen Ausschnitt trägt, und entscheidet darauf. Nach
+  `.claude/rules/regeldateien.md` bekommt eine zweimal gebrochene Textregel eine deterministische Durchsetzung.
+- *Was ein Hook kann:* Er sieht seine letzte Nachricht (Verlauf über `transcript_path`, nur Einträge mit
+  `origin.kind == "human"`, ohne Systemhinweise, Benachrichtigungen, Werkzeugergebnisse und Zusammenfassungen) und die
+  Schlussnachricht. Ob ein Ergebnis vollständig ist, sieht er nicht. Erzwingbar ist, dass der Umfang genannt wird: eine
+  Zeile „Umfang: erfasst von gesamt“, eine Verengung mit Grund. Das verwandelt eine stille Verengung – der Fehler beider
+  Fälle – in eine genannte, die er prüfen kann; ein falsch genannter Umfang ist eine erfundene Aussage nach der REGEL.
+- *Optionen:* Nullvariante (Textregel allein, zweimal gebrochen); Pflichtzeile im Stop-Hook (gewählt); Prüfung des Umfangs
+  selbst (nicht baubar: der Hook kennt die Menge nicht); Sperre jeder Schlussmeldung bis zu einer Bestätigung durch ihn
+  (macht ihn zum Prüfer, verworfen).
+- *Preis:* An seinen 104 Nachrichten dieser Sitzung trügen 16 eines der Wörter, darunter rund fünf ohne Auftrag zur
+  Vollständigkeit („vor allen anderen Tränken“, „für alle Repos“); dort kostet es eine Zeile. Der Hook lässt die
+  Fortsetzung durch (`stop_hook_active`), ein Fehlalarm kostet eine Runde.
+- *Falsifikation:* Ausgeliefert, und nichts ändert sich – weil ich die Zeile mit falschem Umfang fülle. Dann ist der
+  Fehler ausgesprochen statt verschwiegen und am Ergebnis prüfbar; das ist der erreichbare Teil.
+- *Prüfgrad:* Selbsttest (30 Fälle, darunter beide Seiten: Wort ohne Zeile, Zeile vorhanden, „allerdings“,
+  Systemhinweis mit „alle“, Benachrichtigung, Zusammenfassung); an den 104 echten Nachrichten dieser Sitzung gelesen.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

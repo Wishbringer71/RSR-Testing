@@ -19,7 +19,7 @@ auswahl und das timing der beschwörung" – je Kampf aller fünf Bretter (Gegne
 BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Zeitpunkt ihres Aufrufs im Loop prüfen
 (Beispiel seiner Beobachtung: der Raptor gegen Feuer, bevor feueranfällige Gegner da waren; A581).
 
-1. Maschinist: Schachmatt sperrt Doppelschach (wartet auf die nächste Puppensitzung).
+Keine offene Arbeit; der Maschinist wartet auf die nächste Puppensitzung (unten).
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -34,21 +34,7 @@ Keine offenen Defekte.
 
 ## Offene Arbeit
 
-### Maschinist: Schachmatt sperrt Doppelschach
-
-- *Wirkung:* Ist Schachmatt gewählt, aber gesperrt, kommt auch Doppelschach nicht – an der Puppe nach einem Jobwechsel
-  rund 30 s ohne Ability [Schätzung: im Inhalt kaum, nur wenn eine Gruppe aus anderem Grund sperrt]. **N**, **U**.
-- *Ort:* `MCH_Reborn.AttackAbility`, Auswahl `whichToUse` ohne Rückfall.
-- *Nächster Schritt:* Hypothese mit der nächsten Puppensitzung nach einem Jobwechsel prüfen (Vorhersage in A868); trifft
-  sie zu, Konzept 03 fortschreiben und den Rückfall bauen.
-- *Konzept:* 03, „Bereit, aber nicht genutzt“.
-
-### Vollständigkeit deterministisch durchsetzen · R
-
-Wirkung: Seine Aufträge „vollständig“, „umfassend“, „alle“ wurden zweimal nur in Stichproben ausgeführt (A858). Nächster
-Schritt: Anforderung schriftlich, dann prüfen, ob ein Hook (Stop-Hook: Pflichtzeile „Umfang: n von n“, wenn seine
-Nachricht diese Wörter trägt) die Regel trägt oder nur eine Form erzwingt; Selbsttest beider Seiten. CLAUDE.md, „Wenn er
-etwas sagt“; `.claude/rules/regeldateien.md`.
+Keine offene Arbeit.
 
 ## Technische Schuld
 
@@ -118,6 +104,12 @@ Reborn"); beides kostet im Spiel, solange nicht beide Installationen gebraucht w
 nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigter Name bleibt.
 
 ## Warten auf Daten oder Fremde
+
+- **Maschinist: Schachmatt sperrt Doppelschach** (A868). Ist Schachmatt gewählt, aber gesperrt, kommt auch Doppelschach
+  nicht – an der Puppe nach einem Jobwechsel rund 30 s ohne Ability [Schätzung: im Inhalt kaum]. Ort:
+  `MCH_Reborn.AttackAbility`, Auswahl `whichToUse` ohne Rückfall. Auflösung: nächste Puppensitzung mit Maschinist nach
+  einem anderen Job, Vorhersage `mch-checkmate-hides-double-check`; trifft sie zu, Konzept 03 fortschreiben und den
+  Rückfall bauen. Konzept 03, „Bereit, aber nicht genutzt“.
 
 - **Beastmaster: Teilgründe der Wartezeiten im Crucible bestätigen** (A869). Jede Wartezeit vom 16.11.2026 folgt einer
   Bedingung des Spiels oder der Rotation; die Teilgründe nannte die Zeile damals nicht. Auflösung: nächster Crucible-Upload
