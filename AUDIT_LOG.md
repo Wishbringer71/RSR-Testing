@@ -25493,6 +25493,9 @@ Dalamud-Log. Die vorige Logdatei stammt vom 12.11.2026.
   fünf Materia-Felder. Damit ist Schritt 1 ganz aus Spiel und Blättern; die Formel der Grenze wird Gegenprobe.
 - *Konzept 26:* Schritt 1 (Plätze, Grade je Platz, Raum je Wert, Belegung, Bestand an Materia), Schritt 2 (Optimum über die
   erreichbaren Summen), umgekehrt das freie Optimum als Schranke und als Maß dessen, was die Grenzen kosten.
+- *Sein Hinweis (17.11.2026):* „essen kann wechseln oder ausbleiben“ – Konzept 26 rechnete mit dem laufenden Essen. Jetzt
+  ohne Essen und je Essen, mit dem Hinweis, ob das Optimum wechselt; verworfen wird beim Fortschreiben nur, was in jeder
+  Bewertung dominiert ist.
 - *Messweg-Befund:* Die Suche bei xivapi mit `LevelItem=790` lieferte auch Gegenstände der Stufe 1 (Weathered Coif) – der
   Filter trägt nicht; Stufe und Werte habe ich deshalb je Zeile direkt abgerufen. Ob es auf 780/790 Ausrüstung mit
   Overmelding gibt (gefertigte), ist so nicht belegt.
