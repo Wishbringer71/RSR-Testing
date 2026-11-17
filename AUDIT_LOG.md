@@ -25400,6 +25400,22 @@ Dalamud-Log. Die vorige Logdatei stammt vom 12.11.2026.
 - *Prüfgrad:* Selbsttest (30 Fälle, darunter beide Seiten: Wort ohne Zeile, Zeile vorhanden, „allerdings“,
   Systemhinweis mit „alle“, Benachrichtigung, Zusammenfassung); an den 104 echten Nachrichten dieser Sitzung gelesen.
 
+### A871 · Puppensitzung: Anteil der Doppel- und Dreifach-Weaves je Job (17.11.2026)
+
+- *Anlass:* seine Frage (17.11.2026): „und wie hoch war nun das doubleweaving und das tripleweaving prozentual bei den jobs?“
+- *Verfahren:* ACT-Mitschnitt vom 15.11.2026, 20 Puppenabschnitte (der Beastmaster-Abschnitt hat keine GCD-Lücke an der
+  Puppe). Je Lücke zwischen zwei GCDs (Gruppe 58) die Zahl der Aktionen dazwischen; Lücken über 10 s zählen nicht
+  (Kampfpause). Folgeeffekte ohne Abklinggruppe zählen nicht als eigener Einsatz (Salz und Schwärze schreibt zwei Zeilen,
+  Komplexes Finale IV, Sternenprisma). Mudras und Tanzschritte zählen als GCD.
+- *Ergebnis (Anteil der GCD-Lücken mit 2 / 3+ Weaves):* Barde 21,7/0, Dragoon 21,4/1,4, Revolverklinge 17,5/1,6, Viper
+  17,1/0, Paladin 15,3/2,8, Dunkelritter 15,1/0, Krieger 12,9/0, Schnitter 12,3/0, Beschwörer 10,9/0, Tänzer 9,4/0,
+  Piktomant 6,1/0, Maschinist 8,1/0, Schwarzmagier 7,9/0, Samurai 7,5/0, Rotmagier 7,1/0,5, Mönch 5,9/0, Gelehrter
+  5,6/0, Ninja 4,1/0, Astrologe 2,5/0, Weiser 0/0; über alle 2226 Lücken 9,7 % / 0,2 %.
+- *Dreifach-Weaves (5):* Dragoon, Paladin (2, darunter Abwehr an der Puppe, A818), Revolverklinge, Rotmagier; GCD-Abstand
+  2,45 bis 2,55 s, beim Rotmagier 4,17 s mit Wirkzeit von Erzstein – keiner verschob den GCD messbar.
+- *Prüfgrad:* Mitschnittanalyse; dass ACT eine Aktion bei ihrer Wirkung stempelt, verschiebt die Zuordnung eines Weaves
+  zur Lücke nicht.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
