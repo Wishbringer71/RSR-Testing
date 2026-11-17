@@ -22,7 +22,7 @@ BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Ze
 1. Burstphasen und Weben aus der Puppensitzung klären (seine Festlegung, 17.11.2026: „du solltest als nächtes die
    burstphasen und das weaving an der puppensitzung auswerten“; vor dem Beastmaster-Vorrang). Umfang (seine Vorgabe,
    17.11.2026): „alles prüfen, nicht nur 60s“ – jeder Kampf ganz, jeder Job der Sitzung.
-2. Puppensitzung: Doppel-Weave im Enshroud, Abdrift einzelner Fähigkeiten.
+2. Puppensitzung: Abdrift einzelner Fähigkeiten.
 3. Beastmaster: Fähigkeiten im Crucible lange bereit, aber nicht genutzt (seine Vorgabe, 17.11.2026: „du hast ihn weiter
    zu verfolgen, aber die prio habe ich festgelegt“).
 
@@ -48,13 +48,12 @@ Samurai übergeht Senei bei fünf Webfenstern zugunsten von Shinten. Nächster S
 die Zeile „ready but unused over the fight“ nennt dann die Teilprüfung (`BasicCheck:<Teil>`, `Cooldown:<Teil>`); danach
 Loop je Grund. Konzept 03, „Bereit, aber nicht genutzt“.
 
-### Puppensitzung: Doppel-Weave im Enshroud, Abdrift einzelner Fähigkeiten · R
+### Puppensitzung: Abdrift einzelner Fähigkeiten · R
 
-Im Kampf (A857): Der Schnitter webt im 1,5-s-GCD unter Enshroud zwei Fähigkeiten und schiebt den nächsten GCD je um rund
-0,95 s; nach Communio rund 1,0 s ohne Weave. Abdrift: Rotmagier Arret-Stoß und Präparation, Dunkelritter
-Schattenbringer, Tänzer Trance und Einfache Choreographie, Maschinist Bohrer und Justieren, Revolverklinge Schlagfänge; Krieger (Urbefreiung 20 s) und Piktomant (Sternenmuse 22 s) gegen The Balance prüfen. Nächster Schritt: je Fall
-die Bedingung am Code; die ablehnende Teilprüfung mit der nächsten Puppensitzung. Konzept 03, „Weben, Animationssperre und
-Latenz“, „Bereit, aber nicht genutzt“.
+Im Kampf (A857, A862): Abdrift bei Rotmagier Arret-Stoß und Präparation, Dunkelritter Schattenbringer, Tänzer Trance und
+Einfache Choreographie, Maschinist Bohrer und Justieren, Revolverklinge Schlagfänge; Krieger (Urbefreiung 20 s) und
+Piktomant (Sternenmuse 22 s) gegen The Balance prüfen. Weben ohne Defekt (A862). Nächster Schritt: je Fall die Bedingung
+am Code; die ablehnende Teilprüfung mit der nächsten Puppensitzung. Konzept 03, „Bereit, aber nicht genutzt“.
 
 ### Beastmaster: Fähigkeiten im Crucible lange bereit, aber nicht genutzt · R
 

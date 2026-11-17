@@ -25201,6 +25201,18 @@ Dalamud-Log. Die vorige Logdatei stammt vom 12.11.2026.
   den Wortlaut hat er im Bericht.
 - *Prüfgrad:* `check_rule_files.py`, 61 Prüfungen; Wirkung auf die Arbeit erst an den nächsten Aufträgen zu sehen.
 
+### A862 · Webbefund aus A857 widerlegt: Schnitter und Piktomant verzögern nicht (17.11.2026)
+
+- *Geprüft am Rohabstand* (Wirkbeginn zu Wirkbeginn, Wirkzeit aus Zeile 20): Schnitter, Große Mahd → Kreuzmäher mit
+  Lemurenschleier und Sacrificium dazwischen 2,49 bis 2,50 s; Communio → nächster GCD 2,48 bis 2,54 s. Piktomant: Pikto-Motive
+  3,98 bis 4,02 s (Recast 4,0 s), Komet in Schwarz 3,07 bis 3,15 s (3,3 s, mit Tempo); einzige Abweichung 4,63 s am
+  Kampfanfang nach Pikto-Sternennacht mit Stumpfsinn (Abwehr an der Puppe, A818).
+- *Ursache am Modell:* Das Tempo kam aus benachbarten Abständen gegen den Recast des Blatts. Enshroud verkürzt die GCDs des
+  Schnitters per Status auf 1,5 s (Blatt 2,5 s), und Motive tragen einen festen Recast; beides drückte das Tempo und machte
+  normale Abstände zu Verzögerungen. Der Fehler trifft jeden Job, dessen GCD ein Status verkürzt oder dessen Recast fest ist.
+- *Folge:* Kein Webdefekt in der Puppensitzung außer Abwehr-Weaves an der Puppe (A818 behoben). Der TODO-Punkt verliert den
+  Schnitter; die Abdrift-Kandidaten bleiben (Modell für Abklingzeiten, nicht für das Tempo).
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -25578,3 +25590,4 @@ geben den Stand vom 14.10.2026 wieder.
 | C220 | A853, Konzept 24, „Spieldaten lesen“ (Stand 00938dcd3): Die übrigen Fork-Stellen, die Status lesen, liefen seltener (bei einem Ereignis, im Fenster) | Nicht gemessen; die meisten laufen je Frame und Figur (Zielwahl, Betäubung, Tankschutz, Blicke). Berichtigt und umgestellt in A854 |
 | C221 | A856 (Stand 953113764): Das Weben sei über die ganzen Kämpfe unauffällig, die Auswertung umfasse alle Jobs | Ausgewiesen waren nur Aktionen ab 60 s Recast, das Weben war aus A820 übernommen. Schnitter (Doppel-Weave im Enshroud) und Piktomant verzögern messbar (A857) |
 | C222 | A859 (Stand 45c9a2575): Die REGEL V5i sei geprüft | Geprüft war ein Satz; die übrigen Aussagen nicht. Vollständig in A860 |
+| C223 | A857 (Stand 7440f1087): Der Schnitter verzögere durch zwei Weaves im Enshroud zweimal um rund 0,95 s, der Piktomant um 7,7 s durch Weaves | Fehler des Tempomodells (Status-Recast, fester Recast); am Rohabstand keine Verzögerung außer einer Abwehr an der Puppe (A862) |
