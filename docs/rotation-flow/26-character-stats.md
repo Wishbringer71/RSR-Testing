@@ -69,6 +69,21 @@ Kritisch gewinnt mit eigener Höhe (Chance und Stärke wachsen zusammen), Entsch
 kommen je Job sichere kritische oder direkte Treffer (Werkzeugquelle Gear Planner, `autoDhitBonusDmg`), die das Verhältnis
 verschieben. Eine feste Reihenfolge gibt es deshalb nicht; die Empfehlung rechnet jede Belegung mit den exakten Formeln.
 
+**Wo mehr nichts mehr bringt** (seine Frage, 17.11.2026: „gibt es im spiel caps, an denen ein mehr an statshöhe keinen
+vorteil mehr bringt?“):
+- *Grenze je Gegenstand und Wert:* Materia über die Grenze wirkt nicht (consolegameswiki, „Materia“; die Grenze liefert das
+  Spiel, `GetParameterMaxValue`).
+- *Obergrenze des Essens:* Über Wert · Anteil ≥ Obergrenze bringt mehr Wert keinen weiteren Bonus vom Essen (`ItemFood`).
+- *Synchronisation der Gegenstandsstufe:* In einem Inhalt mit niedrigerer Stufe wirkt keine Materia des synchronisierten
+  Gegenstands, und jeder Wert wird auf die Grenze der Inhaltsstufe gekappt (Gear Planner, `Item-Level-Syncing.md`; die
+  Formel dort ist „derived from testing, so may not be the actual formula“). Eine Empfehlung gilt deshalb für den Inhalt auf
+  der Stufe des Sets; darunter ist sie wirkungslos.
+- *Stufen:* zwischen zwei Stufen ohne Wirkung (oben); kein Kappen, aber dieselbe Folge für die Punkte dazwischen.
+- *In den Formeln selbst* keine Obergrenze für Kritisch, Direkt, Entschlossenheit, Unbeugsamkeit, Frömmigkeit oder Tempo bis
+  zu Werten, die Ausrüstung erreicht; Verteidigung und GCD sind nach unten bei 0 begrenzt (`Math.max(0, …)` in `xivmath.ts`).
+  Was ein Job praktisch braucht – eine Tempostufe für seine Buff-Fenster, MP beim Heiler –, ist keine Grenze des Spiels.
+- *Tiefe Gewölbe:* Werte aus der Ausrüstung zählen dort nicht (Konzept 23).
+
 **Materia** (Blatt `Materia`; consolegameswiki): je Grad +1, +2, +3, +4, +6, +16, +8, +24, +12, +36, +18, +54 (I bis XII)
 für jeden Kampfwert. Grade VI, VIII, X und XII nur in die festen Plätze und den ersten zusätzlichen Platz, in die weiteren
 zusätzlichen Plätze die Grade darunter (XI = +18). Je Gegenstand und Wert gilt eine Grenze; was darüber hinausgeht, wirkt
