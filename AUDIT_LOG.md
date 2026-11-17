@@ -25325,6 +25325,19 @@ Dalamud-Log. Die vorige Logdatei stammt vom 12.11.2026.
   Übereinstimmung geschlossen [Schätzung: die Spielfunktion liest dieselbe Gruppe], nicht an der Dokumentation des Herstellers
   belegt.
 
+### A868 · Abdrift einzelner Fähigkeiten in der Puppensitzung: bewusste Zurückhaltung, kein Defekt (17.11.2026)
+
+- *Je Fall am Code:* Maschinist Bohrer (`usedUp: false` sammelt, im Burst `usedUp: true`), Justieren (wartet auf die
+  Werkzeug-GCDs); Revolverklinge Schlagfänge (zweite Ladung nur unter Ohne Gnade oder kurz vor dem Kappen); Dunkelritter
+  Schattenbringer (zweite Ladung nur im Zwei-Minuten-Burst); Tänzer Trance (nur wenn die Komplexe Choreographie nicht binnen
+  35 s bereit ist), Einfache Choreographie (folgt dem Tanzablauf); Rotmagier Arret-Stoß und Präparation (sammeln für Ermutigen;
+  Arret-Stoß braucht Nahkampfreichweite – an der Puppe aus der Distanz, seine Regel gegen Bewegung für Schaden).
+- *Verlust:* nur gekappte Ladungen zählen – Bohrer 11 s, Justieren 7 s über 220 s; Arret-Stoß 46 s über 406 s durch die
+  Reichweite. Krieger (Urbefreiung 20 s) und Piktomant (Sternenmuse 22 s): Gruppe des Vorjobs (A867).
+- *Folge:* TODO-Punkt geschlossen. Ob das Sammeln gegen The Balance richtig liegt, ist eine Frage je Rotation, keine der
+  Puppensitzung; ohne Befund am Spielgeschehen kein Anlass.
+- *Prüfgrad:* Code gelesen, Mitschnittanalyse.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

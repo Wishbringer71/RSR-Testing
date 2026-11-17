@@ -19,8 +19,7 @@ auswahl und das timing der beschwörung" – je Kampf aller fünf Bretter (Gegne
 BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Zeitpunkt ihres Aufrufs im Loop prüfen
 (Beispiel seiner Beobachtung: der Raptor gegen Feuer, bevor feueranfällige Gegner da waren; A581).
 
-1. Puppensitzung: Abdrift einzelner Fähigkeiten (Rangfolge seiner Festlegung vom 17.11.2026).
-2. Beastmaster: Fähigkeiten im Crucible lange bereit, aber nicht genutzt (seine Vorgabe, 17.11.2026: „du hast ihn weiter
+1. Beastmaster: Fähigkeiten im Crucible lange bereit, aber nicht genutzt (seine Vorgabe, 17.11.2026: „du hast ihn weiter
    zu verfolgen, aber die prio habe ich festgelegt“).
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
@@ -35,13 +34,6 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
 Keine offenen Defekte.
 
 ## Offene Arbeit
-
-### Puppensitzung: Abdrift einzelner Fähigkeiten · R
-
-Im Kampf (A857, A862): Abdrift bei Rotmagier Arret-Stoß und Präparation, Dunkelritter Schattenbringer, Tänzer Trance und
-Einfache Choreographie, Maschinist Bohrer und Justieren, Revolverklinge Schlagfänge; Krieger (Urbefreiung 20 s) und
-Piktomant (Sternenmuse 22 s) gegen The Balance prüfen. Weben ohne Defekt (A862). Nächster Schritt: je Fall die Bedingung
-am Code; die ablehnende Teilprüfung mit der nächsten Puppensitzung. Konzept 03, „Bereit, aber nicht genutzt“.
 
 ### Beastmaster: Fähigkeiten im Crucible lange bereit, aber nicht genutzt · R
 
