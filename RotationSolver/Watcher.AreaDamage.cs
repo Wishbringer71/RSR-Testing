@@ -425,20 +425,7 @@ public static partial class Watcher
 
 	private static bool HasInvincibility(IBattleChara target)
 	{
-		if (target.StatusList == null)
-		{
-			return false;
-		}
-
-		foreach (var status in target.StatusList)
-		{
-			if (status != null && status.IsInvincible())
-			{
-				return true;
-			}
-		}
-
-		return false;
+		return target.HasInvincibleStatus();
 	}
 
 	// The statuses an own action puts on its target by the rotation's setting, where its effect text names no chance for

@@ -95,13 +95,10 @@ public static partial class StatusHelper
 		// The mark of the rare one is the limit break itself: once a tank's limit break status is up
 		// on the party, the hit it was used for is coming, and at 1 HP he would stand in front of it
 		// unprotected. Read from the party's statuses, so it needs no BossModReborn.
-		foreach (var member in DataCenter.PartyMembers)
+		if (AnyPartyMemberHasStatus(false, TankLimitBreakStatus))
 		{
-			if (member != null && member.HasStatus(false, TankLimitBreakStatus))
-			{
-				why = "a tank limit break is up - full support before the hit it was used for";
-				return false;
-			}
+			why = "a tank limit break is up - full support before the hit it was used for";
+			return false;
 		}
 
 		var span = (float)(now - seen.At).TotalSeconds;

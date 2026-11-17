@@ -198,6 +198,10 @@ Abbruchbedingung. Jetzt eine Suche (`Walk`) mit einem Besucher, der je Feld sagt
 Im Kampf ändert sich nichts; eine Korrektur an der Suche gilt für alle sechs Fragen. `RaiseProtection` lief zweimal
 über die wirkenden Gegner mit fast gleicher Auswahl; jetzt eine Schleife mit der Auswahl als Parameter – eine
 statische Bedingung, die ihre Werte als Zustand bekommt, damit der allgemeine Weg je Frage nichts anlegt.
+Status über die ganze Gruppe und Unverwundbarkeit fragt der Fork über die gemeinsamen Funktionen von `StatusHelper`, die
+Upstream 7.5.8.4 eingeführt hat (`AnyPartyMemberHasStatus`, `HasInvincibleStatus`), statt eigener Schleifen über
+`StatusList`: der Tank-Limit-Break auf der Gruppe (Konzept 09) und die Unverwundbarkeit eines getroffenen Ziels (Konzept 08).
+Im Kampf gleich, ohne ein Objekt je Status.
 *Nicht angewandt:* das Fensterverhalten der Infofenster – zwei der drei Fenster gehören Upstream, und eine gemeinsame
 Hilfe nur im Fork-Fenster spart nichts.
 

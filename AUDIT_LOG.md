@@ -24969,6 +24969,21 @@ Dalamud-Log. Die vorige Logdatei stammt vom 12.11.2026.
   Menge wie die CI (`upstream/main..HEAD`). Fork-Commits mit fremder Identität lehnt er weiter ab. Selbsttest um einen echten
   Push eines Upstream-Commits mit fremdem Autor ergänzt; am alten Stand schlägt er an („a commit reachable from
   upstream/main was refused“), am neuen nicht. In `main` und im Arbeits-Branch.
+- *Abgeschlossen (17.11.2026):* `main` mit Upstream 7.5.8.4 und Fork-Version 7.5.8.4 gepusht (2540b0feb, 98dead520, 0a076c3ca), in
+  den Arbeits-Branch gemergt (7f90034fa; ein Konflikt, die Zeilenangabe in Konzept 12, jetzt `ActionBasicInfo.cs:609`, Inhalt
+  geprüft). Die übrigen Upstream-Änderungen einzeln gegen Konzepte und Fork-Code:
+  - `AnyPartyMemberHasStatus`, `HasInvincibleStatus`: zwei Fork-Schleifen darauf umgestellt (Tank-Limit-Break, Konzept 09;
+    Unverwundbarkeit des getroffenen Ziels, Konzept 08), im Kampf gleich. Die Schleifen bei Weisem und Tänzer suchen den
+    Träger selbst und bleiben.
+  - `MacroItem` hält die Id statt der Figur – Upstream folgt damit der „Dritten Invariante“ (Konzept 03, A845).
+  - Dezimalkomma in Befehlen: alle Fork-Stellen, die Zahlen lesen, geben die invariante Kultur schon an (`ActionTooltip`).
+  - `TryGetRow` statt `GetRow` (Rückstoß im `Watcher`): die einzige Fork-Stelle mit `GetRow` auf Daten aus dem Spiel
+    (`BeastmasterFamiliars`) ist durch die vorherige Prüfung jeder Zeile mit `TryGetRow` gedeckt; die übrigen sind Upstreams.
+  - Beirutas Heiler lasen das Ziel einer Aktion vor `CanUse` (Ziel des vorigen Durchlaufs), der Weißmagier verglich
+    `IsLastAction() == IsLastGCD()` (auch wahr, wenn beide falsch sind). Suche in den Fork-Rotationen, geeicht am alten
+    `BeirutaSGE` (drei von drei gefunden): kein Fall; die beiden Treffer lesen nach `CanUse`, außerhalb des Suchfensters.
+  - Schnitter: `IsPartyBurst` über `AnyPartyMemberHasStatus`, Verhalten gleich.
+  - Release-Text: Name der Sicherungsdatei und der Flächenschlaf (A850) nachgetragen.
 - *Sein Hinweis zur Bibliothek* (gemeinsamer, robuster Teil vor direktem Lesen): im Loop mit Antithesen in Konzept 24,
   „Spieldaten lesen: gemeinsame Bibliothek oder direkt“.
 - *Seine Präzisierung zum Sync* (Konzepte, Ziel von Upstream, Synergien je Änderung): in `.claude/skills/upstream-sync/SKILL.md`.

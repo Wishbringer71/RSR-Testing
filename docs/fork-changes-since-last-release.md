@@ -31,7 +31,8 @@ What this release changes in the fight. For the whole distance from upstream, se
     a fought enemy to sleep along; it stays the target and the next attack wakes it. Every other sleeping enemy, whoever put
     it to sleep, is spared by your areas and attacked only when no awake enemy is left - the tank takes the next sleeper
     once the other attackers are dead. A kind that resists is learned and not tried again. A caster's Sleep, which reaches every enemy within
-    5 yalms of its target, goes on the enemy whose area puts the most attackers to sleep - in a pack, the one in the middle.
+    5 yalms of its target, goes on the enemy whose area puts the most attackers to sleep - in a pack, the one in the middle -
+    and, among equal choices, on the one whose area cuts short the fewest sleeps already running.
 - **Resting enemies seen by every area.** "Don't pull new enemies with AoE" looked for resting enemies only among those
   RSR would attack; with an engage setting that skips them, an area hit them anyway. Every enemy in the area counts now.
 
@@ -70,3 +71,6 @@ What this release changes in the fight. For the whole distance from upstream, se
 - **What RSR learned is saved even when another program holds the file for a moment.** Saving a learned list was given
   up when the file was briefly locked, such as by a virus scanner; a kind learned immune to sleep was then forgotten and tried
   again on the next run. The save is now retried.
+- **An unreadable settings file is kept as `RotationSolver_LoadFailed.json`.** Before the defaults replace a settings
+  file that cannot be read, a copy is kept next to it - by upstream's backup now, which also checks that the file and its
+  folder exist; it was `RotationSolver_Unreadable.json` before.
