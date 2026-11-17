@@ -482,15 +482,9 @@ internal static class TankbusterForecast
 
 		try
 		{
-			var list = chara.StatusList;
-			if (list == null)
+			foreach (ref readonly var status in chara.GetStatuses())
 			{
-				return longest;
-			}
-
-			foreach (var status in list)
-			{
-				if (status == null || status.RemainingTime <= 0f || (fromPlayer && status.SourceId != player.GameObjectId))
+				if (status.StatusId == 0 || status.RemainingTime <= 0f || (fromPlayer && status.SourceObject.ObjectId != player.GameObjectId))
 				{
 					continue;
 				}
@@ -528,15 +522,9 @@ internal static class TankbusterForecast
 
 		try
 		{
-			var list = chara.StatusList;
-			if (list == null)
+			foreach (ref readonly var status in chara.GetStatuses())
 			{
-				return -1f;
-			}
-
-			foreach (var status in list)
-			{
-				if (status == null || status.RemainingTime <= 0f)
+				if (status.StatusId == 0 || status.RemainingTime <= 0f)
 				{
 					continue;
 				}

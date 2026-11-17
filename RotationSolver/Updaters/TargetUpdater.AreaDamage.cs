@@ -164,16 +164,10 @@ internal static partial class TargetUpdater
 	// a status that does not kill just ends, and cleansing it then gains nothing).
 	private static bool DangerousStatusEndsWithin(IBattleChara person, float seconds)
 	{
-		var statusList = person.StatusList;
-		if (statusList == null)
+		var minRemaining = 1 + DataCenter.DefaultGCDRemain;
+		foreach (ref readonly var status in person.GetStatuses())
 		{
-			return false;
-		}
-
-		for (int i = 0, n = statusList.Length; i < n; i++)
-		{
-			var status = statusList[i];
-			if (status != null && status.CanDispel()
+			if (StatusHelper.CanDispel(status, minRemaining)
 				&& (StatusHelper.EndsInDeath((StatusID)status.StatusId) || StatusHelper.TurnsWorseOnExpiry((StatusID)status.StatusId))
 				&& status.RemainingTime > 0 && status.RemainingTime <= seconds)
 			{

@@ -206,7 +206,21 @@ die Status über `StatusHelper.GetStatuses` statt über Dalamuds `StatusList` (C
 auf der Gruppe (`DotOnParty`), gemessene Heilminderung (`HealReduction`), Heilung anderer (`HealFromOthers`), die Wahl
 des Reinigungsziels (`TargetUpdater.HealTarget`) und die Statusbedingung jeder Aktion (`ActionBasicInfo.IsStatusNeeded`,
 wie Upstream ohne die zusätzliche Prüfung der Liste). Jede `StatusList` legte ein Objekt für die Liste und eines je Status
-an. Die übrigen Fork-Stellen laufen seltener (bei einem Ereignis, im Fenster) und bleiben auf Dalamuds Weg.
+an. Dasselbe gilt für jede andere Fork-Stelle, die Status liest: Die meisten laufen ebenfalls je Frame und Figur – Zielwahl
+(Stacheln, Parade, Tod beim nächsten Treffer, Schutz auf Gruppenmitgliedern), Betäubungsdauer, Verwundbarkeit und
+Schadensbonus, Tankbuster-Vorhersage, Blicke, Reinigungsfrist, Schlaf in den Tiefen Gewölben, Sperre der eigenen
+Fähigkeiten –, die übrigen bei einem Ereignis, und keine braucht etwas, das nur Dalamuds Objekt liefert: Name und Flags
+des Status kommen aus dem Statusblatt (`TryGetStatusRow`, Clientsprache wie `GameData`), die Quelle aus
+`SourceObject.ObjectId`. Alle lesen deshalb `GetStatuses`. Nebenbei entfällt ein Absturzweg: `ParriesPlayerSide`,
+`DiesToNextHit`, `SpikeOf` und `IsCrowdControlImmune` liefen ohne Prüfung über die Liste, die Dalamud für eine Figur ohne
+Statusverwaltung als `null` liefert; `GetStatuses` gibt dann eine leere Folge. Dalamuds Weg bleibt nur in Upstreams
+Zeilen – der Phantomjob in Kreszentia (`DutyRotation`, gedrosselt) und das Diagnosefenster –, weil jede Fork-Zeile dort
+Merge-Logistik wäre und keine je Frame im Kampf läuft.
+*Prüfmittel:* `check_status_list.py` weist jede Stelle mit `.StatusList` außerhalb dieser beiden Dateien und der fremden
+Rotationen (`ExtraRotations`, die der Fork nicht bearbeitet) ab.
+Anforderung: Ein Upstream-Merge oder eine neue Regel bringt die Schleife sonst unbemerkt zurück – sie kompiliert, antwortet
+richtig und kostet nur Framezeit; diese Klasse fand das Code-Review des Merges an fünf Stellen, und 25 weitere standen
+noch (17.11.2026). Aufwand ein Textvergleich je Datei.
 *Nicht angewandt:* das Fensterverhalten der Infofenster – zwei der drei Fenster gehören Upstream, und eine gemeinsame
 Hilfe nur im Fork-Fenster spart nichts.
 

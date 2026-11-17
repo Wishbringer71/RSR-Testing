@@ -96,7 +96,7 @@ public static partial class ObjectHelper
 	/// </summary>
 	internal static bool HasSpikes(this IBattleChara battleChara)
 	{
-		return SpikeOf(battleChara) != null;
+		return SpikeOf(battleChara).HasValue;
 	}
 
 	// A734: the sides Directional Parry guards, in the low bits of its param (BossModReborn's Components/DirectionalParry;
@@ -125,9 +125,9 @@ public static partial class ObjectHelper
 			return false;
 		}
 
-		foreach (var status in enemy.StatusList)
+		foreach (ref readonly var status in enemy.GetStatuses())
 		{
-			if (status == null || status.StatusId != (uint)StatusID.DirectionalParry)
+			if (status.StatusId != (uint)StatusID.DirectionalParry)
 			{
 				continue;
 			}
@@ -154,9 +154,9 @@ public static partial class ObjectHelper
 	/// </summary>
 	internal static bool DiesToNextHit(this IBattleChara battleChara)
 	{
-		foreach (var status in battleChara.StatusList)
+		foreach (ref readonly var status in battleChara.GetStatuses())
 		{
-			if (status != null && status.StatusId != 0 && StatusHelper.DiesToAnyHit(status.StatusId))
+			if (status.StatusId != 0 && StatusHelper.DiesToAnyHit(status.StatusId))
 			{
 				return true;
 			}
@@ -166,7 +166,7 @@ public static partial class ObjectHelper
 	}
 
 	/// <summary>The status by which <see cref="HasSpikes"/> leaves this enemy alone, or null.</summary>
-	internal static Dalamud.Game.ClientState.Statuses.IStatus? SpikeOf(IBattleChara battleChara)
+	internal static FFXIVClientStructs.FFXIV.Client.Game.Status? SpikeOf(IBattleChara battleChara)
 	{
 		if (!Service.Config.AvoidSpikedEnemies)
 		{
@@ -174,9 +174,9 @@ public static partial class ObjectHelper
 		}
 
 		var mine = PlayerAttackKinds;
-		foreach (var status in battleChara.StatusList)
+		foreach (ref readonly var status in battleChara.GetStatuses())
 		{
-			if (status != null && status.StatusId != 0 && (StatusHelper.CounteredAttacks(status.StatusId) & mine) != AttackKinds.None)
+			if (status.StatusId != 0 && (StatusHelper.CounteredAttacks(status.StatusId) & mine) != AttackKinds.None)
 			{
 				return status;
 			}

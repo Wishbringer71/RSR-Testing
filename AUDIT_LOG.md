@@ -24997,6 +24997,34 @@ Dalamud-Log. Die vorige Logdatei stammt vom 12.11.2026.
   „Spieldaten lesen: gemeinsame Bibliothek oder direkt“.
 - *Seine Präzisierung zum Sync* (Konzepte, Ziel von Upstream, Synergien je Änderung): in `.claude/skills/upstream-sync/SKILL.md`.
 
+### A854 · Audit des Upstream-Merges 7.5.8.4 und Statusleser des Forks (17.11.2026)
+
+- *Anlass:* sein Auftrag vom 17.11.2026, vor dem TODO Audit und Code-Review zum Upstream-Merge mit Synergie. Das Code-Review
+  steht in A853.
+- *Durchgang 1, mechanisch (17.11.2026, Stand 00938dcd3):* jede der 44 Dateien, die Upstream zwischen 6462f8a90 und
+  `upstream/main` geändert hat, Zeile für Zeile gegen den Stand: Jede von Upstream hinzugefügte Zeile steht dort, außer
+  neun, und jede steht an ihrer Stelle in einer Fork-Fassung derselben Absicht – Statusbedingung mit dem Fork-Vorlauf
+  `NeededStatusMargin` (Konzept 12), `CheckTimeToKill` als Instanzmethode, Kegelprüfung über `InFacingCone`, Richtungsschwelle
+  `> 0f` (vor dem Merge so im Fork), Heiltrank über `base.CanUse`, Quelle eines Status über `IsPlayerOrOwned` (A325, A514), der
+  Beschwörer in der Fork-Fassung ohne die betroffene Zeile, Reinigungswahl mit `leftToOthers`. Keine Konfliktmarke. Upstream
+  entfernte Zeilen, die noch stehen, sind gleichlautende Allerweltszeilen (`return false;`) oder Fork-Code.
+- *Durchgang 2, inhaltlich (17.11.2026):* je Bereich gegen die Defektklassen. Zeiteinheiten: Wirkfenster und vorgemerkte
+  Heilung beide in Millisekunden von `Environment.TickCount64`, das Fenster wird vor der Vormerkung gesetzt (`Watcher`).
+  Zustand ohne Rücksetzung: Upstreams Sperre des verzögerten Zielwechsels wird am Anfang des Rückrufs gelöst. Nebenläufigkeit:
+  kein Statusleser läuft außerhalb des Spielthreads (die Aufwärmung übersetzt nur). Schlüssel: die Blick-Schlüssel behalten
+  ihre Typen und damit ihre Werte. Text gegen Code: ein Befund, der eigene Satz in Konzept 24 (C220).
+- *Befund und Behebung:* Die Klasse des Code-Reviews – Status über Dalamuds `StatusList`, ein Objekt je Status und Aufruf –
+  stand an 25 weiteren Fork-Funktionen, die meisten je Frame und Figur (Zielwahl, Betäubung, Tankschutz, Blicke,
+  Reinigungsfrist). Alle lesen jetzt `GetStatuses`; vier davon liefen ohne Prüfung über eine Liste, die Dalamud für eine Figur
+  ohne Statusverwaltung als `null` liefert. Gleichwertig an Dalamuds Quelle (goatcorp/Dalamud 43b34118b, 17.11.2026): dieselbe
+  Grenze (`NumValidStatuses`), dieselbe Quelle (`SourceObject.ObjectId`), Einträge mit Id 0 übersprang die Aufzählung, die
+  Schleifen tun es selbst. Zwei Member zogen dabei aus Upstreams Dateien in ihre Teildateien (`HasStatusEndedByFullHealing`,
+  `PlayerRegenerates`). Dalamuds Weg bleibt in Upstreams zwei Zeilen (Phantomjob, Diagnosefenster). Neues Prüfskript
+  `check_status_list.py` mit Selbsttest; am Stand vor der Behebung meldet es die Stellen, am neuen keine.
+- *Im Kampf:* gleich; weniger Speicherbereinigung im Spielthread, und kein Absturzweg mehr über eine fehlende Statusliste
+  in Parade, Stacheln, Tod beim nächsten Treffer und PvP-Immunität. Prüfgrad: Compile 0/0, Prüfskripte 61/0; die
+  Gleichwertigkeit statisch an Dalamuds Quelle, nicht im Spiel beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -25371,3 +25399,4 @@ geben den Stand vom 14.10.2026 wieder.
 | C217 | A844, Zeile zu Konzept 08 (Stand bis A849): Die Betäubungstabelle aus `stun_coverage.py 2.5 2.5` sei am Code bestätigt | Geprüft war nur das Skript mit den Werten des Konzepts; Sanctus wirkt 1,5 s, nicht 2,5 s (A849) |
 | C218 | Konzept 14, Maschinist- und Weißmagier-Tabelle, Zeile „Trank im Opener“/„Trank“ (Stand A779 bis A849): Schnitter-Text („nach Shadow of Death im Opener“, „Der 2-Minuten-Burst des Schnitters …“) als Abgleich dieser Jobs; Schnitter-Zeile mit Schalter „Opener“ (A775) | Ersetzungen trafen die falsche Zeile; die Jobs haben eigene Trankregeln, der Schnitter-Schalter ist seit A780 entfernt (A844, Zeile 14) |
 | C219 | A846, „Flächenschlaf (G6, gebaut)“ (Stand bis A850): Ein schon schlafender Gegner im Kreis zähle gegen die Wahl | Gezählt wurden nur Schläfer in der Liste der Ziele; gehaltene Schläfer stehen dort nicht (`TargetUpdater`, `DeepDungeonCrowd.Sleepers`), die Zählung war für sie 0. Behoben in A850 |
+| C220 | A853, Konzept 24, „Spieldaten lesen“ (Stand 00938dcd3): Die übrigen Fork-Stellen, die Status lesen, liefen seltener (bei einem Ereignis, im Fenster) | Nicht gemessen; die meisten laufen je Frame und Figur (Zielwahl, Betäubung, Tankschutz, Blicke). Berichtigt und umgestellt in A854 |

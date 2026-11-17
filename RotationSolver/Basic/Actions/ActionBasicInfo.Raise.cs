@@ -51,14 +51,15 @@ public readonly partial struct ActionBasicInfo
 	// A cleanse whose target - the one the dispel choice holds - bears no status that kills when it runs out.
 	private bool CleanseSavesNoLife()
 	{
-		if (_action.Setting.TargetType != TargetType.Dispel || DataCenter.DispelTarget?.StatusList is not { } statuses)
+		if (_action.Setting.TargetType != TargetType.Dispel || DataCenter.DispelTarget is not { } target)
 		{
 			return false;
 		}
 
-		foreach (var status in statuses)
+		var minRemaining = 1 + DataCenter.DefaultGCDRemain;
+		foreach (ref readonly var status in target.GetStatuses())
 		{
-			if (status != null && status.CanDispel() && StatusHelper.EndsInDeath((StatusID)status.StatusId))
+			if (StatusHelper.CanDispel(status, minRemaining) && StatusHelper.EndsInDeath((StatusID)status.StatusId))
 			{
 				return false;
 			}

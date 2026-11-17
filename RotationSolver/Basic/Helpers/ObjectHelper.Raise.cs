@@ -39,15 +39,9 @@ public static partial class ObjectHelper
 
 	private static bool CarriesResurrectionRestriction(IBattleChara battleChara)
 	{
-		var statuses = battleChara.StatusList;
-		if (statuses == null)
+		foreach (ref readonly var status in battleChara.GetStatuses())
 		{
-			return false;
-		}
-
-		foreach (var status in statuses)
-		{
-			if (status != null && status.StatusId != 0 && StatusHelper.RestrictsResurrection(status.StatusId))
+			if (status.StatusId != 0 && StatusHelper.RestrictsResurrection(status.StatusId))
 			{
 				return true;
 			}

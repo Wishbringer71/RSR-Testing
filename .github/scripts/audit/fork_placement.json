@@ -323,10 +323,6 @@
   },
   {
    "file": "RotationSolver/Basic/Helpers/StatusHelper.cs",
-   "member": "private static bool HasStatusEndedByFullHealing(IBattleChara character)"
-  },
-  {
-   "file": "RotationSolver/Basic/Helpers/StatusHelper.cs",
    "member": "internal static void NoteOwnedObjects()"
   },
   {
@@ -496,10 +492,6 @@
   {
    "file": "RotationSolver/Basic/Rotations/CustomRotation_GCD.cs",
    "member": "private readonly List<SleepLockKey> _sleepTries = [];"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_Items.cs",
-   "member": "private static bool PlayerRegenerates()"
   },
   {
    "file": "RotationSolver/Basic/Rotations/CustomRotation_Items.cs",

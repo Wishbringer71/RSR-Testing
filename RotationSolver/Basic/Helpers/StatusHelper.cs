@@ -1006,25 +1006,6 @@ public static partial class StatusHelper
 
 	private static readonly System.Collections.Concurrent.ConcurrentDictionary<uint, bool> _endsWhenFullyHealed = new();
 
-	// A573: whether the character carries a status that ends only at full HP.
-	private static bool HasStatusEndedByFullHealing(IBattleChara character)
-	{
-		if (character.StatusList == null)
-		{
-			return false;
-		}
-
-		foreach (var status in character.StatusList)
-		{
-			if (status != null && status.StatusId != 0 && EndsWhenFullyHealed(status.StatusId))
-			{
-				return true;
-			}
-		}
-
-		return false;
-	}
-
 	/// <summary>
 	/// Check if the target needs to be healed because of Doomed To Heal status.
 	/// </summary>

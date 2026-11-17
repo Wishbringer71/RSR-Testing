@@ -145,4 +145,39 @@ public partial class CustomRotation
 	}
 
 	private static HashSet<uint>? _rehabilitationIds;
+
+	/// <summary>
+	/// Whether a Rehabilitation runs on the player - the regeneration of a content potion, any of the status rows of that
+	/// name, read from the English sheet so the client language does not matter (A613).
+	/// </summary>
+	private static bool PlayerRegenerates()
+	{
+		if (_rehabilitationIds == null)
+		{
+			var ids = new HashSet<uint>();
+			var sheet = Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.Status>(Dalamud.Game.ClientLanguage.English);
+			if (sheet != null)
+			{
+				foreach (var row in sheet)
+				{
+					if (row.Name.ExtractText() == "Rehabilitation")
+					{
+						_ = ids.Add(row.RowId);
+					}
+				}
+			}
+
+			_rehabilitationIds = ids;
+		}
+
+		foreach (ref readonly var status in ECommons.GameHelpers.Player.Object.GetStatuses())
+		{
+			if (_rehabilitationIds.Contains(status.StatusId))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
 }

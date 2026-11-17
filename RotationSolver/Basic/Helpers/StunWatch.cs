@@ -196,16 +196,9 @@ public static class StunWatch
 		var longest = 0f;
 		try
 		{
-			var statuses = enemy.StatusList;
-			if (statuses == null)
+			foreach (ref readonly var status in enemy.GetStatuses())
 			{
-				return 0f;
-			}
-
-			for (var i = 0; i < statuses.Length; i++)
-			{
-				var status = statuses[i];
-				if (status == null || status.StatusId == 0 || status.RemainingTime <= 0f)
+				if (status.StatusId == 0 || status.RemainingTime <= 0f)
 				{
 					continue;
 				}

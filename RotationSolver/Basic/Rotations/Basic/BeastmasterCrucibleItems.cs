@@ -361,14 +361,9 @@ public partial class BeastmasterRotation
 
 	private static bool PlayerHasStatusNamed(IBattleChara player, string fragment)
 	{
-		if (player.StatusList == null)
+		foreach (ref readonly var status in player.GetStatuses())
 		{
-			return false;
-		}
-
-		foreach (var status in player.StatusList)
-		{
-			if (status != null && status.StatusId != 0 && StatusName(status.StatusId).Contains(fragment, StringComparison.OrdinalIgnoreCase))
+			if (status.StatusId != 0 && StatusName(status.StatusId).Contains(fragment, StringComparison.OrdinalIgnoreCase))
 			{
 				return true;
 			}
@@ -391,14 +386,9 @@ public partial class BeastmasterRotation
 
 	private static bool HasStatusId(IBattleChara chara, uint statusId)
 	{
-		if (chara.StatusList == null)
+		foreach (ref readonly var status in chara.GetStatuses())
 		{
-			return false;
-		}
-
-		foreach (var status in chara.StatusList)
-		{
-			if (status != null && status.StatusId == statusId)
+			if (status.StatusId == statusId)
 			{
 				return true;
 			}
@@ -1410,14 +1400,9 @@ public partial class BeastmasterRotation
 	// A677: the stacks of the status of this English name on the character; 0 without it.
 	internal static int StacksHeld(IBattleChara chara, string status)
 	{
-		if (chara.StatusList == null)
+		foreach (ref readonly var effect in chara.GetStatuses())
 		{
-			return 0;
-		}
-
-		foreach (var effect in chara.StatusList)
-		{
-			if (effect != null && effect.StatusId != 0 && string.Equals(StatusName(effect.StatusId), status, StringComparison.OrdinalIgnoreCase))
+			if (effect.StatusId != 0 && string.Equals(StatusName(effect.StatusId), status, StringComparison.OrdinalIgnoreCase))
 			{
 				return Math.Max(1, (int)effect.Param);
 			}

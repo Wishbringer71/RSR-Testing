@@ -105,6 +105,12 @@ jobs:
       - name: Check the stored action lists are looked up, not walked
         run: python3 .github/scripts/audit/check_set_lookups.py
 
+      # Dalamud's StatusList builds an object per status on every access, and most status readers run
+      # every frame for every figure. A loop back on it compiles and answers right; only frame time
+      # changes (concept 24, "Spieldaten lesen").
+      - name: Check statuses are read through GetStatuses, not StatusList
+        run: python3 .github/scripts/audit/check_status_list.py
+
       # A stored list is written back whole on every save, so one that is never loaded destroys its
       # own file on the first save of the session. That happened to the learned damage potentials:
       # the load line went into the Init nobody calls, and what several evenings of pulls had rated

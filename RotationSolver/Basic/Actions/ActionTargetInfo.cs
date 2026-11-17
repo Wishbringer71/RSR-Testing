@@ -3491,15 +3491,9 @@ public partial struct ActionTargetInfo(IBaseAction action)
 		static int ProtectionsOn(IBattleChara member)
 		{
 			var count = 0;
-			var statuses = member.StatusList;
-			if (statuses == null)
+			foreach (ref readonly var status in member.GetStatuses())
 			{
-				return 0;
-			}
-
-			foreach (var status in statuses)
-			{
-				if (status != null && status.StatusId != 0
+				if (status.StatusId != 0
 					&& (DefensiveValues.MitigationByStatusId.ContainsKey(status.StatusId)
 						|| Array.IndexOf(StatusHelper.ShieldStatus, (StatusID)status.StatusId) >= 0))
 				{

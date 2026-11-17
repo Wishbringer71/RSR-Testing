@@ -299,47 +299,6 @@ public partial class CustomRotation
 	}
 
 	/// <summary>
-	/// Whether a Rehabilitation runs on the player - the regeneration of a content potion, any of the status rows of that
-	/// name, read from the English sheet so the client language does not matter (A613).
-	/// </summary>
-	private static bool PlayerRegenerates()
-	{
-		if (_rehabilitationIds == null)
-		{
-			var ids = new HashSet<uint>();
-			var sheet = Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.Status>(Dalamud.Game.ClientLanguage.English);
-			if (sheet != null)
-			{
-				foreach (var row in sheet)
-				{
-					if (row.Name.ExtractText() == "Rehabilitation")
-					{
-						_ = ids.Add(row.RowId);
-					}
-				}
-			}
-
-			_rehabilitationIds = ids;
-		}
-
-		var statuses = ECommons.GameHelpers.Player.Object?.StatusList;
-		if (statuses == null)
-		{
-			return false;
-		}
-
-		foreach (var status in statuses)
-		{
-			if (status != null && _rehabilitationIds.Contains(status.StatusId))
-			{
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	/// <summary>
 	/// A530/A531: why each HP potion in the bag does not go out now, for the trace line of a player in the critical
 	/// class - the first stopping condition of each, as the diagnostics window shows it. The global setting, the
 	/// per-item switch and the threshold are the player's configuration, which the upload does not carry.

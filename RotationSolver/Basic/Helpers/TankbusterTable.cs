@@ -765,15 +765,9 @@ internal static class TankbusterTable
 	private static List<uint> StatusesOf(IBattleChara battleChara, float horizon = 0f)
 	{
 		List<uint> ids = [];
-		var statuses = battleChara.StatusList;
-		if (statuses == null)
+		foreach (ref readonly var status in battleChara.GetStatuses())
 		{
-			return ids;
-		}
-
-		foreach (var status in statuses)
-		{
-			if (status != null && status.StatusId != 0
+			if (status.StatusId != 0
 				&& (horizon <= 0f || status.RemainingTime <= 0f || status.RemainingTime >= horizon))
 			{
 				ids.Add(status.StatusId);

@@ -104,15 +104,9 @@ internal sealed class DeepDungeonDefault : DeepDungeonRotation
 			_transfigurationIds = ids;
 		}
 
-		var statuses = ECommons.GameHelpers.Player.Object?.StatusList;
-		if (statuses == null)
+		foreach (ref readonly var status in ECommons.GameHelpers.Player.Object.GetStatuses())
 		{
-			return false;
-		}
-
-		foreach (var status in statuses)
-		{
-			if (status != null && _transfigurationIds.Contains(status.StatusId))
+			if (_transfigurationIds.Contains(status.StatusId))
 			{
 				return true;
 			}

@@ -168,22 +168,16 @@ public static partial class StatusHelper
 	internal static bool PlayerAbilitiesLocked(out float rest)
 	{
 		rest = 0f;
-		var list = Player.Object?.StatusList;
-		if (list == null)
-		{
-			return false;
-		}
-
 		_amnesiaIds ??= IdsByNamePrefix("Amnesia");
 		var locked = false;
-		foreach (var status in list)
+		foreach (ref readonly var status in Player.Object.GetStatuses())
 		{
-			if (status == null || status.StatusId == 0)
+			if (status.StatusId == 0)
 			{
 				continue;
 			}
 
-			if (_amnesiaIds.Contains(status.StatusId) || (status.GameData.ValueNullable?.LockActions ?? false))
+			if (_amnesiaIds.Contains(status.StatusId) || (TryGetStatusRow(status.StatusId, out var row) && row.LockActions))
 			{
 				locked = true;
 				rest = Math.Max(rest, status.RemainingTime);
@@ -237,16 +231,10 @@ public static partial class StatusHelper
 	/// </summary>
 	internal static float VulnerabilityUpRemaining(this IBattleChara battleChara)
 	{
-		var statuses = battleChara.StatusList;
-		if (statuses == null)
-		{
-			return 0f;
-		}
-
 		var longest = 0f;
-		foreach (var status in statuses)
+		foreach (ref readonly var status in battleChara.GetStatuses())
 		{
-			if (status == null || status.StatusId == 0 || !IsVulnerabilityUp(status.StatusId))
+			if (status.StatusId == 0 || !IsVulnerabilityUp(status.StatusId))
 			{
 				continue;
 			}
@@ -277,15 +265,9 @@ public static partial class StatusHelper
 
 	private static bool Carries(IBattleChara battleChara, Func<uint, bool> isOfKind)
 	{
-		var statuses = battleChara.StatusList;
-		if (statuses == null)
+		foreach (ref readonly var status in battleChara.GetStatuses())
 		{
-			return false;
-		}
-
-		foreach (var status in statuses)
-		{
-			if (status != null && status.StatusId != 0 && isOfKind(status.StatusId))
+			if (status.StatusId != 0 && isOfKind(status.StatusId))
 			{
 				return true;
 			}

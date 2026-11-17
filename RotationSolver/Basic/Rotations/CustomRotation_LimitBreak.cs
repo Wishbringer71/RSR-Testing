@@ -256,10 +256,11 @@ public partial class CustomRotation
 			return;
 		}
 
-		foreach (var status in player.StatusList)
+		foreach (ref readonly var status in player.GetStatuses())
 		{
-			if (status == null || status.SourceId != player.GameObjectId || status.RemainingTime <= 0f
-				|| status.GameData.ValueNullable?.Name.ExtractText() != name)
+			if (status.StatusId == 0 || status.SourceObject.ObjectId != player.GameObjectId || status.RemainingTime <= 0f
+				|| !Service.GetSheet<Lumina.Excel.Sheets.Status>().TryGetRow(status.StatusId, out var row)
+				|| row.Name.ExtractText() != name)
 			{
 				continue;
 			}

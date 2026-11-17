@@ -1322,11 +1322,9 @@ internal static partial class GazeWatch
 	// A status on the player whose text names the enemy to look at or away from when it expires (A776).
 	private static void AddPlayerStatuses(IBattleChara player, Texts texts)
 	{
-		var statuses = player.StatusList;
-		for (var i = 0; i < statuses.Length; i++)
+		foreach (ref readonly var status in player.GetStatuses())
 		{
-			var status = statuses[i];
-			if (status == null || status.StatusId == 0 || !texts.PlayerStatuses.TryGetValue(status.StatusId, out var gaze))
+			if (status.StatusId == 0 || !texts.PlayerStatuses.TryGetValue(status.StatusId, out var gaze))
 			{
 				continue;
 			}
@@ -1334,7 +1332,7 @@ internal static partial class GazeWatch
 			if (NearestNamed(player, gaze.Enemy) is { } enemy)
 			{
 				// The text says what petrifies: looking at the enemy, so the gaze is normal; looking away, so it is inverted.
-				_gazers.Add(new Gazer(enemy.Position, (ulong)(uint)HashCode.Combine(status.StatusId, status.SourceId), gaze.Inverted, status.RemainingTime,
+				_gazers.Add(new Gazer(enemy.Position, (ulong)(uint)HashCode.Combine((uint)status.StatusId, status.SourceObject.ObjectId), gaze.Inverted, status.RemainingTime,
 					Origin.PlayerStatus, status.StatusId, enemy.GameObjectId));
 			}
 		}
@@ -1350,13 +1348,11 @@ internal static partial class GazeWatch
 				continue;
 			}
 
-			var statuses = member.StatusList;
-			for (var i = 0; i < statuses.Length; i++)
+			foreach (ref readonly var status in member.GetStatuses())
 			{
-				var status = statuses[i];
-				if (status != null && status.StatusId != 0 && texts.MemberEyes.Contains(status.StatusId))
+				if (status.StatusId != 0 && texts.MemberEyes.Contains(status.StatusId))
 				{
-					_gazers.Add(new Gazer(member.Position, (ulong)(uint)HashCode.Combine(member.GameObjectId, status.StatusId), false, status.RemainingTime,
+					_gazers.Add(new Gazer(member.Position, (ulong)(uint)HashCode.Combine(member.GameObjectId, (uint)status.StatusId), false, status.RemainingTime,
 						Origin.MemberStatus, status.StatusId, member.GameObjectId));
 				}
 			}

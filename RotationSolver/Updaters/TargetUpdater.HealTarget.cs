@@ -141,7 +141,7 @@ internal static partial class TargetUpdater
 
 		if (ObjectHelper.SpikeOf(enemy) is { } status)
 		{
-			DefenseTrace.Line($"target: {enemy.Name} left alone - {status.GameData.Value.Name.ExtractText()} ({status.StatusId}) "
+			DefenseTrace.Line($"target: {enemy.Name} left alone - {StatusHelper.GetStatusName((StatusID)status.StatusId)} ({status.StatusId}) "
 				+ $"turns {StatusHelper.CounteredAttacks(status.StatusId)} attacks on its attackers, yours are {ObjectHelper.PlayerAttackKinds}, "
 				+ $"{status.RemainingTime:F0} s left");
 		}
