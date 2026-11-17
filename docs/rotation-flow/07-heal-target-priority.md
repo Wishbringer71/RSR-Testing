@@ -759,6 +759,19 @@ Angegriffen werden die Reiryu nicht: `ObjectHelper.IsEnemy` fragt das Spiel, ob 
   Aktion ist freundlich, hat ein Ziel ohne Wirkungsradius und ohne Bodenziel, gibt keinen HoT (`GrantsSingleHot`), und
   das Spiel erlaubt sie auf die Figur (`CanUseActionOnTarget` je Aktion). Damit fallen Flächenheilungen heraus (sie
   wirken nicht), Regen und die anderen HoTs, und die Schilde und Minderungen, die nur Gruppenmitglieder treffen.
+- *Sein Hinweis (17.11.2026):* „auf adds keine schilde und keine area-heals. die wirken nicht, bei schilden mit
+  gleichzeitiger heilung wirkt nur der heilanteil", dazu „und auch keine area-schilde". Am Spielblatt geprüft (Action,
+  xivapi v2, 17.11.2026): Jeder reine Einzelschild und jede Einzelminderung der Heiler und Tanks erlaubt nur
+  Gruppenmitglieder (`CanTargetAlly` falsch): Göttlicher Segen 7432, Haima 24305, Weise Voraussicht 7434, Wasserschleier 25861,
+  Exaltation 25873, Taurochole 24303, Krasis 24317, Kongruenz 16556, Protraktion 25867, Intervention 7382, Opfergabe
+  25754 (deutsche Namen aus dem Spielblatt, `language=de`). Das Spiel weist sie auf eine Reiryu ab, und RSR fragt es je Aktion; keine steht unter den
+  Sonderaktionen, die diese Frage überspringen. Flächenschilde und Flächenheilungen tragen einen Wirkungsradius
+  (Panhaima 24311: 30, Ixochole 24299: 20, Numinosum 3613: 30) oder zielen nicht auf andere und fallen an der Bedingung „ohne
+  Radius". Kandidat bleibt eine Einzelheilung, die einem Verbündeten gelten darf, auch mit Schild daneben: Adloquium
+  185, Vitra 135, Benediktion 140, Tetragrammaton 3570, Afflatus solatii 16531, Essenzielle Würde 3614, Druochole 24296,
+  Diagnose 24284, Revitalisierung 189, Physick 16230, Klemenz 3541, Erzvita 7514 (`CanTargetAlly` wahr). Bei Adloquium wirkt
+  auf der Figur nur der Heilanteil (sein Hinweis); das genügt, denn nur er zählt für die volle Gesundheit. Aurora 16151
+  darf Verbündete, gibt aber einen HoT und fällt an `GrantsSingleHot`.
 - *Flaggen:* Steht eine Figur, setzt `StateUpdater` die Einzelheilflaggen (Fähigkeit und Zauber), für Heiler immer, für
   Nichtheiler nur unter „Help heal figures only healing defeats as a non-healer" (ab Werk an) und nur, wenn die Frist
   ohne sie nicht reicht: wenn das, was die Figuren der Welle seit ihrem Beginn an LP gewonnen haben – die schon
@@ -829,8 +842,13 @@ und die Welle dauert höchstens 38 s; dagegen steht ein sicheres Scheitern ohne 
 - *Die Erkennung sieht 1 LP nicht,* weil eine Heilung im selben Frame landet: Dann trägt die Leine.
 
 *Prüfgrad:* Mechanik an Spielblättern, am Quelltext von RSR, BossModReborn und ECommons, am Wiki und an seinem
-Mitschnitt vom 03.11.2026 (zwei Läufe: LP, Zeiten, Heilungen, Leinen, Flüche, 0-LP-Heilungen auf Verfluchte). Die Regel
-ist kompiliert und geprüft, im Spiel noch nicht beobachtet; die Zeilen oben zeigen es im nächsten Protokoll.
+Mitschnitt vom 03.11.2026 (zwei Läufe: LP, Zeiten, Heilungen, Leinen, Flüche, 0-LP-Heilungen auf Verfluchte). Im Spiel
+beobachtet (Upload vom 17.11.2026, Build 6a4af80c4, zwei Läufe als Beschwörer und Schnitter, A877): die Erkennung –
+in allen vier Wellen alle vier Reiryu bei 1/105 448 LP als „appeared at 1 HP" –, das Ende jeder Welle nach 14,4 bis
+24,9 s ohne eine, die ihren Zauber überdauerte, und einmal die Frist (21:47, 421 788 LP offen, 29,7 s Rest, Nichtheiler
+gerufen; als Schnitter ohne Einzelheilung). Nicht beobachtet: der Heilerpfad – Zielwahl auf eine Reiryu und die
+Heilung durch RSR –, weil er Shinryu seit A516 nicht als Heiler gespielt hat. Außerhalb des Spiels ist er nicht
+ausführbar: Zielwahl und Flaggen lesen die Objekttabelle und `ActionManager` des Clients.
 
 ## Heilung, die nur geschwächt ankommt
 

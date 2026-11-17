@@ -25,14 +25,14 @@
   "archive": "A865",
   "kind": "present",
   "situation": "ordinary GCD .* \\(spell\\)",
-  "match": "ordinary GCD (\\d\\.\\d\\d) s \\(spell\\), weaponskill (?!\\1 s)\\d\\.\\d\\d s"
+  "match": "ordinary GCD (\\d[.,]\\d\\d) s \\(spell\\), weaponskill (?!\\1 s)\\d[.,]\\d\\d s"
  },
  {
   "id": "mch-checkmate-hides-double-check",
   "archive": "A868",
   "kind": "each",
-  "situation": "ready but unused over the fight: .*(Schachmatt [0-9.]+ s.*Doppelschach [0-9.]+ s|Doppelschach [0-9.]+ s.*Schachmatt [0-9.]+ s)",
-  "match": "Doppelschach [0-9.]+ s in [0-9]+ \\(not asked\\)"
+  "situation": "ready but unused over the fight: .*(Schachmatt [0-9.,]+ s.*Doppelschach [0-9.,]+ s|Doppelschach [0-9.,]+ s.*Schachmatt [0-9.,]+ s)",
+  "match": "Doppelschach [0-9.,]+ s in [0-9]+ \\(not asked\\)"
  },
  {
   "id": "bst-horn-waits-for-lock",
@@ -60,6 +60,6 @@
   "archive": "A872",
   "kind": "each",
   "situation": "food ended in combat",
-  "match": "ordinary GCD [0-9.]+ -> [0-9.]+ s"
+  "match": "ordinary GCD [0-9.,]+ -> [0-9.,]+ s"
  }
 ]

@@ -32,6 +32,9 @@ DEFAULT_DIR = os.path.join(ROOT, ".github", "scripts", "audit", "predictions")
 STARTED = re.compile(r"^==== .* trace started")
 COMMIT = re.compile(r"\| commit ([0-9a-f]{7,40}) \|")
 KINDS = ("present", "absent", "each")
+# A decimal written with a dot only: the trace writes numbers in the client's culture, "2,35 s" in his German one (A877).
+# A pattern that accepts only the dot never matches there - a "present" fails and an "each" or "absent" stays OPEN.
+DOT_ONLY_DECIMAL = re.compile(r"(?:\\d|\[0-9\]|\])[+*?]?\\\.(?:\\d|\[0-9\])|\[(?:0-9|\\d)\.\]|\[\.(?:0-9|\\d)\]")
 
 
 def load(directory):
@@ -58,6 +61,8 @@ def malformed(entry):
                 re.compile(entry[key])
             except re.error as error:
                 return f"{entry['id']}: {key} is no regex ({error})"
+            if DOT_ONLY_DECIMAL.search(entry[key]):
+                return f"{entry['id']}: {key} reads a decimal with a dot only; the trace writes the client's culture ([.,])"
     return None
 
 
@@ -165,11 +170,20 @@ def self_test():
     assert evaluate(present, two, content_at)["s"][0] == "PASS", "a later unbound session does not undo a bound verdict"
     assert malformed({"id": "m", "archive": "A1", "kind": "absent", "match": "x"}) is not None, "absent needs a situation"
     assert malformed({"id": "m", "archive": "A1", "kind": "present", "match": "("}) is not None, "a broken regex is reported"
+    for dot_only in (r"GCD (\d\.\d\d) s", r"GCD [0-9.]+ s", r"GCD [\d.]+ s", r"GCD [0-9]+\.[0-9] s", r"[.0-9]+"):
+        assert malformed({"id": "m", "archive": "A1", "kind": "present", "match": dot_only}) is not None, dot_only
+    for either in (r"GCD (\d[.,]\d\d) s", r"GCD [0-9.,]+ s", r"GCD [0-9,.]+ s", r"tank_lockon\.avfx", r"[0-9]+ s", r"\(spell\)"):
+        assert malformed({"id": "m", "archive": "A1", "kind": "present", "match": either}) is None, either
+    two_cultures = [("p.json", {"id": "c", "archive": "A1", "kind": "present", "match": r"GCD [0-9.,]+ -> [0-9.,]+ s"})]
+    stood["p"] = [two_cultures[0][1]]
+    assert evaluate(two_cultures, log[:2] + ["GCD 2,36 -> 2,38 s"], content_at)["c"][0] == "PASS", "a German trace"
+    assert evaluate(two_cultures, log[:2] + ["GCD 2.36 -> 2.38 s"], content_at)["c"][0] == "PASS", "an English trace"
     for path, entry in load(DEFAULT_DIR):
         problem = malformed(entry)
         assert problem is None, f"{path}: {problem}"
     print("self-test ok: present, absent and each judged; no situation stays open; a build without the prediction or a "
-          "prediction changed after it is unbound; sessions combine; the repository's predictions are well formed")
+          "prediction changed after it is unbound; sessions combine; a decimal read with a dot only is refused; the repository's "
+          "predictions are well formed")
     return 0
 
 
