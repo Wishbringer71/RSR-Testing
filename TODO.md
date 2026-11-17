@@ -20,7 +20,8 @@ BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Ze
 (Beispiel seiner Beobachtung: der Raptor gegen Feuer, bevor feueranfällige Gegner da waren; A581).
 
 1. Burstphasen und Weben aus der Puppensitzung klären (seine Festlegung, 17.11.2026: „du solltest als nächtes die
-   burstphasen und das weaving an der puppensitzung auswerten“; vor dem Beastmaster-Vorrang).
+   burstphasen und das weaving an der puppensitzung auswerten“; vor dem Beastmaster-Vorrang). Umfang (seine Vorgabe,
+   17.11.2026): „alles prüfen, nicht nur 60s“ – jeder Kampf ganz, jeder Job der Sitzung.
 2. Beastmaster: Fähigkeiten im Crucible lange bereit, aber nicht genutzt (seine Vorgabe, 17.11.2026: „du hast ihn weiter
    zu verfolgen, aber die prio habe ich festgelegt“).
 
@@ -41,14 +42,16 @@ Keine offenen Defekte.
 
 Im Kampf: Der erste Burst kommt bei Maschinist (49 s), Tänzer (50 s), Rotmagier (73 s), Dunkelritter (Living Shadow 68 s)
 und Samurai (Senei 60 s) zu spät; der zweite pünktlich (A848, Puppensitzung vom 15.11.). Ausgeschlossen: Tinktur,
-gemeinsamer Burst-Zustand, Webfenster. Sein Hinweis (16.11.2026) verlangt die Klärung an der Puppe. Nächster Schritt: die
-Zeile „ready but unused over the fight“ (Build ab 6992f82af) je betroffenem Job an der Puppe nennt die ablehnende
-Prüfung; danach Loop je Grund. Konzept 03, „Bereit, aber nicht genutzt“.
+gemeinsamer Burst-Zustand, Webfenster, Zeit bis zum Tod, fork-weite Fensterregel (A856, alle Jobs und ganze Kämpfe). Der
+Samurai übergeht Senei bei fünf Webfenstern zugunsten von Shinten. Nächster Schritt: Puppensitzung mit Build ab 33778ad29;
+die Zeile „ready but unused over the fight“ nennt dann die Teilprüfung (`BasicCheck:<Teil>`, `Cooldown:<Teil>`); danach
+Loop je Grund. Konzept 03, „Bereit, aber nicht genutzt“.
 
 ### Beastmaster: Fähigkeiten im Crucible lange bereit, aber nicht genutzt · R
 
 Im Kampf: In fünf Crucible-Kämpfen seines Uploads vom 16.11.2026 abends standen Kampfhorn I bis III, Dressur, Axtwirbel,
-Hiebsturm, Hieblawine, Borgen, Entfesseln und Gezieferpanzer 26 bis 96 s bereit, ohne zu kommen; abgelehnt mit „BasicCheck“
+Hiebsturm, Hieblawine, Borgen, Entfesseln und Gezieferpanzer 26 bis 96 s bereit (nicht an der Puppe: „beastmaster war
+in der puppensitzung nicht an der puppe“, sein Hinweis vom 17.11.2026), ohne zu kommen; abgelehnt mit „BasicCheck“
 und „Cooldown“, deren Teil die Zeile damals nicht nannte (A855). Nächster Schritt: prüfen, welche davon nur unter einem
 Status, einer Combo oder einzeln (ein Horn zur Zeit) nutzbar sind und deshalb zu Recht warten; für die übrigen die
 Ablehnung am Code bestimmen, mit dem nächsten Upload an den Teilgründen bestätigen. Konzept 21.

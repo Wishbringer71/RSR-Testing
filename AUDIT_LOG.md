@@ -25044,6 +25044,32 @@ Dalamud-Log. Die vorige Logdatei stammt vom 12.11.2026.
   Rückführung, Entziffern oder Ausgraben, und kein Grund steht als bloßes „BasicCheck“ oder „Cooldown“ mit Zahl
   (`predictions/2026-11-17.json`; am Upload vom 16.11. schlagen alle drei an).
 
+### A856 · Puppensitzung vom 15.11.2026: Burst und Weben über alle Jobs und ganze Kämpfe (17.11.2026)
+
+- *Auftrag:* seine Festlegung vom 17.11.2026 („du solltest als nächtes die burstphasen und das weaving an der puppensitzung
+  auswerten“, „alles prüfen, nicht nur 60s“). Zuvor hatte ich statt dessen das Messmittel umgebaut (A855); das war nicht
+  sein Auftrag.
+- *Verfahren:* ACT-Mitschnitt 15.11. (21 Jobabschnitte, je ein Kampf an der Puppe), Abklingzeiten je Aktion aus dem Blatt
+  `Action` (xivapi, 17.11.2026) nachgerechnet; Ladungen aus Merkmalen geschätzt aus der größten Zahl von Einsätzen
+  innerhalb von 0,95 Recast. Wo ein Einsatz ohne gerechnete Ladung kam, ist das Modell falsch (Recast durch Schnelligkeit
+  oder Jobmechanik verkürzt: Schachmatt und Doppelschach durch Brandschuss); solche Aktionen sind nicht gewertet.
+- *Weben:* unauffällig über die ganzen Kämpfe (A820 bestätigt: 1,14 Fähigkeiten je GCD beim Maschinisten, keine GCD-
+  Verzögerung durch Sperren außer mit Abwehr an der Puppe).
+- *Burst:* Der erste Einsatz der Zwei-Minuten-Aktion kommt zu spät bei Maschinist (Laufstabilisator und Wildfeuer 49 s),
+  Tänzer (Technischer Schritt 44 s, Devilment 50 s), Rotmagier (Ermutigen 73 s), Dunkelritter (Lebender Schatten 68 s),
+  Samurai (Senei 56 s); jeder spätere Einsatz im Takt. Der erste Einsatz anderer 120-s-Aktionen derselben Jobs kommt
+  pünktlich (Ikishoten 9 s, Delirium 14 s, Manafikation 30 s). Beim Samurai geht die Wahl bei 17, 28, 38, 47 und 51 s an
+  Senei vorbei zu Shinten: `CanUse` lehnt Senei ab, obwohl Kenki reicht. Beim Maschinisten kommt 30 s lang keine
+  Fähigkeit außer dem automatischen Schuss; Laufstabilisator, Wildfeuer und Schachmatt folgen direkt dem zweiten
+  Luftanker.
+- *Ausgeschlossen (am Mitschnitt oder Code):* Zeit bis zum Tod (Puppe durchgehend 44/44 LP, damit unbekannt und frei), die
+  Burst-Flagge (`AutoBurst`, dauerhaft), eine fork-weite Fenster- oder Zwei-Minuten-Regel (keine im Code), die damals offene
+  Abwehrflagge (vor und nach dem Burst gleich offen), Schutzpfad und Tankbuster-Sperren in `CanUse`, ein globales Clip-Fenster.
+- *Gewollt:* Barden-Lieder in Reihenfolge, Swiftcast für Wiederbelebungen (seine Regel), Lucid Dreaming nach MP, Abwehr.
+- *Ursache:* unbelegt. Sie liegt in `BasicCheck` oder `CooldownCheck` der jeweiligen Aktion; welche Teilprüfung, nennt die
+  Spur erst ab Build 33778ad29 (`BasicCheck:<Teil>`, `Cooldown:<Teil>`, A855).
+- *Prüfgrad:* Mitschnittanalyse, Code gelesen; Ursache nicht belegt.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
