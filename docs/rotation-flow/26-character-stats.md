@@ -82,7 +82,6 @@ vorteil mehr bringt?“):
 - *In den Formeln selbst* keine Obergrenze für Kritisch, Direkt, Entschlossenheit, Unbeugsamkeit, Frömmigkeit oder Tempo bis
   zu Werten, die Ausrüstung erreicht; Verteidigung und GCD sind nach unten bei 0 begrenzt (`Math.max(0, …)` in `xivmath.ts`).
   Was ein Job praktisch braucht – eine Tempostufe für seine Buff-Fenster, MP beim Heiler –, ist keine Grenze des Spiels.
-- *Tiefe Gewölbe:* Werte aus der Ausrüstung zählen dort nicht (Konzept 23).
 
 **Materia** (Blatt `Materia`; consolegameswiki): je Grad +1, +2, +3, +4, +6, +16, +8, +24, +12, +36, +18, +54 (I bis XII)
 für jeden Kampfwert. Grade VI, VIII, X und XII nur in die festen Plätze und den ersten zusätzlichen Platz, in die weiteren
@@ -189,8 +188,8 @@ zweiten. Wegen der Sprünge erreichen oft viele Belegungen dieselbe Stufe des er
   increases the passive MP recovered“ – ein weiterer Vorteil steht in keiner der Quellen), und dass ein Heiler kaum noch MP
   hat, ist selten, außer wenn viele zu beleben waren; „daher ist manaregeneration sogar drittrangig“. Seine Mitschnitte
   stützen das (11. bis 16.11.2026, alle Heiler-Aktionen): 21 von 17 509 unter 20 % MP, alle in zwei Episoden mit drei
-  Wiederbelebungen kurz davor (Pilgers Pfad 15.11.2026, Welt der Dunkelheit 13.11.2026). In den Tiefen Gewölben zählt die
-  Ausrüstung ohnehin nicht (Konzept 23).
+  Wiederbelebungen kurz davor (Pilgers Pfad 15.11.2026, Welt der Dunkelheit 13.11.2026). Ob Frömmigkeit aus der Ausrüstung in den Tiefen
+  Gewölben wirkt, in denen eine der Episoden lag, ist unbelegt.
 - *Alle anderen:* Schaden; das zweite Ziel greift bei der Materia nicht, nur im Hinweis zum Essen (Konstitution bei gleichem
   Schaden).
 - *Geteilte Gegenstände:* Jeder Job bewertet nach seiner Rolle; ein Stück, das nur eine Rolle trägt, folgt ihr ganz.
