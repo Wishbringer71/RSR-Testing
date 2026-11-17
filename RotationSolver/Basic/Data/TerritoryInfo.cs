@@ -90,7 +90,7 @@ public partial class TerritoryInfo
 		var contentFinder = ContentOf(sheetType);
 		ContentFinderName = contentFinder.Name.ExtractText();
 		IsHighEndDuty = contentFinder.HighEndDuty;
-		ContentType = (TerritoryContentType)contentFinder.ContentType.Value.RowId;
+		ContentType = (TerritoryContentType)contentFinder.ContentType.RowId;
 		ContentFinderIcon = contentFinder.Icon;
 		ClassJobLevelSync = contentFinder.ClassJobLevelSync;
 		ContentFinderConditionId = contentFinder.RowId;

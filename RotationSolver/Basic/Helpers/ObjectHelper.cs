@@ -14,7 +14,6 @@ using FFXIVClientStructs.FFXIV.Common.Component.BGCollision;
 using Lumina.Excel.Sheets;
 using RotationSolver.Basic.Configuration;
 using System.Collections.Concurrent;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace RotationSolver.Basic.Helpers;
@@ -318,12 +317,9 @@ public static partial class ObjectHelper
 			return false;
 		}
 
-		foreach (var status in battleChara.StatusList)
+		if ((!DataCenter.IsPvP || !Service.Config.IgnorePvPInvincibility) && battleChara.HasInvincibleStatus())
 		{
-			if (StatusHelper.IsInvincible(status) && ((DataCenter.IsPvP && !Service.Config.IgnorePvPInvincibility) || !DataCenter.IsPvP))
-			{
-				return false;
-			}
+			return false;
 		}
 
 		if (battleChara.HasSpikes() || battleChara.IsGuardedZuEgg() || KillOrder.IsHeld(battleChara))
@@ -547,24 +543,6 @@ public static partial class ObjectHelper
 		}
 
 		return false;
-	}
-
-	private static string RemoveControlCharacters(string input)
-	{
-		if (string.IsNullOrEmpty(input))
-		{
-			return input;
-		}
-
-		StringBuilder output = new(input.Length);
-		foreach (var c in input)
-		{
-			if (!char.IsControl(c) && (c < '\uE000' || c > '\uF8FF'))
-			{
-				_ = output.Append(c);
-			}
-		}
-		return output.ToString();
 	}
 
 	internal static unsafe bool IsEnemy(this IGameObject obj)
@@ -950,6 +928,9 @@ public static partial class ObjectHelper
 		return false;
 	}
 
+	private const long TopPriorityTtlMs = 15;
+	private static readonly Dictionary<ulong, (long Tick, bool IsPriority)> _topPriorityCache = [];
+
 	internal static bool IsTopPriorityHostile(this IBattleChara battleChara)
 	{
 		if (battleChara == null)
@@ -957,7 +938,26 @@ public static partial class ObjectHelper
 			return false;
 		}
 
-		// After the null check: GetNamePlateIcon dereferences the object's struct without one of its own.
+		var id = battleChara.GameObjectId;
+		var now = Environment.TickCount64;
+		if (_topPriorityCache.TryGetValue(id, out var cached) && now - cached.Tick < TopPriorityTtlMs)
+		{
+			return cached.IsPriority;
+		}
+
+		if (_topPriorityCache.Count > 512)
+		{
+			_topPriorityCache.Clear();
+		}
+
+		var isPriority = IsTopPriorityHostileCore(battleChara);
+		_topPriorityCache[id] = (now, isPriority);
+		return isPriority;
+	}
+
+	// Called only after the null check above: GetNamePlateIcon dereferences the object's struct without one of its own.
+	private static bool IsTopPriorityHostileCore(IBattleChara battleChara)
+	{
 		var icon = battleChara.GetNamePlateIcon();
 
 		if (battleChara.IsAllianceMember() || battleChara.IsParty())
@@ -1080,15 +1080,9 @@ public static partial class ObjectHelper
 			}
 		}
 
-		if (battleChara.StatusList != null)
+		if (battleChara.HasPriorityStatus())
 		{
-			foreach (var status in battleChara.StatusList)
-			{
-				if (StatusHelper.IsPriority(status))
-				{
-					return true;
-				}
-			}
+			return true;
 		}
 
 		if (Service.Config.ChooseAttackMark)
@@ -1123,7 +1117,7 @@ public static partial class ObjectHelper
 		//71244 Leve Target
 
 		// Quest
-		if (Service.Config.TargetQuestPriority && (icon == 71204 || icon == 71144 || icon == 71224 || icon == 71344 || (battleChara.GetEventType() == EventHandlerContent.Quest) && battleChara.GetNamePlateIcon() != 0))
+		if (Service.Config.TargetQuestPriority && (icon == 71204 || icon == 71144 || icon == 71224 || icon == 71344 || (battleChara.GetEventType() == EventHandlerContent.Quest) && icon != 0))
 		{
 			return true;
 		}

@@ -117,13 +117,13 @@ internal static partial class DataCenter
 		public uint Expected => Math.Min(Amount, MissingBefore);
 	}
 
-	private static (uint ActionId, DateTime Deadline, List<PendingHealTarget> Targets)? _pendingHeal;
+	private static (uint ActionId, long DeadlineTick, List<PendingHealTarget> Targets)? _pendingHeal;
 
 	/// <summary>
 	/// Holds one cast of an own healing action until its health changes confirm it; see
 	/// <see cref="HealLanding"/>. <paramref name="landed"/> holds, per party member hit, the amount
 	/// the effect reported and the member's health and maximum at that moment. The cast waits until
-	/// the end of the effect window (EffectEndTime) - as long as the heal projection waits for the
+	/// the end of the effect window (_effectEndTick) - as long as the heal projection waits for the
 	/// server's health update.
 	/// </summary>
 	internal static void RecordHealEffect(uint actionId, IReadOnlyList<(ulong Id, uint Amount, uint Hp, uint MaxHp)> landed)
@@ -142,7 +142,7 @@ internal static partial class DataCenter
 		_pendingHeal = null;
 		if (targets.Count > 0)
 		{
-			_pendingHeal = (actionId, EffectEndTime, targets);
+			_pendingHeal = (actionId, _effectEndTick, targets);
 		}
 	}
 
@@ -182,7 +182,7 @@ internal static partial class DataCenter
 			open |= !target.Confirmed && target.Expected > 0;
 		}
 
-		if (open && !force && DateTime.Now <= pending.Deadline)
+		if (open && !force && Environment.TickCount64 <= pending.DeadlineTick)
 		{
 			return;
 		}

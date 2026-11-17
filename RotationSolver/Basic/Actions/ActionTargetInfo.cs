@@ -85,15 +85,20 @@ public struct ActionTargetInfo(IBaseAction action)
 			return [Player.Object];
 		}
 
+		var range = Range;
+		var config = action.Config;
+		var restrictedDot = config.IsRestrictedDOT;
+		var timeToKill = config.TimeToKill;
+
 		List<IBattleChara> validTargets = [];
-		foreach (var target in TargetHelper.GetTargetsByRange(Range, action.Setting.IsFriendly))
+		foreach (var target in TargetHelper.GetTargetsByRange(range, action.Setting.IsFriendly))
 		{
 			if (type == TargetType.Heal && target.GetHealthRatio() >= 1)
 			{
 				continue;
 			}
 
-			if (IsRestrictedDotTarget(target))
+			if (restrictedDot && DataCenter.RestrictedDotNameIds.Contains(target.NameId))
 			{
 				continue;
 			}
@@ -103,7 +108,7 @@ public struct ActionTargetInfo(IBaseAction action)
 				continue;
 			}
 
-			if (!CheckStatus(target, skipStatusProvideCheck, skipTargetStatusNeedCheck) || !CheckTimeToKill(target) || !CheckResistance(target))
+			if (!CheckStatus(target, skipStatusProvideCheck, skipTargetStatusNeedCheck) || !CheckTimeToKill(target, timeToKill) || !CheckResistance(target, range))
 			{
 				continue;
 			}
@@ -113,7 +118,7 @@ public struct ActionTargetInfo(IBaseAction action)
 				// "Only attack targets on screen" is about attacking; a party member behind the camera is
 				// still on the party list and still needs the heal.
 				if ((IsTargetFriendly || TargetOnScreen(target)) && CanUseTo(target) && action.Setting.CanTarget(target)
-					&& (!action.MinHPFeature || target.GetHealthRatio() > action.MinHPPercent))
+					&& (!config.MinHPFeature || target.GetHealthRatio() > config.MinHPPercent))
 				{
 					validTargets.Add(target);
 				}
@@ -232,7 +237,11 @@ public struct ActionTargetInfo(IBaseAction action)
 			return [Player.Object];
 		}
 
-		IEnumerable<IBattleChara> items = TargetHelper.GetTargetsByRange(Range + EffectRange, action.Setting.IsFriendly);
+		var range = Range;
+		var config = action.Config;
+		var restrictedDot = config.IsRestrictedDOT;
+		var timeToKill = config.TimeToKill;
+		var items = TargetHelper.GetTargetsByRange(range + EffectRange, action.Setting.IsFriendly);
 
 		List<IBattleChara> validTargets = [];
 		foreach (var tar in items)
@@ -242,23 +251,18 @@ public struct ActionTargetInfo(IBaseAction action)
 				continue;
 			}
 
-			if (IsRestrictedDotTarget(tar)
+			if ((restrictedDot && DataCenter.RestrictedDotNameIds.Contains(tar.NameId))
 				|| (DataCenter.IsInM9S && action.AdjustedID == 36982 && DataCenter.RestrictedActionNameIds.Contains(tar.NameId)))
 			{
 				continue;
 			}
 
-			if (CheckStatus(tar, skipStatusProvideCheck, skipTargetStatusNeedCheck) && CheckTimeToKill(tar) && CheckResistance(tar))
+			if (CheckStatus(tar, skipStatusProvideCheck, skipTargetStatusNeedCheck) && CheckTimeToKill(tar, timeToKill) && CheckResistance(tar, range))
 			{
 				validTargets.Add(tar);
 			}
 		}
 		return validTargets;
-	}
-
-	private readonly bool IsRestrictedDotTarget(IBattleChara target)
-	{
-		return action.IsRestrictedDOT && DataCenter.RestrictedDotNameIds.Contains(target.NameId);
 	}
 
 	private static readonly Dictionary<ulong, (long Tick, bool OnScreen)> _onScreenCache = [];
@@ -435,13 +439,9 @@ public struct ActionTargetInfo(IBaseAction action)
 			: battleChara.WillStatusEndGCD(action.Config.StatusRefreshGcdCount, 0, setting.StatusFromSelf, setting.TargetStatusProvide);
 	}
 
-	private readonly bool CheckResistance(IBattleChara battleChara)
+	private readonly bool CheckResistance(IBattleChara battleChara, float range)
 	{
 		if (battleChara == null)
-		{
-			return false;
-		}
-		if (battleChara.StatusList == null)
 		{
 			return false;
 		}
@@ -636,7 +636,7 @@ public struct ActionTargetInfo(IBaseAction action)
 					return false;
 				}
 			}
-			if (Range >= 20) // Range
+			if (range >= 20) // Range
 			{
 				if (battleChara.HasStatus(false, StatusID.EnergyField))
 				{
@@ -688,7 +688,7 @@ public struct ActionTargetInfo(IBaseAction action)
 		};
 	}
 
-	private readonly bool CheckTimeToKill(IBattleChara battleChara)
+	private readonly bool CheckTimeToKill(IBattleChara battleChara, float timeToKill)
 	{
 		if (battleChara == null)
 		{
@@ -711,8 +711,13 @@ public struct ActionTargetInfo(IBaseAction action)
 			return true;
 		}
 
+		if (timeToKill <= 0)
+		{
+			return true;
+		}
+
 		var time = battleChara.GetTTK();
-		return float.IsNaN(time) || time >= action.Config.TimeToKill;
+		return float.IsNaN(time) || time >= timeToKill;
 	}
 
 	#endregion
@@ -1831,12 +1836,14 @@ public struct ActionTargetInfo(IBaseAction action)
 	}
 
 	private const double _alpha = Math.PI / 3;
+	private static readonly float SinAlpha = (float)Math.Sin(_alpha);
+	private static readonly double CosAlpha = Math.Cos(_alpha);
 
 	// The cone test of a cone cast from the player: the direction to the enemy, flat and unit length, lies within the
 	// half-angle of his facing.
 	private static bool InFacingCone(Vector3 faceVec, Vector3 toTargetUnit)
 	{
-		return Vector3.Dot(faceVec, toTargetUnit) >= (float)Math.Cos(_alpha);
+		return Vector3.Dot(faceVec, toTargetUnit) >= (float)CosAlpha;
 	}
 
 	/// <summary>
@@ -1874,75 +1881,76 @@ public struct ActionTargetInfo(IBaseAction action)
 
 	private readonly bool GetCanTarget(IBattleChara target, IBattleChara subTarget)
 	{
-		if (target == null || subTarget == null || Player.Object == null)
+		var player = Player.Object;
+		if (target == null || subTarget == null || player == null)
 		{
 			return false;
 		}
 
-		var pPos = Player.Object.Position;
-		var dir = target.Position - pPos;
-		var tdir = subTarget.Position - pPos;
+		var pPos = player.Position;
+		var targetPos = target.Position;
+		var subPos = subTarget.Position;
+		var subRadius = subTarget.HitboxRadius;
+		var effectRange = EffectRange;
+		var castType = (CastType)action.Action.CastType;
+		var dir = targetPos - pPos;
+		var tdir = subPos - pPos;
 
 		var dirLen = dir.Length();
 		var tdirLen = tdir.Length();
 
 		if (dirLen <= 0.001f)
 		{
-			switch ((CastType)action.Action.CastType)
+			switch (castType)
 			{
 				case CastType.Circle:
-					return Vector3.Distance(target.Position, subTarget.Position) - subTarget.HitboxRadius <= EffectRange;
+					return Vector3.Distance(targetPos, subPos) - subRadius <= effectRange;
 
 				case CastType.Cone:
-					return (tdirLen - subTarget.HitboxRadius) <= EffectRange;
+					return (tdirLen - subRadius) <= effectRange;
 
 				case CastType.StraightLine:
 					{
-						if (tdirLen - subTarget.HitboxRadius > EffectRange)
+						if (tdirLen - subRadius > effectRange)
 						{
 							return false;
 						}
 
-						var lineDir2 = Player.Object != null
-							? Vector3.Normalize(new Vector3(Player.Object.GetFaceVector().X, 0, Player.Object.GetFaceVector().Z))
-							: Vector3.UnitZ;
+						var face = player.GetFaceVector();
+						var lineDir2 = Vector3.Normalize(new Vector3(face.X, 0, face.Z));
 						Vector3 tdirXZ2 = new(tdir.X, 0, tdir.Z);
 						var perp2 = Vector3.Cross(lineDir2, tdirXZ2).Length();
 						var halfWidth2 = action.Action.XAxisModifier > 0 ? action.Action.XAxisModifier / 2f : 2f;
-						return perp2 <= halfWidth2 + subTarget.HitboxRadius && Vector3.Dot(lineDir2, tdirXZ2) >= 0;
+						return perp2 <= halfWidth2 + subRadius && Vector3.Dot(lineDir2, tdirXZ2) >= 0;
 					}
 
 				case CastType.Donut:
 					{
-						var d = Vector3.Distance(target.Position, subTarget.Position) - subTarget.HitboxRadius;
+						var d = Vector3.Distance(targetPos, subPos) - subRadius;
 						var innerRadius = action.Action.XAxisModifier > 0 ? action.Action.XAxisModifier : 8f;
-						return d <= EffectRange && d >= innerRadius;
+						return d <= effectRange && d >= innerRadius;
 					}
 
 				default:
-					if (Service.Config.InDebug)
-					{
-
-					}
 					return false;
 			}
 		}
 
-		switch ((CastType)action.Action.CastType)
+		switch (castType)
 		{
 			case CastType.Circle:
-				return Vector3.Distance(target.Position, subTarget.Position) - subTarget.HitboxRadius <= EffectRange;
+				return Vector3.Distance(targetPos, subPos) - subRadius <= effectRange;
 
 			case CastType.Cone:
 				{
-					if (tdirLen - subTarget.HitboxRadius > EffectRange)
+					if (tdirLen - subRadius > effectRange)
 					{
 						return false;
 					}
 
 					var dirN = dir / dirLen;
 
-					var tdirAdj = tdir + dirN * (target.HitboxRadius / (float)Math.Sin(_alpha));
+					var tdirAdj = tdir + dirN * (target.HitboxRadius / SinAlpha);
 
 					var tlen = tdirAdj.Length();
 					if (tlen <= 0.001f)
@@ -1951,12 +1959,12 @@ public struct ActionTargetInfo(IBaseAction action)
 					}
 
 					var cos = Vector3.Dot(dir, tdirAdj) / (dirLen * tlen);
-					return cos >= Math.Cos(_alpha);
+					return cos >= CosAlpha;
 				}
 
 			case CastType.StraightLine:
 				{
-					if (tdirLen - subTarget.HitboxRadius > EffectRange)
+					if (tdirLen - subRadius > effectRange)
 					{
 						return false;
 					}
@@ -1966,31 +1974,34 @@ public struct ActionTargetInfo(IBaseAction action)
 					// the facing of the moment (upstream 2c080bbc2), the count followed where the player looked, not
 					// where the line will go (A399). The facing stays for a target straight above or below him.
 					var flatDir = new Vector3(dir.X, 0, dir.Z);
-					var lineDir = flatDir.LengthSquared() > 0f
-						? Vector3.Normalize(flatDir)
-						: Vector3.Normalize(new Vector3(Player.Object.GetFaceVector().X, 0, Player.Object.GetFaceVector().Z));
+					Vector3 lineDir;
+					if (flatDir.LengthSquared() > 0f)
+					{
+						lineDir = Vector3.Normalize(flatDir);
+					}
+					else
+					{
+						var face = player.GetFaceVector();
+						lineDir = Vector3.Normalize(new Vector3(face.X, 0, face.Z));
+					}
 
 					Vector3 tdirXZ = new(tdir.X, 0, tdir.Z);
 					var perp = Vector3.Cross(lineDir, tdirXZ).Length();
 
 					var halfWidth = action.Action.XAxisModifier > 0 ? action.Action.XAxisModifier / 2f : 2f;
-					var width = halfWidth + subTarget.HitboxRadius;
+					var width = halfWidth + subRadius;
 
 					return perp <= width && Vector3.Dot(lineDir, tdirXZ) >= 0;
 				}
 
 			case CastType.Donut:
 				{
-					var dis = Vector3.Distance(target.Position, subTarget.Position) - subTarget.HitboxRadius;
+					var dis = Vector3.Distance(targetPos, subPos) - subRadius;
 					var innerRadius = action.Action.XAxisModifier > 0 ? action.Action.XAxisModifier : 8f;
-					return dis <= EffectRange && dis >= innerRadius;
+					return dis <= effectRange && dis >= innerRadius;
 				}
 
 			default:
-				if (Service.Config.InDebug)
-				{
-
-				}
 				return false;
 		}
 	}

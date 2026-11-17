@@ -53,11 +53,6 @@ namespace RotationSolver.Commands
 
 		public static void DoAction()
 		{
-			if (Player.Object != null && Player.Object.StatusList == null)
-			{
-				return;
-			}
-
 			var nextAction = ActionUpdater.NextAction;
 			if (nextAction == null)
 			{
@@ -264,32 +259,27 @@ namespace RotationSolver.Commands
 				return;
 			}
 
+			if (_targetDelayPending)
+			{
+				return;
+			}
+
 			var initialTargetId = Svc.Targets.Target?.GameObjectId ?? 0;
 			var candidateId = candidate.GameObjectId;
 
+			_targetDelayPending = true;
 			_ = Svc.Framework.RunOnTick(() =>
 			{
+				_targetDelayPending = false;
 				try
 				{
 					var current = Svc.Targets.Target;
 					var currentId = current?.GameObjectId ?? 0;
 
-					if (currentId == initialTargetId)
+					if (currentId == initialTargetId
+						&& Svc.Objects.SearchById(candidateId) is IBattleChara { IsTargetable: true } cand)
 					{
-						IBattleChara? cand = null;
-						foreach (var obj in Svc.Objects)
-						{
-							if (obj != null && obj.GameObjectId == candidateId)
-							{
-								cand = obj as IBattleChara;
-								break;
-							}
-						}
-
-						if (cand != null && cand.IsTargetable)
-						{
-							Svc.Targets.Target = cand;
-						}
+						Svc.Targets.Target = cand;
 					}
 				}
 				catch
@@ -298,6 +288,8 @@ namespace RotationSolver.Commands
 				}
 			}, TimeSpan.FromSeconds(delay));
 		}
+
+		private static bool _targetDelayPending;
 
 		public static void UpdateTargetFromNextAction()
 		{

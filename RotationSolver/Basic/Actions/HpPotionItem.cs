@@ -39,7 +39,7 @@ internal partial class HpPotionItem : BaseItem
 			return false;
 		}
 
-		return Player.Available && ThresholdHealthRatio() <= Service.Config.UseHpPotionsPercent && Player.Object.MaxHp - Player.Object.CurrentHp >= MaxHp && base.CanUse(out item);
+		return Player.Available && ThresholdHealthRatio() <= Service.Config.UseHpPotionsPercent && Player.Object.MaxHp - Player.Object.CurrentHp >= MaxHp && base.CanUse(out item, clippingCheck);
 	}
 
 	/// <summary>

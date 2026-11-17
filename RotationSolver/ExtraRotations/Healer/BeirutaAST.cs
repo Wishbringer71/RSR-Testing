@@ -755,9 +755,9 @@ public sealed class BeirutaAST : AstrologianRotation
 			return true;
 		}
 
-		if (CelestialIntersectionPvE.Target.Target != null &&
-			CelestialIntersectionPvE.Cooldown.CurrentCharges == 1 &&
+		if (CelestialIntersectionPvE.Cooldown.CurrentCharges == 1 &&
 			CelestialIntersectionPvE.CanUse(out act, usedUp: true, targetOverride: TargetType.Tank) &&
+			CelestialIntersectionPvE.Target.Target != null &&
 			!HasCelestialIntersection(CelestialIntersectionPvE.Target.Target) &&
 			!HasSingleHealLockoutStatus(CelestialIntersectionPvE.Target.Target))
 		{
@@ -918,9 +918,9 @@ public sealed class BeirutaAST : AstrologianRotation
 			return true;
 		}
 
-		if (CelestialIntersectionPvE.Target.Target != null &&
-			CelestialIntersectionPvE.Cooldown.CurrentCharges == 2 &&
+		if (CelestialIntersectionPvE.Cooldown.CurrentCharges == 2 &&
 			CelestialIntersectionPvE.CanUse(out act, usedUp: true) &&
+			CelestialIntersectionPvE.Target.Target != null &&
 			!HasCelestialIntersection(CelestialIntersectionPvE.Target.Target) &&
 			!HasSingleHealLockoutStatus(CelestialIntersectionPvE.Target.Target) &&
 			PartyMembersAverHP > 0.8f &&
@@ -929,9 +929,9 @@ public sealed class BeirutaAST : AstrologianRotation
 			return true;
 		}
 
-		if (CelestialIntersectionPvE.Target.Target != null &&
-			CelestialIntersectionPvE.Cooldown.CurrentCharges == 1 &&
+		if (CelestialIntersectionPvE.Cooldown.CurrentCharges == 1 &&
 			CelestialIntersectionPvE.CanUse(out act, usedUp: true, targetOverride: TargetType.Tank) &&
+			CelestialIntersectionPvE.Target.Target != null &&
 			!HasCelestialIntersection(CelestialIntersectionPvE.Target.Target) &&
 			!HasSingleHealLockoutStatus(CelestialIntersectionPvE.Target.Target) &&
 			CelestialIntersectionPvE.Target.Target.GetHealthRatio() < 0.7f)

@@ -117,16 +117,10 @@ public static partial class StatusHelper
 			return float.MaxValue;
 		}
 
-		if (!TryGetStatusList(battleChara, out var statusList))
-		{
-			return 0f;
-		}
-
 		var longest = 0f;
-		for (var i = 0; i < statusList!.Length; i++)
+		foreach (ref readonly var status in battleChara.GetStatuses())
 		{
-			var status = statusList[i];
-			if (status != null && status.StatusId != 0 && IsAnyHealOverTime((StatusID)status.StatusId))
+			if (status.StatusId != 0 && IsAnyHealOverTime((StatusID)status.StatusId))
 			{
 				longest = Math.Max(longest, status.RemainingTime == 0f ? float.MaxValue : status.RemainingTime);
 			}

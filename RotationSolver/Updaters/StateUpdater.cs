@@ -666,11 +666,6 @@ internal static partial class StateUpdater
 			return false;
 		}
 
-		if (Player.Object.StatusList == null)
-		{
-			return false;
-		}
-
 		if (DataCenter.IsPvP && StatusHelper.PlayerHasStatus(false, StatusID.Mounted))
 		{
 			return false;
@@ -710,11 +705,6 @@ internal static partial class StateUpdater
 		bool restorable = false)
 	{
 		if (target == null)
-		{
-			return false;
-		}
-
-		if (target.StatusList == null)
 		{
 			return false;
 		}
