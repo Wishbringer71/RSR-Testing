@@ -21,6 +21,28 @@ What this release changes in the fight. For the whole distance from upstream, se
   length of an ordinary GCD of your kind, with gear, materia, food and haste in it, so windows counted in GCDs start on
   time from the first press.
 
+- **Areas spare the enemies your engage setting does not attack.** With "Previously engaged targets (Non-Tanks)", or the
+  default in a party, RSR never picked an enemy that was not fighting yet as its target, but its areas still hit one as a
+  bystander and pulled it. Now no area reaches an enemy that is not fighting yet and that RSR would not attack itself; a
+  priority target, or an object RSR attacks anyway, stays in reach. With "All targets" only "Don't pull new enemies with
+  AoE" decides, as before.
+
+- **No fight opened while a ready check waits for an answer.** Out of combat and without a countdown, RSR attacks no enemy
+  that is not fighting yet while a party member has not answered a ready check - whatever the engage setting or a
+  priority rule allows. A countdown is the signal to pull. `DefenseTrace.log` writes "pull: RSR opened ..." whenever RSR's
+  own action opens a fight, with the engage setting, countdown and ready check, so an opening by your own press can be
+  told apart.
+
+- **Spells start by your own walking.** Without the movement lock, RSR measures how many seconds before a hit that reaches
+  you, one RSR sees or a BossModReborn zone on your spot, you step off, and how long you stand after your walking broke
+  a spell before you walk again. No spell begins that would still be running when you step off, nor within such a pause.
+  A movement key BossModReborn reports now holds a spell before your character moves. Instant spells fill the gap. The
+  trace writes "cast broken by moving" and what was learned. Without a measurement, the rule is the one before.
+
+- **Why a tincture did not come.** When the rule holds a tincture in a fight, the trace says why, once per pull: "Tincture
+  usage" allows none in this content, none of your job's kind is in the bags, the one you hold is switched off in the item
+  list, or it waits for a later burst.
+
 ## Deep dungeons
 
 - **Aggro control of its own.** Three options under Deep dungeon, on by default, leave every other content as it was -
@@ -68,6 +90,10 @@ What this release changes in the fight. For the whole distance from upstream, se
   most heavier fights holds fewer of them than you carry items, not when all branches together do.
 
 ## Stability
+
+- **No crash at the first action after loading.** Two lists that RSR builds on start-up read another list before that list
+  existed - one after upstream's new file split, one only by luck of the file order before. Either would have stopped
+  RSR at the first action. Both are in order now, and the build refuses such a read.
 
 - **No crash at a figure that left the game.** RSR held the caster of a gaze until the gaze resolved and then asked it
   whether it was still casting; once the figure was gone, the game closed (seen in the Crucible). Figures are now held
