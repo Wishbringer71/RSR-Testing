@@ -1,0 +1,403 @@
+﻿using ECommons.DalamudServices;
+using ECommons.GameHelpers;
+
+namespace RotationSolver.Engine.Helpers;
+
+/// <summary>
+/// How dangerous each enemy is to the party right now, per second, and which one to attack first by it: the enemy whose
+/// danger per second is largest against its HP (Smith's rule: the order that keeps the sum of danger times lifetime
+/// smallest). For a beastmaster or a blue mage with no tank and no healer alive beside him (concept 03, "Zielart ohne
+/// Tank und Heiler", A537, A538, A541).
+/// </summary>
+/// <remarks>
+/// <para>Danger per second: the damage the enemy dealt to the player and the party members in this fight, over the time
+/// since its first hit; a hit it announces by a cast at the player or reaching him, at once, with the size the learned
+/// tables give it, over the cast time left; and for an enemy that heals other enemies, the damage those deal in the time
+/// the heal gains them.</para>
+///
+/// <para>The rate is recorded on the game thread by the effect handler and read there by the target selection.</para>
+/// </remarks>
+internal static class EnemyDanger
+{
+	private sealed class Record
+	{
+		public DateTime First;
+		public double Damage;
+		public int Hits;
+		public double Healed;
+		public double HealGain;
+		public uint NameId;
+		public ulong Source;
+		public uint Area;
+
+		// A674: whether it stood among the hostile targets, and the last moment it did so or hit - where its time ends once
+		// it has fallen.
+		public bool Listed;
+		public DateTime Last;
+	}
+
+	private static readonly Dictionary<ulong, Record> _bySource = [];
+
+	// A674: per enemy kind (name), the danger per second of its enemies measured in this session's earlier fights - the sum of
+	// their rates, how many, and their hits.
+	private static readonly Dictionary<uint, (double Rate, int Enemies, int Hits)> _byKind = [];
+	private static uint _byKindIn;
+
+	private static Record NewRecord(ulong source)
+	{
+		var now = DateTime.Now;
+		return new Record
+		{
+			First = now,
+			Last = now,
+			Source = source,
+			Area = DataCenter.TerritoryID,
+			NameId = Svc.Objects.SearchById(source) is IBattleChara chara ? chara.NameId : 0u,
+		};
+	}
+
+	/// <summary>An enemy's hit on the player or a party member, for <paramref name="amount"/> HP. Effect handler.</summary>
+	internal static void RecordHit(ulong source, uint amount)
+	{
+		if (amount == 0 || !DataCenter.InCombat)
+		{
+			return;
+		}
+
+		if (!_bySource.TryGetValue(source, out var record))
+		{
+			record = NewRecord(source);
+			_bySource[source] = record;
+		}
+
+		record.Damage += amount;
+		record.Hits++;
+		record.Last = DateTime.Now;
+	}
+
+	/// <summary>A674: the hostile targets of this update - each one with a record stands in the list now.</summary>
+	internal static void Seen(List<IBattleChara> hostiles)
+	{
+		if (_bySource.Count == 0)
+		{
+			return;
+		}
+
+		var now = DateTime.Now;
+		foreach (var hostile in hostiles)
+		{
+			if (hostile != null && _bySource.TryGetValue(hostile.GameObjectId, out var record))
+			{
+				record.Listed = true;
+				record.Last = now;
+			}
+		}
+	}
+
+	/// <summary>
+	/// An enemy healed another enemy for <paramref name="amount"/> HP. What the heal gains is the damage the healed deals
+	/// in the time it now lives longer: the HP over the rate at which it falls (its corrected time to kill against its
+	/// HP), times its own danger per second. Effect handler.
+	/// </summary>
+	internal static void RecordHeal(ulong source, IBattleChara healed, uint amount)
+	{
+		if (amount == 0 || !DataCenter.InCombat || healed.GameObjectId == source || healed.CurrentHp == 0)
+		{
+			return;
+		}
+
+		if (!_bySource.TryGetValue(source, out var record))
+		{
+			record = NewRecord(source);
+			_bySource[source] = record;
+		}
+
+		record.Healed += amount;
+		var ttk = healed.GetCorrectedTTK();
+		if (!float.IsNaN(ttk) && ttk > 0f)
+		{
+			record.HealGain += amount * (ttk / healed.CurrentHp) * OwnRate(healed.GameObjectId);
+		}
+	}
+
+	/// <summary>
+	/// Whether <paramref name="source"/> has hit the player, a party member or one of the player's own objects, or healed
+	/// another enemy, since the records were last cleared (concept 21, K8, "Zeitpunkt im Kampf", A665).
+	/// </summary>
+	internal static bool HasActed(ulong source)
+	{
+		return _bySource.TryGetValue(source, out var record) && (record.Hits > 0 || record.Healed > 0d);
+	}
+
+	/// <summary>
+	/// Forgets every record: out of combat, or when the lists are cleared. A674: what each enemy with a hit showed stays for its
+	/// kind, for the enemies of that kind still unmeasured.
+	/// </summary>
+	internal static void Clear()
+	{
+		foreach (var (_, record) in _bySource)
+		{
+			if (record.Hits > 0 && record.NameId != 0u && record.Listed)
+			{
+				// The kinds hold for one area: the same name in content of another level deals other damage.
+				if (record.Area != _byKindIn)
+				{
+					_byKind.Clear();
+					_byKindIn = record.Area;
+				}
+
+				var (rate, enemies, hits) = _byKind.TryGetValue(record.NameId, out var known) ? known : default;
+				_byKind[record.NameId] = (rate + ((record.Damage + record.HealGain) / Elapsed(record)), enemies + 1, hits + record.Hits);
+			}
+		}
+
+		_bySource.Clear();
+		_lead = 0;
+	}
+
+	// A674: the danger per second of enemies of this kind measured in this area - its other enemies in this fight and
+	// those of earlier fights, each until it fell -, and their hits; false when none of the kind has hit.
+	private static bool KindRate(IBattleChara enemy, out float rate, out int hits)
+	{
+		rate = 0f;
+		hits = 0;
+		if (enemy.NameId == 0u)
+		{
+			return false;
+		}
+
+		var (sum, enemies, kindHits) = _byKindIn == DataCenter.TerritoryID && _byKind.TryGetValue(enemy.NameId, out var known)
+			? known : default;
+		hits = kindHits;
+		foreach (var (source, record) in _bySource)
+		{
+			if (source != enemy.GameObjectId && record.NameId == enemy.NameId && record.Hits > 0 && record.Listed)
+			{
+				sum += (record.Damage + record.HealGain) / Elapsed(record);
+				enemies++;
+				hits += record.Hits;
+			}
+		}
+
+		if (enemies == 0 || sum <= 0d)
+		{
+			return false;
+		}
+
+		rate = (float)(sum / enemies);
+		return true;
+	}
+
+	/// <summary>
+	/// The enemy's danger to the party per second (HP points): its measured rate, the heal gain over the same time, and a
+	/// hit it announces now. <paramref name="hits"/> is the number of its measured hits; <paramref name="announced"/>
+	/// whether an announced hit counts in it.
+	/// </summary>
+	internal static float Rate(IBattleChara enemy, out int hits, out bool announced)
+	{
+		hits = 0;
+		var rate = 0f;
+		if (_bySource.TryGetValue(enemy.GameObjectId, out var record))
+		{
+			hits = record.Hits;
+			var seconds = Elapsed(record);
+			rate = (float)((record.Damage + record.HealGain) / seconds);
+		}
+
+		var cast = AnnouncedRate(enemy);
+		announced = cast > 0f;
+		return rate + cast;
+	}
+
+	// Damage per second from the enemy's own hits alone, for the gain of a heal on it.
+	private static float OwnRate(ulong enemy)
+	{
+		return _bySource.TryGetValue(enemy, out var record) ? (float)(record.Damage / Elapsed(record)) : 0f;
+	}
+
+	// From the first hit to now, at least a GCD: one hit right now is no rate of its own. A674: an enemy that stood in the
+	// hostile list and is gone from it has fallen (or left), and its time ends where it was last seen or hit.
+	private static double Elapsed(Record record)
+	{
+		var end = record.Listed && !DataCenter.AllHostileTargetIds.Contains(record.Source) ? record.Last : DateTime.Now;
+		return Math.Max((end - record.First).TotalSeconds, DataCenter.DefaultGCDTotal);
+	}
+
+	// A hit the enemy announces by its cast now: at the player, or reaching him, with the share the learned tables give
+	// it, over the cast time left (at least a GCD). Zero when it casts nothing measured at him.
+	private static float AnnouncedRate(IBattleChara enemy)
+	{
+		var player = Player.Object;
+		if (player == null || !enemy.IsCasting || player.MaxHp == 0)
+		{
+			return 0f;
+		}
+
+		var aimed = enemy.CastTargetObjectId == player.GameObjectId;
+		if (!aimed && !DataCenter.CastReachesPlayer(enemy))
+		{
+			return 0f;
+		}
+
+		var id = enemy.CastActionId;
+		var share = 0f;
+		if (aimed)
+		{
+			share = player.IsJobCategory(JobRole.Tank)
+				? TankbusterTable.PredictedShare(id, player, enemy)
+				: TankbusterTable.PredictedAimedShare(id, player, enemy);
+		}
+
+		if (share <= 0f)
+		{
+			share = DataCenter.LearnedAreaShare(id);
+		}
+
+		if (share <= 0f)
+		{
+			return 0f;
+		}
+
+		var left = Math.Max(enemy.TotalCastTime - enemy.CurrentCastTime, DataCenter.DefaultGCDTotal);
+		return share * player.MaxHp / left;
+	}
+
+	// Danger per second over HP, and its relative uncertainty: a count of n hits scatters by 1/sqrt(n); an announced hit
+	// is known; with neither there is nothing to rank by.
+	private static float Priority(IBattleChara enemy, out float uncertainty)
+	{
+		// Asked twice per candidate for every action that picks a target: once per frame is enough.
+		var cache = _priorities.Value;
+		if (cache.TryGetValue(enemy.GameObjectId, out var known))
+		{
+			uncertainty = known.Uncertainty;
+			return known.Priority;
+		}
+
+		var rate = Rate(enemy, out var hits, out var announced);
+		uncertainty = announced || hits == 0 ? 0f : 1f / MathF.Sqrt(hits);
+
+		// A674: an enemy that has not hit yet counts first with the danger its kind showed in this session.
+		if (rate <= 0f && KindRate(enemy, out var kind, out var kindHits))
+		{
+			rate = kind;
+			uncertainty = 1f / MathF.Sqrt(kindHits);
+		}
+
+		// A582: an enemy that has not hit yet, while others have, counts with the danger estimated from theirs - not 0, which
+		// lost to every measured enemy however small its rate.
+		if (rate <= 0f && Estimate(enemy, out var estimate, out var basis))
+		{
+			rate = estimate;
+			uncertainty = 1f / MathF.Sqrt(basis);
+		}
+
+		// K3 of the Crucible (concept 21, A549): its fall comes sooner by the weakness bonus on the share of damage hitting it.
+		var fallsIn = Math.Max(1u, enemy.CurrentHp) / CrucibleBoard.FallSpeedup(enemy.NameId);
+		var priority = rate <= 0f ? 0f : rate / fallsIn;
+		cache[enemy.GameObjectId] = (priority, uncertainty);
+		return priority;
+	}
+
+	private static readonly FrameCached<Dictionary<ulong, (float Priority, float Uncertainty)>> _priorities = new(() => []);
+
+	/// <summary>
+	/// A582 (concept 03, "Ungemessene Gegner"): the danger per second of an enemy without a measured hit, from the enemies of
+	/// the fight that have one - their mean, each scaled in the Crucible by the sheet's rating of this enemy over its own
+	/// where the sheet rates both. <paramref name="basis"/> is the number of measured hits it stands on. False when no
+	/// enemy has hit yet.
+	/// </summary>
+	private static bool Estimate(IBattleChara enemy, out float estimate, out int basis)
+	{
+		estimate = 0f;
+		basis = 0;
+		var sum = 0f;
+		var count = 0;
+		var own = CrucibleBoard.SheetDanger(enemy.NameId);
+		foreach (var other in DataCenter.AllHostileTargets)
+		{
+			if (other.GameObjectId == enemy.GameObjectId || !_bySource.TryGetValue(other.GameObjectId, out var record)
+				|| record.Hits == 0)
+			{
+				continue;
+			}
+
+			var rate = (float)((record.Damage + record.HealGain) / Elapsed(record));
+			var theirs = CrucibleBoard.SheetDanger(other.NameId);
+			sum += own > 0f && theirs > 0f ? rate * own / theirs : rate;
+			count++;
+			basis += record.Hits;
+		}
+
+		if (count == 0 || sum <= 0f)
+		{
+			return false;
+		}
+
+		estimate = sum / count;
+		return true;
+	}
+
+	/// <summary>
+	/// The order of the target selection: the larger priority first, the fewer HP first while neither has one. The enemy
+	/// the player attacks now keeps its place until another is surely more urgent - its priority less its uncertainty above
+	/// this one's plus its own -, so the target does not jump on measurement noise.
+	/// </summary>
+	internal static int Compare(IBattleChara a, IBattleChara b)
+	{
+		var pa = Priority(a, out var ua);
+		var pb = Priority(b, out var ub);
+		if (pa <= 0f && pb <= 0f)
+		{
+			// K3 of the Crucible (A549): before any enemy has hit, the sheet's rating of its strength over its HP; elsewhere,
+			// and for enemies the sheet does not rate, the fewer HP first.
+			var sa = CrucibleBoard.SheetDanger(a.NameId) / Math.Max(1u, a.CurrentHp);
+			var sb = CrucibleBoard.SheetDanger(b.NameId) / Math.Max(1u, b.CurrentHp);
+			return sa > 0f && sb > 0f && sa != sb ? sb.CompareTo(sa)
+				: a.CurrentHp != b.CurrentHp ? a.CurrentHp.CompareTo(b.CurrentHp) : Nearer(a, b);
+		}
+
+		var current = Svc.Targets.Target?.GameObjectId ?? 0;
+		if (a.GameObjectId == current)
+		{
+			return pb * (1f - ub) > pa * (1f + ua) ? 1 : -1;
+		}
+
+		if (b.GameObjectId == current)
+		{
+			return pa * (1f - ua) > pb * (1f + ub) ? -1 : 1;
+		}
+
+		var byPriority = pb.CompareTo(pa);
+		return byPriority != 0 ? byPriority : a.CurrentHp != b.CurrentHp ? a.CurrentHp.CompareTo(b.CurrentHp) : Nearer(a, b);
+	}
+
+	// A660 (concept 21, K3): of two equally urgent enemies - the same danger over the same HP, as six alike wisps - the one
+	// nearer to the player: the way there is damage lost, and one running at him meets him instead of arriving first.
+	private static int Nearer(IBattleChara a, IBattleChara b)
+	{
+		return a.DistanceToPlayer().CompareTo(b.DistanceToPlayer());
+	}
+
+	private static ulong _lead;
+	private static DateTime _leadTraced = DateTime.MinValue;
+
+	/// <summary>A line when the enemy the order puts first changes, at most once a GCD.</summary>
+	internal static void NoteLead(IBattleChara? lead)
+	{
+		if (lead == null || lead.GameObjectId == _lead
+			|| (DateTime.Now - _leadTraced).TotalSeconds < DataCenter.DefaultGCDTotal)
+		{
+			return;
+		}
+
+		_lead = lead.GameObjectId;
+		_leadTraced = DateTime.Now;
+		var rate = Rate(lead, out var hits, out var announced);
+		var basis = 0;
+		var estimated = rate <= 0f && Estimate(lead, out rate, out basis);
+		DefenseTrace.Line($"targeting by danger: {lead.Name.TextValue} first, {rate:F1} HP per second over {lead.CurrentHp} HP"
+			+ $" ({hits} hit(s) measured{(announced ? ", an announced hit counted" : string.Empty)}"
+			+ $"{(estimated ? $", estimated from the other enemies' {basis} hit(s)" : string.Empty)})");
+	}
+}

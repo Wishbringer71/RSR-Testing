@@ -211,7 +211,7 @@ ohne Grund im Commit.
 
 ## PvP: Jobs
 
-Befunde je Job (Rotationen `RebornRotations/PVPRotations`, gegen den Job-Guide vom 13.11.2026). Die Rotationen sind
+Befunde je Job (Rotationen `<JOB>_Default.PVP.cs` in den Jobordnern, gegen den Job-Guide vom 13.11.2026). Die Rotationen sind
 Prioritätslisten von Upstream; was hier nicht steht, ist geprüft und ohne Befund.
 - *Gelehrter:* Deployment Tactics trug Biolysis (3089) zusätzlich als Zustand des Spielers; ohne Wirkung, entfernt.
   Die Prüfung auf Biolysis am Ziel bleibt.

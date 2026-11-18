@@ -15,23 +15,25 @@ which is exactly what a merge or a new rule reintroduces unnoticed. Hence this c
 Left alone, by design:
 - upstream's own two lines (the phantom job levels in DutyRotation, throttled; the debug window),
   because a fork line there is merge logistics and neither runs every frame in combat;
-- ExtraRotations, the foreign rotations the fork does not edit (.claude/rules/code.md,
-  "Fremde Rotationen").
+- the foreign rotations the fork does not edit (.claude/rules/code.md, "Fremde Rotationen"), told apart by
+  layout.is_third_party: since upstream c170c9cd5 they stand in the job folders beside the shipped ones, and the folder
+  this script had left alone (RotationSolver/ExtraRotations) exists no more (A878).
 """
 
 import re
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import layout  # noqa: E402
+
 ROOTS = [Path('RotationSolver')]
 
 # Upstream's own lines, counted: one more in the same file is a new reader and is reported (A864).
 ALLOWED_COUNTS = {
-    Path('RotationSolver/Basic/Rotations/Duties/DutyRotation.cs'): 1,
+    Path('RotationSolver/Rotations/Duties/DutyRotation.cs'): 1,
     Path('RotationSolver/UI/MainWindow/MainWindow_Debug.cs'): 2,
 }
-
-ALLOWED_DIRS = (Path('RotationSolver/ExtraRotations'),)
 
 # A member access (.StatusList) or a property pattern ({ StatusList: ... }).
 ACCESS = re.compile(r'\.StatusList\b|[{,]\s*StatusList\s*:')
@@ -57,8 +59,8 @@ def check(text):
 
 
 def allowed(path):
-    """Whole directories left alone (the foreign rotations)."""
-    return any(parent in path.parents for parent in ALLOWED_DIRS)
+    """Whole files left alone: the foreign rotations."""
+    return path.is_file() and layout.is_third_party(path)
 
 
 def self_test():
@@ -93,17 +95,17 @@ def self_test():
     if check(clean):
         raise AssertionError('the span form, a comment or a similar name was reported: %s' % check(clean))
 
-    if not allowed(Path('RotationSolver/ExtraRotations/Healer/BeirutaWHM.cs')):
+    if not allowed(Path('RotationSolver/Rotations/Healer/WhiteMage/BeirutaWHM.cs')):
         raise AssertionError('a foreign rotation was not left alone')
-    if allowed(Path('RotationSolver/Basic/Helpers/StunWatch.cs')):
+    if allowed(Path('RotationSolver/Engine/Helpers/StunWatch.cs')):
         raise AssertionError('a fork file was let through')
-    if allowed(Path('RotationSolver/Basic/Rotations/Duties/DutyRotation.cs')):
+    if allowed(Path('RotationSolver/Rotations/Duties/DutyRotation.cs')):
         raise AssertionError('an upstream file was let through whole instead of by its count')
-    if over_count(Path('RotationSolver/Basic/Rotations/Duties/DutyRotation.cs'), [587]):
+    if over_count(Path('RotationSolver/Rotations/Duties/DutyRotation.cs'), [587]):
         raise AssertionError("upstream's own line was reported")
-    if not over_count(Path('RotationSolver/Basic/Rotations/Duties/DutyRotation.cs'), [587, 900]):
+    if not over_count(Path('RotationSolver/Rotations/Duties/DutyRotation.cs'), [587, 900]):
         raise AssertionError('a second reader in an upstream file went unnoticed')
-    if not over_count(Path('RotationSolver/Basic/Rotations/Duties/DutyRotation.Extra.cs'), [1]):
+    if not over_count(Path('RotationSolver/Rotations/Duties/DutyRotation.Extra.cs'), [1]):
         raise AssertionError('a sibling of an allowed file was let through')
     if check('var s = "x.StatusList";\nvar t = \'.\';'):
         raise AssertionError('a StatusList inside a string was reported')

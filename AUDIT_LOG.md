@@ -25621,6 +25621,76 @@ Dateien. Nicht je Entscheidung geprüft: jede einzelne Heilung der 37 Weißmagie
 *Prüfgrad:* Messung an Spur und Mitschnitt, Spielblätter (BNpcBase, Action, LogMessage), FFLogs-Rangliste; Code
 statisch. Code unverändert außer dem Prüfskript.
 
+### A878 · Upstream c170c9cd5: Umbau in Engine, Configuration, Rotations; zwei Ladeabstürze und stille Prüfmittel (18.11.2026)
+
+Anlass: Vorbedingung seines Auftrags „todo im vollen loop abarbeiten“ (HEAD drei Commits hinter Upstream: a1013370d
+„Reorganizaiton and cleanup“, 6e3f8b776 „Roll back nuget“, c170c9cd5 Merge #1425, Upstream-Release 7.5.8.5); dazu im
+selben Zug seine Vorgabe „upstream änderungen kritisch im jeweils eigenen loop mit antithese angehen, alles
+gesamtheitlich kausal im audit und codereview prüfen. fehler beseitigen“.
+
+- *Upstreams Umbau:* `RotationSolver.Basic` wird `RotationSolver.Engine` (Actions, Attributes, Data, Helpers, State,
+  Traits, Tweaks), `RotationSolver.Configuration` und `RotationSolver.Rotations` (Core, Duties, je Job ein Namensraum
+  `Rotations.<Rolle>.<Job>`, Basisklasse und Rotationen im selben Ordner); sechs Klassen in Teildateien aufgeteilt
+  (`DataCenter`, `ObjectHelper`, `ActionTargetInfo`, `Configs`, `StatusHelper`, `CustomRotation_OtherInfo`), reine
+  Verschiebung, kein Member geändert (je Member gegen die Fassung vor der Aufteilung gemessen). Die Fork-Fassung jedes
+  Members kam in Upstreams Teildateien (Roslyn-Werkzeug im Notizordner), die Teildateien des Forks folgten ihrer
+  Klasse; 62 Fork-Dateien zogen um, 133 Namensräume.
+- *Inhaltliche Änderungen, je eigener Loop:* (1) Rotationswahl (`RotationUpdater.MatchesRotationName`): gespeicherter
+  Name passt jetzt auch über den Klassennamen und dessen Ende, ohne Treffer gewinnt die erste Rotation, die keine
+  Zusatzrotation ist, sortiert nach Name. Antithese „ein alter gespeicherter Name trifft eine falsche Rotation“: je Job
+  und Kampfart hat nur der Schwarzmagier zwei eigene PvE-Rotationen (`BLM_Default`, `BLM_RP`), verschiedene Namen; kein
+  Treffer über Jobgrenzen, weil die Liste je Job gilt. Antithese „ohne gespeicherte Wahl kommt eine andere Rotation“:
+  vorher die erste in Reflexionsreihenfolge, die eine fremde sein konnte; jetzt `BLM_Default` vor `BLM_RP` (Ordinalfolge)
+  und sonst die mitgelieferte – Verbesserung. Seine gespeicherte Wahl (alter vollständiger Name) trifft über das
+  Namensende. (2) `MainWindow_DutyRotation`: der Schlüssel mit dem Typnamen ist nur die Kennung des Kontextmenüs, die
+  Werte stehen unter dem Namen der Einstellung (`RotationConfigurations`) – kein Verlust. (3) Generatoren gruppieren
+  Einstellungen je Typname statt je Syntaxknoten: Teildateien einer Klasse bekommen eine Ausgabe, behebt doppelte
+  Dateinamen. (4) `Rotation.resx`, `Program.cs`, `RotationGetter.GetNamespace`: nur Namensräume. (5) RebornMaterial
+  7.5.8.1 → 7.5.8.2: eigene Referenzprüfung (System.Reflection.Metadata; RefCheck aus Retainer-Repricer war dieser
+  Sitzung nicht zugänglich) über RebornMaterial, ECommons und RSR gegen Dalamud: 2 416 Verweise, keiner fehlt;
+  Gegenprobe mit einem konstruierten fehlenden Member und Feld meldet beide. (6) `MainWindow_Notices`, Lockdatei: Daten.
+- *Defekt: zwei Ladeabstürze durch die Reihenfolge statischer Startwerte.* `StatusHelper.NoNeedHealingStatusBesidesDeathTrigger`
+  las `NoNeedHealingStatus`, das Upstreams Aufteilung hinter sie stellte; `DataCenter._channelSince` und `_channelSeen`
+  lasen `KeptChannels.Length` aus `DataCenter.Channels.cs`, das der Compiler nun nach `DataCenter.BMR.cs` liest. Beide
+  hätten im Typinitialisierer geworfen, RSR fiele bei der ersten Aktion nach dem Laden aus; der Build lief mit CS8602
+  und CS8604 durch. Die Kanalfelder standen seit A740 nur durch die Dateireihenfolge richtig (Channels vor DataCenter.cs).
+  Behoben: jede Stelle in derselben Datei hinter dem Gelesenen; `_knownTankbusterAtATank` nimmt eine Methodengruppe in
+  `DataCenter.Universal.cs` (eine Lambda im Startwert meldete der Compiler ebenso, zur Laufzeit harmlos). Messung über
+  alle statischen Member samt aufgerufener Methoden und Ausdruckseigenschaften (Roslyn, Notizordner): vorher 3 Lesen
+  vor dem Setzen, danach 0 (main 1 959, Branch 2 014 Member). Sperre: die CI baut mit CS8600–CS8604 als Fehler, mit
+  Gegenprobe (eine Teildatei liest ein Feld der anderen; CS8601, CS8602, CS8604); in der CI und nicht in den Projekten,
+  wie die Sperren für veraltete Aufrufe, weil eine Dalamud-Fassung mit neuen Annotationen sonst seinen Build anhielte.
+  Gegenprobe im Repository: die alte Reihenfolge bricht den Build. Konzept 24, „Fork-Code in eigenen Teildateien“
+  (Grenze neu gefasst) und „Wie es gemessen bleibt“.
+- *Defekt im eigenen Werkzeug, auch auf main:* Die Umverteilung setzte nach einem neuen Member den nächsten neuen an den
+  Anfang der Klasse in der ersten Teildatei, weil sie nur Upstreams Member als Anker fand. Betroffen 31 Member, darunter
+  9 Einstellungen, deren Reihenfolge das Einstellungsfenster zeigt. Ein zweites Werkzeug setzte jeden hinter seinen
+  Vorgänger in Fork-Reihenfolge (zweiter Lauf: 0 verschoben); Startwerte danach wie oben 0. Auf main steht die falsche
+  Reihenfolge bis zum nächsten Merge des Branches.
+- *Stille Prüfmittel nach dem Umbau, behoben:* `layout.py` hält die Ordner an einer Stelle (Selbsttest am Repository:
+  60 mitgelieferte, 43 Basis-, 14 fremde Dateien), die Skripte lesen daraus; zwei lasen vorher keine Datei und blieben
+  grün. `check_fork_placement` prüfte 138 Beastmaster- und Blaumagier-Member nie (Leerzeichen in „Limited Jobs“), jetzt
+  in `fork_placement.json`. `scan3` las nur `Rotations/Core` (jetzt alle 161 Rotationsdateien, ohne Befund).
+  `scan7` fand keine Quelle mehr, nahm als Basis den neuesten Tag überhaupt (Upstreams 7.5.8.5) statt des letzten
+  Fork-Release, und ordnete jeden Member nach einem verschachtelten Typ diesem zu (33 Scheinentfernungen in
+  `OtherConfiguration`); gegen 7.5.8.3+wsh1: 2 745 → 2 798 Member, keiner entfernt. `check_status_list` nahm den
+  Ordner `ExtraRotations` aus, jetzt `layout.is_third_party`. `mitscan` las seine Tabelle unter dem alten Pfad und
+  meldete nichts, jetzt 102 Aktionen und 31 Stellen zur Sichtung; eine fehlende Tabelle bricht ab.
+  `revision_harness` baute seit 0ff4ec64b (05.11.2026) nicht mehr – die Stubs kopierten zwei der drei Speicher von Hand
+  –; `prepare.py` zieht jetzt jeden Speicher aus `OtherConfiguration.cs`; 300 Läufe je Teil, 18 von 18 Mutanten
+  erkannt. Das Werkzeug läuft nicht in der CI (run.sh, Grund dort).
+- *Merge in den Arbeits-Branch:* 24 Konflikte; Git ordnete die alten Einzeldateien der jeweils größten Teildatei zu,
+  deshalb alle sechs Klassen erneut verteilt (Fassung des Branches je geändertem Member). Dreiwegeprüfung je Member über
+  den ganzen Code (alter main, Branch, neuer main, Ergebnis): 12 565 wie erwartet, 0 abweichend; zwei auf beiden Seiten
+  geändert (`CrucibleBoard.RecordHit`, `TargetUpdater.HealerDispelTarget`), beide tragen die Änderung des Branches samt
+  neuem Namensraum.
+- *Prüfgrad:* Compile mit allen CI-Schaltern (0 Fehler, 0 Warnungen), alle Prüfschritte der CI lokal (66, keiner rot),
+  Roslyn-Messungen und Gegenproben wie oben; Laufzeit im Spiel nicht beobachtet. Was sich im Kampf ändert: nichts
+  gegenüber dem Branch vor dem Sync, außer dass RSR nach diesem Sync überhaupt lädt.
+- *Verworfen:* Nullable-Warnungen als Fehler in `Directory.Build.props` (hielte seinen eigenen Build bei einer neuen
+  Dalamud-Fassung an); ein Roslyn-Prüfskript für die Startwert-Reihenfolge in der CI (der Compiler meldet die Klasse
+  schon; Lesen über einen Methodenaufruf bleibt eine benannte Grenze, gemessen ohne Fund).
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -26003,3 +26073,4 @@ geben den Stand vom 14.10.2026 wieder.
 | C225 | A868 (Stand 83becb70b): Arret-Stoß 46 s „durch die Reichweite“, Bohrer 11 s und Justieren 7 s als Verlust des Sammelns; Trance nicht genannt | 7 s davon Eröffnung aus 4,7 Yalm; Bohrer und Justieren nur zu Kampfbeginn voll; Trance 47 s voll im Burstplan. Gemessen je Abklinggruppe, A868 |
 | C226 | A865 und Konzept 03, „Die eigene Geschwindigkeit“ (Stand a1cef7cdb): Essen samt Restzeit zu verfolgen sei ohne Bedarf | Seine Vorgabe vom 17.11.2026 verlangt es („daher muss geprüft werden, wie lange und ob die statuseffekte aktiv sind“); die Stelle ersetzte seine Vorgabe durch meine Abwägung. Wieder offen im TODO, „Eigene Geschwindigkeit“ |
 | C227 | A865 und Konzept 03 (Stand a1cef7cdb): Upstreams 2,5 s für Sacrificium unterschieden sich beim Schnitter um unter 0,1 s vom GCD | Unter Enshroud läuft der GCD mit 1,5 s; die 2,5 s sind ein Zeitfenster bis Arkaner Kreis, kein GCD (A872) |
+| C228 | A740 und Konzept 24, „Fork-Code in eigenen Teildateien“ (Stand A740): Statische Felder, deren Startwert ein anderes liest, bleiben in ihrer Datei – das schütze die Reihenfolge | `_channelSince` und `_channelSeen` blieben in `DataCenter.cs`, `KeptChannels` zog nach `DataCenter.Channels.cs`; richtig nur durch die Dateireihenfolge, gebrochen durch Upstreams Aufteilung. Die Grenze ist „in derselben Datei hinter dem Gelesenen“ (A878) |

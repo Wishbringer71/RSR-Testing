@@ -3,7 +3,7 @@
 Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-07; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `AstrologianRotation`
-- Rotation: `RotationSolver/RebornRotations/Healer/AST_Reborn.cs`
+- Rotation: `RotationSolver/Rotations/Healer/Astrologian/AST_Reborn.cs`
 - Matrix als Tabelle: `AST.csv`
 
 ## Nutzung

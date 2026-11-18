@@ -1,6 +1,6 @@
+using RotationSolver.Rotations.Limited.Beastmaster;
 using Dalamud.Interface.Colors;
 using Dalamud.Interface.Utility.Raii;
-using RotationSolver.Basic.Configuration;
 using GAction = Lumina.Excel.Sheets.Action;
 using Status = Lumina.Excel.Sheets.Status;
 using TerritoryType = Lumina.Excel.Sheets.TerritoryType;

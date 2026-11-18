@@ -3,7 +3,7 @@
 Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-08; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `BeastmasterRotation`
-- Rotation: `RotationSolver/RebornRotations/Limited Jobs/BST_Reborn.cs`
+- Rotation: `RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs`
 - Matrix als Tabelle: `BST.csv`
 
 ## Nutzung

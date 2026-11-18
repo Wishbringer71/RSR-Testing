@@ -121,7 +121,7 @@ Wirktext steht (Divine Cataract, White Death), und `BlueMageRotation` verlangt i
   Shroud, …), weil die Texte das vorige Feld in den Namen laufen lassen.
 - **Vom Spiel ausgeblendete Namen:** Hängt ein Combo-Vorgänger von einer Eigenschaft ab, lässt der
   Wirktext ihn leer (wie eine Potenz); dann fehlt die Combo-Kante.
-- **Nicht erfasst:** Zusatzrotationen (`ExtraRotations`), PvP (die PvP-Rotationen prüft Konzept 25 je Job gegen den
+- **Nicht erfasst:** fremde Rotationen (`layout.is_third_party`), PvP (die PvP-Rotationen prüft Konzept 25 je Job gegen den
   Job-Guide). Blaumagier und Beastmaster werden erzeugt, der Index kennzeichnet sie als begrenzte Jobs; ihre
   Kandidaten im Abgleich Wirktext ↔ Code sind bewertet (oben; der Beastmaster hat keinen).
 - **Die Zahlen altern** mit jeder Rotationsänderung; die erzeugten Dateien tragen ihr Datum,

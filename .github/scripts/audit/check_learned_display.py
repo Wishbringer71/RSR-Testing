@@ -18,7 +18,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
-STORES = ROOT / 'RotationSolver/Basic/Configuration/OtherConfiguration.cs'
+STORES = ROOT / 'RotationSolver/Configuration/OtherConfiguration.cs'
 DISPLAY = ROOT / 'RotationSolver/UI/MainWindow/MainWindow_Learned.cs'
 
 LEARNED = re.compile(r'new LearnedFile<[^>]*>\(nameof\((\w+)\)')

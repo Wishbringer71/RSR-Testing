@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Hold the movement lock's channel list against the game data.
 
-`MovementLock.Channels` (RotationSolver/Basic/Helpers/MovementLock.cs) names the channels the
+`MovementLock.Channels` (RotationSolver/Engine/Helpers/MovementLock.cs) names the channels the
 movement lock knows: the player actions whose effect text says "Effect ends upon using another
 action or moving" (concept 03, "Bewegungssperre beim Wirken und die KI von BossMod", A651). A
 channel the list lacks is walked off by BossMod's AI with nothing to hold it - before A651 that
@@ -21,7 +21,7 @@ import urllib.parse
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
-LOCK = ROOT / 'RotationSolver/Basic/Helpers/MovementLock.cs'
+LOCK = ROOT / 'RotationSolver/Engine/Helpers/MovementLock.cs'
 ACTION_IDS = ROOT / 'RotationSolver.SourceGenerators/Properties/ActionId.resx'
 API = 'https://v2.xivapi.com/api'
 SENTENCE = 'or moving'

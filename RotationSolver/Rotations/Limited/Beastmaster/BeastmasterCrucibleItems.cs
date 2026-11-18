@@ -1,0 +1,1775 @@
+using System.Globalization;
+using System.Numerics;
+using System.Text.RegularExpressions;
+using Dalamud.Game;
+using ECommons.DalamudServices;
+using FFXIVClientStructs.FFXIV.Client.Game.Control;
+using FFXIVClientStructs.FFXIV.Client.Game.Event;
+using FFXIVClientStructs.FFXIV.Client.Game.InstanceContent;
+
+namespace RotationSolver.Rotations.Limited.Beastmaster;
+
+/// <summary>
+/// K8 of the Crucible (concept 21, "Stufe 3: K8, Gegenstände des Bretts", A551 to A555): the board's items - healing below
+/// the player's HP potion line, a cure for poison or blindness, Reraise, Sandstill before a fight, the Beast Potion Kit
+/// against a boss, protection against an announced hit on the player or on a familiar about to fall, a serum or the Beast
+/// Remedy Kit against the fight's dangerous statuses, an absorber against an elemental hit, the Crucible Needle for a
+/// petrified familiar, more maximum HP against a boss, and the damage items - on a pack once a fight, freely in the final
+/// fight, whose items are lost after the run.
+/// </summary>
+public partial class BeastmasterRotation
+{
+	private enum CrucibleItemKind : byte
+	{
+		Heal,
+		Reraise,
+		Sandstill,
+		AutoPotion,
+		CurePoison,
+		CureBlindness,
+		Mitigate,
+		NullifyPhysical,
+		ReflectMagic,
+		AutoRemedy,
+		ResistAilment,
+		Damage,
+		AbsorbElement,
+		CureFamiliar,
+		MaxHp,
+		Buff,
+		Escape,
+		Convert,
+	}
+
+	// What an item of the board does, read once from its English effect text (XBMItem): its kind; the share it heals or
+	// mitigates, the chance it revives with, or its potency; whether it reaches the allies nearby as well; its name; the
+	// status it grants, or for a serum the ailment it resists; for a damage item its element (XBMElement), radius and whether
+	// it knocks back, the status it lays on its target, and the status on a target that adds potency to it (A665: Fang of Ice
+	// lays Deep Freeze, Fang of Fire deals 1,000 more to a target in it) and the element whose resistance it lowers on its
+	// target (Celestial Sand: fire); for a buff whether it raises magic damage, which the damage items carry; the share of HP
+	// it restores while a piece of beast gear is carried, and that piece (A666: the soul serums with a crimson ribbon); and
+	// the status of the player's own its text names, which another item may grant first (A666: Spirit of the Breathtaker
+	// for the Tome of the Impervious and the Beast Potion Kit); and (A668) how long its status stands, how long while a piece
+	// of beast gear is carried and that piece ("When carrying an ice shield, duration increases to 90s"), the stacks it grants
+	// and the stacks more under the status it gains from.
+	private readonly record struct CrucibleItem(CrucibleItemKind Kind, float Value, bool Allies, string Name, string Status = "",
+		uint Element = 0, float Radius = 0f, bool Knockback = false, string Afflicts = "", string BonusStatus = "",
+		float Bonus = 0f, bool RaisesMagic = false, uint LowersResist = 0, float HealShare = 0f, string HealCarrying = "",
+		string GainsFrom = "", float Duration = 0f, string LongerWith = "", float LongerDuration = 0f, int Stacks = 0,
+		int MoreStacks = 0, float AutoBelow = 0f, float Expires = 0f, float ExpiresWith = 0f, string SelfStatus = "",
+		bool ToMagic = false);
+
+	// A678: a tome - "Ensures all attacks deal magic damage", "Ensures all attacks deliver physical damage".
+	private static readonly Regex ConvertText = new(@"^Ensures all attacks (?:deal|deliver) (?<kind>magic|physical) damage",
+		RegexOptions.CultureInvariant);
+
+	// A673: a feral potion - "Inflicts Petrification while also granting Liquid Intensity to self or familiar", "Inflicts
+	// Pollen while also granting Liquid Constitution and restoring 10% of HP".
+	private static readonly Regex InflictsSelf = new(
+		@"^Inflicts (?<self>[A-Z][\w' -]*?) while also granting (?<status>[A-Z][\w' -]*?)(?: and restoring| to self)",
+		RegexOptions.CultureInvariant);
+
+	// A670: Auto-potion - "Restores 40% of HP automatically when HP falls below 50%", "50% chance for the effect to expire when
+	// triggered. Chance is reduced to 10% when under the effect of Spirit of the Breathtaker."
+	private static readonly Regex AutoRestores = new(@"Restores (?<share>\d+)% of HP automatically when HP falls below (?<below>\d+)%",
+		RegexOptions.CultureInvariant);
+	private static readonly Regex ExpiresChance = new(
+		@"(?<chance>\d+)% chance for the effect to expire when triggered\. Chance is reduced to (?<reduced>\d+)%",
+		RegexOptions.CultureInvariant);
+
+	private static Dictionary<ushort, CrucibleItem>? _crucibleItems;
+
+	// The last use: its slot, its item, when, and for a serum the status it covers; the slots the game did not take in this
+	// fight; whether Reraise has gone without a fall, and whether it stood the frame before.
+	private static (int Slot, ushort Item, DateTime At, uint Covers) _crucibleItemUsed = (-1, 0, DateTime.MinValue, 0);
+	private static readonly HashSet<int> _crucibleSlotsRefused = [];
+	private static bool _reraiseLostWithoutFall;
+	private static bool _reraiseStood;
+	private static bool _fellUnderReraise;
+
+	// In this fight: the dangerous statuses a serum covers, the damage items used. For the session: the statuses Auto-remedy
+	// was seen not to cure, and since when each dangerous status has stood on the player under Auto-remedy.
+	private static readonly HashSet<uint> _serumCovers = [];
+
+	// A665: the damage items whose waiting the trace named, per run and fight; whether the items held were traced in combat,
+	// and for which fight.
+	private static readonly HashSet<ushort> _damageWaitTraced = [];
+	private static (int Run, uint Fight) _damageWaitFight;
+	private static bool _heldTracedInCombat;
+	private static readonly List<(int Slot, string Status, uint Element)> _layers = [];
+	private static (uint Fight, bool Final) _heldTracedFight;
+	private static readonly HashSet<uint> _notCuredByRemedy = [];
+	private static readonly Dictionary<uint, DateTime> _ailmentUnderRemedySince = [];
+
+	private static readonly Regex HealsShare = new(@"^Restores (?<share>\d+)% of HP to self (?<whom>or familiar|and nearby allies)",
+		RegexOptions.CultureInvariant);
+	private static readonly Regex GrantsReraise = new(@"^Grants Reraise to self\..*?(?<share>\d+)% chance of automatic revival",
+		RegexOptions.CultureInvariant | RegexOptions.Singleline);
+	private static readonly Regex Cures = new(@"^Instantly cures most instances of (?<ailment>poison|blindness) for self",
+		RegexOptions.CultureInvariant);
+	private static readonly Regex GrantsStatus = new(@"^Grants (?:\w+ stacks of )?(?<status>[A-Z][\w' -]*?) to self(?: or familiar)?\.",
+		RegexOptions.CultureInvariant);
+	private static readonly Regex Mitigates = new(@"Reduces damage taken by (?<share>\d+)%", RegexOptions.CultureInvariant);
+	private static readonly Regex Resists = new(@"^Increases (?<ailment>\w+) resistance by \d+% for self (?<whom>or familiar|and nearby allies)",
+		RegexOptions.CultureInvariant);
+	private static readonly Regex AbsorbsElement = new(
+		@"^Grants (?<status>.+?) to self and nearby allies\..*?(?<share>\d+)% chance to absorb (?<type>[a-z]+) damage as HP",
+		RegexOptions.CultureInvariant | RegexOptions.Singleline);
+	private static readonly Regex CuresFamiliar = new(@"^Instantly cures most instances of (?<ailment>\w+) for familiar",
+		RegexOptions.CultureInvariant);
+	private static readonly Regex RaisesMaxHp = new(
+		@"^Grants (?<status>.+?) while also restoring \d+% of HP to self or familiar\..*?Increases maximum HP by",
+		RegexOptions.CultureInvariant | RegexOptions.Singleline);
+	private static readonly Regex GrantsBuff = new(@"^Grants (?:\w+ stacks of )?(?<status>.+?)(?: while also| to self)",
+		RegexOptions.CultureInvariant);
+	private static readonly Regex LowersResist = new(@"Reduces target's (?<type>[a-z]+) resistance by \d+%",
+		RegexOptions.CultureInvariant);
+	private static readonly Regex HealsCarrying = new(
+		@"When carrying (?:an? )?(?<gear>[a-z][a-z' -]*?), restores (?<share>\d+)% of target's total HP", RegexOptions.CultureInvariant);
+	private static readonly Regex AfflictsTarget = new(@"Afflicts target with (?<status>[A-Z][A-Za-z']*(?: [A-Z][A-Za-z']*)*)",
+		RegexOptions.CultureInvariant);
+	private static readonly Regex BonusOnStatus = new(
+		@"Targets suffering from (?<status>[A-Z][A-Za-z']*(?: [A-Z][A-Za-z']*)*) receive additional damage with a potency of (?<bonus>[\d,]+)",
+		RegexOptions.CultureInvariant);
+	// A668: the status's own duration opens a line of the text; "Stun Duration: 15s" (a feral potion's price) does not.
+	private static readonly Regex StatusDuration = new(@"^Duration: (?<seconds>\d+)s", RegexOptions.CultureInvariant | RegexOptions.Multiline);
+	private static readonly Regex DurationWith = new(
+		@"When carrying (?:an? )?(?<gear>[a-z][a-z' -]*?), duration increases to (?<seconds>\d+)s", RegexOptions.CultureInvariant);
+	private static readonly Regex StacksOf = new(@"Grants (?<count>[a-z]+|\d+) stacks of", RegexOptions.CultureInvariant);
+	private static readonly Regex MoreStacksOf = new(@"Effect: Grants (?<count>[a-z]+|\d+) additional stacks", RegexOptions.CultureInvariant);
+
+	// A668: a count as the item texts write it ("Grants five stacks of Blink"), its index the number - words of the language.
+	private static readonly string[] CountWords = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"];
+
+	private const string EscapeText = "allowing escape from battle";
+
+	private static readonly Regex Deals = new(
+		@"deals (?:ranged )?(?<type>[a-z]+)(?: physical)? damage with a potency of (?<potency>[\d,]+) to target and all enemies within (?<radius>\d+) yalms",
+		RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+
+	private static Dictionary<ushort, CrucibleItem> CrucibleItems => _crucibleItems ??= ReadCrucibleItems();
+
+	private static Dictionary<ushort, CrucibleItem> ReadCrucibleItems()
+	{
+		var items = new Dictionary<ushort, CrucibleItem>();
+		var sheet = Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.XBMItem>(ClientLanguage.English);
+		if (sheet == null)
+		{
+			return items;
+		}
+
+		var texts = new Dictionary<ushort, string>();
+		foreach (var row in sheet)
+		{
+			var text = row.Unknown3.ExtractText();
+			var name = row.Unknown2.ExtractText();
+			var id = (ushort)row.RowId;
+			texts[id] = text;
+			if (HealsShare.Match(text) is { Success: true } heal && Share(heal, out var healed))
+			{
+				items[id] = new CrucibleItem(CrucibleItemKind.Heal, healed,
+					heal.Groups["whom"].Value.StartsWith("and", StringComparison.Ordinal), name);
+			}
+			else if (GrantsReraise.Match(text) is { Success: true } reraise && Share(reraise, out var chance))
+			{
+				items[id] = new CrucibleItem(CrucibleItemKind.Reraise, chance, false, name);
+			}
+			else if (text.StartsWith("Grants Sandstill to self", StringComparison.Ordinal))
+			{
+				items[id] = new CrucibleItem(CrucibleItemKind.Sandstill, 0f, false, name);
+			}
+			else if (text.StartsWith("Grants Auto-potion to self", StringComparison.Ordinal))
+			{
+				// A670: what it restores, below which share of HP, and the chance it expires when it does - alone and under the
+				// status it gains from.
+				var auto = AutoRestores.Match(text);
+				var expires = ExpiresChance.Match(text);
+				var autoShare = 0f;
+				var below = 0f;
+				var expiry = 0f;
+				var expiryWith = 0f;
+				_ = auto.Success && Share(auto, out autoShare) && Percent(auto.Groups["below"].Value, out below);
+				_ = expires.Success && Percent(expires.Groups["chance"].Value, out expiry)
+					&& Percent(expires.Groups["reduced"].Value, out expiryWith);
+				items[id] = new CrucibleItem(CrucibleItemKind.AutoPotion, autoShare, false, name, AutoBelow: below,
+					Expires: expiry, ExpiresWith: expiryWith);
+			}
+			else if (InflictsSelf.Match(text) is { Success: true } feral)
+			{
+				// A673: as its tempered counterpart - a buff, or maximum HP -, with the status it lays on the player.
+				items[id] = new CrucibleItem(text.Contains("Increases maximum HP", StringComparison.Ordinal) ? CrucibleItemKind.MaxHp
+					: CrucibleItemKind.Buff, 0f, false, name, feral.Groups["status"].Value,
+					RaisesMagic: text.Contains("Increases magic damage dealt", StringComparison.Ordinal),
+					SelfStatus: feral.Groups["self"].Value);
+			}
+			else if (ConvertText.Match(text) is { Success: true } convert)
+			{
+				items[id] = new CrucibleItem(CrucibleItemKind.Convert, 0f, false, name, ToMagic: convert.Groups["kind"].Value == "magic");
+			}
+			else if (text.Contains(EscapeText, StringComparison.Ordinal))
+			{
+				// A671: the Beastly Smokebomb - "allowing escape from battle", chosen by the player at an enemy space.
+				items[id] = new CrucibleItem(CrucibleItemKind.Escape, 0f, false, name);
+			}
+			else if (Cures.Match(text) is { Success: true } cure)
+			{
+				items[id] = new CrucibleItem(cure.Groups["ailment"].Value == "poison" ? CrucibleItemKind.CurePoison
+					: CrucibleItemKind.CureBlindness, 0f, false, name);
+			}
+			else if (GrantsStatus.Match(text) is { Success: true } grants && ProtectionKind(text, out var kind, out var mitigates))
+			{
+				items[id] = new CrucibleItem(kind, mitigates, false, name, grants.Groups["status"].Value);
+			}
+			else if (AbsorbsElement.Match(text) is { Success: true } absorbs && Share(absorbs, out var absorbChance))
+			{
+				items[id] = new CrucibleItem(CrucibleItemKind.AbsorbElement, absorbChance, true, name, absorbs.Groups["status"].Value,
+					CrucibleBoard.ElementNamed(absorbs.Groups["type"].Value));
+			}
+			else if (CuresFamiliar.Match(text) is { Success: true } curesFamiliar)
+			{
+				items[id] = new CrucibleItem(CrucibleItemKind.CureFamiliar, 0f, false, name, curesFamiliar.Groups["ailment"].Value);
+			}
+			else if (RaisesMaxHp.Match(text) is { Success: true } maxHp)
+			{
+				items[id] = new CrucibleItem(CrucibleItemKind.MaxHp, 0f, false, name, maxHp.Groups["status"].Value);
+			}
+			else if (Resists.Match(text) is { Success: true } resists)
+			{
+				var heals = HealsCarrying.Match(text);
+				var healShare = 0f;
+				var carrying = heals.Success && Share(heals, out healShare) ? heals.Groups["gear"].Value : string.Empty;
+				items[id] = new CrucibleItem(CrucibleItemKind.ResistAilment, 0f,
+					resists.Groups["whom"].Value.StartsWith("and", StringComparison.Ordinal), name, resists.Groups["ailment"].Value,
+					HealShare: healShare, HealCarrying: carrying);
+			}
+			else if (Deals.Match(text) is { Success: true } deals
+				&& float.TryParse(deals.Groups["potency"].Value, NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out var potency)
+				&& float.TryParse(deals.Groups["radius"].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out var radius))
+			{
+				var bonusOn = BonusOnStatus.Match(text);
+				var bonus = 0f;
+				if (bonusOn.Success)
+				{
+					_ = float.TryParse(bonusOn.Groups["bonus"].Value, NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out bonus);
+				}
+
+				items[id] = new CrucibleItem(CrucibleItemKind.Damage, potency, false, name, string.Empty,
+					CrucibleBoard.ElementNamed(deals.Groups["type"].Value), radius,
+					text.Contains("knockback", StringComparison.OrdinalIgnoreCase),
+					AfflictsTarget.Match(text) is { Success: true } lays ? lays.Groups["status"].Value : string.Empty,
+					bonusOn.Success ? bonusOn.Groups["status"].Value : string.Empty, bonus,
+					LowersResist: LowersResist.Match(text) is { Success: true } lowers
+						? CrucibleBoard.ElementNamed(lowers.Groups["type"].Value) : 0u);
+			}
+			else if (GrantsBuff.Match(text) is { Success: true } buff)
+			{
+				items[id] = new CrucibleItem(CrucibleItemKind.Buff, 0f, false, name, buff.Groups["status"].Value,
+					RaisesMagic: text.Contains("Increases magic damage dealt", StringComparison.Ordinal));
+			}
+		}
+
+		// A666: an item whose text names a status of the player's own that a buff of the board grants gains from that buff.
+		var granted = new List<string>();
+		foreach (var item in items.Values)
+		{
+			if (item.Kind == CrucibleItemKind.Buff && item.Status.Length > 0)
+			{
+				granted.Add(item.Status);
+			}
+		}
+
+		foreach (var (id, text) in texts)
+		{
+			if (!items.TryGetValue(id, out var item))
+			{
+				continue;
+			}
+
+			// A668: how long its status stands, how long with a piece of beast gear, and its stacks.
+			var longer = DurationWith.Match(text);
+			item = item with
+			{
+				Duration = StatusDuration.Match(text) is { Success: true } duration ? Seconds(duration) : 0f,
+				LongerWith = longer.Success ? longer.Groups["gear"].Value : string.Empty,
+				LongerDuration = longer.Success ? Seconds(longer) : 0f,
+				Stacks = StacksOf.Match(text) is { Success: true } stacks ? Count(stacks) : 0,
+				MoreStacks = MoreStacksOf.Match(text) is { Success: true } more ? Count(more) : 0,
+			};
+
+			if (item.Kind != CrucibleItemKind.Buff)
+			{
+				foreach (var status in granted)
+				{
+					if (text.Contains(status, StringComparison.Ordinal))
+					{
+						item = item with { GainsFrom = status };
+						break;
+					}
+				}
+			}
+
+			items[id] = item;
+		}
+
+		return items;
+
+		static bool Share(Match match, out float share)
+		{
+			return Percent(match.Groups["share"].Value, out share);
+		}
+
+		static bool Percent(string digits, out float share)
+		{
+			var parsed = float.TryParse(digits, NumberStyles.Float, CultureInfo.InvariantCulture, out var percent);
+			share = percent / 100f;
+			return parsed;
+		}
+
+		static float Seconds(Match match)
+		{
+			return float.TryParse(match.Groups["seconds"].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out var seconds) ? seconds : 0f;
+		}
+
+		static int Count(Match match)
+		{
+			var count = match.Groups["count"].Value;
+			return int.TryParse(count, NumberStyles.None, CultureInfo.InvariantCulture, out var number) ? number
+				: Math.Max(Array.IndexOf(CountWords, count), 0);
+		}
+
+		// A status the item grants that mitigates, nullifies physical or reflects magic attacks, or cures the next ailment.
+		static bool ProtectionKind(string text, out CrucibleItemKind kind, out float mitigates)
+		{
+			mitigates = 0f;
+			kind = CrucibleItemKind.Mitigate;
+			if (Mitigates.Match(text) is { Success: true } share && Share(share, out mitigates))
+			{
+				return true;
+			}
+
+			kind = text.Contains("Nullifies most physical attacks", StringComparison.Ordinal) ? CrucibleItemKind.NullifyPhysical
+				: text.Contains("Reflects most magic attacks", StringComparison.Ordinal) ? CrucibleItemKind.ReflectMagic
+				: text.Contains("Automatically cures the next status ailment", StringComparison.Ordinal) ? CrucibleItemKind.AutoRemedy
+				: CrucibleItemKind.Heal;
+			return kind != CrucibleItemKind.Heal;
+		}
+	}
+
+	// The English names of the statuses, for the ones the items answer: Reraise, Sandstill, Auto-potion, poison, blindness,
+	// the protections and Auto-remedy.
+	private static readonly Dictionary<uint, string> _statusNames = [];
+
+	private static bool PlayerHasStatusNamed(IBattleChara player, string fragment)
+	{
+		foreach (ref readonly var status in player.GetStatuses())
+		{
+			if (status.StatusId != 0 && StatusName(status.StatusId).Contains(fragment, StringComparison.OrdinalIgnoreCase))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	internal static string StatusName(uint statusId)
+	{
+		if (!_statusNames.TryGetValue(statusId, out var name))
+		{
+			name = Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.Status>(ClientLanguage.English)?.GetRowOrDefault(statusId)?.Name.ExtractText()
+				?? string.Empty;
+			_statusNames[statusId] = name;
+		}
+
+		return name;
+	}
+
+	private static bool HasStatusId(IBattleChara chara, uint statusId)
+	{
+		foreach (ref readonly var status in chara.GetStatuses())
+		{
+			if (status.StatusId == statusId)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/// <summary>
+	/// K8 (A551 to A553): on a board, one item at a time, used through the soft target. With <paramref name="safety"/>: in
+	/// combat below <paramref name="line"/> of his HP the healing item that lifts him back to it with the least, else the
+	/// largest, and healing no fight ahead needs without overhealing (A664), against a boss the Beast Tonic before either;
+	/// in combat a cure for the poison or blindness he carries; Reraise while none stands (once Reraise was seen to go
+	/// without a fall, only against a boss); out of combat Sandstill while none stands; against a boss the Beast Potion Kit
+	/// while no Auto-potion stands; protection against an announced hit on him, and on his familiar when it holds no more HP
+	/// than <paramref name="familiarLossAhead"/>, what it can lose before the next weave window (in the final fight against
+	/// any); a serum, else the Beast Remedy Kit, against
+	/// the fight's dangerous statuses; the absorber of the element of a hit on him; the cure of his familiar's ailment; against
+	/// a boss more maximum HP. With <paramref name="damage"/>: in the final fight every buff - one that raises magic damage
+	/// right before a damage item - then a damage item on his target once no other enemy can still come into its reach - in the
+	/// final fight any, at the latest before it could end, else on a pack where it brings at least as much as in the best fight
+	/// ahead (A664, A665). Traces the items held at the start and the end of each fight.
+	/// Called every frame from the update.
+	/// </summary>
+	internal static unsafe void UseCrucibleItems(float line, uint familiarLossAhead, bool safety, bool damage)
+	{
+		var player = Player;
+		if (!DataCenter.IsInCrucible || player == null || player.MaxHp == 0)
+		{
+			_crucibleSlotsRefused.Clear();
+			return;
+		}
+
+		if (player.IsDead)
+		{
+			return;
+		}
+
+		// A714: the run is over once its final fight is - what is left is lost with the board, and a use now could only
+		// cost a bonus of the score.
+		if (CrucibleBoard.FinalFightOver && !InCombat)
+		{
+			return;
+		}
+
+		var director = EventFramework.Instance() is var framework && framework != null
+			? framework->GetInstanceContentDirector()
+			: null;
+		if (director == null || director->InstanceContentType != InstanceContentType.CrucibleOfTheUnbroken)
+		{
+			return;
+		}
+
+		var crucible = (InstanceContentCrucibleOfTheUnbroken*)director;
+		TraceHeldItems(crucible);
+		FollowScore(crucible);
+		if (!InCombat)
+		{
+			_crucibleSlotsRefused.Clear();
+			_serumCovers.Clear();
+		}
+
+		FollowRemedy(player);
+
+		// The last use is pending until its slot shows another item, at most one GCD; a slot the game did not take is not
+		// tried again in this fight.
+		if (_crucibleItemUsed.Slot >= 0)
+		{
+			if (crucible->Inventory[_crucibleItemUsed.Slot].ItemId != _crucibleItemUsed.Item)
+			{
+				_crucibleItemUsed = (-1, 0, DateTime.MinValue, 0);
+			}
+			else if ((DateTime.Now - _crucibleItemUsed.At).TotalSeconds < DataCenter.DefaultGCDTotal)
+			{
+				return;
+			}
+			else
+			{
+				_ = _crucibleSlotsRefused.Add(_crucibleItemUsed.Slot);
+				var refused = CrucibleItems[_crucibleItemUsed.Item];
+				if (refused.Kind == CrucibleItemKind.ResistAilment)
+				{
+					_ = _serumCovers.Remove(_crucibleItemUsed.Covers);
+				}
+
+				DefenseTrace.Line($"crucible item: slot {_crucibleItemUsed.Slot} ({refused.Name}) not taken "
+					+ "by the game - not tried again in this fight");
+				_crucibleItemUsed = (-1, 0, DateTime.MinValue, 0);
+			}
+		}
+
+		var actions = FFXIVClientStructs.FFXIV.Client.Game.ActionManager.Instance();
+		if (actions == null || actions->AnimationLock > 0f || player.IsCasting)
+		{
+			return;
+		}
+
+		// Read as "Use HP potions below this HP" reads it (concept 03, A641): on a board no healer lives, so the forecast
+		// for the next weave window counts too.
+		var hp = HpPotionItem.ThresholdHealthRatio();
+		var bossFighting = DataCenter.BossInCombat;
+		var finalFight = InCombat && CrucibleBoard.IsFinalFight;
+
+		// K15 (A689): while the no-item bonus stands and the player carries the way to the final fight, only items against a
+		// present danger go - healing below the line, cures, protection against an announced hit, the familiar's care.
+		var keepNoItem = KeepsNoItemBonus(player);
+
+		// A796: damage, TP and buffs protect nothing - while an item bonus is at stake they wait unless the way is known not
+		// to be carried; an unknown load frees only what protects.
+		damage &= NonSafetyItemsGo(player);
+		var slot = -1;
+		var why = string.Empty;
+		IBattleChara on = player;
+		uint covers = 0;
+		if (!safety)
+		{
+			goto Damage;
+		}
+
+		if (InCombat && hp < line)
+		{
+			slot = BestHeal(crucible, hp, line);
+			why = $"at {hp:P0} HP (line {line:P0})";
+		}
+
+		// A695 (K15): just before the final fight ends, the familiar out to full while every other one of the team is -
+		// "Unversehrte Bestien" -, where its points outweigh the item bonuses the use costs; before the player's own top-off,
+		// whose bonus is smaller.
+		if (slot < 0 && FinalFightEndsNow && Familiar is { IsDead: false, CurrentHp: > 0, MaxHp: > 0 } fieldPet
+			&& fieldPet.CurrentHp < fieldPet.MaxHp && OthersOfTeamAtFull(CurrentPet)
+			&& CrucibleBoard.BonusPoints(CrucibleBoard.ScoreBonus.Selfless) > ItemBonusPointsAtStake)
+		{
+			var lift = BestHeal(crucible, fieldPet.GetHealthRatio(), 1f, true);
+			if (lift >= 0 && TryItem(crucible, lift, CrucibleItemKind.Heal, out var potion) && fieldPet.GetHealthRatio() + potion.Value >= 1f)
+			{
+				slot = lift;
+				on = fieldPet;
+				why = $"for {fieldPet.Name} at {fieldPet.CurrentHp} HP, the final fight ends in {DataCenter.PackTimeToKill:F1} s "
+					+ "and every other familiar stands at full - the score's bonus for all familiars at full HP";
+			}
+		}
+
+		// A664: healing no fight ahead needs - everything in the final fight -, the largest piece that does not overheal.
+		if (slot < 0 && InCombat && !keepNoItem)
+		{
+			slot = SpareHeal(crucible, player, finalFight, out why);
+		}
+
+		// A664 (synergy): against a boss, the Beast Tonic before the healing item - it raises the maximum HP the item heals a
+		// share of, and heals itself. A717: before healing for him only, and not once the final fight ends within a GCD - it
+		// pays over the rest of the fight, and at its end it raises the maximum the heal is to fill (on the familiar, in
+		// place of the heal for "Unversehrte Bestien", it cost that bonus and the item bonus both).
+		if (slot >= 0 && bossFighting && ReferenceEquals(on, player) && !FinalFightEndsNow)
+		{
+			for (var i = 0; i < crucible->Inventory.Length; i++)
+			{
+				if (TryItem(crucible, i, CrucibleItemKind.MaxHp, out var raise) && !PlayerHasStatusNamed(player, raise.Status))
+				{
+					slot = i;
+					why = $"against a boss, before healing: {raise.Status} raises the HP it heals";
+					break;
+				}
+			}
+		}
+
+		if (slot < 0 && InCombat && PlayerHasStatusNamed(player, "Poison"))
+		{
+			slot = FirstOf(crucible, CrucibleItemKind.CurePoison);
+			why = "against poison";
+		}
+
+		if (slot < 0 && InCombat && PlayerHasStatusNamed(player, "Blind"))
+		{
+			slot = FirstOf(crucible, CrucibleItemKind.CureBlindness);
+			why = "against blindness";
+		}
+
+		if (slot < 0 && !keepNoItem && !_reraiseStood && (!_reraiseLostWithoutFall || bossFighting))
+		{
+			slot = MostOf(crucible, CrucibleItemKind.Reraise);
+			why = _reraiseLostWithoutFall ? "against a boss, no Reraise stands" : "no Reraise stands";
+		}
+
+		if (slot < 0 && !keepNoItem && !InCombat && !PlayerHasStatusNamed(player, "Sandstill"))
+		{
+			slot = FirstOf(crucible, CrucibleItemKind.Sandstill);
+			why = "before the next fight, no Sandstill stands";
+		}
+
+		if (slot < 0 && !keepNoItem && InCombat && bossFighting && !PlayerHasStatusNamed(player, "Auto-potion"))
+		{
+			slot = FirstOf(crucible, CrucibleItemKind.AutoPotion);
+			why = "against a boss, no Auto-potion stands";
+		}
+
+		// 6: protection against an announced hit on him; in the final fight, and in a fight the held protection is planned
+		// for (A829), also while an enemy attacks him. While an item
+		// bonus is kept (K15), only a hit that would take him below his potion line by its measured size, or one of unknown
+		// size, and no insurance in the final fight (A704).
+		if (slot < 0 && InCombat && (keepNoItem
+			? HitAnnouncedOn(player) && AnnouncedHitThreatens(player, line)
+			: HitAnnouncedOn(player) || (EnemyAttacks(player) && (finalFight || ProtectionPlanned(crucible)))))
+		{
+			slot = Protection(crucible, player, out why);
+		}
+
+		// 7, first (A577, A642): heal the familiar when it would fall before the next weave window - to a hit as large as its
+		// largest in this fight (K9's measure), or at its measured holding rate while enemies attack it -, before the first
+		// measured loss below his potion line as a share of its HP - with a Beast Potion ("to self or familiar"), never the
+		// last healing item: that one stays for him, his HP are the run.
+		var familiar = Familiar;
+		if (slot < 0 && InCombat && familiar != null && !familiar.IsDead && familiar.CurrentHp > 0 && familiar.MaxHp > 0
+			&& (familiarLossAhead > 0 ? familiar.CurrentHp <= familiarLossAhead : familiar.GetHealthRatio() < line)
+			&& HealItemsHeld(crucible) > 1)
+		{
+			var mark = familiarLossAhead > 0 ? Math.Min(1f, familiarLossAhead / (float)familiar.MaxHp) : line;
+			slot = BestHeal(crucible, familiar.GetHealthRatio(), mark, true);
+			if (slot >= 0)
+			{
+				on = familiar;
+				why = $"for {familiar.Name} at {familiar.CurrentHp} HP, "
+					+ (familiarLossAhead > 0 ? $"it can lose {familiarLossAhead} before the next weave" : $"below {line:P0}");
+			}
+		}
+
+		// 7: the same protection for the familiar when it would fall before the next weave window (above); in the final fight
+		// against any announced hit.
+		if (slot < 0 && InCombat && familiar != null && !familiar.IsDead && familiar.CurrentHp > 0
+			&& DataCenter.IsTankbusterAimedAt(familiar)
+			&& (finalFight || (familiarLossAhead > 0 && familiar.CurrentHp <= familiarLossAhead)))
+		{
+			slot = Protection(crucible, familiar, out why);
+			if (slot >= 0)
+			{
+				on = familiar;
+				why = $"for {familiar.Name} at {familiar.CurrentHp} HP {why}";
+			}
+		}
+
+		// 8: a serum, else the Beast Remedy Kit, against the fight's dangerous statuses.
+		if (slot < 0 && InCombat && CrucibleBoard.Ailments.Count > 0)
+		{
+			slot = AgainstAilments(crucible, player, out covers, out why);
+		}
+
+		// 9: the absorber of the element a cast carries that is announced on him or whose area reaches him.
+		if (slot < 0 && InCombat && (HitAnnouncedOn(player) || DataCenter.AreaHitReachesPlayer)
+			&& (!keepNoItem || AnnouncedHitThreatens(player, line)))
+		{
+			slot = AgainstElement(crucible, player, out why);
+		}
+
+		// 10: the cure for the ailment the familiar carries, on it.
+		if (slot < 0 && familiar != null && !familiar.IsDead && familiar.CurrentHp > 0)
+		{
+			slot = FamiliarCure(crucible, familiar, out why);
+			if (slot >= 0)
+			{
+				on = familiar;
+			}
+		}
+
+		// 11: against a boss, more maximum HP while none stands.
+		if (slot < 0 && !keepNoItem && InCombat && bossFighting)
+		{
+			for (var i = 0; i < crucible->Inventory.Length && slot < 0; i++)
+			{
+				if (TryItem(crucible, i, CrucibleItemKind.MaxHp, out var raise) && !PlayerHasStatusNamed(player, raise.Status))
+				{
+					slot = i;
+					why = $"against a boss, no {raise.Status} stands";
+				}
+			}
+		}
+
+	Damage:
+		var damageSlot = -1;
+		IBattleChara? damageTarget = null;
+		var damageWhy = string.Empty;
+		var damageReady = slot < 0 && damage && InCombat
+			&& DamageItem(crucible, finalFight, out damageSlot, out damageTarget, out damageWhy);
+
+		// 12, A678: in the final fight a tome - at its start once RSR measured on this board that it raises the damage, while
+		// the fight ends when unmeasured (it expires with the board, and its use measures it), never once measured without gain;
+		// before the buffs, so a magic one carries every attack.
+		if (slot < 0 && damage && finalFight && !TomeStands)
+		{
+			var ending = FinalFightEnding(crucible);
+			for (var i = 0; i < crucible->Inventory.Length && slot < 0; i++)
+			{
+				if (TryItem(crucible, i, CrucibleItemKind.Convert, out var tome)
+					&& CrucibleBoard.TomeGain(tome.ToMagic) is var gain && (gain > 1f || (gain == null && ending)))
+				{
+					slot = i;
+					on = player;
+					why = gain is { } measured ? $"in the final fight, {tome.Name}: it raised the damage by {measured - 1f:P0} on this board"
+						: $"the final fight ends, {tome.Name} unmeasured - it would expire, and its use measures it";
+				}
+			}
+		}
+
+		// 12: in the final fight every buff while its status does not stand, before the damage items it may raise; one that
+		// raises magic damage, while a damage item is held, only right before one goes (A665) - the damage waits for its
+		// enemies, and the buff lasts 15 s.
+		if (slot < 0 && damage && finalFight)
+		{
+			var holdsDamage = Holds(crucible, CrucibleItemKind.Damage);
+			for (var i = 0; i < crucible->Inventory.Length && slot < 0; i++)
+			{
+				if (TryItem(crucible, i, CrucibleItemKind.Buff, out var buff) && !PlayerHasStatusNamed(player, buff.Status)
+					&& (!buff.RaisesMagic || !holdsDamage || damageReady))
+				{
+					slot = i;
+					on = player;
+					why = buff.RaisesMagic && holdsDamage
+						? $"in the final fight, {buff.Status} right before the damage item it raises"
+						: $"in the final fight, {buff.Status}";
+				}
+			}
+		}
+
+		if (slot < 0 && damageReady && damageTarget != null)
+		{
+			slot = damageSlot;
+			on = damageTarget;
+			why = damageWhy;
+		}
+
+		// A666: the chosen item gains from a status of the player's own that a held buff grants (Spirit of the Breathtaker for
+		// the Tome of the Impervious and the Beast Potion Kit): that buff first, the item next.
+		if (slot >= 0 && CrucibleItems.TryGetValue(crucible->Inventory[slot].ItemId, out var chosenItem)
+			&& chosenItem.GainsFrom.Length > 0 && !PlayerHasStatusNamed(player, chosenItem.GainsFrom))
+		{
+			for (var i = 0; i < crucible->Inventory.Length; i++)
+			{
+				if (i != slot && TryItem(crucible, i, CrucibleItemKind.Buff, out var grants)
+					&& string.Equals(grants.Status, chosenItem.GainsFrom, StringComparison.Ordinal))
+				{
+					why = $"first {grants.Status}, which {chosenItem.Name} gains from";
+					slot = i;
+					on = player;
+					break;
+				}
+			}
+		}
+
+		var targets = TargetSystem.Instance();
+		if (slot < 0 || targets == null)
+		{
+			return;
+		}
+
+		var used = crucible->Inventory[slot].ItemId;
+		var previous = targets->SoftTarget;
+		try
+		{
+			targets->SoftTarget = (FFXIVClientStructs.FFXIV.Client.Game.Object.GameObject*)on.Address;
+			crucible->UseItem((uint)slot, 0);
+		}
+		finally
+		{
+			targets->SoftTarget = previous;
+		}
+
+		var item = CrucibleItems[used];
+		if (item.Kind == CrucibleItemKind.Convert)
+		{
+			_tomeUntil = DateTime.Now.AddSeconds(item.Duration);
+			CrucibleBoard.TomeUsed(item.ToMagic, item.Duration);
+		}
+
+		if (item.Kind == CrucibleItemKind.ResistAilment)
+		{
+			_ = _serumCovers.Add(covers);
+		}
+
+		_crucibleItemUsed = (slot, used, DateTime.Now, covers);
+		DefenseTrace.Line($"crucible item: {item.Name} {why}");
+	}
+
+	// A known tankbuster aimed at him (list, learned table, marker, BossModReborn naming him), or a measured aimed cast at him
+	// that calls for a defence (A540).
+	private static bool HitAnnouncedOn(IBattleChara player)
+	{
+		return DataCenter.IsTankbusterAimedAt(player) || TankbusterHelp.AimedHitCallsForDefence(player, out _);
+	}
+
+	// A704 (K15): whether the hit announced on him, or the area hit reaching him, would take him below `line` by its measured
+	// size - an aimed one by the table of aimed hits, an area one by its announced share; one of unknown size counts, the
+	// safe side.
+	private static bool AnnouncedHitThreatens(IBattleChara player, float line)
+	{
+		if (HitAnnouncedOn(player) && (!DataCenter.AimedHitLeaves(player, out _, out _, out var left, out _) || left < line))
+		{
+			return true;
+		}
+
+		if (DataCenter.AreaHitReachesPlayer)
+		{
+			var share = DataCenter.AnnouncedAreaShare;
+			return share <= 0f || player.GetHealthRatio() - share < line;
+		}
+
+		return false;
+	}
+
+	private static bool EnemyAttacks(IBattleChara chara)
+	{
+		foreach (var hostile in DataCenter.AllHostileTargets)
+		{
+			if (hostile != null && !hostile.IsDead && hostile.InCombat() && hostile.TargetObjectId == chara.GameObjectId)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	// The attack type (Action.AttackType row) of a cast aimed at the character, 0 when none is seen.
+	private static uint AttackTypeAt(IBattleChara chara)
+	{
+		var casters = DataCenter.AreaCasters;
+		for (var i = 0; i < casters.Count; i++)
+		{
+			var caster = casters[i];
+			if (caster != null && caster.IsCasting && caster.CastTargetObjectId == chara.GameObjectId
+				&& Service.GetSheet<Lumina.Excel.Sheets.Action>()?.GetRowOrDefault(caster.CastActionId) is { } action)
+			{
+				return action.AttackType.RowId;
+			}
+		}
+
+		return 0;
+	}
+
+	// 6 and 7: none while one of the protections stands on the character; against a physical hit the item that nullifies
+	// physical attacks, against a magical one the one that reflects magic, else - or when that one is missing - the one that
+	// mitigates every kind.
+	private static unsafe int Protection(InstanceContentCrucibleOfTheUnbroken* crucible, IBattleChara chara, out string why)
+	{
+		why = string.Empty;
+		foreach (var (_, item) in CrucibleItems)
+		{
+			if (item.Kind is CrucibleItemKind.Mitigate or CrucibleItemKind.NullifyPhysical or CrucibleItemKind.ReflectMagic
+				&& item.Status.Length > 0 && PlayerHasStatusNamed(chara, item.Status))
+			{
+				return -1;
+			}
+		}
+
+		var attackType = AttackTypeAt(chara);
+		var slot = AttackTypeKind.IsPhysical(attackType)
+			? FirstOf(crucible, CrucibleItemKind.NullifyPhysical)
+			: AttackTypeKind.IsMagic(attackType)
+				? FirstOf(crucible, CrucibleItemKind.ReflectMagic)
+				: -1;
+		if (slot < 0)
+		{
+			slot = MostOf(crucible, CrucibleItemKind.Mitigate);
+		}
+
+		why = $"against an announced hit (attack type {attackType})";
+		return slot;
+	}
+
+	// 8: the serum that names a dangerous status of the fight not yet covered in it, else the Beast Remedy Kit while no
+	// Auto-remedy stands and a dangerous status is left that it was not seen to leave uncured.
+	private static unsafe int AgainstAilments(InstanceContentCrucibleOfTheUnbroken* crucible, IBattleChara player, out uint covers,
+		out string why)
+	{
+		covers = 0;
+		why = string.Empty;
+		var uncovered = false;
+		foreach (var ailment in CrucibleBoard.Ailments)
+		{
+			if (_serumCovers.Contains(ailment))
+			{
+				continue;
+			}
+
+			var name = StatusName(ailment);
+			for (var slot = 0; slot < crucible->Inventory.Length; slot++)
+			{
+				if (TryItem(crucible, slot, CrucibleItemKind.ResistAilment, out var serum) && serum.Status.Length > 0
+					&& name.Contains(serum.Status, StringComparison.OrdinalIgnoreCase))
+				{
+					covers = ailment;
+					why = $"against {name} in this fight";
+					return slot;
+				}
+			}
+
+			uncovered |= !_notCuredByRemedy.Contains(ailment);
+		}
+
+		if (!uncovered || PlayerHasStatusNamed(player, "Auto-remedy"))
+		{
+			return -1;
+		}
+
+		why = "against the dangerous statuses of this fight, no Auto-remedy stands";
+		return FirstOf(crucible, CrucibleItemKind.AutoRemedy);
+	}
+
+	// The self-correction of 8: a dangerous status of the fight that stands on the player for longer than a GCD while
+	// Auto-remedy stands is one the kit does not cure.
+	private static void FollowRemedy(IBattleChara player)
+	{
+		if (!InCombat || !PlayerHasStatusNamed(player, "Auto-remedy"))
+		{
+			_ailmentUnderRemedySince.Clear();
+			return;
+		}
+
+		foreach (var ailment in CrucibleBoard.Ailments)
+		{
+			if (!HasStatusId(player, ailment))
+			{
+				_ = _ailmentUnderRemedySince.Remove(ailment);
+				continue;
+			}
+
+			if (!_ailmentUnderRemedySince.TryGetValue(ailment, out var since))
+			{
+				_ailmentUnderRemedySince[ailment] = DateTime.Now;
+			}
+			else if ((DateTime.Now - since).TotalSeconds > DataCenter.DefaultGCDTotal && _notCuredByRemedy.Add(ailment))
+			{
+				DefenseTrace.Line($"crucible item: {StatusName(ailment)} stayed under Auto-remedy - the Beast Remedy Kit is not "
+					+ "used against it again");
+			}
+		}
+	}
+
+	// 9: the elements of the casts in progress aimed at him, and with an area hit reaching him of all casts in progress; the
+	// absorber of such an element with the highest chance, while its status does not stand on him.
+	private static unsafe int AgainstElement(InstanceContentCrucibleOfTheUnbroken* crucible, IBattleChara player, out string why)
+	{
+		why = string.Empty;
+		var areaReaches = DataCenter.AreaHitReachesPlayer;
+		var elements = new HashSet<uint>();
+		var casters = DataCenter.AreaCasters;
+		for (var i = 0; i < casters.Count; i++)
+		{
+			var caster = casters[i];
+			if (caster != null && caster.IsCasting && (areaReaches || caster.CastTargetObjectId == player.GameObjectId))
+			{
+				elements.UnionWith(CrucibleBoard.ElementsOf(caster.CastActionId));
+			}
+		}
+
+		var best = -1;
+		var chance = 0f;
+		for (var slot = 0; slot < crucible->Inventory.Length; slot++)
+		{
+			if (TryItem(crucible, slot, CrucibleItemKind.AbsorbElement, out var item) && elements.Contains(item.Element)
+				&& !PlayerHasStatusNamed(player, item.Status) && item.Value > chance)
+			{
+				best = slot;
+				chance = item.Value;
+				why = $"against a {CrucibleBoard.ElementName(item.Element)} hit on you";
+			}
+		}
+
+		return best;
+	}
+
+	// 10: the item that cures the ailment the familiar carries, by the English name of its status.
+	private static unsafe int FamiliarCure(InstanceContentCrucibleOfTheUnbroken* crucible, IBattleChara familiar, out string why)
+	{
+		why = string.Empty;
+		for (var slot = 0; slot < crucible->Inventory.Length; slot++)
+		{
+			if (TryItem(crucible, slot, CrucibleItemKind.CureFamiliar, out var item) && item.Status.Length > 0
+				&& PlayerHasStatusNamed(familiar, item.Status))
+			{
+				why = $"for {familiar.Name}, against {item.Status}";
+				return slot;
+			}
+		}
+
+		return -1;
+	}
+
+	// 13: the damage item of most worth on the player's target - its potency times the enemies within its radius of the target,
+	// each counting one plus the measured weakness bonus where the item's element is its weakness, and the added potency on
+	// each of them carrying the status it gains from; at equal worth the one without knockback. It waits while another enemy
+	// can still come into its reach (A665); in the final fight it goes, at the latest, once the fight could end before every
+	// damage and buff item held had its GCD. Outside the final fight only when it hits more than the target and brings at
+	// least as much here as in the best fight ahead (A664); one with knockback only when it hits every enemy fighting, in the
+	// final fight at the latest before its end. An item whose element is the weakness only of enemies still to come waits
+	// for them (K2). Where another item that would go now lays the status the chosen one gains from on the target, that one
+	// goes first (Fang of Ice before Fang of Fire).
+	private static unsafe bool DamageItem(InstanceContentCrucibleOfTheUnbroken* crucible, bool finalFight, out int slot,
+		out IBattleChara? target, out string why)
+	{
+		slot = -1;
+		why = string.Empty;
+		target = HostileTarget;
+		if (target == null || target.IsDead || !target.InCombat())
+		{
+			return false;
+		}
+
+		var bonus = CrucibleBoard.WeaknessBonus;
+		var perPotency = CrucibleBoard.ItemDamagePerPotency;
+		var bestWorth = 0f;
+		var bestHits = 0;
+		var bestKnockback = false;
+		var bestAhead = 0f;
+		var bestSpared = 0f;
+		var bestSparedAhead = 0f;
+		var fighting = 0;
+		foreach (var hostile in DataCenter.AllHostileTargets)
+		{
+			if (hostile != null && !hostile.IsDead && hostile.InCombat())
+			{
+				fighting++;
+			}
+		}
+
+		var ending = finalFight && FinalFightEnding(crucible);
+		var ahead = finalFight ? null : CrucibleRoute.BattlesAhead();
+
+		// A676: the load this fight can still cost you and the enemy HP it stands on - those fighting and the kinds still to
+		// come at the most HP seen on them; null where a part is unknown, and the items are weighed by potency.
+		var loadLeft = CrucibleBoard.LoadLeft();
+		var poolNow = EnemyHpNow();
+
+		// A677: the kill stacks the worn gear grants, once RSR saw that a kill by an item grants one - and how many you hold.
+		var killStack = CrucibleBoard.ItemKillsStack == true ? WornKillStack() : null;
+		var stacksHeld = killStack is { } held && Player is { } self ? StacksHeld(self, held.Status) : 0;
+		_layers.Clear();
+		for (var i = 0; i < crucible->Inventory.Length; i++)
+		{
+			if (!TryItem(crucible, i, CrucibleItemKind.Damage, out var item) || OnlyForEnemiesToCome(item.Element))
+			{
+				continue;
+			}
+
+			var hits = 0;
+			var worth = 0f;
+			var removed = 0d;
+			var kills = 0;
+			foreach (var hostile in DataCenter.AllHostileTargets)
+			{
+				if (hostile == null || hostile.IsDead || !hostile.InCombat() || !InReach(item, target, hostile))
+				{
+					continue;
+				}
+
+				hits++;
+				var each = 1f + (item.Element != 0 && CrucibleBoard.WeaknessOf(hostile.NameId) == item.Element ? bonus : 0f);
+				var add = (item.Value * each)
+					+ (item.BonusStatus.Length > 0 && PlayerHasStatusNamed(hostile, item.BonusStatus) ? item.Bonus * each : 0f);
+
+				// A672: at most what the enemy has left, by the measured damage per potency of the items.
+				worth += perPotency is { } dpp && dpp > 0f ? Math.Min(add, hostile.CurrentHp / dpp) : add;
+				removed += perPotency is { } hpp && hpp > 0f ? Math.Min(add * hpp, hostile.CurrentHp) : 0d;
+				kills += perPotency is { } kpp && kpp > 0f && add * kpp >= hostile.CurrentHp ? 1 : 0;
+			}
+
+			// A676: the load it spares you here, and in the best fight ahead; both or neither.
+			float? spared = loadLeft is { } left && poolNow is { } pool && pool > 0d && perPotency is > 0f
+				? StacksSpare(left, Math.Min(1d, removed / pool), kills, stacksHeld, killStack) : null;
+			var sparedAhead = spared != null && !finalFight ? AheadSpared(item, ahead, bonus, killStack) : null;
+
+			if (!ending && MoreCanCome(item, target, hits, out var coming))
+			{
+				TraceWaiting(item, crucible->Inventory[i].ItemId, coming);
+				continue;
+			}
+
+			var later = AheadWorth(item, ahead, bonus);
+			var goesHere = spared is { } s && (finalFight || sparedAhead is not null)
+				? finalFight || (hits > 1 && s >= sparedAhead!.Value)
+				: finalFight || (hits > 1 && worth >= later);
+			if (!goesHere || (item.Knockback && hits < fighting && !ending))
+			{
+				continue;
+			}
+
+			if (item.Afflicts.Length > 0 && !PlayerHasStatusNamed(target, item.Afflicts))
+			{
+				_layers.Add((i, item.Afflicts, 0u));
+			}
+
+			if (item.LowersResist != 0)
+			{
+				_layers.Add((i, string.Empty, item.LowersResist));
+			}
+
+			// A676: among those that go, the one that spares the most load where it is known, else the most potency.
+			var rank = spared ?? worth;
+			var bestRank = spared != null ? bestSpared : bestWorth;
+			if (slot < 0 || rank > bestRank || (rank == bestRank && bestKnockback && !item.Knockback))
+			{
+				slot = i;
+				bestWorth = worth;
+				bestSpared = spared ?? 0f;
+				bestSparedAhead = sparedAhead ?? 0f;
+				bestHits = hits;
+				bestKnockback = item.Knockback;
+				bestAhead = later;
+			}
+		}
+
+		if (slot < 0)
+		{
+			return false;
+		}
+
+		// The chosen one gains from what another that would go now lays on the target - a status it deals more to, or a lower
+		// resistance to its element (A666: Celestial Sand before Fang of Fire): that one first.
+		var laysFirst = string.Empty;
+		if (TryItem(crucible, slot, CrucibleItemKind.Damage, out var chosen))
+		{
+			foreach (var (layer, status, element) in _layers)
+			{
+				if (layer != slot && ((chosen.BonusStatus.Length > 0 && string.Equals(status, chosen.BonusStatus, StringComparison.OrdinalIgnoreCase))
+					|| (element != 0 && element == chosen.Element)))
+				{
+					slot = layer;
+					laysFirst = status.Length > 0 ? status : "the lower resistance";
+					break;
+				}
+			}
+		}
+
+		why = $"on {target.Name}, {bestHits} enemies within reach"
+			+ (laysFirst.Length > 0 ? $", first {laysFirst} for {chosen.Name}, which gains from it" : string.Empty)
+			+ (ending ? ", final fight ends soon" : finalFight ? ", final fight"
+				: bestSpared > 0f ? $", spares {bestSpared:P0} of your HP here against at most {bestSparedAhead:P0} in a fight ahead"
+				: $", worth {bestWorth:F0} here against at most {bestAhead:F0} in a fight ahead");
+		return true;
+	}
+
+	// Whether hostile stands within the reach of item thrown at target: its radius from the target plus the hostile's size.
+	private static bool InReach(CrucibleItem item, IBattleChara target, IBattleChara hostile)
+	{
+		return Vector3.Distance(hostile.Position, target.Position) <= item.Radius + hostile.HitboxRadius;
+	}
+
+	// A665: whether another enemy can still come into the reach of item thrown at target - one outside it that has neither
+	// hit nor cast (on its way, or standing after it appeared, as the shadow mites stand 4 to 6 s), or, while it reaches only
+	// the target, a kind of this fight the sheet lists that has not appeared yet. One that hits or casts from out there
+	// fights from there.
+	private static bool MoreCanCome(CrucibleItem item, IBattleChara target, int hits, out string coming)
+	{
+		coming = string.Empty;
+		foreach (var hostile in DataCenter.AllHostileTargets)
+		{
+			if (hostile != null && !hostile.IsDead && !InReach(item, target, hostile) && !hostile.IsCasting
+				&& !EnemyDanger.HasActed(hostile.GameObjectId))
+			{
+				coming = $"{hostile.Name} outside it, not acted yet";
+				return true;
+			}
+		}
+
+		if (hits > 1)
+		{
+			return false;
+		}
+
+		foreach (var enemy in CrucibleBoard.Enemies)
+		{
+			if (CrucibleBoard.IsToCome(enemy.NameId))
+			{
+				coming = $"enemy kind {enemy.NameId} of this fight, not here yet";
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	// A665: in the final fight, whether it could end before every damage and buff item held had its GCD - by the corrected
+	// time to kill of the enemy with the most HP fighting, the one it ends with; not while that time is unknown.
+	private static unsafe bool FinalFightEnding(InstanceContentCrucibleOfTheUnbroken* crucible)
+	{
+		IBattleChara? last = null;
+		foreach (var hostile in DataCenter.AllHostileTargets)
+		{
+			if (hostile != null && !hostile.IsDead && hostile.InCombat() && hostile.MaxHp > (last?.MaxHp ?? 0u))
+			{
+				last = hostile;
+			}
+		}
+
+		if (last == null)
+		{
+			return false;
+		}
+
+		var ttk = last.GetCorrectedTTK();
+		if (float.IsNaN(ttk))
+		{
+			ttk = last.GetTTK();
+		}
+
+		if (float.IsNaN(ttk))
+		{
+			return false;
+		}
+
+		var held = 0;
+		for (var i = 0; i < crucible->Inventory.Length; i++)
+		{
+			if (TryItem(crucible, i, CrucibleItemKind.Damage, out _) || TryItem(crucible, i, CrucibleItemKind.Buff, out _))
+			{
+				held++;
+			}
+		}
+
+		return ttk <= held * DataCenter.DefaultGCDTotal;
+	}
+
+	// A665: once per run, fight and item, that a damage item waits and for whom.
+	private static void TraceWaiting(CrucibleItem item, ushort id, string coming)
+	{
+		var fight = (CrucibleBoard.Run, CrucibleBoard.Fight);
+		if (_damageWaitFight != fight)
+		{
+			_damageWaitFight = fight;
+			_damageWaitTraced.Clear();
+		}
+
+		if (_damageWaitTraced.Add(id))
+		{
+			DefenseTrace.Line($"crucible item: {item.Name} waits - {coming} can still come into its {item.Radius:F0} y");
+		}
+	}
+
+	// Whether an item of kind is held in a slot the game has not refused.
+	private static unsafe bool Holds(InstanceContentCrucibleOfTheUnbroken* crucible, CrucibleItemKind kind)
+	{
+		for (var i = 0; i < crucible->Inventory.Length; i++)
+		{
+			if (TryItem(crucible, i, kind, out _))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	// A665: at the start of each fight, once it is known, and at its end, the items held - what is left after the final fight
+	// is lost.
+	private static unsafe void TraceHeldItems(InstanceContentCrucibleOfTheUnbroken* crucible)
+	{
+		var starts = InCombat && !_heldTracedInCombat && CrucibleBoard.Fight != 0;
+		if (!starts && (InCombat || !_heldTracedInCombat))
+		{
+			return;
+		}
+
+		_heldTracedInCombat = starts;
+		if (starts)
+		{
+			_heldTracedFight = (CrucibleBoard.Fight, CrucibleBoard.IsFinalFight);
+		}
+
+		var names = new List<string>();
+		var sheet = Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.XBMItem>(ClientLanguage.English);
+		for (var i = 0; i < crucible->Inventory.Length; i++)
+		{
+			var id = crucible->Inventory[i].ItemId;
+			if (id != 0)
+			{
+				names.Add(CrucibleItems.TryGetValue(id, out var item) ? item.Name
+					: sheet?.GetRowOrDefault(id)?.Unknown2.ExtractText() ?? $"item {id}");
+			}
+		}
+
+		DefenseTrace.Line($"crucible items {(InCombat ? "at the start of" : "after")} fight {_heldTracedFight.Fight}"
+			+ $"{(_heldTracedFight.Final ? " (final)" : string.Empty)}: {(names.Count == 0 ? "none" : string.Join(", ", names))}");
+	}
+
+	// A664: what a damage item could bring in the best fight still ahead (the final one included) - its potency times each
+	// enemy kind the sheet lists for that fight, one plus the weakness bonus where its element is the kind's weakness; an
+	// item without a radius only the best single kind. A672: each kind at most the most HP RSR saw it with, by the measured
+	// damage per potency of the items. 0 while no fight ahead is known.
+	private static float AheadWorth(CrucibleItem item, HashSet<uint>? ahead, float bonus)
+	{
+		var best = 0f;
+		if (ahead == null)
+		{
+			return best;
+		}
+
+		var perPotency = CrucibleBoard.ItemDamagePerPotency;
+		foreach (var battle in ahead)
+		{
+			var worth = 0f;
+			foreach (var enemy in CrucibleBoard.EnemiesOf(battle))
+			{
+				var each = 1f + (item.Element != 0 && enemy.Weakness == item.Element ? bonus : 0f);
+				var add = item.Value * each;
+				if (perPotency is { } dpp && dpp > 0f && CrucibleBoard.MaxHpSeen(enemy.NameId) is var hp && hp > 0u)
+				{
+					add = Math.Min(add, hp / dpp);
+				}
+
+				worth = item.Radius > 0f ? worth + add : Math.Max(worth, add);
+			}
+
+			best = Math.Max(best, worth);
+		}
+
+		return best;
+	}
+
+	// A676: the enemy HP the fight in progress stands on - the enemies fighting at their HP, and each kind of its sheet still
+	// to come at the most HP RSR saw it with; null when such a kind was never seen.
+	private static double? EnemyHpNow()
+	{
+		var pool = 0d;
+		foreach (var hostile in DataCenter.AllHostileTargets)
+		{
+			if (hostile != null && !hostile.IsDead && hostile.InCombat())
+			{
+				pool += hostile.CurrentHp;
+			}
+		}
+
+		foreach (var enemy in CrucibleBoard.Enemies)
+		{
+			if (!CrucibleBoard.IsToCome(enemy.NameId))
+			{
+				continue;
+			}
+
+			var hp = CrucibleBoard.MaxHpSeen(enemy.NameId);
+			if (hp == 0u)
+			{
+				return null;
+			}
+
+			pool += hp;
+		}
+
+		return pool;
+	}
+
+	// A676: the load a damage item spares in the best fight ahead - the fight's learned load times the share of its kinds'
+	// HP (the most seen on each) the item takes, all kinds for an item with a radius, the best one for a single target; null
+	// when a fight ahead has no learned load, a kind was never seen, or the damage per potency is unmeasured.
+	private static float? AheadSpared(CrucibleItem item, HashSet<uint>? ahead, float bonus,
+		(string Status, float Taken, int Max)? killStack)
+	{
+		if (ahead == null || CrucibleBoard.ItemDamagePerPotency is not { } dpp || dpp <= 0f)
+		{
+			return null;
+		}
+
+		var best = 0f;
+		foreach (var battle in ahead)
+		{
+			if (CrucibleBoard.BattleLoad(battle) is not { } load)
+			{
+				return null;
+			}
+
+			var pool = 0d;
+			var taken = 0d;
+			var kills = 0;
+			foreach (var enemy in CrucibleBoard.EnemiesOf(battle))
+			{
+				var hp = CrucibleBoard.MaxHpSeen(enemy.NameId);
+				if (hp == 0u)
+				{
+					return null;
+				}
+
+				var each = 1f + (item.Element != 0 && enemy.Weakness == item.Element ? bonus : 0f);
+				var hit = Math.Min(item.Value * each * dpp, hp);
+				pool += hp;
+				taken = item.Radius > 0f ? taken + hit : Math.Max(taken, hit);
+				var killed = hit >= hp ? 1 : 0;
+				kills = item.Radius > 0f ? kills + killed : Math.Max(kills, killed);
+			}
+
+			if (pool > 0d)
+			{
+				best = Math.Max(best, StacksSpare(load, Math.Min(1d, taken / pool), kills, 0, killStack));
+			}
+		}
+
+		return best;
+	}
+
+	// A676, A677: the load an item spares - the share of the enemy HP it takes of the load left, and the kill stacks it
+	// grants (one a kill, up to the most) on what is left after it, each taking its share off the damage you take.
+	private static float StacksSpare(float load, double share, int kills, int held, (string Status, float Taken, int Max)? killStack)
+	{
+		var spared = load * share;
+		if (killStack is { } stack && kills > 0)
+		{
+			var gained = Math.Min(kills, Math.Max(0, stack.Max - held));
+			spared += load * (1d - share) * stack.Taken * gained;
+		}
+
+		return (float)spared;
+	}
+
+	// A677: the stacks of the status of this English name on the character; 0 without it.
+	internal static int StacksHeld(IBattleChara chara, string status)
+	{
+		foreach (ref readonly var effect in chara.GetStatuses())
+		{
+			if (effect.StatusId != 0 && string.Equals(StatusName(effect.StatusId), status, StringComparison.OrdinalIgnoreCase))
+			{
+				return Math.Max(1, (int)effect.Param);
+			}
+		}
+
+		return 0;
+	}
+
+	// A678: until when the tome RSR took stands - one at a time.
+	private static DateTime _tomeUntil = DateTime.MinValue;
+
+	private static bool TomeStands => DateTime.Now < _tomeUntil;
+
+	private static readonly Dictionary<uint, float> _itemPotencyOfAction = [];
+
+	/// <summary>
+	/// K8 step 13 (A672): the potency of the damage item whose hit comes as action <paramref name="actionId"/> - the action of
+	/// the item's English name ("Fang of Wind", action 47011) -, 0 for any other action.
+	/// </summary>
+	internal static float ItemPotencyOfAction(uint actionId)
+	{
+		if (_itemPotencyOfAction.TryGetValue(actionId, out var known))
+		{
+			return known;
+		}
+
+		var potency = 0f;
+		var name = Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.Action>(ClientLanguage.English)?.GetRowOrDefault(actionId)?.Name.ExtractText();
+		if (!string.IsNullOrEmpty(name))
+		{
+			foreach (var item in CrucibleItems.Values)
+			{
+				if (item.Kind == CrucibleItemKind.Damage && string.Equals(item.Name, name, StringComparison.OrdinalIgnoreCase))
+				{
+					potency = item.Value;
+					break;
+				}
+			}
+		}
+
+		_itemPotencyOfAction[actionId] = potency;
+		return potency;
+	}
+
+	// A664: healing no fight ahead needs - what the healing items held heal beyond the heaviest sum of the fights ahead up
+	// to the final one (each with its learned load, else the heaviest measured) and what the player misses now; in the final
+	// fight all of it. Of that, the largest item that does not overheal him; just before the final fight ends, the smallest
+	// that brings him to full (A695).
+	private static unsafe int SpareHeal(InstanceContentCrucibleOfTheUnbroken* crucible, IBattleChara player, bool finalFight,
+		out string why)
+	{
+		why = string.Empty;
+		var missing = 1f - player.GetHealthRatio();
+		var held = 0f;
+		for (var i = 0; i < crucible->Inventory.Length; i++)
+		{
+			if (TryItem(crucible, i, CrucibleItemKind.Heal, out var heal))
+			{
+				held += heal.Value;
+			}
+		}
+
+		// A695: in the final fight, before its last enemy falls - before the next GCD by the time-to-kill forecast -, the
+		// smallest item that brings him to full: "Unversehrter Bändiger" and the HP the score counts. Overhealing costs nothing
+		// any more; earlier the order of the items does not change the HP at the end, only the last one decides the full HP.
+		if (finalFight && FinalFightEndsNow)
+		{
+			// A712: with an item bonus still standing nothing goes in this last GCD - the fight ends, and the bonus
+			// outweighs the points of full HP, whatever the way test said before. Under every goal (A804): points for
+			// points, no safety in it.
+			if (ItemBonusAtStake || missing <= 0f)
+			{
+				return -1;
+			}
+
+			var full = -1;
+			var least = float.MaxValue;
+			for (var i = 0; i < crucible->Inventory.Length; i++)
+			{
+				if (TryItem(crucible, i, CrucibleItemKind.Heal, out var heal) && heal.Value >= missing && heal.Value < least)
+				{
+					full = i;
+					least = heal.Value;
+				}
+			}
+
+			if (full >= 0)
+			{
+				why = $"the final fight ends in {DataCenter.PackTimeToKill:F1} s, it brings you from {1f - missing:P0} to full "
+					+ "for the score";
+				return full;
+			}
+		}
+
+		var spare = held;
+		if (!finalFight)
+		{
+			float? heaviest = CrucibleBoard.Loads is { } loads && player.MaxHp > 0
+				? (float)(loads.Heaviest.Damage / player.MaxHp)
+				: null;
+			if (CrucibleRoute.WorstAhead(false, battle => LoadNow(battle) ?? heaviest) is not { } need)
+			{
+				return -1;
+			}
+
+			spare = held - need - missing;
+		}
+
+		var best = -1;
+		var value = 0f;
+		for (var i = 0; i < crucible->Inventory.Length; i++)
+		{
+			if (TryItem(crucible, i, CrucibleItemKind.Heal, out var heal) && heal.Value <= missing && heal.Value <= spare
+				&& heal.Value > value)
+			{
+				best = i;
+				value = heal.Value;
+			}
+		}
+
+		if (best >= 0)
+		{
+			why = finalFight
+				? $"in the final fight, it heals {value:P0} of the {missing:P0} you miss - nothing is worth anything after it"
+				: $"it heals {value:P0} of the {missing:P0} you miss, from {spare:P0} healing no fight ahead needs";
+		}
+
+		return best;
+	}
+
+	// K2 for the damage items: the element is the weakness of an enemy still to come and of none here.
+	private static bool OnlyForEnemiesToCome(uint element)
+	{
+		if (element == 0 || CrucibleBoard.Fight == 0)
+		{
+			return false;
+		}
+
+		var coming = false;
+		foreach (var enemy in CrucibleBoard.Enemies)
+		{
+			if (enemy.Weakness != element)
+			{
+				continue;
+			}
+
+			if (CrucibleBoard.IsHere(enemy.NameId))
+			{
+				return false;
+			}
+
+			coming |= CrucibleBoard.IsToCome(enemy.NameId);
+		}
+
+		return coming;
+	}
+
+	// The healing item that lifts the player to the line with the least, a potion before ash at the same heal; while none
+	// does, the largest.
+	private static unsafe int BestHeal(InstanceContentCrucibleOfTheUnbroken* crucible, float hp, float line, bool familiar = false)
+	{
+		var best = -1;
+		CrucibleItem bestItem = default;
+		for (var slot = 0; slot < crucible->Inventory.Length; slot++)
+		{
+			// For the familiar only what names it: Crucible Ash heals you and the allies near you, and the familiar stands at
+			// the enemy (A577).
+			if (!TryItem(crucible, slot, CrucibleItemKind.Heal, out var item) || (familiar && item.Allies))
+			{
+				continue;
+			}
+
+			var lifts = hp + item.Value >= line;
+			var bestLifts = best >= 0 && hp + bestItem.Value >= line;
+			if (best < 0
+				|| (lifts && !bestLifts)
+				|| (lifts && bestLifts && (item.Value < bestItem.Value || (item.Value == bestItem.Value && bestItem.Allies && !item.Allies)))
+				|| (!lifts && !bestLifts && item.Value > bestItem.Value))
+			{
+				best = slot;
+				bestItem = item;
+			}
+		}
+
+		return best;
+	}
+
+	// A577: the healing items held, any of them - the last one stays for the player.
+	private static unsafe int HealItemsHeld(InstanceContentCrucibleOfTheUnbroken* crucible)
+	{
+		var count = 0;
+		for (var slot = 0; slot < crucible->Inventory.Length; slot++)
+		{
+			if (TryItem(crucible, slot, CrucibleItemKind.Heal, out _))
+			{
+				count++;
+			}
+		}
+
+		return count;
+	}
+
+	/// <summary>
+	/// K15 (A829, rule 1): whether the fight in progress is one the protective items held are planned for - on the way ahead
+	/// with the most battles heavier than it, by the learned deepest dip (A709; one never measured counts heavier), there are
+	/// fewer of them than such items are held. A fight not measured yet is not planned. Weighed again when the run, the fight
+	/// or the items held change.
+	/// </summary>
+	private static unsafe bool ProtectionPlanned(InstanceContentCrucibleOfTheUnbroken* crucible)
+	{
+		var battle = CrucibleBoard.Fight;
+		var held = 0;
+		for (var slot = 0; slot < crucible->Inventory.Length; slot++)
+		{
+			if (TryItem(crucible, slot, CrucibleItemKind.Mitigate, out _) || TryItem(crucible, slot, CrucibleItemKind.NullifyPhysical, out _)
+				|| TryItem(crucible, slot, CrucibleItemKind.ReflectMagic, out _))
+			{
+				held++;
+			}
+		}
+
+		var key = (CrucibleBoard.Run, battle, held);
+		if (_protectionPlanKey == key)
+		{
+			return _protectionPlanned;
+		}
+
+		// Weighed only once the fight's dip and the ways are known; until then not planned, and asked again at most once a GCD
+		// (A832: the search allocates, and this runs in every frame an enemy attacks him).
+		var now = DateTime.Now;
+		if (battle == 0 || held == 0 || (now - _protectionPlanAsked).TotalSeconds < DataCenter.DefaultGCDTotal
+			|| CrucibleBoard.DipLoad(battle) is not { } here)
+		{
+			return false;
+		}
+
+		_protectionPlanAsked = now;
+		_protectionPlanDip = here;
+		if (CrucibleRoute.MostAhead(HeavierThanPlanned) is not { } heavier)
+		{
+			return false;
+		}
+
+		_protectionPlanKey = key;
+		_protectionPlanned = heavier < held;
+		DefenseTrace.Line($"crucible item: fight {battle} {(_protectionPlanned ? "is" : "is not")} a planned fight for the {held} "
+			+ $"protective item(s) held - {heavier} fight(s) on the heaviest way ahead are heavier than its {here:P0}");
+		return _protectionPlanned;
+	}
+
+	private static (int Run, uint Battle, int Held) _protectionPlanKey;
+	private static DateTime _protectionPlanAsked = DateTime.MinValue;
+	private static float _protectionPlanDip;
+
+	// A832: a battle heavier than the fight being weighed - its learned dip above it, or never measured; one delegate.
+	private static readonly Func<uint, bool> HeavierThanPlanned = static other => CrucibleBoard.DipLoad(other) is not { } dip || dip > _protectionPlanDip;
+	private static bool _protectionPlanned;
+
+	private static unsafe int FirstOf(InstanceContentCrucibleOfTheUnbroken* crucible, CrucibleItemKind kind)
+	{
+		for (var slot = 0; slot < crucible->Inventory.Length; slot++)
+		{
+			if (TryItem(crucible, slot, kind, out _))
+			{
+				return slot;
+			}
+		}
+
+		return -1;
+	}
+
+	private static unsafe int MostOf(InstanceContentCrucibleOfTheUnbroken* crucible, CrucibleItemKind kind)
+	{
+		var best = -1;
+		var value = 0f;
+		for (var slot = 0; slot < crucible->Inventory.Length; slot++)
+		{
+			if (TryItem(crucible, slot, kind, out var item) && (best < 0 || item.Value > value))
+			{
+				best = slot;
+				value = item.Value;
+			}
+		}
+
+		return best;
+	}
+
+	// The share of HP an item restores: a healing item's, or one that heals while a piece of beast gear is carried (A666) - the
+	// gear the run wears, or (A668, the shop's scale) the gear <paramref name="gear"/> it weighs; 0 for any other.
+	private static float HealShareOf(CrucibleItem item, List<CrucibleGear>? gear = null)
+	{
+		return item.Kind == CrucibleItemKind.Heal ? item.Value
+			: item.HealShare > 0f && (gear != null ? Carries(gear, item.HealCarrying) : WearsGearNamed(item.HealCarrying))
+				? item.HealShare : 0f;
+	}
+
+	// An item of kind in slot; asked for a heal, also an item that heals while a piece of beast gear the run wears is carried
+	// (A666: a soul serum with a crimson ribbon restores 50 %), seen as the heal it then is.
+	private static unsafe bool TryItem(InstanceContentCrucibleOfTheUnbroken* crucible, int slot, CrucibleItemKind kind, out CrucibleItem item)
+	{
+		item = default;
+		var id = crucible->Inventory[slot].ItemId;
+		if (id == 0 || _crucibleSlotsRefused.Contains(slot) || !CrucibleItems.TryGetValue(id, out item))
+		{
+			return false;
+		}
+
+		// A673: an item that lays a status on the player only while the gear worn makes him immune to it.
+		if (item.SelfStatus.Length > 0 && !WornResists(item.SelfStatus))
+		{
+			return false;
+		}
+
+		if (item.Kind == kind)
+		{
+			return true;
+		}
+
+		if (kind == CrucibleItemKind.Heal && item.HealShare > 0f && WearsGearNamed(item.HealCarrying))
+		{
+			item = item with { Kind = CrucibleItemKind.Heal, Value = item.HealShare, Allies = false };
+			return true;
+		}
+
+		return false;
+	}
+
+	// A714: the run the watch of Reraise belongs to, and when it last looked.
+	private static int _reraiseRun = -1;
+	private static DateTime _reraiseWatched = DateTime.MinValue;
+
+	/// <summary>
+	/// K8 step 3: Reraise is assumed to stand until a fall, since its text names no duration. Seen to go while the player
+	/// lives, it is kept for the fights against a boss from then on. A714: followed every frame, RSR on or off - "Turn off
+	/// when you die" turns RSR off with the fall, which must not go unseen -, and never judged across an interruption:
+	/// off a board (the game takes every status there), in a new run, after the final fight, or after a pause of the
+	/// watch longer than a GCD. The watch then starts anew with what stands.
+	/// </summary>
+	internal static void FollowReraise()
+	{
+		var player = Player;
+		var now = DateTime.Now;
+		var watching = DataCenter.IsInCrucible && player != null && !CrucibleBoard.FinalFightOver;
+		var stands = DataCenter.IsInCrucible && player != null && PlayerHasStatusNamed(player, "Reraise");
+		if (!watching || _reraiseRun != CrucibleBoard.Run || (now - _reraiseWatched).TotalSeconds > DataCenter.DefaultGCDTotal)
+		{
+			_reraiseRun = CrucibleBoard.Run;
+			_reraiseWatched = watching ? now : DateTime.MinValue;
+			_reraiseStood = stands;
+			_fellUnderReraise = false;
+			return;
+		}
+
+		_reraiseWatched = now;
+		var dead = player!.IsDead;
+		_fellUnderReraise |= _reraiseStood && dead;
+		if (_reraiseStood && !stands && !dead)
+		{
+			if (!_fellUnderReraise && !_reraiseLostWithoutFall)
+			{
+				_reraiseLostWithoutFall = true;
+				DefenseTrace.Line("crucible item: Reraise went without a fall - from now on a Reraiser only against a boss");
+			}
+
+			_fellUnderReraise = false;
+		}
+
+		_reraiseStood = stands || (_reraiseStood && dead);
+	}
+}

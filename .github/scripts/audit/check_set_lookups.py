@@ -29,9 +29,9 @@ import classfile
 # Both files that ask these lists whether they hold an id. The first survey stopped at DataCenter and
 # missed the site in Watcher, which is why this is a list rather than a single path.
 TARGETS = [
-    Path('RotationSolver/Basic/DataCenter.cs'),
-    Path('RotationSolver/Basic/Helpers/StatusHelper.cs'),
-    Path('RotationSolver/Watcher.cs'),
+    Path('RotationSolver/Engine/State/DataCenter.cs'),
+    Path('RotationSolver/Engine/Helpers/StatusHelper.cs'),
+    Path('RotationSolver/Engine/Watcher.cs'),
 ]
 
 SETS = (

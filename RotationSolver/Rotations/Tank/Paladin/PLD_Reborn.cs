@@ -1,0 +1,544 @@
+﻿namespace RotationSolver.Rotations.Tank.Paladin;
+
+[Rotation("Reborn", CombatType.PvE, GameVersion = "7.58", RotationType = RotationType.Reborn)]
+[SourceCode(Path = "main/Rotations/Tank/Paladin/PLD_Reborn.cs")]
+
+public sealed class PLD_Reborn : PaladinRotation
+{
+	#region Config Options
+	[RotationConfig(CombatType.PvE, Name = "Use Arm's Length on a pull for its Slow",
+		Tooltip = "Arm's Length is used on a group pull for its Slow, not only as knockback "
+			+ "protection.\n"
+			+ "In a fight: the Slow +20% lands on every enemy that strikes you and delays "
+			+ "auto-attacks as well as casts, so in a standing pack it throttles the whole incoming "
+			+ "stream for fifteen seconds. It costs nothing but its own cooldown. A pull is as many "
+			+ "enemies in reach as the global \"Use tank mitigation when this many enemies target you\" for defensive abilities, bosses not "
+			+ "counted - Arm's Length does not soften the hit that strikes you, so a boss's tankbuster "
+			+ "gains nothing from it; a pack "
+			+ "that is already slowed is left alone.\n"
+			+ "Not while BossModReborn announces a knockback that lands after the barrier has run out "
+			+ "and before Arm's Length is ready again - the action is kept for it.")]
+	public bool UseArmsLengthOnPull { get; set; } = true;
+
+	protected override bool HasOwnArmsLengthPullRule => true;
+
+
+	[RotationConfig(CombatType.PvE, Name = "Use GCDs to heal. (Ignored if there are no healers alive in party, or while a party member is about to fall)",
+		Tooltip = "Off: your GCD heals go only when no healer is alive, or while a party member is in the critical class, "
+		+ "about to fall by the time a heal lands. On: whenever the healing thresholds call for them.\n"
+		+ "In a fight: off, you keep attacking while the healers keep up; a member about to fall still gets your heal.")]
+	public bool GCDHeal { get; set; } = false;
+
+	[RotationConfig(CombatType.PvE, Name = "Use Divine Veil during countdown")]
+	public bool DivineVeilCountdown { get; set; } = false;
+
+	[RotationConfig(CombatType.PvE, Name = "Only use Fight or Flight while in melee range of an enemy")]
+	public bool MeleeFoF { get; set; } = true;
+
+	[RotationConfig(CombatType.PvE, Name = "Use Hallowed Ground with Cover")]
+	private bool HallowedWithCover { get; set; } = true;
+
+	[RotationConfig(CombatType.PvE, Name = "Use up both stacks of Intervene during burst window")]
+	private bool UseInterveneFight { get; set; } = true;
+
+	[Range(0, 100, ConfigUnitType.Pixels)]
+	[RotationConfig(CombatType.PvE, Name = "Use Sheltron at minimum X Oath to prevent over cap (Set to 0 to disable)")]
+	private int WhenToSheltron { get; set; } = 100;
+
+	[Range(0, 1, ConfigUnitType.Percent)]
+	[RotationConfig(CombatType.PvE, Name = "Health threshold for Intervention (Set to 0 to disable)")]
+	private float InterventionRatio { get; set; } = 0.6f;
+
+	[RotationConfig(CombatType.PvE, Name = "Use Intervention on CoTank during tankbusters",
+		Tooltip = "Intervention goes on the other tank when a tankbuster is aimed at him: a tankbuster marker on him, "
+			+ "or an enemy casting a tankbuster at him. It costs 50 Oath Gauge, which Holy Sheltron also needs.")]
+	private bool InterventionTank { get; set; } = true;
+
+	[Range(0, 1, ConfigUnitType.Percent)]
+	[RotationConfig(CombatType.PvE, Name = "Health threshold for using Intervention to attempt to save someone")]
+	private float InterventionClutch { get; set; } = 0.6f;
+
+	[Range(0, 1, ConfigUnitType.Percent)]
+	[RotationConfig(CombatType.PvE, Name = "Health threshold for Cover (Set to 0 to disable)")]
+	private float CoverRatio { get; set; } = 0.3f;
+
+	[RotationConfig(CombatType.PvE, Name = "Use Holy Spirit when out of melee range")]
+	private bool UseHolyWhenAway { get; set; } = false;
+
+	[RotationConfig(CombatType.PvE, Name = "Use Clemency with Requiescat")]
+	private bool RequiescatHealBot { get; set; } = true;
+
+	[Range(0, 1, ConfigUnitType.Percent)]
+	[RotationConfig(CombatType.PvE, Name = "Minimum HP threshold party member needs to be to use Clemency with Requiescat")]
+	public float ClemencyRequi { get; set; } = 0.2f;
+
+	[RotationConfig(CombatType.PvE, Name = "Use Clemency without Requiescat")]
+	private bool HealBot { get; set; } = true;
+
+	[Range(0, 1, ConfigUnitType.Percent)]
+	[RotationConfig(CombatType.PvE, Name = "Minimum HP threshold party member needs to be to use Clemency without Requiescat")]
+	public float ClemencyNoRequi { get; set; } = 0.4f;
+	#endregion
+
+	#region Tracking Properties
+	public override void DisplayRotationStatus()
+	{
+		ImGui.Text($"Use Oath: {UseOath(out _)}");
+	}
+	#endregion
+
+	#region Countdown Logic
+	protected override IAction? CountDownAction(float remainTime)
+	{
+		if (remainTime < HolySpiritPvE.Info.CastTime + CountDownAhead
+			&& HolySpiritPvE.CanUse(out var act))
+		{
+			return act;
+		}
+
+		if (DivineVeilCountdown && remainTime < 15 && DivineVeilPvE.CanUse(out act))
+		{
+			return act;
+		}
+
+		return base.CountDownAction(remainTime);
+	}
+	#endregion
+
+	#region Additional oGCD Logic
+
+	[RotationDesc(ActionID.HallowedGroundPvE, ActionID.InterventionPvE, ActionID.CoverPvE, ActionID.FightOrFlightPvE, ActionID.ImperatorPvE, ActionID.RequiescatPvE)]
+	protected override bool EmergencyAbility(IAction nextGCD, out IAction? act)
+	{
+		if (StatusHelper.PlayerHasStatus(true, StatusID.Cover) && HallowedWithCover && HallowedGroundPvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		if (HallowedGroundPvE.CanUse(out act)
+		&& Player?.GetHealthRatio() <= HealthForDyingTanks)
+		{
+			return true;
+		}
+
+		if (StatusHelper.PlayerHasStatus(true, StatusID.Rampart, StatusID.Sentinel, StatusID.Guardian))
+		{
+			if (InterventionPvE.CanUse(out act, skipTargetStatusNeedCheck: true))
+			{
+				if (InterventionPvE.Target.Target?.GetHealthRatio() < InterventionClutch)
+				{
+					return true;
+				}
+			}
+		}
+
+		if (CoverPvE.CanUse(out act) && CoverPvE.Target.Target?.DistanceToPlayer() < 10 &&
+			CoverPvE.Target.Target?.GetHealthRatio() < CoverRatio)
+		{
+			return true;
+		}
+
+		if ((HasHostilesInRange && MeleeFoF) || !MeleeFoF)
+		{
+			if (!FastBladePvE.IsEnabled && FightOrFlightPvE.CanUse(out act))
+			{
+				return true;
+			}
+
+			if (!RiotBladePvE.EnoughLevel && nextGCD.IsTheSameTo(true, FastBladePvE) && FightOrFlightPvE.CanUse(out act))
+			{
+				return true;
+			}
+
+			if (!RageOfHalonePvE.EnoughLevel && nextGCD.IsTheSameTo(true, RiotBladePvE, TotalEclipsePvE) && FightOrFlightPvE.CanUse(out act))
+			{
+				return true;
+			}
+
+			if (!ProminencePvE.EnoughLevel && nextGCD.IsTheSameTo(true, RageOfHalonePvE, TotalEclipsePvE) && FightOrFlightPvE.CanUse(out act))
+			{
+				return true;
+			}
+
+			if (!AtonementPvE.EnoughLevel && nextGCD.IsTheSameTo(true, RoyalAuthorityPvE, ProminencePvE) && FightOrFlightPvE.CanUse(out act))
+			{
+				return true;
+			}
+
+			if (AtonementPvE.EnoughLevel && (StatusHelper.PlayerHasStatus(true, StatusID.AtonementReady, StatusID.SepulchreReady, StatusID.SupplicationReady, StatusID.DivineMight) || IsLastAction(true, RoyalAuthorityPvE)) && FightOrFlightPvE.CanUse(out act))
+			{
+				return true;
+			}
+		}
+
+		// if requiscat is able to proc confiteor, use it immediately after Fight or Flight
+		if (RequiescatMasteryTrait.EnoughLevel)
+		{
+			if ((IsLastAbility(true, FightOrFlightPvE) || HasFightOrFlight) && ImperatorPvE.CanUse(out act, skipAoeCheck: true, usedUp: true, skipTTKCheck: true))
+			{
+				return true;
+			}
+
+			if ((IsLastAbility(true, FightOrFlightPvE) || HasFightOrFlight) && RequiescatPvE.CanUse(out act, skipAoeCheck: true, usedUp: true))
+			{
+				return true;
+			}
+		}
+
+		// if requiscat is not able to proc confiteor, use it as AOE tool if able, otherwise as Single Target
+		if (!RequiescatMasteryTrait.EnoughLevel)
+		{
+			if (HolyCirclePvE.EnoughLevel && NumberOfHostilesInRange >= 1 && (IsLastAbility(true, FightOrFlightPvE) || HasFightOrFlight) && RequiescatPvE.CanUse(out act, skipAoeCheck: true, usedUp: true))
+			{
+				return true;
+			}
+
+			if (RequiescatPvE.CanUse(out act, skipAoeCheck: true, usedUp: true))
+			{
+				if (!HolyCirclePvE.EnoughLevel && (NumberOfHostilesInRange == 1 || RequiescatPvE.Target.Target.IsBossFromIcon()))
+				{
+					return true;
+				}
+			}
+		}
+
+		return base.EmergencyAbility(nextGCD, out act);
+	}
+
+	[RotationDesc]
+	protected override bool MoveForwardAbility(IAction nextGCD, out IAction? act)
+	{
+		if (IntervenePvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		return base.MoveForwardAbility(nextGCD, out act);
+	}
+
+	[RotationDesc(ActionID.DivineVeilPvE, ActionID.PassageOfArmsPvE, ActionID.ReprisalPvE)]
+	protected override bool DefenseAreaAbility(IAction nextGCD, out IAction? act)
+	{
+		// Tanks' stage: Reprisal and the party tools take turns over a run of area attacks (concept 09, rule 9).
+		if (TankAreaDefenseStretched(DivineVeilPvE, PassageOfArmsPvE))
+		{
+			return base.DefenseAreaAbility(nextGCD, out act);
+		}
+
+		if (DivineVeilPvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		if (PassageOfArmsPvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		if (ShouldSustainMitigationDebuff(StatusHelper.ReprisalStatus)
+			&& ReprisalPvE.CanUse(out act, skipAoeCheck: true, skipStatusProvideCheck: true))
+		{
+			return true;
+		}
+
+		if (ReprisalPvE.CanUse(out act, skipAoeCheck: true))
+		{
+			return true;
+		}
+
+		return base.DefenseAreaAbility(nextGCD, out act);
+	}
+
+	[RotationDesc(ActionID.SentinelPvE, ActionID.RampartPvE, ActionID.BulwarkPvE, ActionID.SheltronPvE, ActionID.ReprisalPvE)]
+	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
+	{
+		// Free of cost but its cooldown, so ahead of the paid mitigations (A194).
+		if (ArmsLengthSlowsPull(UseArmsLengthOnPull, Service.Config.AutoDefenseNumber) && ArmsLengthPvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		// If the player has the Hallowed Ground status, don't use any abilities.
+		if (!StatusHelper.PlayerHasStatus(true, StatusID.HallowedGround))
+		{
+			// A predicted tankbuster on the player gets its big mitigation first - or Rampart while that one is
+			// spent - ahead of the short ones: the window opens a few seconds before the hit, and with the cheap ones
+			// ahead the big one landed last (trace of 01.10.2026: Damnation 0.7 s before the hit, A241, A243).
+			if (BMRShouldRefreshBefore(BMRTankbusterIn, DefensiveValues.DurationOf(GuardianPvE.EnoughLevel ? GuardianPvE.ID : SentinelPvE.ID), true, null, GuardianPvE.EnoughLevel ? StatusID.Guardian : StatusID.Sentinel)
+				&& (GuardianPvE.EnoughLevel ? GuardianPvE.CanUse(out act, skipStatusProvideCheck: true) : SentinelPvE.CanUse(out act, skipStatusProvideCheck: true)))
+			{
+				return true;
+			}
+
+			if (BMRShouldRefreshBefore(BMRTankbusterIn, DefensiveValues.DurationOf((uint)ActionID.RampartPvE), true, null, StatusID.Rampart)
+				&& RampartTakesPredictedTankbuster(GuardianPvE.EnoughLevel ? GuardianPvE : SentinelPvE, GuardianPvE.EnoughLevel ? StatusID.Guardian : StatusID.Sentinel)
+				&& RampartPvE.CanUse(out act, skipStatusProvideCheck: true))
+			{
+				return true;
+			}
+
+			// If Bulwark can be used, use it and return true.
+			if (BulwarkPvE.CanUse(out act, skipAoeCheck: true))
+			{
+				return true;
+			}
+
+			// If Oath can be used, use it and return true.
+			if (UseOath(out act))
+			{
+				return true;
+			}
+
+			// The big mitigation and Rampart, spaced, or in a pull held until the measured fall needs them (A359).
+			if (StaggeredBigMitigation(SentinelPvE, GuardianPvE, out act))
+			{
+				return true;
+			}
+
+			if (!HoldReprisalForRaidwide()
+				&& ShouldSustainMitigationDebuff(StatusHelper.ReprisalStatus)
+				&& ReprisalPvE.CanUse(out act, skipAoeCheck: true, skipStatusProvideCheck: true))
+			{
+				return true;
+			}
+
+			// If Reprisal can be used, use it and return true.
+			if (!HoldReprisalForRaidwide() && ReprisalPvE.CanUse(out act, skipAoeCheck: true))
+			{
+				return true;
+			}
+		}
+
+		// On the other tank a tankbuster is aimed at, as the setting says, after his own defence: what protects only
+		// him is refused when the hit misses him (A233), so for a tankbuster on the other tank alone this comes at
+		// once. Until A328 Intervention went to whoever his own target attacks whenever this path opened, a pull
+		// included, and only to a tank in stance - its own status condition, a stand-in for "a tank" that the
+		// off-tank taking a swap tankbuster rarely meets.
+		if (InterventionTank && HelpTankbusterTarget(InterventionPvE, out act, tanksOnly: true, skipTargetStatusNeedCheck: true))
+		{
+			return true;
+		}
+
+		return base.DefenseSingleAbility(nextGCD, out act);
+	}
+	#endregion
+
+	#region oGCD Logic
+
+	[RotationDesc(ActionID.SheltronPvE, ActionID.HolySheltronPvE)]
+	protected override bool GeneralAbility(IAction nextGCD, out IAction? act)
+	{
+		if (InCombat && OathGauge >= WhenToSheltron && WhenToSheltron > 0 && UseOath(out act))
+		{
+			return true;
+		}
+
+		if (HasFightOrFlight && InCombat && UseBurstMedicine(out act))
+		{
+			return true;
+		}
+
+		return base.GeneralAbility(nextGCD, out act);
+	}
+
+	[RotationDesc(ActionID.BladeOfHonorPvE, ActionID.CircleOfScornPvE, ActionID.ExpiacionPvE, ActionID.SpiritsWithinPvE, ActionID.IntervenePvE)]
+	protected override bool AttackAbility(IAction nextGCD, out IAction? act)
+	{
+		if (BladeOfHonorPvE.CanUse(out act, skipAoeCheck: true))
+		{
+			return true;
+		}
+
+		if (CircleOfScornPvE.CanUse(out act, skipAoeCheck: true, skipTTKCheck: true) && FightOrFlightPvE.Cooldown.IsCoolingDown && (ImperatorPvE.EnoughLevel && ImperatorPvE.Cooldown.IsCoolingDown || !ImperatorPvE.EnoughLevel))
+		{
+			return true;
+		}
+
+		if (ExpiacionPvE.EnoughLevel && ExpiacionPvE.CanUse(out act, skipAoeCheck: true) && FightOrFlightPvE.Cooldown.IsCoolingDown && (ImperatorPvE.EnoughLevel && ImperatorPvE.Cooldown.IsCoolingDown || !ImperatorPvE.EnoughLevel))
+		{
+			return true;
+		}
+
+		if (!ExpiacionPvE.EnoughLevel && SpiritsWithinPvE.CanUse(out act, skipAoeCheck: true) && FightOrFlightPvE.Cooldown.IsCoolingDown && (ImperatorPvE.EnoughLevel && ImperatorPvE.Cooldown.IsCoolingDown || !ImperatorPvE.EnoughLevel))
+		{
+			return true;
+		}
+
+		if (!IsMoving && IntervenePvE.CanUse(out act, usedUp: UseInterveneFight && HasFightOrFlight))
+		{
+			return true;
+		}
+
+		return base.AttackAbility(nextGCD, out act);
+	}
+	#endregion
+
+	#region GCD Logic
+
+	[RotationDesc(ActionID.ClemencyPvE)]
+	protected override bool HealSingleGCD(out IAction? act)
+	{
+		if (RequiescatHealBot && RequiescatStacks > 0 && ClemencyPvE.CanUse(out act, skipCastingCheck: true) && ClemencyPvE.Target.Target?.GetForecastHealthRatio() < ClemencyRequi)
+		{
+			return true;
+		}
+
+		if (HealBot && ClemencyPvE.CanUse(out act) && ClemencyPvE.Target.Target?.GetForecastHealthRatio() < ClemencyNoRequi)
+		{
+			return true;
+		}
+
+		// A figure only healing defeats, when the healers fall behind its deadline (concept 07, A516): the figure alone,
+		// whatever the heal bot settings say about the party.
+		if (HealToDefeat.CallsForNonHealer && ClemencyPvE.CanUse(out act) && HealToDefeat.IsFigure(ClemencyPvE.Target.Target))
+		{
+			return true;
+		}
+
+		return base.HealSingleGCD(out act);
+	}
+
+	[RotationDesc(ActionID.ShieldBashPvE)]
+	protected override bool MyInterruptGCD(out IAction? act)
+	{
+		if (LowBlowPvE.Cooldown.IsCoolingDown && ShieldBashPvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		return base.MyInterruptGCD(out act);
+	}
+
+	protected override bool GeneralGCD(out IAction? act)
+	{
+		// Confiteor Combo
+		if (ConfiteorPvE.CanUse(out act, usedUp: true, skipAoeCheck: true))
+		{
+			return true;
+		}
+
+		if (GoringBladePvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		// Atonement Combo
+		if ((!FightOrFlightPvE.Cooldown.WillHaveOneCharge(1) || HasFightOrFlight || StatusHelper.PlayerWillStatusEndGCD(1, 0, true, StatusID.AtonementReady)) && AtonementPvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		if (((!HasAtonementReady && (SepulchreReady || SupplicationReady || HasDivineMight)) ||
+			 (HasAtonementReady && !HasDivineMight)) &&
+			!StatusHelper.PlayerHasStatus(true, StatusID.Medicated) && !HasFightOrFlight && !RageOfHalonePvE.CanUse(out _, skipComboCheck: false))
+		{
+			if (!TotalEclipsePvE.CanUse(out _) && (RiotBladePvE.CanUse(out act) || FastBladePvE.CanUse(out act)))
+			{
+				return true;
+			}
+		}
+		if ((RageOfHalonePvE.CanUse(out _, skipComboCheck: false) || HasFightOrFlight || StatusHelper.PlayerWillStatusEndGCD(1, 0, true, StatusID.SupplicationReady)) && SupplicationPvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		if (RequiescatStacks > 0 && IsLastGCD(true, SupplicationPvE) && !HasFightOrFlight && HolySpiritPvE.CanUse(out act, skipCastingCheck: true))
+		{
+			return true;
+		}
+
+		if ((RageOfHalonePvE.CanUse(out _, skipComboCheck: false) || HasFightOrFlight || StatusHelper.PlayerWillStatusEndGCD(1, 0, true, StatusID.SepulchreReady)) && SepulchrePvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		//AoE
+		if ((HasDivineMight || RequiescatStacks > 0) && HolyCirclePvE.CanUse(out act, skipCastingCheck: true))
+		{
+			return true;
+		}
+
+		if (ProminencePvE.CanUse(out act, skipStatusProvideCheck: !EnhancedProminenceTrait.EnoughLevel))
+		{
+			return true;
+		}
+
+		if (TotalEclipsePvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		//Single Target
+		if ((HasDivineMight || RequiescatStacks > 0) && HolySpiritPvE.CanUse(out act, skipCastingCheck: true))
+		{
+			return true;
+		}
+
+		if (!SupplicationReady && !SepulchreReady && !HasAtonementReady && !HasDivineMight && RoyalAuthorityPvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		if (RoyalAuthorityPvE.CanUse(out act))
+		{
+			return true;
+		}
+		if (!RoyalAuthorityPvE.Info.EnoughLevelAndQuest() && RageOfHalonePvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		if (RiotBladePvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		if (FastBladePvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		//Ranged
+		if (UseHolyWhenAway && StopMovingTime > 1 && HolySpiritPvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		if (ShieldLobPvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		return base.GeneralGCD(out act);
+	}
+
+	#endregion
+
+	#region Extra Methods
+
+	private bool UseOath(out IAction? act)
+	{
+		if (InterventionPvE.CanUse(out act))
+		{
+			if ((InterventionPvE.Target.Target?.GetHealthRatio() <= InterventionRatio))
+			{
+				return true;
+			}
+		}
+
+		if (HolySheltronPvE.CanUse(out act) && HolySheltronPvE.EnoughLevel)
+		{
+			return true;
+		}
+
+		if (SheltronPvE.CanUse(out act) && !HolySheltronPvE.EnoughLevel)
+		{
+			return true;
+		}
+
+		return false;
+	}
+
+	public override bool CanHealSingleSpell => base.CanHealSingleSpell && GcdHealsAllowed(GCDHeal);
+	#endregion
+}

@@ -3,10 +3,7 @@ using ECommons.DalamudServices;
 using ECommons.ExcelServices;
 using ECommons.GameHelpers;
 using ECommons.Logging;
-using RotationSolver.Basic.Configuration;
-using RotationSolver.Helpers;
 using RotationSolver.Updaters;
-
 namespace RotationSolver.Commands
 {
 	public static partial class RSCommands

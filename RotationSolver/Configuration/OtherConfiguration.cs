@@ -1,0 +1,1657 @@
+﻿using ECommons.DalamudServices;
+using ECommons.ExcelServices;
+using ECommons.Logging;
+using Newtonsoft.Json.Converters;
+
+namespace RotationSolver.Configuration;
+
+internal sealed partial class OtherConfiguration
+{
+	/// <markdown file="List" name="AoE" section="Actions">
+	///
+	/// RSR will use group mitigation if any enemy in the enmity list is casting
+	/// one of the listed actions. Usually those actions are raid-wides.
+	/// </markdown>
+	public static HashSet<uint> HostileCastingArea = [];
+
+	/// <markdown file="List" name="Tank Buster" section="Actions">
+	///
+	/// RSR will use mitigation on target (heal) or self (tank) if the target is currently
+	/// being targeted by one of the listed actions.
+	/// </markdown>
+	public static HashSet<uint> HostileCastingTank = [];
+
+	/// <markdown file="List" name="Knockback" section="Actions">
+	///
+	/// **Click on "Record knockback actions" at your own peril. Some duties expect you take the
+	/// knockback in order to reach a proper safe-spot, like in Sil'dihn Subterrane (Savage).**
+	///
+	/// RSR will use anti-knockback actions when you would be hit by one of the listed actions.
+	/// </markdown>
+	public static HashSet<uint> HostileCastingKnockback = [];
+
+	/// <summary>
+	/// Tankbuster marker paths the fight has shown not to be followed by a hit on the marked member
+	/// (concept 15, V2). Learned in play, never downloaded; a later hit after the same marker takes the
+	/// path out again. Paths are kept in lower case.
+	/// </summary>
+	public static HashSet<string> TankbusterMarkerWithoutHit = [];
+
+	/// <summary>
+	/// Per entry of <see cref="TankbusterMarkerWithoutHit"/>, the game version in which the marker last went without a
+	/// hit (concept 13, "Stufe 4", 4a). An entry without one, or of another version, is taken over and does not hold: the
+	/// marker counts as a tankbuster again until it shows no hit in the running version.
+	/// </summary>
+	public static Dictionary<string, string> TankbusterMarkerWithoutHitGame = [];
+
+	/// <summary>
+	/// What hit after a tankbuster marker, per marker entry (area and path, <see cref="DataCenter.TankbusterMarkerKey"/>):
+	/// lets the tank plan meet a marker that no cast accompanies with the hit measured after it before (concept 09,
+	/// A340). Learned in play, never downloaded; a confirmation by another action replaces an entry, one by the same
+	/// action keeps the shorter time.
+	/// </summary>
+	public static Dictionary<string, TankbusterMarkerHit> TankbusterMarkerHits = [];
+
+	/// <markdown file="List" name="Gaze/Stop" section="Actions">
+	///
+	/// If the target is casting one of the listed actions, RSR will stop casting
+	/// in the seconds before the action is resolved
+	/// <see cref="RotationSolver.Configuration.Configs._castingStop">here</see>.
+	/// </markdown>
+	public static HashSet<uint> HostileCastingStop = [];
+
+	public static Dictionary<uint, string[]> NoHostileNames = [];
+	public static Dictionary<uint, string[]> NoProvokeNames = [];
+
+	/// <summary>
+	/// Auto-recorded elemental weaknesses observed while in North Horn, keyed by NameId.
+	/// </summary>
+	public static Dictionary<uint, List<string>> NorthHornWeaknessRecords = [];
+
+	/// <summary>
+	/// Auto-recorded elemental weaknesses observed while in South Horn, keyed by NameId.
+	/// </summary>
+	public static Dictionary<uint, List<string>> SouthHornWeaknessRecords = [];
+
+	/// <markdown file="List" name="Beneficial Positions" section="Map-Specific Settings">
+	/// Adds a preferred location used for ground **healing** AoE abilities (example: Earthly Star).
+	///
+	/// You can add multiple locations, in case a boss fight moves you to another platform, like M4S - Wicked Thunder.
+	/// </markdown>
+	public static Dictionary<uint, Vector3[]> BeneficialPositions = [];
+
+	/// <markdown file="List" name="Dispellable Debuffs" section="Statuses">
+	///
+	/// Listed statuses will be dispelled (Esuna) first before any
+	/// other dispellable statuses.
+	/// </markdown>
+	public static HashSet<uint> DangerousStatus = [];
+
+	/// <markdown file="List" name="Priority" section="Statuses">
+	///
+	/// If running in auto mode, if any enemy in your enmity list has this status,
+	/// it will target them as priority.
+	/// </markdown>
+	public static HashSet<uint> PriorityStatus = [];
+
+	/// <markdown file="List" name="Invulnerability" section="Statuses">
+	///
+	/// Ignores target if they have one of the statuses listed.
+	/// </markdown>
+	public static HashSet<uint> InvincibleStatus = [];
+
+	/// <markdown file="List" name="No-Casting Debuffs" section="Statuses">
+	///
+	/// If you have any of the statuses listed, RSR will stop taking any actions.
+	/// </markdown>
+	public static HashSet<uint> NoCastingStatus = [];
+	public static List<Job> DancePartnerPriority = [];
+	public static List<Job> TheSpearPriority = [];
+	public static List<Job> TheBalancePriority = [];
+	public static List<Job> KardiaTankPriority = [];
+
+	/// <summary>
+	/// The largest share of a party member's maximum HP that each listed area action has ever been
+	/// observed to take from a member who could survive it, keyed by action id - at most his whole
+	/// maximum HP (<see cref="IsWithinWholeHealth"/>). Learned in play; not shipped with the plugin.
+	/// </summary>
+	/// <remarks>
+	/// Kept beside <see cref="HostileCastingArea"/> rather than folded into it, and that is the whole
+	/// reason this costs nothing to introduce: the list keeps its type, its stored format, its
+	/// surface and the one UI method that draws four such lists. An action missing here is *unrated*,
+	/// which is not the same as *small* - it behaves exactly as it did before, which is what keeps
+	/// the 850 shipped entries from losing their mitigation overnight.
+	///
+	/// A share rather than an amount, so it does not age with item level or content sync. The highest
+	/// value ever seen rather than the last, so one unmitigated observation sets the truth and later
+	/// well-mitigated ones cannot talk it back down.
+	///
+	/// Read by <c>DataCenter.AreaCastIsWorthMitigating</c>, which decides whether an incoming area
+	/// cast is worth a mitigation cooldown. Measured in play, evaluated in play, applied in play -
+	/// and this file is the only thing that carries a reading past the end of a session. Without it
+	/// every login would start from nothing and "rated after one clear" would hold only until the
+	/// player logs out, which for a fight progged over several evenings means never. That is why the
+	/// list reset leaves it alone, why a save merges with the file instead of replacing it, and why
+	/// it is written through a temporary file rather than in place. There is no button to discard
+	/// it (owner's decision - a function that is not needed is one more way to fail).
+	///
+	/// Set from its revisions alone (<see cref="MeasureAreaShare"/>, concept 13, "Stufe 1"): every reading is
+	/// counted under its game version in "HostileCastingAreaPotential.rev.json", and this table holds the
+	/// higher of the running and the taken-over layer - the highest valid reading, as before. A patch no
+	/// longer needs the file deleted; to start over by hand, both files go, with the game closed.
+	/// </remarks>
+	public static Dictionary<uint, float> HostileCastingAreaPotential = [];
+
+	/// <summary>
+	/// The actions of <see cref="HostileCastingAreaPotential"/> measured since its readings are stored unmitigated (A441),
+	/// by action id; the value is that form's number, 1. An entry without it holds a reading of the earlier form - the hit
+	/// as it arrived, often under mitigation - and is read as it was then, without the mitigation standing now taken off
+	/// it a second time (A446). Written on the game thread with the table, merged with the file by the higher form.
+	/// </summary>
+	internal static Dictionary<uint, int> AreaPotentialUnmitigated = [];
+
+	/// <summary>
+	/// How long each listed area action's series hits after its first landing, in seconds - the longest seen, keyed by
+	/// action id (concept 13, "Eine Serie zählt als ein Angriff", A460). <see cref="DataCenter.AreaShareNow"/> counts only
+	/// the mitigation that stands until the series' last hit. Learned in play on the game thread with the area table,
+	/// stored like <see cref="HitSeriesOnPlayer"/>: merged with the file by the higher span. No button discards it.
+	/// </summary>
+	internal static Dictionary<uint, float> AreaSeriesSpan = [];
+
+	/// <summary>
+	/// What each tankbuster does to the one it hits, scaled back to unmitigated, as a share of that
+	/// member's maximum HP - keyed by action id. Learned in play from every tankbuster seen on any
+	/// player, not only on the user (concept 13, "Die Tankbuster-Tabelle").
+	/// </summary>
+	/// <remarks>
+	/// The tankbuster counterpart of <see cref="HostileCastingAreaPotential"/>, stored the same way and
+	/// through the same guarded path (<see cref="SaveTracked{T}"/>): merged with the file on every
+	/// save, never written when its load did not finish, read back after writing, written through a
+	/// temporary file, set aside as .corrupt when unreadable. Changed on the game thread under
+	/// <see cref="TankbusterPotentialGate"/>, and every reader takes the same lock.
+	///
+	/// Unlike the area table it is not a raw observation: the measured share is divided by the
+	/// mitigation that stood on the member and on the attacker at the hit
+	/// (<see cref="DefensiveValues.TryStatus"/>), so a well-mitigated hit does not rate the
+	/// action low. A hit taken under a vulnerability debuff goes into its own figure. Both only ever
+	/// rise. No button discards it. Set from its revisions alone, like the area table
+	/// (<see cref="MeasureTankbuster"/>): to start over by hand, both files go, with the game closed.
+	/// </remarks>
+	public static Dictionary<uint, TankbusterReading> TankbusterPotential = [];
+
+	/// <summary>Guards <see cref="TankbusterPotential"/> between the effect handler and its readers.</summary>
+	public static readonly object TankbusterPotentialGate = new();
+
+	/// <summary>
+	/// What an enemy cast aimed at a player who is no tank does to him, scaled back to unmitigated, as a share of his
+	/// maximum HP - keyed by the cast's action id, learned from every such player seen (concept 13, "Auf einen Nicht-Tank
+	/// gezielt", A540).
+	/// </summary>
+	/// <remarks>
+	/// Measured as the tankbuster table measures, and kept apart from it: every reader of that table rates a hit for a
+	/// tank (A312). Read by the defence of a member who is no tank, for a cast aimed at him. Stored, revised and shown as
+	/// the tankbuster table; changed on the game thread under <see cref="AimedHitPotentialGate"/>.
+	/// </remarks>
+	public static Dictionary<uint, TankbusterReading> AimedHitPotential = [];
+
+	/// <summary>Guards <see cref="AimedHitPotential"/> between the effect handler and its readers.</summary>
+	public static readonly object AimedHitPotentialGate = new();
+
+	/// <summary>
+	/// What sleeps did to each enemy action they were put on, keyed by action id - learned in play over every session
+	/// (concept 08, "Ein gegnerisches Wirken stoppen").
+	/// </summary>
+	/// <remarks>
+	/// Stored like <see cref="HostileCastingAreaPotential"/>, his model for it (23.10.2026): merged with the file on
+	/// every save, every figure only rising, never written when its load did not finish, set aside as .corrupt when
+	/// unreadable. Changed on the game thread under <see cref="SleepStoreGate"/>, read there by the rule. No button
+	/// discards it: the file is deleted by hand with the game closed.
+	/// </remarks>
+	internal static Dictionary<uint, SleepReading> SleepOutcomes = [];
+
+	/// <summary>
+	/// Enemy kinds (base id) that resisted a sleep as a status, with how often - learned in play over every session.
+	/// Stored like <see cref="SleepOutcomes"/>.
+	/// </summary>
+	internal static Dictionary<uint, int> SleepResistantKinds = [];
+
+	/// <summary>
+	/// K4 of the Crucible (concept 21, A587): enemy kinds (BNpcName) seen casting a spell the game marks interruptible on a
+	/// board, with in how many fights - learned in play over every session, stored like <see cref="SleepResistantKinds"/>.
+	/// Changed and read on the game thread under <see cref="InterruptibleKindsGate"/>.
+	/// </summary>
+	internal static Dictionary<uint, int> InterruptibleCasterKinds = [];
+
+	/// <summary>Guards <see cref="InterruptibleCasterKinds"/> against the save on a pool thread.</summary>
+	internal static readonly object InterruptibleKindsGate = new();
+
+	/// <summary>
+	/// B5 of the beastmaster (concept 01, A638): per area (TerritoryType), the highest level of the player at which a
+	/// danger came there - learned in play over every session, only rising. Changed and read on the game thread under
+	/// <see cref="DangerousAreasGate"/>.
+	/// </summary>
+	internal static Dictionary<uint, int> DangerousAreas = [];
+
+	/// <summary>Guards <see cref="DangerousAreas"/> against the save on a pool thread.</summary>
+	internal static readonly object DangerousAreasGate = new();
+
+	/// <summary>
+	/// K10 of the Crucible (concept 21, Campsite, A661): per fight (XBMBattleDetail row), the heaviest damage the player took
+	/// in it, in percent of his maximum HP without his Crucible gear, rounded up - learned in play over every session, only
+	/// rising. Changed and read on the game thread under <see cref="CrucibleFightLoadsGate"/>.
+	/// </summary>
+	internal static Dictionary<uint, int> CrucibleFightLoads = [];
+
+	/// <summary>Guards <see cref="CrucibleFightLoads"/> against the save on a pool thread.</summary>
+	internal static readonly object CrucibleFightLoadsGate = new();
+
+	/// <summary>
+	/// K16 of the Crucible (concept 21, A711): per fight and familiar - the fight's XBMBattleDetail row times
+	/// <c>CrucibleBoard.FamiliarKeyStride</c> plus the familiar's pet row, times the slots of
+	/// <c>CrucibleBoard.HitSlot</c> plus the slot - the damage of its Trick and Release hits there and the potency of
+	/// those hits, both summed over every session. Changed and read on the game thread under
+	/// <see cref="CrucibleFamiliarHitsGate"/>.
+	/// </summary>
+	internal static Dictionary<uint, int> CrucibleFamiliarHits = [];
+
+	/// <summary>Guards <see cref="CrucibleFamiliarHits"/> against the save on a pool thread.</summary>
+	internal static readonly object CrucibleFamiliarHitsGate = new();
+
+	/// <summary>
+	/// K7 of the Crucible (concept 21, team size, A698): per board (XBMContent row), the most HP the familiars lost together
+	/// in one run there; under the row times <c>CrucibleBoard.FamiliarKeyStride</c> plus a rank, the losses of its uses by
+	/// size (A703); under a fight's row times that stride twice, the most a use cost a familiar in that fight (K11, A710).
+	/// Learned in play over every session, only rising. Changed and read on the game thread under
+	/// <see cref="CrucibleFamiliarLossGate"/>.
+	/// </summary>
+	internal static Dictionary<uint, int> CrucibleFamiliarLoss = [];
+
+	/// <summary>Guards <see cref="CrucibleFamiliarLoss"/> against the save on a pool thread.</summary>
+	internal static readonly object CrucibleFamiliarLossGate = new();
+
+	/// <summary>
+	/// K15 of the Crucible (concept 21, A706: whether a board is easy): per fight (XBMBattleDetail row) the most
+	/// HP the player lost from its start to its end without his own healing (A709), and under the row times
+	/// <c>CrucibleBoard.FamiliarKeyStride</c> the deepest he fell below its start - both in whole percent of his HP without
+	/// gear, learned in play, only rising. Under <see cref="CrucibleFightNetGate"/>.
+	/// </summary>
+	internal static Dictionary<uint, int> CrucibleFightNet = [];
+
+	/// <summary>Guards <see cref="CrucibleFightNet"/> against the save on a pool thread.</summary>
+	internal static readonly object CrucibleFightNetGate = new();
+
+	/// <summary>
+	/// The Crucible's learned values by the rank of the familiars (concept 21, "Gelernte Werte und der Rang der Begleiter",
+	/// A729): the keys of <see cref="CrucibleFightLoads"/>, <see cref="CrucibleFightNet"/>, <see cref="CrucibleFamiliarLoss"/>
+	/// and <see cref="CrucibleFamiliarHits"/>, each with the rank step of the team (the familiar's own rank for the hits) and,
+	/// but for the hits, the runs counted there - <c>CrucibleBoard.RankKey</c>. Each under the gate of its store.
+	/// </summary>
+	internal static Dictionary<uint, int> CrucibleFightLoadsByRank = [];
+
+	/// <inheritdoc cref="CrucibleFightLoadsByRank"/>
+	internal static Dictionary<uint, int> CrucibleFightNetByRank = [];
+
+	/// <inheritdoc cref="CrucibleFightLoadsByRank"/>
+	internal static Dictionary<uint, int> CrucibleFamiliarLossByRank = [];
+
+	/// <inheritdoc cref="CrucibleFightLoadsByRank"/>
+	internal static Dictionary<uint, int> CrucibleFamiliarHitsByRank = [];
+
+	/// <summary>
+	/// K7 of the Crucible (concept 21, "Leveln", A799): each familiar's true rank as the last board's result window showed it,
+	/// per character - the key is <c>CrucibleBoard.RankOwnerKey</c>. Learned in play, only rising. Under
+	/// <see cref="CrucibleFamiliarRankGate"/>.
+	/// </summary>
+	internal static Dictionary<uint, int> CrucibleFamiliarRank = [];
+
+	/// <summary>Guards <see cref="CrucibleFamiliarRank"/> against the save on a pool thread.</summary>
+	internal static readonly object CrucibleFamiliarRankGate = new();
+
+	/// <summary>What the last save and load of each store by rank (<see cref="CrucibleFightLoadsByRank"/>) did, in words.</summary>
+	internal static readonly System.Collections.Concurrent.ConcurrentDictionary<string, string> CrucibleByRankStoreState = new();
+
+	/// <summary>
+	/// K10 of the Crucible (concept 21, Campsite, A667): per board (the route's board row), the whole a campsite rest shares
+	/// among the player and the familiars resting, in percent of each one's maximum HP - read from the game's rest prompt
+	/// where it is not capped at 100 %, the smallest read over every session. Changed and read on the game thread under
+	/// <see cref="CrucibleCampPoolsGate"/>.
+	/// </summary>
+	internal static Dictionary<uint, int> CrucibleCampPools = [];
+
+	/// <summary>Guards <see cref="CrucibleCampPools"/> against the save on a pool thread.</summary>
+	internal static readonly object CrucibleCampPoolsGate = new();
+
+	/// <summary>
+	/// Per enemy kind (base id), the fewest sleeps it had taken in a fight before it resisted the next one - the
+	/// point where the halving of repeated sleeps ends in a temporary immunity. Learned in play over every session,
+	/// stored like <see cref="SleepOutcomes"/>; merged with the file by the lower count.
+	/// </summary>
+	internal static Dictionary<uint, int> SleepDiminishing = [];
+
+	/// <summary>
+	/// The latest decisive observation of each sleep lock - a kind that resisted, a sleep limit, an action a sleep did not
+	/// stop - with its game version and the version of its one try (concept 13, "Stufe 4", 4b). Kept beside the learned
+	/// files, which only rise or fall on every save and so cannot let a lock go.
+	/// </summary>
+	/// <remarks>
+	/// Written over on every save, as <see cref="TankbusterMarkerWithoutHitGame"/> is, with a backup the load falls back to
+	/// when the file is unreadable. A lock without a mark is from before stage 4 and taken over. Changed on the game thread
+	/// under <see cref="SleepStoreGate"/>.
+	/// </remarks>
+	internal static SleepLockMarks SleepLocks = new();
+
+	/// <summary>
+	/// Guards <see cref="SleepOutcomes"/>, <see cref="SleepResistantKinds"/>, <see cref="SleepDiminishing"/> and
+	/// <see cref="SleepLocks"/>.
+	/// </summary>
+	internal static readonly object SleepStoreGate = new();
+
+	/// <summary>
+	/// How many times each enemy action has been seen to hit the player in a row, counted the way Liturgy of the Bell
+	/// counts its triggers (<see cref="HitSeries"/>), keyed by action id - learned in play over every session.
+	/// </summary>
+	/// <remarks>
+	/// Stored like <see cref="SleepResistantKinds"/>: merged with the file on every save by the higher count, never
+	/// written when its load did not finish, set aside as .corrupt when unreadable. Changed on the game thread under
+	/// <see cref="HitSeriesGate"/>. No button discards it: the file is deleted by hand with the game closed.
+	/// </remarks>
+	internal static Dictionary<uint, int> HitSeriesOnPlayer = [];
+
+	/// <summary>Guards <see cref="HitSeriesOnPlayer"/>.</summary>
+	internal static readonly object HitSeriesGate = new();
+
+	/// <summary>
+	/// A732 (concept 08, "Wann eine Serie vorbei ist"): per enemy action, the longest time between two counted hits of a
+	/// series on the player, in milliseconds - learned in play, only rising. Under <see cref="HitSeriesGate"/>.
+	/// </summary>
+	internal static Dictionary<uint, int> HitSeriesGapOnPlayer = [];
+
+	/// <summary>What the last save and load of <see cref="HitSeriesGapOnPlayer"/> did, in words.</summary>
+	internal static string HitSeriesGapStoreState { get; private set; } = "not loaded yet";
+
+	/// <summary>
+	/// What enemy damage over time on party members was seen to do, by area (territory id) and status - learned in play
+	/// over every session (concept 08, "Schaden über Zeit: HoT gegen DoT", A432).
+	/// </summary>
+	/// <remarks>
+	/// Stored like <see cref="SleepOutcomes"/>: merged with the file on every save, every figure only rising, never
+	/// written when its load did not finish, set aside as .corrupt when unreadable. Changed on the game thread under
+	/// <see cref="DotStoreGate"/>. No button discards it: the file is deleted by hand with the game closed.
+	/// </remarks>
+	internal static Dictionary<uint, DotArea> DotOnParty = [];
+
+	/// <summary>Guards <see cref="DotOnParty"/>.</summary>
+	internal static readonly object DotStoreGate = new();
+
+	/// <summary>
+	/// The enemy actions whose landing has been seen to lay a status that damages every action - Pyretic, Causality -
+	/// on a party member, keyed by action id, with the status laid - learned in play over every session (concept 03,
+	/// "Status, unter denen nicht gehandelt werden soll", A439).
+	/// </summary>
+	/// <remarks>
+	/// The status is kept so that <see cref="NoCastingStatus"/> stays the switch: a status taken off that list is no
+	/// longer waited for, learned or not. Stored like <see cref="HitSeriesOnPlayer"/>: merged with the file on every save
+	/// by the higher id, which for one action is the one id it lays, never written
+	/// when its load did not finish, set aside as .corrupt when unreadable. Changed on the game thread under
+	/// <see cref="ActionPenaltyGate"/>. No button discards it: the file is deleted by hand with the game closed.
+	/// </remarks>
+	internal static Dictionary<uint, uint> ActionPenaltyCasts = [];
+
+	/// <summary>
+	/// Per action of <see cref="ActionPenaltyCasts"/>, what its landings showed in the running game version and before:
+	/// with the status, on its target without it, and whether the running version refuted it (concept 13, "Stufe 4", 4c).
+	/// </summary>
+	/// <remarks>
+	/// Kept beside <see cref="ActionPenaltyCasts"/>, which only rises on every save. Written over on every save, with a
+	/// backup, as <see cref="SleepLocks"/>. Changed on the game thread under <see cref="ActionPenaltyGate"/>.
+	/// </remarks>
+	internal static Dictionary<uint, PenaltySighting> ActionPenaltySightings = [];
+
+	/// <summary>Guards <see cref="ActionPenaltyCasts"/> and <see cref="ActionPenaltySightings"/>.</summary>
+	internal static readonly object ActionPenaltyGate = new();
+
+	public static RotationSolverRecord RotationSolverRecord = new();
+
+	private abstract class ListFile(string name)
+	{
+		public string Name { get; } = name;
+
+		public abstract string FilePath { get; }
+
+		public abstract void Load();
+
+		public abstract void Reset();
+
+		public abstract string Serialize();
+
+		/// <summary>
+		/// Takes what is to be written on the caller's thread and returns the write for a pool thread.
+		/// </summary>
+		/// <remarks>
+		/// The game thread changes several of these stores during play. Copied on a pool thread, a store
+		/// could be read while the game thread adds to it - "Collection was modified" thrown out of the
+		/// copy, and the save lost without a retry (A224). A store whose load did not finish is not
+		/// written: it holds its empty default, and for a built-in list that diffs to "every entry
+		/// removed" - the next start would read every list as empty (A196, A341).
+		/// </remarks>
+		public virtual Action PrepareWrite()
+		{
+			if (!WasLoaded(Name))
+			{
+				return static () => { };
+			}
+
+			var path = FilePath;
+			var json = Serialize();
+			return () => WriteFile(path, json);
+		}
+	}
+	private sealed class LocalFile<T>(string name, Func<T> get, Action<T> set, bool backup = false) : ListFile(name) where T : class, new()
+	{
+		private readonly object _gate = new();
+
+		public override string FilePath => GetFilePath(Name);
+
+		public override void Load()
+		{
+			var path = FilePath;
+			var existed = File.Exists(path);
+			var value = ReadFile<T>(path);
+
+			// There but unreadable, set aside as .corrupt: the last copy that was read back after a save (concept 13, "Stufe
+			// 4"). A missing file is not replaced by it - he deleted the file, and that stands (rule 7).
+			if (value == null && backup && existed && !File.Exists(path))
+			{
+				value = ReadFile<T>(path + ".bak");
+			}
+
+			set(value ?? new T());
+			MarkLoaded(Name);
+		}
+
+		public override Action PrepareWrite()
+		{
+			var write = base.PrepareWrite();
+			if (!backup)
+			{
+				return write;
+			}
+
+			var path = FilePath;
+			return () =>
+			{
+				lock (_gate)
+				{
+					write();
+
+					// The backup a later load falls back to: only a copy that reads back.
+					try
+					{
+						if (File.Exists(path) && JsonConvert.DeserializeObject<T>(File.ReadAllText(path), DeserializerSettings) != null)
+						{
+							File.Copy(path, path + ".bak", true);
+						}
+					}
+					catch (Exception ex)
+					{
+						PluginLog.Warning($"Could not copy {Name} as its backup: {ex.Message}");
+					}
+				}
+			};
+		}
+
+		public override void Reset() => set(new T());
+
+		public override string Serialize() => JsonConvert.SerializeObject(get(), Formatting.Indented, SerializerSettings);
+	}
+
+	private abstract class BuiltInList<T, TChanges>(string name, T builtInList, Func<T> get, Action<T> set) : ListFile(name)
+		where T : class, new()
+		where TChanges : class
+	{
+		private T BuiltIn { get; } = builtInList;
+
+		public override string FilePath => GetChangesPath(Name);
+
+		public override void Load()
+		{
+			var changes = ReadFile<TChanges>(FilePath) ?? MigrateLegacyFile();
+			set(changes == null ? Copy(BuiltIn) : Apply(BuiltIn, changes));
+			MarkLoaded(Name);
+		}
+
+		public override void Reset() => set(Copy(BuiltIn));
+
+		public override string Serialize() => JsonConvert.SerializeObject(Diff(BuiltIn, get()), Formatting.Indented, SerializerSettings);
+
+		protected abstract T Copy(T value);
+
+		protected abstract T Apply(T builtIn, TChanges changes);
+
+		protected abstract TChanges Diff(T builtIn, T current);
+
+		protected virtual TChanges? Migrate(T builtIn, T legacy) => null;
+
+		private TChanges? MigrateLegacyFile()
+		{
+			var legacyPath = GetFilePath(Name);
+			if (!File.Exists(legacyPath))
+			{
+				return null;
+			}
+
+			var legacy = ReadFile<T>(legacyPath);
+			var changes = legacy == null ? null : Migrate(BuiltIn, legacy);
+			if (changes != null)
+			{
+				WriteFile(FilePath, JsonConvert.SerializeObject(changes, Formatting.Indented, SerializerSettings));
+				if (!File.Exists(FilePath))
+				{
+					return changes;
+				}
+			}
+
+			try
+			{
+				File.Delete(legacyPath);
+				PluginLog.Information($"Moved {Name} to the built-in list{(changes == null ? string.Empty : " and kept your additions")}.");
+			}
+			catch (Exception ex)
+			{
+				PluginLog.Warning($"Failed to delete the old {legacyPath}: {ex.Message}");
+			}
+
+			return changes;
+		}
+	}
+
+	private sealed class SetChanges
+	{
+		public HashSet<uint> Added { get; set; } = [];
+		public HashSet<uint> Removed { get; set; } = [];
+	}
+
+	private sealed class SetList(string name, uint[] builtInIds, Func<HashSet<uint>> get, Action<HashSet<uint>> set, params uint[] retired)
+		: BuiltInList<HashSet<uint>, SetChanges>(name, [.. builtInIds], get, set)
+	{
+		protected override HashSet<uint> Copy(HashSet<uint> value) => [.. value];
+
+		protected override HashSet<uint> Apply(HashSet<uint> builtIn, SetChanges changes)
+		{
+			var result = new HashSet<uint>(builtIn);
+			result.ExceptWith(changes.Removed);
+			result.UnionWith(changes.Added);
+			return result;
+		}
+
+		protected override SetChanges Diff(HashSet<uint> builtIn, HashSet<uint> current)
+		{
+			var changes = new SetChanges();
+			foreach (var id in current)
+			{
+				if (!builtIn.Contains(id))
+				{
+					_ = changes.Added.Add(id);
+				}
+			}
+
+			foreach (var id in builtIn)
+			{
+				if (!current.Contains(id))
+				{
+					_ = changes.Removed.Add(id);
+				}
+			}
+
+			return changes;
+		}
+
+		protected override SetChanges Migrate(HashSet<uint> builtIn, HashSet<uint> legacy)
+		{
+			var changes = Diff(builtIn, legacy);
+			changes.Removed.Clear();
+			changes.Added.ExceptWith(retired);
+			return changes;
+		}
+	}
+
+	private sealed class MapChanges<TItem>
+	{
+		public Dictionary<uint, TItem[]> Added { get; set; } = [];
+		public Dictionary<uint, TItem[]> Removed { get; set; } = [];
+	}
+
+	private sealed class MapList<TItem>(string name, Dictionary<uint, TItem[]> builtInMap, Func<Dictionary<uint, TItem[]>> get, Action<Dictionary<uint, TItem[]>> set)
+		: BuiltInList<Dictionary<uint, TItem[]>, MapChanges<TItem>>(name, builtInMap, get, set)
+	{
+		protected override Dictionary<uint, TItem[]> Copy(Dictionary<uint, TItem[]> value)
+		{
+			var result = new Dictionary<uint, TItem[]>(value.Count);
+			foreach (var (key, items) in value)
+			{
+				result[key] = [.. items];
+			}
+
+			return result;
+		}
+
+		protected override Dictionary<uint, TItem[]> Apply(Dictionary<uint, TItem[]> builtIn, MapChanges<TItem> changes)
+		{
+			var result = Copy(builtIn);
+			foreach (var (key, removed) in changes.Removed)
+			{
+				if (result.TryGetValue(key, out var items))
+				{
+					result[key] = Except(items, removed, false);
+				}
+			}
+
+			foreach (var (key, added) in changes.Added)
+			{
+				result[key] = result.TryGetValue(key, out var items) ? [.. items, .. Except(added, items, true)] : [.. added];
+			}
+
+			return result;
+		}
+
+		protected override MapChanges<TItem> Diff(Dictionary<uint, TItem[]> builtIn, Dictionary<uint, TItem[]> current)
+		{
+			var changes = new MapChanges<TItem>();
+			foreach (var (key, items) in current)
+			{
+				var added = Except(items, builtIn.GetValueOrDefault(key), true);
+				if (added.Length > 0)
+				{
+					changes.Added[key] = added;
+				}
+			}
+
+			foreach (var (key, items) in builtIn)
+			{
+				var removed = Except(items, current.GetValueOrDefault(key), true);
+				if (removed.Length > 0)
+				{
+					changes.Removed[key] = removed;
+				}
+			}
+
+			return changes;
+		}
+
+		protected override MapChanges<TItem> Migrate(Dictionary<uint, TItem[]> builtIn, Dictionary<uint, TItem[]> legacy)
+		{
+			var changes = Diff(builtIn, legacy);
+			changes.Removed.Clear();
+			return changes;
+		}
+
+		private static TItem[] Except(TItem[] items, TItem[]? other, bool skipBlank)
+		{
+			var result = new List<TItem>(items.Length);
+			foreach (var item in items)
+			{
+				if ((skipBlank && item is null or string { Length: 0 })
+					|| (other != null && Array.IndexOf(other, item) >= 0)
+					|| result.Contains(item))
+				{
+					continue;
+				}
+
+				result.Add(item);
+			}
+
+			return [.. result];
+		}
+	}
+
+	private sealed class OrderList(string name, Job[] builtInOrder, Func<List<Job>> get, Action<List<Job>> set)
+		: BuiltInList<List<Job>, List<Job>>(name, [.. builtInOrder], get, set)
+	{
+		protected override List<Job> Copy(List<Job> value) => [.. value];
+
+		protected override List<Job> Apply(List<Job> builtIn, List<Job> changes)
+		{
+			var result = new List<Job>(builtIn.Count);
+			foreach (var job in changes)
+			{
+				if (builtIn.Contains(job) && !result.Contains(job))
+				{
+					result.Add(job);
+				}
+			}
+
+			foreach (var job in builtIn)
+			{
+				if (!result.Contains(job))
+				{
+					result.Add(job);
+				}
+			}
+
+			return result;
+		}
+
+		protected override List<Job> Diff(List<Job> builtIn, List<Job> current)
+		{
+			if (current.Count == builtIn.Count)
+			{
+				var same = true;
+				for (var i = 0; i < current.Count && same; i++)
+				{
+					same = current[i] == builtIn[i];
+				}
+
+				if (same)
+				{
+					return [];
+				}
+			}
+
+			return [.. current];
+		}
+	}
+
+	/// <summary>
+	/// A table learned in play: nothing to download, merged with its file on every save
+	/// (<see cref="SaveTracked{T}"/>), and its load and save reported in words for the list window.
+	/// </summary>
+	/// <remarks>
+	/// <paramref name="prune"/> removes what the table's own measurement would not store, and returns how
+	/// many it removed; it runs in the same step as the load, because the loads run in parallel.
+	/// With <paramref name="revision"/>, the table the readers see is set from the revisions alone, and the
+	/// old file goes on being written beside them (concept 13, "Stufe 1").
+	/// </remarks>
+	private sealed class LearnedFile<TValue>(string name, Func<Dictionary<uint, TValue>> copy,
+		Action<Dictionary<uint, TValue>> set, Func<TValue, TValue, TValue> higher, Action<string> report,
+		string noun, Func<TValue, bool>? keep = null, Func<Dictionary<uint, TValue>, int>? prune = null,
+		RevisedStore<TValue>? revision = null)
+		: ListFile(name)
+		where TValue : notnull
+	{
+		// One writer at a time. Every save of a store uses the same "<name>.json.tmp", and two pool
+		// tasks writing it at once made the second one fail on the locked file - retried twice, and
+		// on the third failure dropped.
+		private readonly object _gate = new();
+
+		public override string FilePath => GetFilePath(Name);
+
+		public override void Load()
+		{
+			// "loaded 0", "file unreadable" and "no file yet" all leave an empty table behind, and only
+			// the first of them is harmless - so the outcome is recorded for the list window.
+			var path = FilePath;
+			var existed = File.Exists(path);
+			var value = ReadFile<Dictionary<uint, TValue>>(path);
+			var fromBackup = false;
+			if (value == null && existed && !File.Exists(path))
+			{
+				// There but unreadable, set aside as .corrupt: the last copy that was read back after a save. A missing
+				// file is not replaced by it - he deleted the file, and that stands (concept 13, rule 7).
+				value = ReadFile<Dictionary<uint, TValue>>(path + ".bak");
+				fromBackup = value != null;
+			}
+
+			value ??= [];
+			MarkLoaded(Name);
+			var read = value.Count;
+			var old = revision != null ? new Dictionary<uint, TValue>(value) : null;
+			var pruned = prune?.Invoke(value) ?? 0;
+			if (revision != null)
+			{
+				value = revision.Load(old!);
+			}
+
+			set(value);
+
+			// With revisions the readers see what the revisions hold, and the old file only fed them: both are named.
+			var failed = existed && !File.Exists(path);
+			var file = !existed ? "no file yet"
+				: fromBackup ? $"file unreadable, set aside as .corrupt, {read} {noun} from its backup"
+				: failed ? "file unreadable, set aside as .corrupt, no readable backup"
+				: $"{read} {noun} " + (revision != null ? "in the file" : "from file")
+					+ (pruned > 0 ? $", {pruned} invalid or above a whole max HP left out" : string.Empty);
+			report($"{(failed ? "LOAD FAILED" : "loaded")} {DateTime.Now:HH:mm:ss}: {file}"
+				+ (revision != null ? $"; the readers see {value.Count} {noun} from the revisions"
+					: (failed && !fromBackup) || !existed ? ", started empty" : string.Empty));
+		}
+
+		// Learned in play, never reset: there is no built-in table to return to, and no button discards it.
+		public override void Reset()
+		{
+		}
+
+		public override string Serialize() => JsonConvert.SerializeObject(copy(), Formatting.Indented, SerializerSettings);
+
+		public override Action PrepareWrite()
+		{
+			var snapshot = copy();
+			if (revision == null)
+			{
+				return () => SaveTracked(snapshot, Name, higher, report, _gate, noun, keep);
+			}
+
+			// The old file keeps the highest of all valid readings, the refuted ones included (concept 13, "Stufe 3").
+			revision.RaiseToKnown(snapshot);
+			var layers = revision.Snapshot();
+			return () =>
+			{
+				SaveTracked(snapshot, Name, higher, report, _gate, noun, keep);
+				revision.Save(layers);
+			};
+		}
+	}
+
+	private static readonly JsonSerializerSettings SerializerSettings = new()
+	{
+		TypeNameHandling = TypeNameHandling.None,
+	};
+
+	private static readonly JsonSerializerSettings DeserializerSettings = new()
+	{
+		TypeNameHandling = TypeNameHandling.None,
+		Converters = [new StringEnumConverter()],
+	};
+
+	// Declared before Files, which takes them: static fields start in the order they stand in a file. The method number
+	// is raised with every change to what a stored value means (concept 13, rule 1); 1 is the method since stage 1.
+	private static readonly RevisedStore<float> AreaRevision = new(nameof(HostileCastingAreaPotential), 1, Math.Max,
+		IsValidAreaShare, share => share, () => HostileCastingAreaPotential, null, "area table");
+
+	private static readonly RevisedStore<TankbusterReading> TankbusterRevision = new(nameof(TankbusterPotential), 1,
+		TankbusterReading.Higher, TankbusterReading.IsValid, reading => reading.Unmitigated > 0f ? reading.Unmitigated : null,
+		() => TankbusterPotential, TankbusterPotentialGate, "tankbuster table");
+
+	private static readonly RevisedStore<TankbusterReading> AimedHitRevision = new(nameof(AimedHitPotential), 1,
+		TankbusterReading.Higher, TankbusterReading.IsValid, reading => reading.Unmitigated > 0f ? reading.Unmitigated : null,
+		() => AimedHitPotential, AimedHitPotentialGate, "aimed hit table");
+
+	/// <summary>
+	/// Every stored list this plugin keeps, in one place: <see cref="InitAsync"/> loads exactly these,
+	/// <see cref="Save()"/> and <see cref="SaveList"/> write exactly these.
+	/// </summary>
+	/// <remarks>
+	/// Load and save once carried a list each, and they drifted: <see cref="HostileCastingAreaPotential"/>
+	/// was saved but loaded only in an entry point the plugin never called. The learned damage potentials
+	/// were therefore never read back at login, and the first save of the session wrote the empty table
+	/// over the file - nothing failed, nothing was logged, and the only symptom in play was mitigation
+	/// falling back to "unrated". One list for both removes the failure mode rather than the instance of
+	/// it: a store cannot reach a save path without a load path.
+	/// </remarks>
+	private static readonly ListFile[] Files =
+	[
+		new SetList(nameof(DangerousStatus), StatusLists.DangerousStatus, () => DangerousStatus, v => DangerousStatus = v),
+		new SetList(nameof(PriorityStatus), StatusLists.PriorityStatus, () => PriorityStatus, v => PriorityStatus = v, 861, 1323, 2654, 3202),
+		new SetList(nameof(InvincibleStatus), StatusLists.InvincibleStatus, () => InvincibleStatus, v => InvincibleStatus = v, 151, 198, 350, 385, 945, 1303, 3054),
+		new OrderList(nameof(DancePartnerPriority), JobPriorityLists.DancePartnerPriority, () => DancePartnerPriority, v => DancePartnerPriority = v),
+		new OrderList(nameof(TheSpearPriority), JobPriorityLists.TheSpearPriority, () => TheSpearPriority, v => TheSpearPriority = v),
+		new OrderList(nameof(TheBalancePriority), JobPriorityLists.TheBalancePriority, () => TheBalancePriority, v => TheBalancePriority = v),
+		new OrderList(nameof(KardiaTankPriority), JobPriorityLists.KardiaTankPriority, () => KardiaTankPriority, v => KardiaTankPriority = v),
+		new MapList<string>(nameof(NoHostileNames), TerritoryLists.NoHostileNames, () => NoHostileNames, v => NoHostileNames = v),
+		new MapList<string>(nameof(NoProvokeNames), TerritoryLists.NoProvokeNames, () => NoProvokeNames, v => NoProvokeNames = v),
+		// Upstream's list and the casts cactbot announces (concept 13, "Die mitgelieferten Listen", A620).
+		new SetList(nameof(HostileCastingArea), [.. ActionLists.HostileCastingArea, .. CactbotCasts.HostileCastingArea], () => HostileCastingArea, v => HostileCastingArea = v, 41147, 41763),
+		// The game thread is the only writer of this table, and the copy is taken there.
+		new LearnedFile<float>(nameof(HostileCastingAreaPotential),
+			() => new Dictionary<uint, float>(HostileCastingAreaPotential), v => HostileCastingAreaPotential = v,
+			Math.Max, state => AreaPotentialStoreState = state, "rated action(s)", IsValidAreaShare, DropBeyondWholeHealth,
+			AreaRevision),
+		new LearnedFile<int>(nameof(AreaPotentialUnmitigated),
+			() => new Dictionary<uint, int>(AreaPotentialUnmitigated), v => AreaPotentialUnmitigated = v,
+			Math.Max, state => AreaPotentialUnmitigatedState = state, "rated action(s) measured unmitigated"),
+		// Written on the game thread with the area table, and copied there.
+		new LearnedFile<float>(nameof(AreaSeriesSpan),
+			() => new Dictionary<uint, float>(AreaSeriesSpan), v => AreaSeriesSpan = v,
+			Math.Max, state => AreaSeriesSpanState = state, "area series with a learned span",
+			span => float.IsFinite(span) && span >= 0f),
+		new LearnedFile<TankbusterReading>(nameof(TankbusterPotential), CopyTankbusterPotential,
+			v => { lock (TankbusterPotentialGate) { TankbusterPotential = v; } },
+			TankbusterReading.Higher, state => TankbusterStoreState = state, "rated tankbuster(s)", TankbusterReading.IsValid,
+			revision: TankbusterRevision),
+		new LearnedFile<TankbusterReading>(nameof(AimedHitPotential), CopyAimedHitPotential,
+			v => { lock (AimedHitPotentialGate) { AimedHitPotential = v; } },
+			TankbusterReading.Higher, state => AimedHitStoreState = state, "rated aimed hit(s) on non-tanks", TankbusterReading.IsValid,
+			revision: AimedHitRevision),
+		new LearnedFile<SleepReading>(nameof(SleepOutcomes), () => CopySleepStore(SleepOutcomes),
+			v => { lock (SleepStoreGate) { SleepOutcomes = v; } },
+			SleepReading.Higher, state => SleepStoreState = state, "slept action(s)"),
+		new LearnedFile<int>(nameof(SleepResistantKinds), () => CopySleepStore(SleepResistantKinds),
+			v => { lock (SleepStoreGate) { SleepResistantKinds = v; } },
+			Math.Max, state => SleepKindsStoreState = state, "resistant enemy kind(s)"),
+		new LearnedFile<int>(nameof(InterruptibleCasterKinds), CopyInterruptibleKinds,
+			v => { lock (InterruptibleKindsGate) { InterruptibleCasterKinds = v; } },
+			Math.Max, state => InterruptibleKindsStoreState = state, "enemy kind(s) casting interruptibly"),
+		new LearnedFile<int>(nameof(DangerousAreas), CopyDangerousAreas,
+			v => { lock (DangerousAreasGate) { DangerousAreas = v; } },
+			Math.Max, state => DangerousAreasStoreState = state, "area(s) with a danger seen"),
+		new LearnedFile<int>(nameof(CrucibleFightLoads), CopyCrucibleFightLoads,
+			v => { lock (CrucibleFightLoadsGate) { CrucibleFightLoads = v; } },
+			Math.Max, state => CrucibleFightLoadsStoreState = state, "Crucible fight(s) with a measured load"),
+		new LearnedFile<int>(nameof(CrucibleFamiliarHits), CopyCrucibleFamiliarHits,
+			v => { lock (CrucibleFamiliarHitsGate) { CrucibleFamiliarHits = v; } },
+			Math.Max, state => CrucibleFamiliarHitsStoreState = state, "Crucible familiar value(s) of measured hits per fight"),
+		new LearnedFile<int>(nameof(CrucibleFamiliarLoss), CopyCrucibleFamiliarLoss,
+			v => { lock (CrucibleFamiliarLossGate) { CrucibleFamiliarLoss = v; } },
+			Math.Max, state => CrucibleFamiliarLossStoreState = state, "Crucible board(s) with a measured familiar loss per run"),
+		new LearnedFile<int>(nameof(CrucibleFightNet), CopyCrucibleFightNet,
+			v => { lock (CrucibleFightNetGate) { CrucibleFightNet = v; } },
+			Math.Max, state => CrucibleFightNetStoreState = state, "Crucible fight(s) with a measured net loss and dip"),
+		new LearnedFile<int>(nameof(CrucibleFightLoadsByRank), () => CopyUnder(CrucibleFightLoadsGate, CrucibleFightLoadsByRank),
+			v => { lock (CrucibleFightLoadsGate) { CrucibleFightLoadsByRank = v; } },
+			Math.Max, state => CrucibleByRankStoreState[nameof(CrucibleFightLoadsByRank)] = state, "Crucible load value(s) by rank"),
+		new LearnedFile<int>(nameof(CrucibleFightNetByRank), () => CopyUnder(CrucibleFightNetGate, CrucibleFightNetByRank),
+			v => { lock (CrucibleFightNetGate) { CrucibleFightNetByRank = v; } },
+			Math.Max, state => CrucibleByRankStoreState[nameof(CrucibleFightNetByRank)] = state, "Crucible net loss value(s) by rank"),
+		new LearnedFile<int>(nameof(CrucibleFamiliarLossByRank), () => CopyUnder(CrucibleFamiliarLossGate, CrucibleFamiliarLossByRank),
+			v => { lock (CrucibleFamiliarLossGate) { CrucibleFamiliarLossByRank = v; } },
+			Math.Max, state => CrucibleByRankStoreState[nameof(CrucibleFamiliarLossByRank)] = state, "Crucible familiar loss value(s) by rank"),
+		new LearnedFile<int>(nameof(CrucibleFamiliarHitsByRank), () => CopyUnder(CrucibleFamiliarHitsGate, CrucibleFamiliarHitsByRank),
+			v => { lock (CrucibleFamiliarHitsGate) { CrucibleFamiliarHitsByRank = v; } },
+			Math.Max, state => CrucibleByRankStoreState[nameof(CrucibleFamiliarHitsByRank)] = state, "Crucible familiar hit value(s) by rank"),
+		new LearnedFile<int>(nameof(CrucibleFamiliarRank), () => CopyUnder(CrucibleFamiliarRankGate, CrucibleFamiliarRank),
+			v => { lock (CrucibleFamiliarRankGate) { CrucibleFamiliarRank = v; } },
+			Math.Max, state => CrucibleByRankStoreState[nameof(CrucibleFamiliarRank)] = state, "Crucible familiar rank(s) from a board's result"),
+		new LearnedFile<int>(nameof(CrucibleCampPools), CopyCrucibleCampPools,
+			v => { lock (CrucibleCampPoolsGate) { CrucibleCampPools = v; } },
+			Math.Min, state => CrucibleCampPoolsStoreState = state, "Crucible board(s) with a read campsite rest"),
+		new LearnedFile<int>(nameof(SleepDiminishing), () => CopySleepStore(SleepDiminishing),
+			v => { lock (SleepStoreGate) { SleepDiminishing = v; } },
+			Math.Min, state => SleepDiminishingStoreState = state, "enemy kind(s) with a sleep limit"),
+		new LearnedFile<int>(nameof(HitSeriesOnPlayer), CopyHitSeries,
+			v => { lock (HitSeriesGate) { HitSeriesOnPlayer = v; } },
+			Math.Max, state => HitSeriesStoreState = state, "enemy action(s) hitting in series"),
+		new LearnedFile<int>(nameof(HitSeriesGapOnPlayer), () => CopyUnder(HitSeriesGate, HitSeriesGapOnPlayer),
+			v => { lock (HitSeriesGate) { HitSeriesGapOnPlayer = v; } },
+			Math.Max, state => HitSeriesGapStoreState = state, "enemy action(s) with a gap between series hits"),
+		new LearnedFile<DotArea>(nameof(DotOnParty), CopyDotStore,
+			v => { lock (DotStoreGate) { DotOnParty = v; } },
+			DotArea.Merge, state => DotStoreState = state, "area(s) with learned damage over time"),
+		new LearnedFile<uint>(nameof(ActionPenaltyCasts), CopyActionPenaltyCasts,
+			v => { lock (ActionPenaltyGate) { ActionPenaltyCasts = v; } },
+			Math.Max, state => ActionPenaltyStoreState = state, "enemy action(s) laying a status that damages every action"),
+		new SetList(nameof(HostileCastingTank), [.. ActionLists.HostileCastingTank, .. CactbotCasts.HostileCastingTank], () => HostileCastingTank, v => HostileCastingTank = v,
+			13364, 13365, 13367, 13371, 13375, 13385, 13388, 13438, 13444, 13452, 13454, 13462, 13475),
+		new MapList<Vector3>(nameof(BeneficialPositions), TerritoryLists.BeneficialPositions, () => BeneficialPositions, v => BeneficialPositions = v),
+		new LocalFile<RotationSolverRecord>(nameof(RotationSolverRecord), () => RotationSolverRecord, v => RotationSolverRecord = v),
+		new SetList(nameof(NoCastingStatus), StatusLists.NoCastingStatus, () => NoCastingStatus, v => NoCastingStatus = v),
+		new SetList(nameof(HostileCastingKnockback), ActionLists.HostileCastingKnockback, () => HostileCastingKnockback, v => HostileCastingKnockback = v),
+		// Learned in play, like the damage tables: no built-in list.
+		// The lock and marker stores carry a backup (concept 13, "Stufe 4"): an unreadable TankbusterMarkerHits would lose the hit
+		// measured after a marker.
+		new LocalFile<HashSet<string>>(nameof(TankbusterMarkerWithoutHit), () => TankbusterMarkerWithoutHit, v => TankbusterMarkerWithoutHit = v,
+			backup: true),
+		new LocalFile<Dictionary<string, string>>(nameof(TankbusterMarkerWithoutHitGame), () => TankbusterMarkerWithoutHitGame,
+			v => TankbusterMarkerWithoutHitGame = v, backup: true),
+		new LocalFile<Dictionary<string, TankbusterMarkerHit>>(nameof(TankbusterMarkerHits), () => TankbusterMarkerHits, v => TankbusterMarkerHits = v,
+			backup: true),
+		new LocalFile<SleepLockMarks>(nameof(SleepLocks), CopySleepLocks, v => { lock (SleepStoreGate) { SleepLocks = v.Whole(); } },
+			backup: true),
+		new LocalFile<Dictionary<uint, PenaltySighting>>(nameof(ActionPenaltySightings), CopyPenaltySightings,
+			v => { lock (ActionPenaltyGate) { ActionPenaltySightings = PenaltySightingRules.Whole(v); } }, backup: true),
+		new SetList(nameof(HostileCastingStop), ActionLists.HostileCastingStop, () => HostileCastingStop, v => HostileCastingStop = v, 3715, 3719, 3720, 3721, 3722),
+		new LocalFile<Dictionary<uint, List<string>>>(nameof(NorthHornWeaknessRecords), () => NorthHornWeaknessRecords, v => NorthHornWeaknessRecords = v),
+		new LocalFile<Dictionary<uint, List<string>>>(nameof(SouthHornWeaknessRecords), () => SouthHornWeaknessRecords, v => SouthHornWeaknessRecords = v),
+	];
+
+	private static Dictionary<uint, T> CopySleepStore<T>(Dictionary<uint, T> store)
+	{
+		lock (SleepStoreGate)
+		{
+			return new Dictionary<uint, T>(store);
+		}
+	}
+
+	// Deep, under the gate: the readings change on the game thread while the save writes off it.
+	private static Dictionary<uint, DotArea> CopyDotStore()
+	{
+		lock (DotStoreGate)
+		{
+			var copy = new Dictionary<uint, DotArea>(DotOnParty.Count);
+			foreach (var (area, readings) in DotOnParty)
+			{
+				copy[area] = readings.Copy();
+			}
+
+			return copy;
+		}
+	}
+
+	private static SleepLockMarks CopySleepLocks()
+	{
+		lock (SleepStoreGate)
+		{
+			return SleepLocks.Copy();
+		}
+	}
+
+	private static Dictionary<uint, PenaltySighting> CopyPenaltySightings()
+	{
+		lock (ActionPenaltyGate)
+		{
+			return PenaltySightingRules.Copy(ActionPenaltySightings);
+		}
+	}
+
+	private static Dictionary<uint, uint> CopyActionPenaltyCasts()
+	{
+		lock (ActionPenaltyGate)
+		{
+			return new Dictionary<uint, uint>(ActionPenaltyCasts);
+		}
+	}
+
+	private static Dictionary<uint, int> CopyHitSeries()
+	{
+		lock (HitSeriesGate)
+		{
+			return new Dictionary<uint, int>(HitSeriesOnPlayer);
+		}
+	}
+
+	private static Dictionary<uint, TankbusterReading> CopyTankbusterPotential()
+	{
+		lock (TankbusterPotentialGate)
+		{
+			return new Dictionary<uint, TankbusterReading>(TankbusterPotential);
+		}
+	}
+
+	private static Dictionary<uint, TankbusterReading> CopyAimedHitPotential()
+	{
+		lock (AimedHitPotentialGate)
+		{
+			return new Dictionary<uint, TankbusterReading>(AimedHitPotential);
+		}
+	}
+
+	private static ListFile GetFile(string name)
+	{
+		foreach (var file in Files)
+		{
+			if (file.Name == name)
+			{
+				return file;
+			}
+		}
+
+		throw new ArgumentException($"Unknown list file {name}", nameof(name));
+	}
+
+	/// <summary>
+	/// Whether a learned area share is one the measurement stores: at most the member's whole maximum HP.
+	/// </summary>
+	/// <remarks>
+	/// The measurement leaves out a hit beyond a member's health and barrier - it kills from full health
+	/// whatever is done, the hit of a kill mechanic on the one who missed it - and counts one he survived
+	/// only behind his barrier as his whole health (Watcher.TryAreaShare, A298). Anything above that in the
+	/// file is a reading from before, Megadeath at 941 % among them; since the table only ever rises, it
+	/// would otherwise stand for good, and on every save the merge would write it back.
+	/// </remarks>
+	internal static bool IsWithinWholeHealth(float share) => share <= 1f;
+
+	private static int DropBeyondWholeHealth(Dictionary<uint, float> table)
+	{
+		var beyond = new List<uint>();
+		foreach (var (id, share) in table)
+		{
+			if (!IsValidAreaShare(share))
+			{
+				beyond.Add(id);
+			}
+		}
+
+		foreach (var id in beyond)
+		{
+			_ = table.Remove(id);
+		}
+
+		return beyond.Count;
+	}
+
+	public static async Task InitAsync(CancellationToken cancellationToken = default)
+	{
+		_ = Directory.CreateDirectory(GetChangesPath(string.Empty));
+
+		var tasks = new Task[Files.Length];
+		for (var i = 0; i < Files.Length; i++)
+		{
+			var file = Files[i];
+			tasks[i] = Task.Run(file.Load, cancellationToken);
+		}
+
+		await Task.WhenAll(tasks);
+	}
+
+	public static Task Save()
+	{
+		var writes = new Action[Files.Length];
+		for (var i = 0; i < Files.Length; i++)
+		{
+			writes[i] = Files[i].PrepareWrite();
+		}
+
+		return Task.Run(() =>
+		{
+			foreach (var write in writes)
+			{
+				// One failed write must not cost the ones after it: callers discard this task, so a
+				// throw here would end the sequence without a trace (A224).
+				try
+				{
+					write();
+				}
+				catch (Exception ex)
+				{
+					PluginLog.Warning($"Failed to save a list: {ex.Message}");
+				}
+			}
+		});
+	}
+
+	internal static Task SaveList(string name)
+	{
+		var write = GetFile(name).PrepareWrite();
+		return Task.Run(write);
+	}
+
+	private static void ResetFile(string name)
+	{
+		var file = GetFile(name);
+		file.Reset();
+		// A reset is a state of its own, the built-in list: written even where the load did not finish.
+		MarkLoaded(file.Name);
+		_ = SaveList(name);
+	}
+
+	#region Action Tab
+	public static void ResetHostileCastingArea() => ResetFile(nameof(HostileCastingArea));
+
+	public static void ResetHostileCastingTank() => ResetFile(nameof(HostileCastingTank));
+
+	public static void ResetHostileCastingKnockback() => ResetFile(nameof(HostileCastingKnockback));
+
+	public static void ResetHostileCastingStop() => ResetFile(nameof(HostileCastingStop));
+
+	public static Task SaveHostileCastingArea() => SaveList(nameof(HostileCastingArea));
+
+	internal static Task SaveAreaPotentialUnmitigated() => SaveList(nameof(AreaPotentialUnmitigated));
+
+	internal static Task SaveAreaSeriesSpan() => SaveList(nameof(AreaSeriesSpan));
+
+	/// <summary>What the last save and load of <see cref="AreaSeriesSpan"/> did, in words.</summary>
+	internal static string AreaSeriesSpanState { get; private set; } = "not loaded yet";
+
+	/// <summary>What the last save and load of <see cref="AreaPotentialUnmitigated"/> did, in words.</summary>
+	internal static string AreaPotentialUnmitigatedState { get; private set; } = "not loaded yet";
+
+	internal static Task SaveSleepOutcomes() => SaveList(nameof(SleepOutcomes));
+
+	internal static Task SaveSleepResistantKinds() => SaveList(nameof(SleepResistantKinds));
+
+	internal static Task SaveInterruptibleCasterKinds() => SaveList(nameof(InterruptibleCasterKinds));
+
+	private static Dictionary<uint, int> CopyInterruptibleKinds()
+	{
+		lock (InterruptibleKindsGate)
+		{
+			return new Dictionary<uint, int>(InterruptibleCasterKinds);
+		}
+	}
+
+	/// <summary>What the last save and load of <see cref="InterruptibleCasterKinds"/> did, in words.</summary>
+	internal static string InterruptibleKindsStoreState { get; private set; } = "not loaded yet";
+
+	internal static Task SaveDangerousAreas() => SaveList(nameof(DangerousAreas));
+
+	internal static Task SaveCrucibleFightLoads() => SaveList(nameof(CrucibleFightLoads));
+
+	internal static Task SaveCrucibleCampPools() => SaveList(nameof(CrucibleCampPools));
+
+	internal static Task SaveCrucibleFamiliarHits() => SaveList(nameof(CrucibleFamiliarHits));
+
+	private static Dictionary<uint, int> CopyCrucibleFamiliarHits()
+	{
+		lock (CrucibleFamiliarHitsGate)
+		{
+			return new Dictionary<uint, int>(CrucibleFamiliarHits);
+		}
+	}
+
+	/// <summary>What the last save and load of <see cref="CrucibleFamiliarHits"/> did, in words.</summary>
+	internal static string CrucibleFamiliarHitsStoreState { get; private set; } = "not loaded yet";
+
+	internal static Task SaveCrucibleFamiliarLoss() => SaveList(nameof(CrucibleFamiliarLoss));
+
+	private static Dictionary<uint, int> CopyCrucibleFamiliarLoss()
+	{
+		lock (CrucibleFamiliarLossGate)
+		{
+			return new Dictionary<uint, int>(CrucibleFamiliarLoss);
+		}
+	}
+
+	/// <summary>What the last save and load of <see cref="CrucibleFamiliarLoss"/> did, in words.</summary>
+	internal static string CrucibleFamiliarLossStoreState { get; private set; } = "not loaded yet";
+
+	internal static Task SaveCrucibleFightNet() => SaveList(nameof(CrucibleFightNet));
+
+	private static Dictionary<uint, int> CopyCrucibleFightNet()
+	{
+		lock (CrucibleFightNetGate)
+		{
+			return new Dictionary<uint, int>(CrucibleFightNet);
+		}
+	}
+
+	/// <summary>What the last save and load of <see cref="CrucibleFightNet"/> did, in words.</summary>
+	internal static string CrucibleFightNetStoreState { get; private set; } = "not loaded yet";
+
+	internal static Task SaveHitSeriesGapOnPlayer() => SaveList(nameof(HitSeriesGapOnPlayer));
+
+	internal static Task SaveCrucibleFightLoadsByRank() => SaveList(nameof(CrucibleFightLoadsByRank));
+
+	internal static Task SaveCrucibleFightNetByRank() => SaveList(nameof(CrucibleFightNetByRank));
+
+	internal static Task SaveCrucibleFamiliarLossByRank() => SaveList(nameof(CrucibleFamiliarLossByRank));
+
+	internal static Task SaveCrucibleFamiliarHitsByRank() => SaveList(nameof(CrucibleFamiliarHitsByRank));
+
+	private static Dictionary<uint, int> CopyUnder(object gate, Dictionary<uint, int> store)
+	{
+		lock (gate)
+		{
+			return new Dictionary<uint, int>(store);
+		}
+	}
+
+	private static Dictionary<uint, int> CopyCrucibleCampPools()
+	{
+		lock (CrucibleCampPoolsGate)
+		{
+			return new Dictionary<uint, int>(CrucibleCampPools);
+		}
+	}
+
+	/// <summary>What the last save and load of <see cref="CrucibleCampPools"/> did, in words.</summary>
+	internal static string CrucibleCampPoolsStoreState { get; private set; } = "not loaded yet";
+
+	private static Dictionary<uint, int> CopyCrucibleFightLoads()
+	{
+		lock (CrucibleFightLoadsGate)
+		{
+			return new Dictionary<uint, int>(CrucibleFightLoads);
+		}
+	}
+
+	/// <summary>What the last save and load of <see cref="CrucibleFightLoads"/> did, in words.</summary>
+	internal static string CrucibleFightLoadsStoreState { get; private set; } = "not loaded yet";
+
+	private static Dictionary<uint, int> CopyDangerousAreas()
+	{
+		lock (DangerousAreasGate)
+		{
+			return new Dictionary<uint, int>(DangerousAreas);
+		}
+	}
+
+	/// <summary>What the last save and load of <see cref="DangerousAreas"/> did, in words.</summary>
+	internal static string DangerousAreasStoreState { get; private set; } = "not loaded yet";
+
+	internal static Task SaveSleepDiminishing() => SaveList(nameof(SleepDiminishing));
+
+	internal static Task SaveHitSeriesOnPlayer() => SaveList(nameof(HitSeriesOnPlayer));
+
+	internal static Task SaveDotOnParty() => SaveList(nameof(DotOnParty));
+
+	internal static Task SaveActionPenaltyCasts() => SaveList(nameof(ActionPenaltyCasts));
+
+	internal static Task SaveSleepLocks() => SaveList(nameof(SleepLocks));
+
+	internal static Task SaveActionPenaltySightings() => SaveList(nameof(ActionPenaltySightings));
+
+	/// <summary>What the last save and load of <see cref="ActionPenaltyCasts"/> did, in words.</summary>
+	internal static string ActionPenaltyStoreState { get; private set; } = "not loaded yet";
+
+	/// <summary>What the last save and load of <see cref="DotOnParty"/> did, in words.</summary>
+	internal static string DotStoreState { get; private set; } = "not loaded yet";
+
+	/// <summary>What the last save and load of <see cref="HitSeriesOnPlayer"/> did, in words.</summary>
+	internal static string HitSeriesStoreState { get; private set; } = "not loaded yet";
+
+	/// <summary>What the last save and load of <see cref="SleepDiminishing"/> did, in words.</summary>
+	internal static string SleepDiminishingStoreState { get; private set; } = "not loaded yet";
+
+	/// <summary>What the last save and load of <see cref="SleepOutcomes"/> did, in words.</summary>
+	internal static string SleepStoreState { get; private set; } = "not loaded yet";
+
+	/// <summary>What the last save and load of <see cref="SleepResistantKinds"/> did, in words.</summary>
+	internal static string SleepKindsStoreState { get; private set; } = "not loaded yet";
+
+	/// <summary>What the last save and load of the tankbuster table did, in words.</summary>
+	public static string TankbusterStoreState { get; private set; } = "not loaded yet";
+
+	/// <summary>What the last save and load of the table of aimed hits on non-tanks did, in words.</summary>
+	public static string AimedHitStoreState { get; private set; } = "not loaded yet";
+
+	/// <summary>
+	/// What the last save and the last load of the learned damage table did, in words. Read by the
+	/// list window, so a store that silently fails can be told apart from one that simply has not
+	/// measured anything yet.
+	/// </summary>
+	public static string AreaPotentialStoreState { get; private set; } = "not loaded yet";
+
+	/// <summary>
+	/// The guarded save of a table learned in play. <paramref name="higher"/> merges a value in memory
+	/// with the one on disk - each store only ever grows, so the file is a lower bound and nothing it
+	/// holds is dropped, except a value <paramref name="keep"/> rejects: one the table's own measurement
+	/// would not store, which the load left out as well. <paramref name="report"/> receives what
+	/// happened, in words.
+	/// </summary>
+	private static void SaveTracked<T>(Dictionary<uint, T> snapshot, string name, Func<T, T, T> higher,
+		Action<string> report, object gate, string noun, Func<T, bool>? keep = null)
+	{
+		if (!WasLoaded(name))
+		{
+			report($"NOT SAVED {DateTime.Now:HH:mm:ss}: the table was never loaded this session, file left as it is");
+			return;
+		}
+
+		lock (gate)
+		{
+			// The table only ever grows by itself, so what is on disk is never less than true: a save
+			// takes the higher value of memory and file for every action and drops nothing the file
+			// holds. Memory can hold less than the file - a load that failed, a table that started
+			// empty for any reason - and before this a single save then replaced weeks of readings
+			// with the few taken since. To start over, the file is deleted by hand while the game
+			// is closed - there is deliberately no button for it (owner's decision); a table with
+			// revisions keeps a second file beside it, and both go (concept 13, "Stufe 1").
+			if (!TryReadEntriesOnDisk<T>(name, out var onDiskBefore))
+			{
+				// A file that is there but cannot be read now - locked by another program, or broken -
+				// is not overwritten by a save that could not merge with it. The reading stays in
+				// memory and goes out with the next save.
+				report($"NOT SAVED {DateTime.Now:HH:mm:ss}: the file could not be read to merge with, left as it is - see the log");
+				return;
+			}
+
+			if (onDiskBefore != null)
+			{
+				foreach (var (id, onDisk) in onDiskBefore)
+				{
+					// Taken back from the file, a value the load left out would raise the reading measured
+					// since, and the next load would leave out both.
+					if (keep != null && !keep(onDisk))
+					{
+						continue;
+					}
+
+					snapshot[id] = snapshot.TryGetValue(id, out var inMemory) ? higher(inMemory, onDisk) : onDisk;
+				}
+			}
+
+			var ok = WriteFile(GetFilePath(name), JsonConvert.SerializeObject(snapshot, Formatting.Indented, SerializerSettings));
+
+			// Read back what is on disk rather than trusting the call. A save that "succeeded" but
+			// left a file the loader cannot read, or one with fewer entries than were written, is
+			// exactly the failure this store cannot afford, and only the file itself can say so.
+			var readBack = CountEntriesOnDisk<T>(name);
+			if (ok && readBack == snapshot.Count)
+			{
+				// The backup a later load falls back to when the file cannot be read: only a copy that was read back.
+				try
+				{
+					File.Copy(GetFilePath(name), GetFilePath(name) + ".bak", true);
+				}
+				catch (Exception ex)
+				{
+					PluginLog.Warning($"Could not copy {name} as its backup: {ex.Message}");
+				}
+			}
+
+			report(ok && readBack == snapshot.Count
+				? $"saved {DateTime.Now:HH:mm:ss}: {snapshot.Count} {noun} written and read back"
+				: !ok
+					? $"SAVE FAILED {DateTime.Now:HH:mm:ss}: {snapshot.Count} in memory, file unchanged - see the log"
+					: $"SAVE MISMATCH {DateTime.Now:HH:mm:ss}: {snapshot.Count} written, {readBack} read back");
+		}
+	}
+
+	/// <returns>False when the file exists but could not be read; true with null when there is none.</returns>
+	private static bool TryReadEntriesOnDisk<T>(string name, out Dictionary<uint, T>? entries)
+	{
+		entries = null;
+		try
+		{
+			var path = GetFilePath(name);
+			if (!File.Exists(path))
+			{
+				return true;
+			}
+
+			entries = JsonConvert.DeserializeObject<Dictionary<uint, T>>(File.ReadAllText(path));
+			return entries != null;
+		}
+		catch (Exception ex)
+		{
+			PluginLog.Warning($"Could not read {name} before saving: {ex.Message}");
+			return false;
+		}
+	}
+
+	private static int CountEntriesOnDisk<T>(string name)
+	{
+		try
+		{
+			var path = GetFilePath(name);
+			if (!File.Exists(path))
+			{
+				return -1;
+			}
+
+			var read = JsonConvert.DeserializeObject<Dictionary<uint, T>>(File.ReadAllText(path));
+			return read?.Count ?? -1;
+		}
+		catch
+		{
+			return -1;
+		}
+	}
+
+	public static Task SaveHostileCastingTank() => SaveList(nameof(HostileCastingTank));
+
+	public static Task SaveHostileCastingKnockback() => SaveList(nameof(HostileCastingKnockback));
+
+	public static Task SaveTankbusterMarkerWithoutHit()
+		=> Task.WhenAll(SaveList(nameof(TankbusterMarkerWithoutHit)), SaveList(nameof(TankbusterMarkerWithoutHitGame)));
+
+	public static Task SaveTankbusterMarkerHits() => SaveList(nameof(TankbusterMarkerHits));
+	#endregion
+
+	#region Status Tab
+	public static void ResetPriorityStatus() => ResetFile(nameof(PriorityStatus));
+
+	public static void ResetInvincibleStatus() => ResetFile(nameof(InvincibleStatus));
+
+	public static void ResetDangerousStatus() => ResetFile(nameof(DangerousStatus));
+
+	public static void ResetNoCastingStatus() => ResetFile(nameof(NoCastingStatus));
+	#endregion
+
+	public static Task SaveRotationSolverRecord() => SaveList(nameof(RotationSolverRecord));
+
+	public static Task SaveNoProvokeNames() => SaveList(nameof(NoProvokeNames));
+
+	public static Task SaveBeneficialPositions() => SaveList(nameof(BeneficialPositions));
+
+	public static void ResetDancePartnerPriority() => ResetFile(nameof(DancePartnerPriority));
+
+	public static void ResetTheSpearPriority() => ResetFile(nameof(TheSpearPriority));
+
+	public static void ResetTheBalancePriority() => ResetFile(nameof(TheBalancePriority));
+
+	public static void ResetKardiaTankPriority() => ResetFile(nameof(KardiaTankPriority));
+
+	public static Task SaveDancePartnerPriority() => SaveList(nameof(DancePartnerPriority));
+
+	public static Task SaveTheSpearPriority() => SaveList(nameof(TheSpearPriority));
+
+	public static Task SaveTheBalancePriority() => SaveList(nameof(TheBalancePriority));
+
+	public static Task SaveKardiaTankPriority() => SaveList(nameof(KardiaTankPriority));
+
+	public static Task SaveNoHostileNames() => SaveList(nameof(NoHostileNames));
+
+	#region Occult Crescent Weakness Tracking
+
+	public static Task SaveNorthHornWeaknessRecords() => SaveList(nameof(NorthHornWeaknessRecords));
+
+	public static Task SaveSouthHornWeaknessRecords() => SaveList(nameof(SouthHornWeaknessRecords));
+
+	public static void ResetOccultWeaknessRecords()
+	{
+		NorthHornWeaknessRecords = [];
+		SouthHornWeaknessRecords = [];
+		_ = SaveNorthHornWeaknessRecords();
+		_ = SaveSouthHornWeaknessRecords();
+	}
+
+	public static bool RecordOccultWeakness(uint nameId, StatusID weakness)
+	{
+		if (nameId == 0)
+		{
+			return false;
+		}
+
+		if (StatusHelper.HasKnownOccultWeakness(nameId))
+		{
+			return false;
+		}
+
+		var records = DataCenter.IsInNorthHorn
+			? NorthHornWeaknessRecords
+			: DataCenter.IsInSouthHorn
+				? SouthHornWeaknessRecords
+				: null;
+
+		if (records == null)
+		{
+			return false;
+		}
+
+		if (!records.TryGetValue(nameId, out var list))
+		{
+			list = [];
+			records[nameId] = list;
+		}
+
+		var weaknessName = weakness.ToString();
+		if (list.Contains(weaknessName))
+		{
+			return false;
+		}
+
+		list.Add(weaknessName);
+		return true;
+	}
+
+	#endregion
+
+	private static string GetFilePath(string name)
+	{
+		return Path.Combine(Svc.PluginInterface.ConfigDirectory.FullName, $"{name}.json");
+	}
+
+	private static string GetChangesPath(string name)
+	{
+		var directory = Path.Combine(Svc.PluginInterface.ConfigDirectory.FullName, "ListChanges");
+		return name.Length == 0 ? directory : Path.Combine(directory, $"{name}.json");
+	}
+
+	private static T? ReadFile<T>(string path) where T : class
+	{
+		if (!File.Exists(path))
+		{
+			return null;
+		}
+
+		try
+		{
+			return JsonConvert.DeserializeObject<T>(File.ReadAllText(path), DeserializerSettings);
+		}
+		catch (Exception ex)
+		{
+			PluginLog.Warning($"Failed to load {path}: {ex.Message}");
+
+			// Keep the unreadable file instead of letting the next save overwrite it, and say so. A curated list
+			// returns to its built-in entries; the learned damage potentials could not be had back, so the loss
+			// must not be silent.
+			try
+			{
+				var kept = path + ".corrupt";
+				File.Move(path, kept, true);
+				PluginLog.Warning($"Kept the unreadable {path} as {kept}.");
+				_ = BasicWarningHelper.AddSystemWarning($"{Path.GetFileNameWithoutExtension(path)} could not be read and was set aside.");
+			}
+			catch (Exception moveEx)
+			{
+				PluginLog.Warning($"Could not set aside the unreadable {path}: {moveEx.Message}");
+			}
+
+			return null;
+		}
+	}
+
+	/// <summary>
+	/// Stores whose load has run to an end in this session. A store that was never loaded holds its
+	/// empty default, and writing that default would replace the file with nothing.
+	/// </summary>
+	private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, bool> _loadedStores = new();
+
+	private static bool WasLoaded(string name)
+	{
+		if (_loadedStores.ContainsKey(name))
+		{
+			return true;
+		}
+
+		// The load did not finish - cancelled by the plugin's load timeout, or it threw - and the unload
+		// writes every store. Without this every list and the learned table were emptied on disk by a load
+		// that merely failed.
+		PluginLog.Warning($"Not saving {name}: it was not loaded in this session, and its file is left as it is.");
+		return false;
+	}
+
+	private static void MarkLoaded(string name)
+	{
+		_loadedStores[name] = true;
+	}
+
+	private static bool WriteFile(string path, string json)
+	{
+		const int retryCount = 3;
+		for (var i = 0; i < retryCount; i++)
+		{
+			try
+			{
+				var tempPath = path + ".tmp";
+				File.WriteAllText(tempPath, json);
+				File.Move(tempPath, path, true);
+				return true;
+			}
+			// Access denied on the move is mostly another program holding the file just written - on Windows a virus
+			// scanner or the indexer - and passes like a sharing violation; without a retry the save was lost (upload of
+			// 16.11.2026: a kind learned immune to sleep missing from its store). Every caller writes on a pool thread.
+			catch (Exception ex) when ((ex is IOException or UnauthorizedAccessException) && i < retryCount - 1)
+			{
+				PluginLog.Warning($"Failed to save the file to {path}. Retrying in 1s...: {ex.Message}");
+				Thread.Sleep(1000);
+			}
+			catch (Exception ex)
+			{
+				PluginLog.Warning($"Failed to save the file to {path}: {ex.Message}");
+				return false;
+			}
+		}
+
+		return false;
+	}
+}

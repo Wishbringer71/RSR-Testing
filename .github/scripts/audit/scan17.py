@@ -32,10 +32,10 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import classfile  # noqa: E402
 
-GCD_PATH = 'RotationSolver/Basic/Rotations/CustomRotation_GCD.cs'
+GCD_PATH = 'RotationSolver/Rotations/Core/CustomRotation_GCD.cs'
 GATE_PATH = 'RotationSolver/Commands/RSCommands_Actions.cs'
-ABILITY_PATH = 'RotationSolver/Basic/Rotations/CustomRotation_Ability.cs'
-HELPER_PATH = 'RotationSolver/Basic/Helpers/ActionHelper.cs'
+ABILITY_PATH = 'RotationSolver/Rotations/Core/CustomRotation_Ability.cs'
+HELPER_PATH = 'RotationSolver/Engine/Helpers/ActionHelper.cs'
 
 # The window as a figure, or as the name of it (A486): `ActionHelper.AbilityClipWindow`, or since A753 the measured
 # window of one action, `ActionHelper.AbilityWindowFor(...)`. A measured window is read as the fixed window it starts

@@ -2,8 +2,6 @@ using Dalamud.Game.ClientState.Objects.SubKinds;
 using ECommons.DalamudServices;
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
-using RotationSolver.Helpers;
-
 namespace RotationSolver.Updaters;
 
 internal static partial class CancelCastUpdater

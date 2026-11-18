@@ -3,7 +3,7 @@
 Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-31; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `DarkKnightRotation`
-- Rotation: `RotationSolver/RebornRotations/Tank/DRK_Reborn.cs`
+- Rotation: `RotationSolver/Rotations/Tank/DarkKnight/DRK_Reborn.cs`
 - Matrix als Tabelle: `DRK.csv`
 
 ## Nutzung

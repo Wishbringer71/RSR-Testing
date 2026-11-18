@@ -29,7 +29,11 @@ import pathlib
 import re
 import sys
 
-CONFIG = 'RotationSolver/Basic/Configuration/Configs.cs'
+# Upstream's Configs, one file until c170c9cd5 and three since (A878); the declarations are read from all of them.
+CONFIG_FILES = ('RotationSolver/Configuration/Configs.cs', 'RotationSolver/Configuration/Configs.CombatAndTarget.cs',
+                'RotationSolver/Configuration/Configs.DutiesAndPvP.cs')
+CONFIG = ', '.join(CONFIG_FILES)
+DECLARING = {pathlib.Path(p).name for p in CONFIG_FILES}
 ROOTS = ('RotationSolver', 'RotationSolver.SourceGenerators')
 SKIP_DIRS = ('/obj/', '/bin/')
 
@@ -76,7 +80,7 @@ def unread(names, blob):
     out = []
     for name in names:
         word = re.compile(r'\b' + re.escape(name) + r'\b')
-        if not any(word.search(text) for path, text in blob if path.name != 'Configs.cs'):
+        if not any(word.search(text) for path, text in blob if path.name not in DECLARING):
             out.append(name)
     return out
 
@@ -105,6 +109,9 @@ def self_test():
     only_self = [(pathlib.Path('Configs.cs'), 'Wired Orphan')]
     assert unread(names, only_self) == ['Orphan', 'Wired'], \
         'self-references in the declaration file must not count as readers'
+    other_part = [(pathlib.Path('Configs.DutiesAndPvP.cs'), 'Wired Orphan')]
+    assert unread(names, other_part) == ['Orphan', 'Wired'], \
+        'a reference in another of the upstream Configs files is a declaration file too (A878)'
     accepted = {'Orphan': 'reason', 'Wired': 'reason', 'Gone': 'reason'}
     assert stale(accepted, names, ['Orphan']) == ['Gone', 'Wired'], \
         'an accepted entry for a setting read again or no longer declared must be reported'
@@ -115,9 +122,9 @@ def self_test():
 def main():
     self_test()
 
-    cfg_path = pathlib.Path(CONFIG)
-    if not cfg_path.exists():
-        print(f'missing: {CONFIG}')
+    missing = [p for p in CONFIG_FILES if not pathlib.Path(p).exists()]
+    if missing:
+        print(f'missing: {", ".join(missing)}')
         return 1
 
     blob = []
@@ -127,7 +134,7 @@ def main():
         except OSError:
             continue
 
-    names = declared(cfg_path.read_text(encoding='utf-8-sig'))
+    names = declared('\n'.join(pathlib.Path(p).read_text(encoding='utf-8-sig') for p in CONFIG_FILES))
     orphans = unread(names, blob)
 
     print(f'{len(names)} settings declared as public properties in {CONFIG}.')

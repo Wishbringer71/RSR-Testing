@@ -35,10 +35,11 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, '..', '..', '..'))
 
+# Since upstream c170c9cd5 (18.11.2026) every rotation lives under RotationSolver/Rotations: the shipped and third-party
+# rotations beside their job's base class in RotationSolver/Rotations/<role>/<job>, CustomRotation in Core, the duty
+# rotations in Duties. The two folders read before the move no longer exist, and the script read Core alone (A878).
 ROTATION_ROOTS = [
-    'RotationSolver/RebornRotations',
-    'RotationSolver/ExtraRotations',
-    'RotationSolver/Basic/Rotations',
+    'RotationSolver/Rotations',
 ]
 
 # `if (SomeActionPvE.CanUse(out act))` and nothing else on the line.

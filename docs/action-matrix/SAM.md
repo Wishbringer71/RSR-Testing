@@ -3,7 +3,7 @@
 Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-07; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `SamuraiRotation`
-- Rotation: `RotationSolver/RebornRotations/Melee/SAM_Reborn.cs`
+- Rotation: `RotationSolver/Rotations/Melee/Samurai/SAM_Reborn.cs`
 - Matrix als Tabelle: `SAM.csv`
 
 ## Nutzung

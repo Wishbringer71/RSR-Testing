@@ -15,8 +15,8 @@ What stays in upstream's file, and is accepted here:
   no longer there is reported, so the list only shrinks.
 
 A member is the fork's when its declaration line stands in neither the merge base with upstream/main nor
-upstream/main's version of the file - no diff alignment involved. `ExtraRotations` (foreign rotations) and
-`Configs.cs` (every setting in one class, upstream's pattern, read by the source generator) are left out.
+upstream/main's version of the file - no diff alignment involved. Third-party rotations (layout.is_third_party) and
+the `Configs` files (every setting in one class, upstream's pattern, read by the source generator) are left out.
 
     python3 .github/scripts/audit/check_fork_placement.py                    # check
     python3 .github/scripts/audit/check_fork_placement.py --write-baseline   # list what stands there now
@@ -26,11 +26,15 @@ import re
 import subprocess
 import sys
 from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import layout  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[3]
 LIST = Path(__file__).with_name('fork_placement.json')
-SKIPPED_PARTS = ('ExtraRotations', 'bin', 'obj')
-SKIPPED_FILES = {'RotationSolver/Basic/Configuration/Configs.cs'}
+SKIPPED_PARTS = ('bin', 'obj')
+# Upstream's Configs, split in three since c170c9cd5 (A878): one file before, exempt as a whole.
+SKIPPED_FILES = {'RotationSolver/Configuration/Configs.cs', 'RotationSolver/Configuration/Configs.CombatAndTarget.cs',
+                 'RotationSolver/Configuration/Configs.DutiesAndPvP.cs'}
 TYPE_DECL = re.compile(r'\b(class|struct|record|interface)\s+\w+')
 STRING = re.compile(r'\$?@"(?:""|[^"])*"|\$?"(?:\\.|[^"\\])*"' + r"|'(?:\\.|[^'\\])'")
 
@@ -184,8 +188,9 @@ def self_test():
 
 def current_members(base):
     current = {}
-    for name in (run('git', 'ls-files', 'RotationSolver*') or '').split():
-        if not name.endswith('.cs') or name in SKIPPED_FILES or any(p in SKIPPED_PARTS for p in Path(name).parts):
+    for name in (run('git', 'ls-files', 'RotationSolver*') or '').splitlines():   # a path may hold a space (A878)
+        if (not name.endswith('.cs') or name in SKIPPED_FILES or any(p in SKIPPED_PARTS for p in Path(name).parts)
+                or (name.startswith('RotationSolver/Rotations/') and layout.is_third_party(ROOT / name))):
             continue
         upstream_texts = [t for t in (run('git', 'show', f'{ref}:{name}') for ref in (base, 'upstream/main')) if t is not None]
         if not upstream_texts:

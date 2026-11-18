@@ -31,14 +31,14 @@ NEGATED = re.compile(r"!\s*[\w?.()\[\]]*?\b(?:Player)?(?:CanBeHealed|NoNeedHeali
 
 # Negated reads that mean "protected" on purpose: file, a fragment of the line, the reason.
 ACCEPTED = [
-    ("RotationSolver/Basic/DataCenter.HitResponse.cs", "unprotectedOnly && !member.IsUnprotectedForHealing()",
+    ("RotationSolver/Engine/State/DataCenter.HitResponse.cs", "unprotectedOnly && !member.IsUnprotectedForHealing()",
      "skips the protected when only the unprotected are asked for"),
-    ("RotationSolver/Basic/DataCenter.HitResponse.cs", "member.MaxHp == 0 || !member.IsUnprotectedForHealing()",
+    ("RotationSolver/Engine/State/DataCenter.HitResponse.cs", "member.MaxHp == 0 || !member.IsUnprotectedForHealing()",
      "AnnouncedHitKills: an invulnerable member does not die of the raidwide, so it is not counted; Living Dead "
      "with its hold off counts, since its fall to zero is Walking Dead (A306)"),
-    ("RotationSolver/Basic/Rotations/CustomRotation_OtherInfo.Channels.cs", "player == null || !player.CanBeHealed()",
+    ("RotationSolver/Rotations/Core/CustomRotation_OtherInfo.Channels.cs", "player == null || !player.CanBeHealed()",
      "TankbusterOnMeWithin: no own cooldown for a tankbuster while an invulnerability covers the player"),
-    ("RotationSolver/Basic/Helpers/TankSwapWatch.cs", "asked ? !holder.CanBeHealed()",
+    ("RotationSolver/Engine/Helpers/TankSwapWatch.cs", "asked ? !holder.CanBeHealed()",
      "TakeOverHeld: the enemy is not taken from a co-tank an invulnerability protects (A321)"),
 ]
 
@@ -65,23 +65,23 @@ def self_test():
     heal_chain = "\t\t\t&& !t.IsUnprotectedForHealing()\n"
     player_heal_chain = "\t\tif (!ObjectHelper.PlayerIsUnprotectedForHealing()) return;\n"
     accepted = "\t\t\t\t|| (unprotectedOnly && !member.IsUnprotectedForHealing()))\n"
-    assert findings_in("RotationSolver/RebornRotations/Tank/WAR_Reborn.cs", war), \
+    assert findings_in("RotationSolver/Rotations/Tank/Warrior/WAR_Reborn.cs", war), \
         "the Warrior's inverted filter must be caught"
     assert findings_in("RotationSolver/Updaters/StateUpdater.cs", player), \
         "a negated read of the player variant must be caught"
-    assert findings_in("RotationSolver/RebornRotations/Tank/WAR_Reborn.cs", old_name), \
+    assert findings_in("RotationSolver/Rotations/Tank/Warrior/WAR_Reborn.cs", old_name), \
         "a negated read under the old name must be caught"
-    assert findings_in("RotationSolver/RebornRotations/Tank/WAR_Reborn.cs", heal_chain), \
+    assert findings_in("RotationSolver/Rotations/Tank/Warrior/WAR_Reborn.cs", heal_chain), \
         "a negated read of the heal chain's predicate must be caught"
     assert findings_in("RotationSolver/Updaters/StateUpdater.cs", player_heal_chain), \
         "a negated read of the heal chain's player predicate must be caught"
-    assert not findings_in("RotationSolver/RebornRotations/Tank/WAR_Reborn.cs", plain), \
+    assert not findings_in("RotationSolver/Rotations/Tank/Warrior/WAR_Reborn.cs", plain), \
         "the plain read means unprotected and is accepted"
-    assert not findings_in("RotationSolver/Basic/Actions/ActionTargetInfo.cs", comment), \
+    assert not findings_in("RotationSolver/Engine/Actions/ActionTargetInfo.cs", comment), \
         "a comment is not code"
-    assert not findings_in("RotationSolver/Basic/DataCenter.HitResponse.cs", accepted), \
+    assert not findings_in("RotationSolver/Engine/State/DataCenter.HitResponse.cs", accepted), \
         "a listed negated read is accepted"
-    assert findings_in("RotationSolver/Basic/Helpers/ObjectHelper.cs", accepted), \
+    assert findings_in("RotationSolver/Engine/Helpers/ObjectHelper.cs", accepted), \
         "a listed line is accepted only in its own file"
     print("self-test ok: negated reads are caught, the player variant, the old name and the heal chain's predicate too; "
           "the plain read, a comment "

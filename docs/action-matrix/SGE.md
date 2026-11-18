@@ -3,7 +3,7 @@
 Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-31; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `SageRotation`
-- Rotation: `RotationSolver/RebornRotations/Healer/SGE_Reborn.cs`
+- Rotation: `RotationSolver/Rotations/Healer/Sage/SGE_Reborn.cs`
 - Matrix als Tabelle: `SGE.csv`
 
 ## Nutzung

@@ -48,7 +48,7 @@ CustomRotation                     handgeschrieben, gemeinsam
 
 | Artefakt | Ort | Status |
 |---|---|---|
-| `public partial class WhiteMageRotation` (Gauge, Job-Helfer) | `RotationSolver/Basic/Rotations/Basic/*.cs`, 23 Dateien | handgeschrieben, eingecheckt |
+| `public partial class WhiteMageRotation` (Gauge, Job-Helfer) | `RotationSolver/Rotations/<Rolle>/<Job>/<Job>Rotation*.cs` (seit Upstream c170c9cd5 im Ordner des Jobs neben seinen Rotationen) | handgeschrieben, eingecheckt |
 | `public abstract partial class WhiteMageRotation : CustomRotation` (alle Aktionen, `AllBaseActions`, `AllTraits`) | `RotationSolver.SourceGenerators/Properties/Rotation.resx`, 23× (2,05 MB am 02.10.2026) | **generierter Text**, eingecheckt |
 | Emission zur Compile-Zeit | `StaticCodeGenerator.GenerateRotations` | – |
 | Erzeugung der resx | `RotationSolver.GameData/Program.cs` → `RotationGetter` | offline, **braucht `C:\FF14\game\sqpack`** |

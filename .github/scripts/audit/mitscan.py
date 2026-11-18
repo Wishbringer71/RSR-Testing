@@ -17,18 +17,21 @@ import os, re, sys
 # The tree states it itself - every one of these actions names its own figure in its effect text -
 # and generate_defensive_values.py reads those texts into DefensiveValues.g.cs. Asking the generated
 # table is the capability check that replaces the enumeration.
+# The table's place comes from layout.py, and a missing or empty table stops the scan: the path named here before went
+# stale with upstream's move of c170c9cd5, and the scan then read no action and reported nothing (A878).
 def load_mitigations():
-    table = os.path.join(os.path.dirname(__file__), '..', '..', '..',
-                         'RotationSolver', 'Basic', 'Data', 'DefensiveValues.g.cs')
+    import sys
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import layout
+    table = layout.DATA / 'DefensiveValues.g.cs'
     names = []
-    try:
-        with open(table, encoding='utf-8') as handle:
-            for line in handle:
-                found = re.search(r'//\s*(\w+PvE)\s*$', line)
-                if found and '] = new(' in line:
-                    names.append(found.group(1))
-    except OSError:
-        return []
+    with open(table, encoding='utf-8') as handle:
+        for line in handle:
+            found = re.search(r'//\s*(\w+PvE)\s*$', line)
+            if found and '] = new(' in line:
+                names.append(found.group(1))
+    if not names:
+        raise SystemExit(f'no mitigation action read from {table} - its format or place changed')
     return names
 
 

@@ -291,8 +291,8 @@ def check_collapsed_comparisons(files):
     # one instead of staying red for ever. Keyed by file and expression, not by line number, so the
     # list does not age with every edit above them (A286, P3).
     known = {
-        ('GCDTime', 'RotationSolver/RebornRotations/Melee/NIN_Reborn.cs', 'GCDTime() == 0f'),
-        ('GCDTime', 'RotationSolver/ExtraRotations/Melee/BeirutaNIN.cs', 'GCDTime() == 0f'),
+        ('GCDTime', 'RotationSolver/Rotations/Melee/Ninja/NIN_Reborn.cs', 'GCDTime() == 0f'),
+        ('GCDTime', 'RotationSolver/Rotations/Melee/Ninja/BeirutaNIN.cs', 'GCDTime() == 0f'),
     }
 
     def is_known(hit):

@@ -50,7 +50,7 @@ import classfile
 
 RESX = 'RotationSolver.SourceGenerators/Properties/Status.resx'
 ACTION_RESX = 'RotationSolver.SourceGenerators/Properties/ActionId.resx'
-HELPER = 'RotationSolver/Basic/Helpers/StatusHelper.cs'
+HELPER = 'RotationSolver/Engine/Helpers/StatusHelper.cs'
 
 SEE = re.compile(r'&lt;strong&gt;(?P<disp>[^&]+)&lt;/strong&gt;&lt;/see&gt;\s*(?P<pol>[↑↓])'
                  r'\s*\((?P<scope>[^)]*)\)')

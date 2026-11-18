@@ -30,7 +30,8 @@ Konzept 03, „Was ein Frame kostet"; dieses Konzept trägt Maßstab, Messung un
   16,7 ms für Spiel und alle Plugins. Spiel-Engines empfehlen null Allokationen je Frame im Dauerbetrieb (Unity,
   „Garbage collection best practices"; Werkzeugquelle, nicht für Dalamud geschrieben).
 - **Grenzen dieses Repositorys:** LINQ ist gesperrt (`BannedSymbols.txt`); keine festen Werte (`code.md`); öffentliche
-  Signaturen in `RotationSolver.Basic` sind Vertrag mit Autoren abgeleiteter Rotationen; jede Fork-Zeile in einer Datei
+  Signaturen in `RotationSolver.Engine`, `RotationSolver.Configuration` und den Basisklassen der Rotationen (bis
+  Upstream c170c9cd5 `RotationSolver.Basic`) sind Vertrag mit Autoren abgeleiteter Rotationen; jede Fork-Zeile in einer Datei
   von Upstream ist Merge-Logistik (Skill `upstream-sync`); der Funktionsumfang bleibt (sein Auftrag). Knuths Satz von
   der verfrühten Optimierung gilt hier als Messgebot: Ohne Messung, welcher Teil trägt, wird nicht umgebaut (A310).
 
@@ -220,7 +221,7 @@ Feld der Figur selbst und ruft keine virtuelle Funktion; die Zielwahl lässt Fig
 Zeilen – der Phantomjob in Kreszentia (`DutyRotation`, gedrosselt) und das Diagnosefenster –, weil jede Fork-Zeile dort
 Merge-Logistik wäre und keine je Frame im Kampf läuft.
 *Prüfmittel:* `check_status_list.py` weist jede Stelle mit `.StatusList` außerhalb dieser beiden Dateien und der fremden
-Rotationen (`ExtraRotations`, die der Fork nicht bearbeitet) ab.
+Rotationen (die der Fork nicht bearbeitet, `layout.is_third_party`) ab.
 Anforderung: Ein Upstream-Merge oder eine neue Regel bringt die Schleife sonst unbemerkt zurück – sie kompiliert, antwortet
 richtig und kostet nur Framezeit; diese Klasse fand das Code-Review des Merges an fünf Stellen, und 25 weitere standen
 noch (17.11.2026). Aufwand ein Textvergleich je Datei.
@@ -234,9 +235,15 @@ ihnen ist beim Sync ein möglicher Konflikt, und wer eine Regel des Forks sucht,
 *Gewählt:* Die Klassen werden `partial`; ganze Fork-Member ziehen in Teildateien je Thema, benannt nach dem Konzept, das
 sie tragen (etwa `DataCenter.AreaHits.cs` für Konzept 13). Keine Signatur ändert sich, kein Aufrufer. In der Datei von
 Upstream bleibt ein Wort Fork-Änderung je Klasse (`partial`) neben den Änderungen in Upstreams eigenen Membern.
-*Grenze:* Statische Felder, deren Startwert ein anderes statisches Feld liest, bleiben in ihrer Datei – die Reihenfolge
-der Startwerte über Teildateien ist nicht festgelegt (C#-Spezifikation, „Static field initialization"); ein Feld, das
-dabei `null` läse, wäre ein Absturz beim Laden.
+*Grenze:* Ein statischer Startwert, der ein anderes statisches Mitglied derselben Klasse liest, steht in derselben Datei
+hinter ihm. Startwerte laufen in der Reihenfolge des Texts, über Teildateien in der Reihenfolge, in der der Compiler die
+Dateien liest – die C#-Spezifikation legt sie nicht fest („Static field initialization"), sie folgt dem Dateinamen. Ein
+Startwert, der dabei `null` liest, wirft im Typinitialisierer, und die Klasse fällt beim ersten Zugriff ganz aus; bei
+`DataCenter` oder `StatusHelper` ist das RSR als Ganzes, gleich nach dem Laden. Ein Lambda oder eine übergebene
+Methodengruppe liest erst bei ihrem Aufruf und hängt an keiner Reihenfolge. „In ihrer Datei bleiben" genügte nicht:
+`DataCenter._channelSince` und `_channelSeen` blieben in `DataCenter.cs`, während `KeptChannels`, dessen Länge sie lesen,
+nach `DataCenter.Channels.cs` zog; das ging nur gut, weil diese Datei vor `DataCenter.cs` übersetzt wurde, und brach,
+als Upstreams Aufteilung sie nach `DataCenter.BMR.cs` brachte (A878).
 *Preis:* ein großer, rein verschiebender Commit; ein Sync, der zeitgleich neben einem verschobenen Block ändert, kann
 einmal einen Konflikt bringen.
 *Umgesetzt (A740):* `DataCenter` in `DataCenter.AreaDamage.cs` (13), `.BlackestNight.cs` (10), `.Channels.cs` (14),
@@ -438,6 +445,19 @@ bevor RSR neu erscheint; dasselbe gilt heute schon für jeden der übrigen Clien
   Ausgenommen: fremde Rotationen und `Configs.cs` (alle Einstellungen in einer Klasse, das Muster von Upstream, das der
   Source Generator liest).
 
+- Der Plugin-Build der CI behandelt CS8600 bis CS8604 als Fehler (`build.yaml`, mit Gegenprobe; A878). Wogegen: einen
+  Startwert, der ein noch nicht belegtes statisches Mitglied liest (Grenze unter „Fork-Code in eigenen Teildateien");
+  für jeden Nutzer nach einem Sync oder einer Umverteilung; ohne die Sperre lädt RSR, und die erste Aktion wirft im
+  Typinitialisierer. Der Compiler prüft die Startwerte in der Reihenfolge, in der er sie ausgibt, und meldet ein solches
+  Lesen als CS8601 (Zuweisung), CS8602 (Zugriff) oder CS8604 (Argument) – so fielen beim Sync c170c9cd5
+  `StatusHelper.NoNeedHealingStatusBesidesDeathTrigger` (las die Liste, die Upstreams Aufteilung hinter sie gestellt
+  hatte) und die beiden Kanalfelder auf; beide hätten RSR beim Laden abgeworfen, und der Build lief mit Warnung durch.
+  In der CI und nicht in den Projekten, wie die Sperren für veraltete Aufrufe: Eine Dalamud-Fassung mit geänderten
+  Annotationen soll seinen eigenen Build nicht anhalten. Aufwand: eine Zeile und die Gegenprobe; eine künftige
+  Nullable-Warnung dieser Codes, auch aus Upstream, ist vor dem Push zu beheben. Grenze: Werttypen (sie lesen 0, ohne
+  Absturz, gemessen an der Gegenprobe) und ein Lesen über einen Methodenaufruf sieht der Compiler nicht; eine
+  Syntaxmessung über alle 1.959 statischen Mitglieder, aufgerufenen Methoden und Ausdruckseigenschaften folgend, fand am
+  18.11.2026 keine weitere Stelle (A878).
 - Nach jedem Kampf die Kostenzeile mit Übersetzungszeit; nach dem Laden und jedem Rotationswechsel die Zeile
   „warm-up". Ein langsamster Durchlauf über einem Frame mit wenig Übersetzungszeit ist der nächste Befund.
 - Analyzer und Klonsuche wie oben (Befehle im Archiv, A739), bei jedem Audit neu.

@@ -7,7 +7,7 @@ Not a code scanner - a model calculator. Two questions:
 1. Queen: when does MCH_Reborn summon the Automaton Queen over ten minutes, single target, level 100, 2.50 GCD,
    and does it lose battery to the gauge's cap? Compared with The Balance's table (Machinist Basic Guide, "Patch
    Applicable: 7.3", last updated 5 Aug 2025, read 24.10.2026). The rotation's logic is mirrored by hand from
-   RotationSolver/RebornRotations/Ranged/MCH_Reborn.cs (GeneralGCD, EmergencyAbility, UseQueen, ToolChargeSoon as
+   RotationSolver/Rotations/Ranged/Machinist/MCH_Reborn.cs (GeneralGCD, EmergencyAbility, UseQueen, ToolChargeSoon as
    of 262c292bd); a change there needs the same change here (TODO, technical debt).
 2. Auto Crossbow: from how many enemies in its cone it out-damages Blazing Shot with the recast Blazing Shot takes
    off Double Check and Checkmate, for each number of enemies those two reach. The plugin computes the same

@@ -12,6 +12,6 @@
   <ItemGroup>
     <Reference Include="Newtonsoft.Json"><HintPath>$(HOME)/.xlcore/dalamud/Hooks/dev/Newtonsoft.Json.dll</HintPath></Reference>
     <Using Include="Newtonsoft.Json" />
-    <Using Include="RotationSolver.Basic.Helpers" />
+    <Using Include="RotationSolver.Engine.Helpers" />
   </ItemGroup>
 </Project>
