@@ -143,4 +143,11 @@ internal static partial class DataCenter
 
 		return kept;
 	}
+
+	// Fields only this part reads; they read no other static at start, so no order binds them to another file (concept 24).
+	private static float _packTTK = float.PositiveInfinity;
+
+	private static long _packTTKCacheTick = long.MinValue;
+
+	private static readonly FrameCached<bool> _keptChannelRunning = new(ReadKeptChannel);
 }

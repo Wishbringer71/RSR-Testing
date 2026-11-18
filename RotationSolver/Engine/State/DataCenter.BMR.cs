@@ -24,8 +24,6 @@ namespace RotationSolver.Engine.State;
 internal static partial class DataCenter
 {
 
-	private static readonly ConcurrentDictionary<string, byte> _markerLocksTakenOver = new();
-
 	/// <summary>
 	/// Every area action for which <see cref="AreaCastIsWorthMitigating"/> has withheld the party
 	/// mitigation, and when it last did so. This is the probe for that decision, and the domain
@@ -63,24 +61,12 @@ internal static partial class DataCenter
 	/// </summary>
 	public static readonly ConcurrentDictionary<uint, DateTime> MitigatedInterruptibleCast = new();
 
-	// The hold's own prediction, and whether the fight bore it out. Holding back says: "the event
-	// this prediction points at is not the small cast now running - something larger follows". That
-	// is a claim about the next few seconds, and the next few seconds answer it.
-	//
-	// This is the difference between a counter and a probe that decides. A counter would have to be
-	// read by somebody and reported back, which costs a fight, a reading and a round per figure -
-	// the owner's standing objection. This one scores itself: every hold is checked against what
-	// actually landed, and the rule stops holding once its own record says it is wrong.
-	private static DateTime _holdExpectsHitUntil = DateTime.MinValue;
-
 	/// <summary>
 	/// Every small area action a predicted mitigation was held back for, and when it last happened.
 	/// Same purpose as the two above: a mitigation that waits looks exactly like one that never
 	/// triggered, so without this the rule cannot be tested by switching it on.
 	/// </summary>
 	public static readonly ConcurrentDictionary<uint, DateTime> ProactiveMitigationHeld = new();
-
-	private static DateTime _announcedAreaShareTime = DateTime.MinValue;
 
 	/// <summary>
 	/// Why the last enemy cast that damaged the player was or was not rated for the learned damage
@@ -92,8 +78,6 @@ internal static partial class DataCenter
 	/// only ever show why an auto-attack was not measured.
 	/// </remarks>
 	public static string AreaMeasurementLastOutcome { get; private set; } = "no enemy cast has hit the player yet";
-
-	private static readonly Dictionary<string, int> _areaMeasurementTally = [];
 
 	/// <summary>The first error the enemy effect handler raised since loading, for the windows.</summary>
 	public static string EffectHandlerFirstError { get; internal set; } = string.Empty;
@@ -112,9 +96,6 @@ internal static partial class DataCenter
 	/// "Skip area defence for casts that missed you" (A205).
 	/// </summary>
 	internal static readonly ConcurrentDictionary<uint, bool> AreaCastReachedPlayer = new();
-
-	// A731: the omen names in which a ring's figures follow, as BossModReborn's analysis reads them.
-	private static readonly string[] RingKeys = ["sircle_", "sicle_", "circle"];
 
 	#region BossModReborn Timeline Integration
 	private static readonly FrameCached<bool> _bmrEnabled = new(() => IsPluginLoaded("BossModReborn", "BossModReborn"), 1000);
@@ -152,11 +133,6 @@ internal static partial class DataCenter
 
 	private static DateTime _bmrRaidwideLandsAt = DateTime.MinValue;
 
-	private static DateTime _bmrRaidwideReadAt = DateTime.MinValue;
-
-	private static TimeSpan _bmrRaidwideReadFrame = TimeSpan.Zero;
-
-	private static DateTime _bmrRaidwideHeldTracedFor = DateTime.MinValue;
 	public static float BMRNextTankbusterIn { get; set; } = float.MaxValue;
 	public static float BMRNextKnockbackIn { get; set; } = float.MaxValue;
 	public static float BMRNextDowntimeIn { get; set; } = float.MaxValue;

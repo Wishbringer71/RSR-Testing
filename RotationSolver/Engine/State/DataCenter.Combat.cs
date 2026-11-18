@@ -851,8 +851,6 @@ internal static partial class DataCenter
 		return TryGetCastAction(h, out var action) && check(action);
 	}
 
-	private static readonly FrameCached<bool> _keptChannelRunning = new(ReadKeptChannel);
-
 	public static bool IsHostileCastingKnockback(IBattleChara h)
 	{
 		return IsHostileCastingBase(h, static act => OtherConfiguration.HostileCastingKnockback.Contains(act.RowId));

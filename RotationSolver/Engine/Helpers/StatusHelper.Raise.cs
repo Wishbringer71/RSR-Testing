@@ -36,4 +36,13 @@ public static partial class StatusHelper
 			}
 		});
 	}
+
+	// Status lists this part reads; they read no other static at start, so no order binds them to another file (concept 24).
+	private static readonly System.Collections.Concurrent.ConcurrentDictionary<uint, bool> _restrictsResurrection = new();
+
+	/// <summary>
+	/// What a body carries once a raise has landed on it: "Raise" under two ids with the same name and text
+	/// ("Teetering on the brink of consciousness."). BossModReborn and DelvUI read both; RSR read 148 alone (A294).
+	/// </summary>
+	public static StatusID[] RaiseStatus { get; } = [StatusID.Raise, StatusID.Raise_1140];
 }

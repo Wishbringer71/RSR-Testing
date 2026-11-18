@@ -260,4 +260,39 @@ public static partial class StatusHelper
 	{
 		return Carries(battleChara, IsDamageUp);
 	}
+
+	// Status lists this part reads; they read no other static at start, so no order binds them to another file (concept 24).
+	/// <summary>
+	/// Every status the game data lists under the name Reprisal with the same effect text. Which of
+	/// them the role action applies at a given level is not verifiable from the data alone, so every
+	/// Reprisal check looks for any of them.
+	/// <para>
+	/// <c>Reprisal_2101</c> is scoped to PLD WAR DRK GNB rather than to the shared role, which is the
+	/// signature of the form a trait upgrades into - Enhanced Reprisal at level 98 extends the
+	/// duration to 15s. It leaves the reduction at 10%: an earlier version of this note claimed 15%
+	/// without naming a source, and the Lodestone entry says otherwise. Its absence made every reader of this list blind to
+	/// the version an end-game tank actually applies: <c>ReprisalPvE</c> carries this list as
+	/// <c>TargetStatusProvide</c>, so the guard against re-applying it never saw the debuff, and the
+	/// mitigation surveys that read it counted a reprised pull as unmitigated.
+	/// </para>
+	/// <para>
+	/// Kept out: no id under this name carries a different effect text, so the list is complete as
+	/// long as no new one appears. <c>.github/scripts/audit/scan14.py</c> reports one that does.
+	/// </para>
+	/// </summary>
+	public static StatusID[] ReprisalStatus { get; } =
+	[
+		StatusID.Reprisal,
+		StatusID.Reprisal_1193,
+		StatusID.Reprisal_2101,
+	];
+
+	/// <summary>The four tanks' level 3 limit breaks (Status.resx: "Damage taken is reduced").</summary>
+	private static readonly StatusID[] TankLimitBreakStatus =
+	[
+		StatusID.LastBastion,
+		StatusID.LandWaker,
+		StatusID.DarkForce,
+		StatusID.GunmetalSoul,
+	];
 }

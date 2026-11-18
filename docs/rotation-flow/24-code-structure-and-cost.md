@@ -284,6 +284,21 @@ Einstellungen im Fenster ist je Filtergruppe unverändert (316 von 316, gemessen
 `Configs.CombatAndTarget.cs` und `Configs.cs`, deren Übersetzungsreihenfolge unter Windows und Linux dieselbe ist –
 `Configs.DutiesAndPvP.cs` steht unter Windows vor, unter Linux hinter `Configs.cs`, trägt aber keine geteilte Gruppe.
 
+*Was der Fork aus Upstreams Umbau mitnimmt (A882):* Fork-Felder mit Startwert standen in Upstreams Dateien, weil ihre
+Reihenfolge über Teildateien offen ist. Die Grenze ist seit A878 schärfer gefasst und in der CI gesperrt: Ein Startwert,
+der kein anderes statisches Mitglied liest, ist an keine Datei gebunden. Gemessen standen 467 Zeilen solcher Fork-Felder in
+35 Dateien von Upstream, die meisten in `StatusHelper.Tables.cs` (172 Zeilen, 24 Listen) – die Datei, die Upstream am
+häufigsten ändert (viermal seit dem 18.08.2026, beim Sync 7.5.8.4 mit zwölf Konflikten, A853). 19 dieser Listen und 14
+Felder aus `DataCenter.cs`, `.BMR.cs` und `.Combat.cs` stehen jetzt in der Fork-Teildatei, die sie liest (Heilziel,
+Wiederbelebung, Tankschutz, Flächen, Kanäle, allgemein); jede Zeile ist danach genau einmal da, kein Startwert liest vor
+seiner Belegung. Es bleiben die, die etwas lesen (`NoNeedHealingStatus` und was darauf baut, die Gruppe der Heilprognose
+mit `_hpBuffer`, `ShieldStatus` und `StunStatus`, die Upstreams Listen lesen), die Einstellungen in `Configs` (Reihenfolge
+im Fenster) und öffentliche Listen, die viele Teile lesen. *Verworfen:* die Crucible- und Carnivale-Helfer des Forks in
+die Jobordner zu ziehen – Upstream lässt seine eigenen (`BestiaryHelper`, `MaskedCarnivaleHelper`) in `Engine/Helpers`
+und legt in die Jobordner nur Typen aus den Dateien der Basisklasse; Fork-Dateien kosten keine Merge-Logistik. Die
+Generatoren fassen Einstellungen jetzt je Typ zusammen und vertrügen Teildateien; die Grenze für Einstellungen bleibt,
+weil das Fenster ihre Deklarationsreihenfolge zeigt.
+
 ### Speicher
 
 `_tankbusterHelpHeld` (Fork) behält je Gegner und Aktion einen Zeitpunkt, gelesen nur innerhalb eines GCD; ältere

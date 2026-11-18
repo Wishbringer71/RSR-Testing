@@ -222,48 +222,6 @@ public static partial class StatusHelper
 		{ 13938, [StatusID.IceWeakness] },
 	};
 
-	private static readonly System.Collections.Concurrent.ConcurrentDictionary<uint, bool> _damageOverTime = new();
-
-	private static readonly System.Collections.Concurrent.ConcurrentDictionary<uint, bool> _endsInDeath = new();
-
-	private static readonly System.Collections.Concurrent.ConcurrentDictionary<uint, AttackKinds> _counteredAttacks = new();
-
-	private static readonly System.Collections.Concurrent.ConcurrentDictionary<uint, bool> _diesToAnyHit = new();
-
-	private static readonly System.Collections.Concurrent.ConcurrentDictionary<uint, bool> _turnsWorse = new();
-
-	// What happens when the status runs out or stays: "When this effect expires, you will experience a Deep Freeze."
-	// (Freezing), "Will succumb to Sleep when effect expires." (Half-asleep), "If not cured, you will transform into a
-	// tonberry." (Nymian Plague), "... only a matter of time before it detonates." (Aetherochemical Bomb); xivapi, 05.11.2026.
-	private static readonly System.Text.RegularExpressions.Regex WorseOnExpiry = new(
-		@"when (?:this )?effect expires|if not cured|before it detonates",
-		System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.CultureInvariant);
-
-	private static readonly System.Collections.Concurrent.ConcurrentDictionary<uint, bool> _restrictsResurrection = new();
-
-	// Concept 03, "Gegner mit Stacheln" (A571, A588), the English status texts (xivapi, 05.11.2026): spikes "dealing fire
-	// damage to attackers", "dealing ice damage to and slowing down attackers"; counters "Countering any physical attacks",
-	// "Damage taken is reduced while countering attacks", "Delivering counter damage every time an attack is suffered";
-	// reflections "All physical attacks are reflected back at the dealer", "Reflecting magic back on its caster",
-	// "Magic attacks are being absorbed and reflected". "Certain death when counter reaches zero" (Doom) is none of them.
-	private static readonly System.Text.RegularExpressions.Regex HitsAttackers = new(
-		@"damage to (?:and [^.]*?)?attackers|\bcountering\b|\bcounter damage\b|damage back to its source",
-		System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.CultureInvariant);
-
-	private static readonly System.Text.RegularExpressions.Regex Reflects = new(@"\breflect",
-		System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.CultureInvariant);
-
-	private static readonly System.Text.RegularExpressions.Regex ReflectsAttacks = new(@"attack|magic|caster|dealer",
-		System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.CultureInvariant);
-
-	private static readonly System.Collections.Concurrent.ConcurrentDictionary<uint, bool> _healOverTime = new();
-
-	/// <summary>
-	/// What a body carries once a raise has landed on it: "Raise" under two ids with the same name and text
-	/// ("Teetering on the brink of consciousness."). BossModReborn and DelvUI read both; RSR read 148 alone (A294).
-	/// </summary>
-	public static StatusID[] RaiseStatus { get; } = [StatusID.Raise, StatusID.Raise_1140];
-
 	/// <summary>
 	/// The elemental weakness statuses used in Occult Crescent
 	/// </summary>
@@ -411,31 +369,6 @@ public static partial class StatusHelper
 	];
 
 	/// <summary>
-	/// Every status the game data lists under the name Reprisal with the same effect text. Which of
-	/// them the role action applies at a given level is not verifiable from the data alone, so every
-	/// Reprisal check looks for any of them.
-	/// <para>
-	/// <c>Reprisal_2101</c> is scoped to PLD WAR DRK GNB rather than to the shared role, which is the
-	/// signature of the form a trait upgrades into - Enhanced Reprisal at level 98 extends the
-	/// duration to 15s. It leaves the reduction at 10%: an earlier version of this note claimed 15%
-	/// without naming a source, and the Lodestone entry says otherwise. Its absence made every reader of this list blind to
-	/// the version an end-game tank actually applies: <c>ReprisalPvE</c> carries this list as
-	/// <c>TargetStatusProvide</c>, so the guard against re-applying it never saw the debuff, and the
-	/// mitigation surveys that read it counted a reprised pull as unmitigated.
-	/// </para>
-	/// <para>
-	/// Kept out: no id under this name carries a different effect text, so the list is complete as
-	/// long as no new one appears. <c>.github/scripts/audit/scan14.py</c> reports one that does.
-	/// </para>
-	/// </summary>
-	public static StatusID[] ReprisalStatus { get; } =
-	[
-		StatusID.Reprisal,
-		StatusID.Reprisal_1193,
-		StatusID.Reprisal_2101,
-	];
-
-	/// <summary>
 	/// Shields (absorb effects) that have their own tracked duration, as opposed to instant HP-based
 	/// mitigation. Used to decide whether a shield will still be up when it matters, e.g. for
 	/// shield-aware heal prioritization.
@@ -538,60 +471,6 @@ public static partial class StatusHelper
 	];
 
 	/// <summary>
-	/// Every id the game files under the display name Slow, all of them carrying the same effect:
-	/// "weaponskill cast time and recast time, spell cast time and recast time, and auto-attack
-	/// delay are increased".
-	/// <para>
-	/// The auto-attack half is what makes this a mitigation and not a caster nuisance. Trash enemies
-	/// deal most of their damage by auto-attack, so a slowed pack throttles the incoming stream by
-	/// roughly the size of the debuff - the same order as Rampart, and enough to stop a barrier that
-	/// only pays off when it is spent from being spent at all.
-	/// </para>
-	/// <para>
-	/// Read as a group, like <see cref="StunStatus"/> and for the same reason: which id a given
-	/// action applies is not decidable from the data, and the source does not matter. Arm's Length
-	/// is the one a tank brings; Blue Mage and the Occult Crescent phantom jobs bring others.
-	/// Slow+ (427, 1568) is the stronger grade of the same effect and belongs here too.
-	/// </para>
-	/// </summary>
-	public static StatusID[] SlowStatus { get; } =
-	[
-		StatusID.Slow,
-		StatusID.Slow_10,
-		StatusID.Slow_193,
-		StatusID.Slow_427,
-		StatusID.Slow_442,
-		StatusID.Slow_561,
-		StatusID.Slow_1346,
-		StatusID.Slow_1509,
-		StatusID.Slow_1568,
-		StatusID.Slow_2246,
-		StatusID.Slow_3464,
-		StatusID.Slow_3493,
-	];
-
-	/// <summary>
-	/// Barriers that pay a reward only when they are absorbed in full, so letting one expire unspent
-	/// wastes its cost rather than merely leaving protection unused.
-	/// <para>
-	/// The Blackest Night is the only one in the game: it grants Dark Arts when its barrier - 25% of
-	/// maximum HP over 7s - is consumed completely (action 7393), and nothing at all when it is not.
-	/// Every other barrier in <see cref="ShieldStatus"/> is pure protection, where an unspent barrier
-	/// is a good outcome. That difference is why this list exists separately instead of asking
-	/// whether any shield is running.
-	/// </para>
-	/// <para>
-	/// Read by rules that would otherwise stop the damage stream while such a barrier is up - the
-	/// white mage's Holy stun is the case this was written for.
-	/// </para>
-	/// </summary>
-	public static StatusID[] FullAbsorbRewardStatus { get; } =
-	[
-		StatusID.BlackestNight,
-		StatusID.BlackestNight_1308,
-	];
-
-	/// <summary>
 	/// 
 	/// </summary>
 	public static StatusID[] TankStanceStatus { get; } =
@@ -642,19 +521,6 @@ public static partial class StatusHelper
 	internal static StatusID[] InvulnerabilityStatus { get; } = [.. NoNeedHealingStatus, StatusID.WalkingDead];
 
 	/// <summary>
-	/// The subset of <see cref="NoNeedHealingStatus"/> under which a hit does no damage at all - the
-	/// status texts read "Impervious to most attacks" (Hallowed Ground, Superbolide). Holmgang, Living
-	/// Dead, Walking Dead and Undead Rebirth are not in it: under them a hit still takes HP, down to 1,
-	/// so a mitigation still decides how much HP is left when they end.
-	/// </summary>
-	internal static StatusID[] ImperviousStatus { get; } =
-	[
-		StatusID.Superbolide,
-		StatusID.HallowedGround,
-		StatusID.HallowedGround_1302,
-	];
-
-	/// <summary>
 	/// The subset of <see cref="NoNeedHealingStatus"/> whose trigger is the bearer's own death.
 	/// Living Dead is the only one: the dark knight spends it expecting to be killed, and the kill
 	/// is what converts it into Walking Dead and its self-healing. Healing the bearer above zero
@@ -679,43 +545,6 @@ public static partial class StatusHelper
 	/// Declared after both lists, which it is built from.
 	/// </summary>
 	internal static StatusID[] NoNeedHealingStatusBesidesDeathTrigger { get; } = Without(NoNeedHealingStatus, DeathTriggeredStatus);
-
-	/// <summary>The four tanks' level 3 limit breaks (Status.resx: "Damage taken is reduced").</summary>
-	private static readonly StatusID[] TankLimitBreakStatus =
-	[
-		StatusID.LastBastion,
-		StatusID.LandWaker,
-		StatusID.DarkForce,
-		StatusID.GunmetalSoul,
-	];
-
-	/// <summary>
-	/// Statuses under which a heal lands for nothing at all, as opposed to merely being less urgent.
-	/// A target carrying one of these is not a healing candidate: the cast would be spent and the
-	/// target left exactly as it was. Mounted's own description says HP recovery is "nullified".
-	/// <para>
-	/// Deliberately narrower than <see cref="NoNeedHealingStatus"/>, which mixes this case in with
-	/// genuine invulnerabilities. Those postpone the need for healing, they do not remove it - a
-	/// Superbolide gunbreaker sits at 1 HP and needs healing more than anyone, just not this second.
-	/// Only a status that nullifies healing outright belongs here; HpRecoveryDown, which merely
-	/// reduces it, does not.
-	/// </para>
-	/// </summary>
-	/// <remarks>
-	/// The statuses whose description says healing does nothing, searched in the status sheet (A516):
-	/// <see cref="StatusID.Mounted"/> (1420), "HP recovery and beneficial effects conferred by actions are nullified";
-	/// <see cref="StatusID.TheWormsCurse"/> (1419), "HP regeneration is nullified", the tether of the Reiryu in Shinryu
-	/// (Unreal) - Lux Solaris healed its bearers for 0 three times in the owner's log of 03.11.2026;
-	/// <see cref="StatusID.PrimordialCrust"/> (1605), "all HP recovery is nullified". Mounted_1520 is "Riding atop a
-	/// Rathalos" and says nothing about healing, so it is deliberately absent - a shared identifier is not evidence of a
-	/// shared effect.
-	/// </remarks>
-	public static StatusID[] HealingIneffectiveStatus { get; } =
-	[
-		StatusID.Mounted,
-		StatusID.TheWormsCurse,
-		StatusID.PrimordialCrust,
-	];
 
 	/// <summary>
 	/// 
@@ -913,14 +742,4 @@ public static partial class StatusHelper
 		StatusID.Stun_5803
 	];
 
-	/// <summary>
-	/// Stun Resistance, "Immune to stun effects": the permanent immunity of certain enemies (39 is
-	/// marked permanent in the game data). It is not the halving of repeated stuns - the game shows
-	/// that as no status, and <see cref="StunWatch"/> reads it from the fight instead (A272).
-	/// </summary>
-	public static StatusID[] StunResistanceStatus { get; } =
-	[
-		StatusID.StunResistance,
-		StatusID.StunResistance_1349
-	];
 }

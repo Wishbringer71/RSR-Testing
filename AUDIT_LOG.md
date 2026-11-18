@@ -25765,6 +25765,27 @@ freigegeben war“.
   Tinktur nennt die Zeile den Grund.
 - Konzept 03, „Warum keine kam“.
 
+### A882 · Zusammenlegung gegen die Konzepte geprüft; Fork-Felder aus Upstreams Teildateien (18.11.2026)
+
+Sein Auftrag (18.11.2026): „alle änderungen durch die heutige zusammenlegung upstream mit fork erneut im kritischen loop
+gegen die bestehenden konzepte inhaltlich prüfen, weiterhin prüfen, ob es durch die upstream-änderungen synergieeffekte und
+weitere verbesserungen für modularität und objektorientierung geben könnte, die der fork mitnutzen kann. danach auf alles
+audit und codereview“.
+
+- *Gegen die Konzepte:* Aussagen über die aufgeteilten Dateien (Konzept 24: Ausnahmen für `Configs` nennen alle drei
+  Dateien; Konzept 11 und 12: Zeilenangaben am Code nachgelesen, Aussage unverändert), die Reihenfolge der Einstellungen im
+  Fenster je Filtergruppe gemessen (316 von 316 unverändert; zwei Gruppen über `Configs.CombatAndTarget.cs` und
+  `Configs.cs`, gleiche Reihenfolge unter Windows und Linux), Upstreams Aufteilung als eigener Abschnitt in Konzept 24,
+  `layout.py` im README der Prüfskripte. Rotationswahl, Generatoren, Lockdatei und Namensräume: kein Konzept beschreibt sie
+  anders, als sie jetzt sind (A878).
+- *Synergie, umgesetzt:* 19 Statuslisten aus `StatusHelper.Tables.cs` und 14 Felder aus `DataCenter.cs`, `.BMR.cs`,
+  `.Combat.cs` in die Fork-Teildatei, die sie liest – nur Startwerte, die kein statisches Mitglied lesen. Gegenprobe:
+  Zeilenmengen gleich (nur je Teildatei eine Kommentarzeile mehr), Startwert-Messung 0, Compile mit allen CI-Schaltern.
+  Gemessen vorher: 467 Zeilen Fork-Startwerte in 35 Upstream-Dateien (Näherung über die Deklarationszeilen).
+- *Synergie, verworfen:* Crucible- und Carnivale-Helfer in die Jobordner (Upstream lässt seine eigenen in `Engine/Helpers`).
+- *Prüfgrad:* statisch, Compile, Zeilenmengen, Roslyn-Messung; keine Verhaltensänderung.
+- Konzept 24, „Was der Fork aus Upstreams Umbau mitnimmt“.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

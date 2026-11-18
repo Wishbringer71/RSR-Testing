@@ -290,25 +290,6 @@ internal static partial class DataCenter
 	internal static bool InEffectTime => Environment.TickCount64 <= _effectEndTick;
 	internal static Dictionary<ulong, uint> HealHP { get; set; } = [];
 
-	// How much health one of our own healing actions restores to one target, in points, per action id.
-	// Healing is an absolute figure just like damage, so it is stored as points; a caller compares it
-	// with points (a member's missing health), never with a share.
-	//
-	// This exists because the potency in an effect text cannot be converted into points from here:
-	// the result depends on healing power, on the job gauge and on buffs, and it changes with every
-	// piece of gear. Asking the fight instead costs nothing - the effect handler already sees every
-	// heal we land, with the real number.
-	//
-	// The SMALLEST amount seen is kept, not a mean. Owner's rule: a heal can land as a critical hit
-	// and be much larger, and a need is judged against the least the heal will surely restore, never
-	// the most. Only amounts that measure the whole heal count: one that met more missing health than
-	// it restored (nothing was lost to overheal), or any amount once the packet is seen to report
-	// overheal at all - then every amount is the full heal. It is cleared on a territory change only
-	// (ResetHealMeasurements): item level sync is set per duty, so a figure from outside would be
-	// wrong inside; a gear change is followed from the next zone on.
-	private static readonly Dictionary<uint, float> _observedHealPerCast = [];
-
-	private static readonly Dictionary<uint, HealLanding> _lastHealLanding = [];
 	internal static Dictionary<ulong, uint> ApplyStatus { get; set; } = [];
 	internal static uint MPGain { get; set; }
 
@@ -455,8 +436,6 @@ internal static partial class DataCenter
 	public static unsafe float ComboTime => ActionManager.Instance()->Combo.Timer;
 
 	public static bool IsMoving => Player.IsMoving || BMRIsMoving;
-
-	private static DateTime _closingLastRead = DateTime.MinValue;
 
 	internal static float StopMovingRaw { get; set; }
 
@@ -625,10 +604,6 @@ internal static partial class DataCenter
 			return _avgTTK;
 		}
 	}
-
-	private static float _packTTK = float.PositiveInfinity;
-
-	private static long _packTTKCacheTick = long.MinValue;
 
 	/// <summary>
 	/// False while no hostile has a time to kill yet, e.g. early in a pull or during downtime. <see cref="AverageTTK"/> is

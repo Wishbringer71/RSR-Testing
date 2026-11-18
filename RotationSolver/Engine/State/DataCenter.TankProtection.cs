@@ -515,4 +515,7 @@ internal static partial class DataCenter
 		return Svc.Objects.SearchById(objectId) is IBattleChara marked
 			&& (marked.IsParty() || marked.IsNpcPartyMember());
 	}
+
+	// Fields only this part reads; they read no other static at start, so no order binds them to another file (concept 24).
+	private static readonly ConcurrentDictionary<string, byte> _markerLocksTakenOver = new();
 }

@@ -303,4 +303,61 @@ public static partial class StatusHelper
 
 		return _playerOwned.Contains(objectId);
 	}
+
+	// Status lists this part reads; they read no other static at start, so no order binds them to another file (concept 24).
+	private static readonly System.Collections.Concurrent.ConcurrentDictionary<uint, bool> _damageOverTime = new();
+
+	private static readonly System.Collections.Concurrent.ConcurrentDictionary<uint, bool> _endsInDeath = new();
+
+	private static readonly System.Collections.Concurrent.ConcurrentDictionary<uint, bool> _turnsWorse = new();
+
+	// What happens when the status runs out or stays: "When this effect expires, you will experience a Deep Freeze."
+	// (Freezing), "Will succumb to Sleep when effect expires." (Half-asleep), "If not cured, you will transform into a
+	// tonberry." (Nymian Plague), "... only a matter of time before it detonates." (Aetherochemical Bomb); xivapi, 05.11.2026.
+	private static readonly System.Text.RegularExpressions.Regex WorseOnExpiry = new(
+		@"when (?:this )?effect expires|if not cured|before it detonates",
+		System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.CultureInvariant);
+
+	private static readonly System.Collections.Concurrent.ConcurrentDictionary<uint, bool> _healOverTime = new();
+
+	/// <summary>
+	/// The subset of <see cref="NoNeedHealingStatus"/> under which a hit does no damage at all - the
+	/// status texts read "Impervious to most attacks" (Hallowed Ground, Superbolide). Holmgang, Living
+	/// Dead, Walking Dead and Undead Rebirth are not in it: under them a hit still takes HP, down to 1,
+	/// so a mitigation still decides how much HP is left when they end.
+	/// </summary>
+	internal static StatusID[] ImperviousStatus { get; } =
+	[
+		StatusID.Superbolide,
+		StatusID.HallowedGround,
+		StatusID.HallowedGround_1302,
+	];
+
+	/// <summary>
+	/// Statuses under which a heal lands for nothing at all, as opposed to merely being less urgent.
+	/// A target carrying one of these is not a healing candidate: the cast would be spent and the
+	/// target left exactly as it was. Mounted's own description says HP recovery is "nullified".
+	/// <para>
+	/// Deliberately narrower than <see cref="NoNeedHealingStatus"/>, which mixes this case in with
+	/// genuine invulnerabilities. Those postpone the need for healing, they do not remove it - a
+	/// Superbolide gunbreaker sits at 1 HP and needs healing more than anyone, just not this second.
+	/// Only a status that nullifies healing outright belongs here; HpRecoveryDown, which merely
+	/// reduces it, does not.
+	/// </para>
+	/// </summary>
+	/// <remarks>
+	/// The statuses whose description says healing does nothing, searched in the status sheet (A516):
+	/// <see cref="StatusID.Mounted"/> (1420), "HP recovery and beneficial effects conferred by actions are nullified";
+	/// <see cref="StatusID.TheWormsCurse"/> (1419), "HP regeneration is nullified", the tether of the Reiryu in Shinryu
+	/// (Unreal) - Lux Solaris healed its bearers for 0 three times in the owner's log of 03.11.2026;
+	/// <see cref="StatusID.PrimordialCrust"/> (1605), "all HP recovery is nullified". Mounted_1520 is "Riding atop a
+	/// Rathalos" and says nothing about healing, so it is deliberately absent - a shared identifier is not evidence of a
+	/// shared effect.
+	/// </remarks>
+	public static StatusID[] HealingIneffectiveStatus { get; } =
+	[
+		StatusID.Mounted,
+		StatusID.TheWormsCurse,
+		StatusID.PrimordialCrust,
+	];
 }

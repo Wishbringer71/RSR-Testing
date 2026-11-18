@@ -1299,4 +1299,44 @@ internal static partial class DataCenter
 
 		return false;
 	}
+
+	// Fields only this part reads; they read no other static at start, so no order binds them to another file (concept 24).
+	// How much health one of our own healing actions restores to one target, in points, per action id.
+	// Healing is an absolute figure just like damage, so it is stored as points; a caller compares it
+	// with points (a member's missing health), never with a share.
+	//
+	// This exists because the potency in an effect text cannot be converted into points from here:
+	// the result depends on healing power, on the job gauge and on buffs, and it changes with every
+	// piece of gear. Asking the fight instead costs nothing - the effect handler already sees every
+	// heal we land, with the real number.
+	//
+	// The SMALLEST amount seen is kept, not a mean. Owner's rule: a heal can land as a critical hit
+	// and be much larger, and a need is judged against the least the heal will surely restore, never
+	// the most. Only amounts that measure the whole heal count: one that met more missing health than
+	// it restored (nothing was lost to overheal), or any amount once the packet is seen to report
+	// overheal at all - then every amount is the full heal. It is cleared on a territory change only
+	// (ResetHealMeasurements): item level sync is set per duty, so a figure from outside would be
+	// wrong inside; a gear change is followed from the next zone on.
+	private static readonly Dictionary<uint, float> _observedHealPerCast = [];
+
+	private static readonly Dictionary<uint, HealLanding> _lastHealLanding = [];
+
+	// The hold's own prediction, and whether the fight bore it out. Holding back says: "the event
+	// this prediction points at is not the small cast now running - something larger follows". That
+	// is a claim about the next few seconds, and the next few seconds answer it.
+	//
+	// This is the difference between a counter and a probe that decides. A counter would have to be
+	// read by somebody and reported back, which costs a fight, a reading and a round per figure -
+	// the owner's standing objection. This one scores itself: every hold is checked against what
+	// actually landed, and the rule stops holding once its own record says it is wrong.
+	private static DateTime _holdExpectsHitUntil = DateTime.MinValue;
+
+	private static DateTime _announcedAreaShareTime = DateTime.MinValue;
+
+	private static readonly Dictionary<string, int> _areaMeasurementTally = [];
+
+	// A731: the omen names in which a ring's figures follow, as BossModReborn's analysis reads them.
+	private static readonly string[] RingKeys = ["sircle_", "sicle_", "circle"];
+
+	private static DateTime _bmrRaidwideHeldTracedFor = DateTime.MinValue;
 }

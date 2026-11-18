@@ -869,4 +869,11 @@ internal static partial class DataCenter
 	{
 		return AnyLiving(JobRole.Healer, excludeSelf);
 	}
+
+	// Fields only this part reads; they read no other static at start, so no order binds them to another file (concept 24).
+	private static DateTime _closingLastRead = DateTime.MinValue;
+
+	private static DateTime _bmrRaidwideReadAt = DateTime.MinValue;
+
+	private static TimeSpan _bmrRaidwideReadFrame = TimeSpan.Zero;
 }
