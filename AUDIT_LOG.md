@@ -25691,6 +25691,35 @@ gesamtheitlich kausal im audit und codereview prüfen. fehler beseitigen“.
   Dalamud-Fassung an); ein Roslyn-Prüfskript für die Startwert-Reihenfolge in der CI (der Compiler meldet die Klasse
   schon; Lesen über einen Methodenaufruf bleibt eine benannte Grenze, gemessen ohne Fund).
 
+### A879 · Pull ohne Countdown: keine Eröffnung während einer offenen Bereitschaftsanfrage, Spurzeile für RSRs eigene (18.11.2026)
+
+TODO-Punkt aus A877 im vollen Loop; dazu sein Hinweis (18.11.2026): „normal habe ich eigentlich eingestellt, dass kein
+eigenständiger angriff auf nicht im kampf begriffene gegner erfolgt (no-tank)“.
+
+- *Mitschnitt:* Bereitschaftsanfrage des Tanks 19:14:33, kein Countdown; Shinryus Herz (BNpcBase 19940) seit 19:14:19
+  ohne Ziel (Zeile 261, `NPCTargetID` E0000000, keine Änderung bis zum Angriff); Ruinga 19:14:35,975 als erster Angriff;
+  RSR aktiv (Sprint 19:14:34,3 außerhalb des Kampfes in Bewegung). Die Spur schrieb zum Angriff nichts.
+- *Am Code:* Aktionsziele kommen nur über `TargetHelper.GetTargetsByRange` → `IsAttackable`. Mit seiner Einstellung
+  (`TargetsHaveTarget`) und auch mit der Voreinstellung ist ein Gegner ohne Ziel in einer Gruppe nur über Countdown,
+  PvP, Black Star/Mythic Idol, „Henched“, IPC oder eine Vorrangregel angreifbar; keine traf das Herz. Geprüft und
+  verworfen als Umweg: die Bosswahl am Spielerziel in `ActionTargetInfo.Result.cs` (freundliche Bodenflächen); die
+  Sprünge am Spielerziel (nur mit Countdown oder seinem Befehl). *Schluss, als Schluss markiert:* RSR hat das Herz mit
+  seiner Einstellung sehr wahrscheinlich nicht gewählt.
+- *Korrektur im Gespräch:* Meine Zwischenmeldung, `DiesToNextHit` treffe schwache Gegner der Oberwelt, war falsch: es
+  liest einen Status („stirbt durch jeden Treffer“), keine Lebenspunkte. Damit entfiel Option (3), Vorrangregeln nur im
+  Kampf des Spielers.
+- *Gebaut:* `PullGuard` – während einer offenen Anfrage (`AgentReadyCheck`, ein Eintrag `AwaitingResponse`) ohne
+  Countdown ist außerhalb des Kampfes kein Gegner angreifbar, der noch nicht kämpft (vor allen Vorrangregeln in
+  `IsAttackable`); „pull: held“ einmal je Anfrage, „pull: RSR opened …“ einmal je Annäherung nach RSRs eigener Aktion.
+  Keine Option: Der Preis ist ein eigener Druck eines Tanks während der Anfrage; die Sperre widerspricht keinem
+  Einstellungstext, sie hält nur die Zeit der Anfrage.
+- *Prüfgrad:* Compile; Laufzeit nicht beobachtet. Tragende Annahme: Die Einträge stehen nach dem Ende einer Anfrage
+  nicht mehr auf „wartet“ (unbelegt); stünden sie, eröffnete RSR keinen Kampf – mit seiner Einstellung das Verhalten
+  ohnehin.
+- *Vorhersage:* `pull-no-opening-during-ready-check`, `pull-held-names-enemy` (predictions/2026-11-18.json). Erscheint im
+  nächsten Fall wie dem vom 17.11. keine Zeile „pull: RSR opened“ vor „combat started“, drückte nicht RSR.
+- Konzept 03, „Den Kampf eröffnen: Bereitschaftsanfrage und Countdown“.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

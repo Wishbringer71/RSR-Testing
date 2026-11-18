@@ -19,7 +19,7 @@ auswahl und das timing der beschwörung" – je Kampf aller fünf Bretter (Gegne
 BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Zeitpunkt ihres Aufrufs im Loop prüfen
 (Beispiel seiner Beobachtung: der Raptor gegen Feuer, bevor feueranfällige Gegner da waren; A581).
 
-Zuerst der Pull ohne Countdown (Sicherheit: ein Wipe), dann die Zauber vor dem Loslaufen, dann die Tinktur des
+Zuerst die Zauber vor dem Loslaufen (Sicherheit vor Schaden, seine Vorgabe vom 18.11.2026), dann die Tinktur des
 Schnitters; was auf Daten oder auf ihn wartet, steht unten.
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
@@ -31,12 +31,6 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
 
 ## Defekte
 
-- **Pull ohne Countdown: Ruinga auf Shinryus Herz während der Bereitschaftsanfrage** (A877). Im Kampf: Shinryu
-  (Unreal), 17.11.2026 19:14 – der Beschwörer griff 0,7 s vor dem Kampfbeginn als Erster an, beide Schwingen schlugen
-  ihn, er starb nach 8 s, danach die Gruppe. Ob RSR gedrückt hat, ist unbelegt; die Spur schreibt keinen Angriff
-  außerhalb des Kampfes. Ort: Angriffsfreigabe und Feindziel außerhalb des Kampfes (`ObjectHelper.IsAttackable`,
-  `DataCenter.HostileTarget`). Nächster Schritt: am Code klären, unter welchen Bedingungen RSR in einer Gruppe ohne
-  Countdown einen Gegner angreift, der noch nicht kämpft, dann Loop. **N**. Konzept 03.
 - **Zauber beginnen, kurz bevor er losläuft** (A877). Im Kampf: Am 17.11.2026 brachen 113 Zauber ab, 69,4 s Wirkzeit
   (Weißmagier 38,8 s, Schnitter 11,9 s, Beschwörer 7,9 s), in der Zeit hätte ein Sofortzauber gelegen; 16 davon (7,0 s)
   als neuer Start binnen 3 s nach einem Abbruch, 30 in den ersten 0,25 s. Ort: `ActionBasicInfo.CastStartBlockedNow`.

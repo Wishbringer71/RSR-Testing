@@ -392,6 +392,13 @@ public static partial class ObjectHelper
 			}
 		}
 
+		// Concept 03, "Den Kampf eröffnen" (A879): no fight opened while a ready check waits for an answer - before every
+		// priority rule and the engage setting, which would open one.
+		if (PullGuard.HoldsPull(battleChara))
+		{
+			return false;
+		}
+
 		if (battleChara.IsTopPriorityNamedHostile())
 		{
 			return true;

@@ -1334,6 +1334,58 @@ wäre mit dem Satzanfang „deals" eingefangen worden – so die Sterndetonation
 der Regel „der Satz beginnt mit Deals"; geprüft an allen 195 Job-Aktionen dieser Einstufung: Beide Regeln treffen
 dieselben 26, die neue lässt nur die Sterndetonation aus (A832).
 
+## Den Kampf eröffnen: Bereitschaftsanfrage und Countdown
+
+*Was gilt (A879):* Solange eine Bereitschaftsanfrage offen ist – ein Mitglied hat noch nicht geantwortet – und kein
+Countdown läuft, greift RSR außerhalb des Kampfes keinen Gegner an, der noch nicht kämpft (`DataCenter.NotFightingYet`:
+kein Ziel, nicht im Kampf). Das gilt für jeden Job, jede Einstellung „Engage settings“ und jede Vorrangregel; ein Gegner,
+der schon kämpft, bleibt angreifbar, und mit dem Countdown kommt das Signal zum Pull (`CountDownAction`). Eröffnet RSR
+selbst einen Kampf – eine eigene Aktion außerhalb des Kampfes auf einen Gegner, der noch nicht kämpft –, schreibt die Spur
+je Annäherung eine Zeile „pull: RSR opened …“ mit Aktion, Gegner, Einstellung, Countdown und offener Anfrage; die gehaltene
+Anfrage schreibt „pull: held …“ einmal je Anfrage.
+
+*Anlass (A877):* Shinryu (Unreal), 17.11.2026: Bereitschaftsanfrage des Tanks um 19:14:33, kein Countdown, 19:14:35,975
+Ruinga des Beschwörers auf Shinryus Herz, das seit seinem Erscheinen (19:14:19) kein Ziel hielt (Mitschnitt, Zeile 261
+`NPCTargetID` E0000000). Beide Schwingen schlugen ihn, Tod nach 8 s, danach die Gruppe. RSR war aktiv (Sprint 1,6 s vorher
+außerhalb des Kampfes in Bewegung, die Einstellung „Use movement speed abilities out of combat in duties“).
+
+*Wer drückte:* unbelegt; die Spur schrieb bis A879 keinen Angriff außerhalb des Kampfes. *Sein Hinweis (18.11.2026):*
+„normal habe ich eigentlich eingestellt, dass kein eigenständiger angriff auf nicht im kampf begriffene gegner erfolgt
+(no-tank)“ – die Einstellung „Previously engaged targets (Non-Tanks)“ (`TargetHostileType.TargetsHaveTarget`). Am Code
+(`ObjectHelper.IsAttackable`): Damit ist ein Gegner ohne Ziel nur angreifbar, wenn ein Countdown läuft, im PvP, als Black
+Star oder Mythic Idol, wenn er dich anvisiert, im Modus „Henched“, wenn ein anderes Plugin über IPC die Einstellung oder
+einen Namensvorrang setzt, oder über eine Vorrangregel (`IsTopPriorityHostile`): ein Status „stirbt durch jeden Treffer“,
+eine Tötungsregel des Crucible, Schatzgewölbe, die Verlorene im FATE, M9/M10 (episch), das dritte Crucible-Brett, drei
+Objekte in Verliesen, Ereignisgegner in Kreszentia, das Ziel des eigenen Wildfeuers. Keine davon traf das Herz. Aktionsziele
+kommen nur über `TargetHelper.GetTargetsByRange`, das `IsAttackable` liest; die Wege am Spielerziel vorbei sind Sprünge
+(`HostileMovingForward`, nur mit Countdown oder seinem Befehl) und freundliche Flächen. *Schluss:* Mit seiner Einstellung
+hat RSR das Herz sehr wahrscheinlich nicht gewählt; er oder ein anderes Werkzeug drückte. Die Zeile „pull: RSR opened“
+entscheidet das beim nächsten Fall.
+
+*Warum trotzdem eine Sperre:* Mit „All targets that are in range for any abilities (Tanks/Autoduty)“ – die Einstellung,
+die der Text Tanks empfiehlt, und er spielt alle Kampfjobs – zieht RSR jeden Gegner in Reichweite, auch während die
+Gruppe noch antwortet; ebenso jede Vorrangregel. Eine offene Anfrage sagt, dass jemand noch nicht bereit ist; ein Pull
+in dieser Zeit ist nie Schaden wert (Sicherheit der Gruppe vor Schaden), und die Wahrscheinlichkeit misst das Spiel
+selbst (`AgentReadyCheck.ReadyCheckEntries`, Status `AwaitingResponse`; FFXIVClientStructs, Werkzeugquelle).
+
+*Optionen:* (0) nichts ändern, nur die Spurzeile – lässt Tanks und Vorrangregeln während der Anfrage ziehen. (1) Sperre
+während einer offenen Anfrage, gewählt. (2) Außerhalb des Kampfes ohne Countdown nie einen nicht kämpfenden Gegner –
+bräche „All targets … (Tanks/Autoduty)“, dessen Text bindet, und AutoDuty, das darüber zieht. (3) Vorrangregeln nur im
+Kampf des Spielers – verworfen: Keine belegt einen Fall gegen seine Einstellung, und die Verlorene im FATE oder ein
+Ereignis in Kreszentia beginnen, bevor er kämpft.
+*SWOT (1):* Stärke – kein Pull von RSR, solange die Gruppe antwortet, für alle Jobs und Wege. Schwäche – ein Tank, der
+während der Anfrage ziehen will, drückt selbst; danach kämpft der Gegner, und RSR folgt. Chance – die Spurzeile beantwortet,
+wer zieht. Bedrohung – eine Anfrage, deren Einträge nach ihrem Ende auf „wartet“ stehen blieben (unbelegt), hielte RSR vom
+Eröffnen ab; das ist für seine Einstellung ohnehin das Verhalten und für Tanks einmal ein eigener Druck. Liest das Spiel
+die Struktur nicht (anderer Patch), gilt keine Sperre – das Verhalten vorher.
+*Gegenthesen:* (a) kein Defekt – mit seiner Einstellung zog RSR nicht: möglich, deshalb die Spurzeile; die Sperre
+kostet nichts. (b) Option falsch – ein Countdown während der offenen Anfrage: Der Countdown gibt frei. (c) Ausgeliefert,
+und nichts ändert sich: Er drückte selbst – dann zeigt die Spur keine Zeile „pull: RSR opened“, und der Befund ist
+erledigt; eine Sperre gegen seine eigenen Tasten baut RSR nicht.
+*Vorhersage:* Im nächsten Kampf mit Bereitschaftsanfrage ohne Countdown, in dem ein Gegner vor dem Kampf angegriffen
+wird: entweder „pull: held“ und kein „pull: RSR opened“ vor „combat started“, oder ein „pull: RSR opened“ nur mit
+„ready check none“.
+
 ## Tötungsregeln: zuerst, gemeinsam, erst danach
 
 Manche Gegner verlangen eine Reihenfolge, die keine Gefahrenrechnung findet: einer stirbt am nächsten Treffer, zwei

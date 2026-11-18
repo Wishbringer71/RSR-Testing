@@ -132,6 +132,8 @@ namespace RotationSolver.Commands
 
 			if (nextAction.Use())
 			{
+				// Concept 03, "Den Kampf eröffnen" (A879): a fight RSR opened itself is written.
+				PullGuard.NoteOwnAction(nextAction);
 
 				_lastActionID = nextAction.AdjustedID;
 				_lastUsedTime = DateTime.Now;

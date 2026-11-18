@@ -1,0 +1,16 @@
+[
+ {
+  "id": "pull-no-opening-during-ready-check",
+  "archive": "A879",
+  "kind": "absent",
+  "situation": "pull: ",
+  "match": "pull: RSR opened .* ready check [0-9]+ not answered"
+ },
+ {
+  "id": "pull-held-names-enemy",
+  "archive": "A879",
+  "kind": "each",
+  "situation": "pull: held",
+  "match": "pull: held - ready check open, [0-9]+ not answered yet, no countdown; .+ is not fighting$"
+ }
+]
