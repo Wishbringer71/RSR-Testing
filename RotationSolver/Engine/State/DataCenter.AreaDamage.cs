@@ -50,11 +50,24 @@ internal static partial class DataCenter
 
 	/// <summary>
 	/// "Don't pull new enemies" (concept 03, A826, A832, A833; concept 23, A834): whether hitting <paramref name="enemy"/>
-	/// with an action - one that also heals with <paramref name="healsToo"/> - would pull it: the guard is on
-	/// (<see cref="GuardsAgainstPull"/>) and the enemy is not fighting yet (<see cref="NotFightingYet"/>). For the sleep
-	/// rules' areas; the attacks' areas ask the same two questions in <c>ActionTargetInfo.PullsAround</c>.
+	/// with an action - one that also heals with <paramref name="healsToo"/> - would pull it: the enemy is not fighting yet
+	/// (<see cref="NotFightingYet"/>), and the guard is on (<see cref="GuardsAgainstPull"/>) or RSR would not attack it by its
+	/// engage setting (concept 03, A884). Read by the attacks' areas (<c>ActionTargetInfo.PullsAround</c>) and the stops.
 	/// </summary>
-	internal static bool PullsIfHit(IBattleChara enemy, bool healsToo = false) => GuardsAgainstPull(healsToo) && NotFightingYet(enemy);
+	internal static bool PullsIfHit(IBattleChara enemy, bool healsToo = false)
+		=> NotFightingYet(enemy) && (GuardsAgainstPull(healsToo) || (EngageSparesUnengaged && !enemy.IsAttackable()));
+
+	/// <summary>
+	/// Whether any area may have to spare an enemy: the guard is on, or the engage setting attacks only some enemies not
+	/// fighting yet (concept 03, "Flächen, die Gegner treffen, und Gegner, die noch nicht kämpfen", A884). The cheap check before an
+	/// area scans the figures.
+	/// </summary>
+	internal static bool AreaMaySparePull(bool healsToo) => GuardsAgainstPull(healsToo) || EngageSparesUnengaged;
+
+	// Outside deep dungeons (their options decide there) and PvP, an engage setting other than "All targets" leaves some
+	// enemies not fighting yet unattacked; an area must not attack them either (A884).
+	private static bool EngageSparesUnengaged
+		=> !IsInDeepDungeons && !IsPvP && CurrentTargetToHostileType != TargetHostileType.AllTargetsCanAttack;
 
 	/// <summary>
 	/// Every figure of the enemy side casting now, listed or not: the casters of the hostile list, a targetable enemy the

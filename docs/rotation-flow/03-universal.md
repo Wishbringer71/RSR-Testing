@@ -1303,6 +1303,19 @@ dazu die Gruppe.
   (`DataCenter.NotFightingYet`), für die Flächen, die Zielwahl und die Schlafregel; ob sie gilt, sagt
   `DataCenter.GuardsAgainstPull` – außerhalb der Tiefen Gewölbe dieser Schalter, in ihnen deren Optionen (Konzept 23).
 
+*Die Einstellung „Engage settings" gilt auch für Flächen (A884):* Ein Gegner, der noch nicht kämpft und den RSR nach seiner
+Einstellung nicht selbst angriffe (`ObjectHelper.IsAttackable` lehnt ihn ab), wird auch von keiner Fläche getroffen – mit
+und ohne „Don't pull new enemies with AoE", außerhalb der Tiefen Gewölbe (dort entscheiden deren Optionen). Grund: Der Text
+der Einstellung sagt „Which enemies RSR attacks", und eine Fläche, die einen unbeteiligten Gegner trifft, greift ihn an;
+mit „Previously engaged targets (Non-Tanks)", seiner Einstellung (sein Hinweis, 18.11.2026), und mit der Voreinstellung in
+einer Gruppe wählte RSR einen solchen Gegner nie als Ziel, zog ihn aber als Nebenziel einer Fläche. Ein Gegner, den RSR
+trotzdem angriffe – eine Vorrangregel, ein Objekt wie die Wurzel in Dohn Meg –, bleibt treffbar; mit „All targets … (Tanks)"
+gilt nur der Schalter, wie bisher. *Quelle:* Daedalus v0.1.126 (ofnature/Daedalus fdb0811, 17.11.2026, Werkzeugquelle)
+zielt und zählt Flächen über dieselbe Regel wie die Einzelzielwahl, nachdem ein Astrologe und ein Piktomant in Eureka
+Pagos so neue Packs zogen. *Preis:* Eine Fläche wartet, solange ein unbeteiligter Gegner in ihrem Wirkgebiet steht – in
+einer Gruppe nur, bis er jemanden anvisiert. *Gegenthese (Bossobjekte ohne Ziel werden nicht mehr getroffen):* widerlegt –
+die Grenze ist `IsAttackable`, das Vorrang und besondere Ziele vor der Einstellung annimmt.
+
 *Im Kampf:* Mit „AoE usage: Off" kommen Assise und Makrokosmos nicht mehr; ein Weißmagier verliert ihre Heilung und das
 MP, ein Astrologe die gespeicherte Heilung von Makrokosmos – der Preis, den der Schalter nennt. Mit „Don't pull new
 enemies" wartet jede Fläche um dich, bis die Gegner in ihrem Wirkgebiet kämpfen; ein Tank, der mit einer Fläche

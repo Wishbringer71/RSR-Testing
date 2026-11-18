@@ -21,8 +21,8 @@
   },
   {
    "repo": "awgil/ffxiv_bossmod",
-   "commit": "9c9e68b33",
-   "date": "2026-11-16",
+   "commit": "1758cc8ea",
+   "date": "2026-11-18",
    "use": "BossMod (Original)"
   },
   {
@@ -33,8 +33,8 @@
   },
   {
    "repo": "dajoey/lalalazy",
-   "commit": "ba2a0682c",
-   "date": "2026-11-17",
+   "commit": "f8736f875",
+   "date": "2026-11-18",
    "use": "GluttonyCombo, LazyCrucible: Crucible-Aufzeichnungen, Sanduhr, Futter (A674, A679)"
   },
   {
@@ -105,8 +105,8 @@
   },
   {
    "repo": "NightmareXIV/ECommons",
-   "commit": "7d5094137",
-   "date": "2026-11-16",
+   "commit": "d3a332150",
+   "date": "2026-11-18",
    "use": "Client-API"
   },
   {
@@ -117,20 +117,20 @@
   },
   {
    "repo": "ofnature/Daedalus",
-   "commit": "f376e950f",
-   "date": "2026-11-17",
+   "commit": "fdb0811",
+   "date": "2026-11-18",
    "use": "Feldnotizen, Rotationen aller Jobs, Crucible (A600, A660)"
   },
   {
    "repo": "OverlayPlugin/cactbot",
-   "commit": "009c78d38",
-   "date": "2026-11-13",
+   "commit": "33896d3e2",
+   "date": "2026-11-18",
    "use": "Mitschnittformat, Zeitleisten"
   },
   {
    "repo": "OverlayPlugin/OverlayPlugin",
-   "commit": "43afdd5956d06d689eb5cb723f86203b19a3ebae",
-   "date": "2026-11-10",
+   "commit": "af064b3",
+   "date": "2026-11-18",
    "use": "Mitschnittzeile 261: Speicherstellen von PCTargetID (Blickziel) und NPCTargetID (A724)"
   },
   {
@@ -183,8 +183,8 @@
   },
   {
    "repo": "t3knical/DalamudPlugins",
-   "commit": "ae4bfc718",
-   "date": "2026-11-16",
+   "commit": "b34e41d",
+   "date": "2026-11-18",
    "use": "Tekz-BossmodReborn-Fork (Zielvorrang je Kampf), BeastMasterHelper (A667)"
   },
   {
@@ -201,8 +201,8 @@
   },
   {
    "repo": "xivapi/ffxiv-datamining",
-   "commit": "52a72b38a",
-   "date": "2026-11-10",
+   "commit": "a9f3a28",
+   "date": "2026-11-18",
    "use": "Spieldaten"
   },
   {
@@ -219,8 +219,8 @@
   },
   {
    "repo": "Soreepeong/XivAlexander",
-   "commit": "382e7ea",
-   "date": "2026-11-12",
+   "commit": "d36c110",
+   "date": "2026-11-18",
    "use": "Animationssperre: Netzlaufzeit am Socket, Serveranteil (A753)"
   },
   {

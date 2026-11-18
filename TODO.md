@@ -34,7 +34,10 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
 
 ## Offene Arbeit
 
-- Keine offene Arbeit.
+- **Crucible, drittes Brett und Phantom Aim: Daedalus v0.1.124/125 auswerten** (A884). Im Kampf: Daedalus führt für das
+  dritte Brett Teams je Kampf, Tankzuweisung, Laden, Weg durch Gabelungen und einen zweiten Plan; Phantom Aim wartet auf
+  den Burst des Jobs. Ob RSRs Brettregeln (Konzept 21) und Kreszentia daraus gewinnen, ist ungeprüft. Nächster Schritt:
+  den Code von Daedalus 3189316 und dd3690d gegen Konzept 21 und den Kreszentia-Abschnitt lesen, Loop. **N**. Konzept 21.
 
 ## Technische Schuld
 

@@ -12,7 +12,8 @@ public partial struct ActionTargetInfo
 	/// </summary>
 	private readonly bool PullsAround(IBattleChara centre, bool aroundPlayer)
 	{
-		if (centre == null || action.Setting.IsFriendly || !DataCenter.GuardsAgainstPull(ActionTooltip.HealsToo(action.ID)))
+		var healsToo = ActionTooltip.HealsToo(action.ID);
+		if (centre == null || action.Setting.IsFriendly || !DataCenter.AreaMaySparePull(healsToo))
 		{
 			return false;
 		}
@@ -24,7 +25,7 @@ public partial struct ActionTargetInfo
 		{
 			if (t == null || t.GameObjectId == centre.GameObjectId || t.IsDead
 				|| (aroundPlayer && t.DistanceToPlayer() > EffectRange)
-				|| !DataCenter.NotFightingYet(t) || !t.IsEnemy())
+				|| !DataCenter.NotFightingYet(t) || !t.IsEnemy() || !DataCenter.PullsIfHit(t, healsToo))
 			{
 				continue;
 			}

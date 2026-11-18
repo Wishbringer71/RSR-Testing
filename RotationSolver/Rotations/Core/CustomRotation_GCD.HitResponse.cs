@@ -390,7 +390,7 @@ public partial class CustomRotation
 	/// <returns>True when the setting forbids the action.</returns>
 	protected static bool AreaReachesNewMob(IBattleChara center, float radius)
 	{
-		if (!DataCenter.GuardsAgainstPull(false) || radius <= 0f || center == null)
+		if (!DataCenter.AreaMaySparePull(false) || radius <= 0f || center == null)
 		{
 			return false;
 		}

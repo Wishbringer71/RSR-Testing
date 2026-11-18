@@ -25810,6 +25810,25 @@ Ergebnis:
   Merges (A878), Zeilenmengen der Umzüge (A882).
 - *Prüfgrad:* statisch, Compile, Roslyn-Messungen; Laufzeit nicht beobachtet.
 
+### A884 · Quellen am Auftragsende: neun Aktualisierungen, eine mit Nutzen – Flächen folgen „Engage settings" (18.11.2026)
+
+`check_source_updates.py` am Auftragsende: 39 Quellen, 9 bewegt, 1 nicht erreichbar (FrontlineAdvisor). Je Aktualisierung
+gelesen (Commits seit der Auswertung, 18.11.2026):
+- *Ohne Nutzen:* OverlayPlugin af064b3 und cactbot 33896d3e2 (Opcodes und Übersetzung für den traditionell-chinesischen
+  Client), ffxiv-datamining a9f3a28 (Submodule), lalalazy f8736f875 (Anzeige von GluttonyCombo), t3knical b34e41d
+  (Downloadzahlen), XivAlexander d36c110 (Schriften, Oberfläche), ECommons d3a332150 (Aufgaben, Welthelfer; RSR bindet das
+  Paket), BossMod (Original) 1758cc8ea (drei Korrekturen ohne Bezug; RSR liest BossModReborn).
+- *Mit Nutzen:* Daedalus fdb0811 (v0.1.126): Flächen zielen und zählen nur über Gegner im Kampf der Gruppe, über dieselbe
+  Regel wie die Einzelzielwahl. In RSR galt „Engage settings" nur für die Zielwahl; eine Fläche traf einen unbeteiligten
+  Gegner als Nebenziel, auch mit seiner Einstellung „Previously engaged targets (Non-Tanks)" und mit der Voreinstellung
+  in einer Gruppe – entgegen dem Einstellungstext „Which enemies RSR attacks". *Behoben:* `DataCenter.PullsIfHit` – ein
+  Gegner, der nicht kämpft und den `IsAttackable` ablehnt, wird von keiner Fläche getroffen (außerhalb der Tiefen Gewölbe
+  und des PvP); Vorrangziele und besondere Objekte bleiben treffbar. Konzept 03, „Flächen, die Gegner treffen".
+- *Offen:* Daedalus 3189316 (v0.1.124) beschreibt Pläne für das dritte Crucible-Brett (Teams je Kampf, wer was tankt,
+  Laden, Weg durch Gabelungen, ein zweiter Plan nach einem Video), dd3690d Phantom Aim nach dem Burst des Jobs – Recherche
+  für Konzept 21 und Kreszentia, im TODO.
+- *Prüfgrad:* Compile; Laufzeit nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
