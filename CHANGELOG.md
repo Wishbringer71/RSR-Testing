@@ -23,6 +23,15 @@ are not reconstructed here.
 
 ## Unreleased
 
+## 7.5.8.5+wsh1
+
+### Change in RotationSolver: the TP of Rallying Cheer
+
+`BeastmasterRotation.RallyingCheerTPRestore` now gives 30 TP plus 70 per stack of Natural Instinct, as Rallying Cheer's
+effect text states; it gave Rally's 40 plus 70 before. It and `RallyTPRestore` read their figures from the action's
+effect text at the synced level and fall back to `TPRestoredByStacks`, which is unchanged. A rotation that compares
+`RallyingCheerTPRestore` with a TP threshold sees 10 less than before. Nothing else changes.
+
 ## 7.5.8.3+wsh1
 
 ### Addition to RotationSolver: whether the duty is cleared
