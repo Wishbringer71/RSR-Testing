@@ -4,7 +4,7 @@ namespace RotationSolver.Rotations.Limited.Beastmaster;
 
 [Rotation("Reborn", CombatType.PvE, GameVersion = "7.58")]
 [SourceCode(Path = "main/Rotations/Limited/Beastmaster/BST_Reborn.cs")]
-public sealed class BST_Reborn : BeastmasterRotation
+public sealed partial class BST_Reborn : BeastmasterRotation
 {
 	[RotationConfig(CombatType.PvE, Name = "First Horn")]
 	private HornOrder FirstHorn { get; set; } = HornOrder.FirstBattlehorn;
@@ -670,11 +670,17 @@ public sealed class BST_Reborn : BeastmasterRotation
 	#region oGCD Logic
 	protected override bool AttackAbility(IAction nextGCD, out IAction? act)
 	{
+		// A886 (concept 01, "Ketten"): in a chain, the refill whose skill then completes the next combo.
+		if (CarryChain(out act))
+		{
+			return true;
+		}
+
 		var resultingTP = TPCount + RallyTPRestore;
 
 		var shouldRally =
 			(MasteredInstinct == 3 && InstinctualMasteryTrait.EnoughLevel && (HasMoonstalker || HasSunstrider)) ||
-			(resultingTP >= 100 && resultingTP <= 250 && !InstinctualMasteryTrait.EnoughLevel);
+			(resultingTP >= AxeTPNeed && resultingTP <= GaugeFullTP && !InstinctualMasteryTrait.EnoughLevel && !RefillWaitsForChain(MasteredInstinct));
 
 		if (shouldRally)
 		{
@@ -686,7 +692,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 
 		var resultingPetTP = PetTPCount + RallyingCheerTPRestore;
 
-		var shouldRallyCheer = resultingPetTP >= 100 && resultingPetTP <= 250;
+		var shouldRallyCheer = resultingPetTP >= TrickTPNeed && resultingPetTP <= GaugeFullTP && !RefillWaitsForChain(NaturalInstinct);
 
 		if (shouldRallyCheer)
 		{

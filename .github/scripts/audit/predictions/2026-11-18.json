@@ -54,5 +54,12 @@
   "kind": "each",
   "situation": "starfall: waits",
   "match": "starfall: waits for phantom rejuvenation, which heals in [0-9.,]+ s \\| card [0-9.,]+ s left$"
+ },
+ {
+  "id": "bst-chain-carried",
+  "archive": "A886",
+  "kind": "present",
+  "situation": "crucible",
+  "match": "bst chain: (Rally|Rallying Cheer) carries chain [0-9]+ on, [0-9.,]+ s left \\| (familiar )?TP [0-9]+ \\+ [0-9]+$"
  }
 ]

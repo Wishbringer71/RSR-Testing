@@ -25862,6 +25862,30 @@ geprüft.
   in Kreszentia als Phantom-Waldläufer, keine „hold ended with the fight". Wirkt nicht: Halten ohne folgenden Burst.
 - *Prüfgrad:* Compile, Prüfskripte; Laufzeit nicht beobachtet; kein unabhängiger Prüfer (kein Eingriff über Leben und Tod).
 
+### A886 · Beastmaster: Rally und Rallying Cheer tragen die Kombokette weiter (18.11.2026)
+
+TODO-Punkt „Beastmaster: Ketten aus mehr als einer Kombo" (aus A885), Vorrang des Beastmasters.
+- *Gemessen* (seine ACT-Mitschnitte vom 11. und 14.11.2026, Aktionen 44910 bis 44916, je Kombo eine Zeile ohne und 2,1 s
+  später eine mit Wirkung): 58 und 43 Kombos, jede Kette genau eine, Abstand 26 bis 150 s; Rallying Cheer und Rally vor
+  Dressur und Axt derselben Kombo (14.11., 14:40:02 bis 14:40:09). Kombos trugen am 14.11. 5,1 und 7,0 % des Schadens von
+  Spieler und Begleiter (Werte nach ACTs Kodierung, `>> 16`).
+- *Mechanik:* Wirktexte 44884, 47093, 44904, 44905, 44930 (xivapi v2): Äxte verbrauchen alle TP ab 100, linear 400 bis
+  1.000; Dressur ab 100 Begleiter-TP, 500 bis 1.250; Rally 40 + 70 je Stapel, Rallying Cheer 30 + 70; Abschluss bei 250.
+  Kettenfaktoren 1,0 bis 3,0 und Kombofaktoren nur im Community-Wiki (Werkzeugquelle) – deshalb hinter einer Option.
+- *Defekt nebenbei:* `RallyingCheerTPRestore` rechnete mit Rallys 40 Grund-TP (Upstream `TPRestoredByStacks`, bd9c156b0);
+  beide lesen jetzt ihren Wirktext (`RestoredByStacks`). Die Grenzen 100 und 250 der angefassten Zeilen kommen aus den
+  Kosten im Aktionsblatt (`AxeTPNeed`, `TrickTPNeed`, `GaugeFullTP`); nur die drei Stapel sind Ausnahme.
+- *Gebaut:* `CarryChain` vor allen anderen Fähigkeiten: in einer Kette (Herz, Sunstrider oder Moonstalker länger als
+  ein GCD), wenn weder Dressur noch Axt folgen kann, Rallying Cheer oder Rally für die Seite, deren Fertigkeit rechtzeitig
+  bereit ist. Außerhalb einer Kette warten beide, solange ihre Stapel nicht voll sind. Option „Keep Rally and Rallying
+  Cheer to carry a combo chain on", ab Werk an. Konzept 01, „Ketten: Rally und Rallying Cheer tragen die Kette weiter".
+- *Verworfen:* Daedalus' feste Folge der Stufe 50 (ein Fall der Regel); TP für zwei Äxte hintereinander sparen (eine Axt
+  verbraucht alle TP).
+- *Vorhersage:* `predictions/2026-11-18.json`, `bst-chain-carried`: Im Crucible schreibt die Spur „bst chain: Rally|Rallying
+  Cheer carries chain …"; im ACT-Mitschnitt folgen Kombos einer Kette im Abstand unter 7 s (Kettenzahl ≥ 2). Wirkt nicht:
+  weiter nur einzelne Kombos, Abstände über 26 s.
+- *Prüfgrad:* Compile, Prüfskripte; Laufzeit nicht beobachtet; die Kettenfaktoren sind unbelegt im Spiel (Wiki).
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

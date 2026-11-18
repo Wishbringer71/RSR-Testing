@@ -2152,20 +2152,59 @@ und Gale als Starter waren es nur bei einem Rampant-Begleiter zwei). Nichts wird
   gegen den einer absichtlichen Kombo nennt kein Text.
 - Eine Tabelle der 50 Affinitäten (WrathCombo): Der Tooltip hat sie.
 
-*Ketten aus mehr als einer Kombo – offen* (A885, im TODO „Beastmaster: Ketten aus mehr als einer Kombo“): In seinen
-Mitschnitten (11. und 14.11.2026, 58 und 43 Kombos, Aktionen 44910 bis 44916; je Kombo eine Zeile ohne und 2,1 s später
-eine mit Wirkung) hielt jede Kette genau eine Kombo; die nächste kam 26 bis 150 s später. Das Muster: Rallying
-Cheer und Rally, dann Trick und eine Axt, eine Kombo – beide Auffüller gehen in dieselbe erste Kombo. Jede Axt verbraucht
-alle TP (mindestens 100), Trick 100 TP des Begleiters (Action 44884, 47093); Rally gibt 40 TP plus 70 je Mastered
-Instinct, Rallying Cheer 30 TP des Begleiters plus 70 je Natural Instinct (44905, 44904). Daedalus (3189316,
-Werkzeugquelle) setzt die Auffüller zwischen die Glieder („beast → you → Rallying Cheer → beast → Rally → finisher“).
-Ob eine längere Kette mehr bringt als eine stärkere Axt aus denselben TP, nennt kein Wirktext („Eine höhere Kettenzahl
-erhöht den Zusatzschaden“ ohne Betrag); der Zusatzschaden je Kettenglied ist in seinen Mitschnitten messbar, sobald
-eine Kette zwei Kombos hält.
-
 *Gegenhypothesen:* Kein Gewinn, weil der Unterschied klein ist? Den Betrag nennt kein Text; K1 kostet nichts und verliert
 nirgends. Ausgeliefert, und nichts ändert sich? Mit einem Rampant-Begleiter war Gale schon die richtige Axt; ohne Katalog
 bleibt die alte Reihenfolge.
+
+**Ketten: Rally und Rallying Cheer tragen die Kette weiter** (A886; Anlass A885).
+
+*Was das Spiel festlegt* (Wirktexte, xivapi v2, 18.11.2026; Job-Guide na, „Instinctual Combos"):
+- Jede Axt verbraucht alle TP, mindestens 100, mit 400 bis 1.000 Potenz nach den TP (Action 44884). Trick verbraucht
+  mindestens 100 TP des Begleiters, mit 500 bis 1.250 nach ihnen (47093; oben, „Dressur"). Rally gibt 40 TP plus 70 je
+  Mastered Instinct, Rallying Cheer 30 TP des Begleiters plus 70 je Natural Instinct, je 120 s (44905, 44904).
+- Eine Instinktfertigkeit gibt ihr Herz für 7 s; die nächste in dieser Zeit schließt eine Kombo und gibt ihr eigenes
+  Herz. Jede Fertigkeit nach der ersten schließt also eine weitere Kombo, solange keine Lücke über 7 s entsteht.
+- *Werkzeugquelle* (Community-Wiki „Beastmaster", abgerufen 18.11.2026; kein Wirktext nennt Beträge): Die Kombo zählt
+  1,2-fach (instinktiv), 1,5-fach (absichtlich), 2,0-fach (Universality), mal 1,0, 1,5, 2,0, 2,5 und ab der fünften
+  3,0 nach ihrem Platz in der Kette. Kombos treffen weder kritisch noch direkt.
+
+*Gemessen* (seine Mitschnitte vom 11. und 14.11.2026, Aktionen 44910 bis 44916; je Kombo eine Zeile ohne und 2,1 s
+später eine mit Wirkung): 58 und 43 Kombos, jede Kette genau eine; die nächste kam 26 bis 150 s später. Rallying Cheer
+und Rally gingen vor die Dressur und die Axt derselben ersten Kombo. Kombos trugen am 14.11. 5,1 und 7,0 % des Schadens
+von Spieler und Begleiter.
+
+*Was falsch lief:* RSR setzte Rallying Cheer, sobald seine TP mit denen des Begleiters 100 bis 250 ergaben, und Rally
+auf Stufe 50 mit drei Mastered Instinct und Sunstrider oder Moonstalker, darunter wie Cheer. Beide füllten so die Seite
+einer Kombo auf, die ohnehin kam; ihre TP gingen in eine stärkere Axt oder Dressur derselben Kombo. Dabei verlieren Äxte
+und Dressur nichts, wenn dieselben TP auf zwei Einsätze verteilt werden: Beide steigen linear (Axt: 400 bei 100 TP, 4 je
+weiteren; zwei Äxte zu 100 TP 800 wie eine zu 200). Getrennt aber schließt jeder Einsatz eine weitere Kombo mit dem
+höheren Kettenfaktor. Zudem rechnete RSR Rallying Cheer mit 40 statt 30 Grund-TP (`TPRestoredByStacks` für beide).
+
+*Was gilt* (Option „Keep Rally and Rallying Cheer to carry a combo chain on", ab Werk an):
+- *In der Kette* – ein Herz, Sunstrider oder Moonstalker steht noch länger als ein GCD: Kann weder die Dressur
+  (Begleiter-TP ab 100) noch eine Axt (TP ab 100) folgen, kommt Rallying Cheer, wenn seine TP die des Begleiters auf 100
+  heben und die Dressur vor dem Ende des Herzens bereit ist; sonst Rally, wenn seine TP deine auf 100 heben und die
+  Äxte bereit sind. Die folgende Fertigkeit schließt die nächste Kombo. Rally für den Abschluss auf Stufe 50 (drei
+  Mastered Instinct, Sunstrider oder Moonstalker: 250 TP für Universality) bleibt.
+- *Außerhalb einer Kette* warten beide, außer ihre Stapel sind voll (drei): Dann ginge der Stapel der nächsten Kombo
+  verloren, und sie füllen wie bisher auf.
+- Die Werte kommen aus dem Wirktext der laufenden Fassung (`ActionTooltip`), Rally und Rallying Cheer je für sich.
+- *Im Kampf* (Brett 1, ein Kampf von 90 s): Bisher Cheer, Rally, Dressur, Axt – eine Kombo zum Faktor 1,0, die nächste
+  30 s später. Jetzt Dressur, Axt (Kombo 1, Faktor 1,0), Cheer, Dressur (Kombo 2, 1,5), Rally, Axt (Kombo 3, 2,0):
+  dieselben TP, drei Kombos statt einer, 4,5-facher statt einfacher Kombowert in diesem Fenster *[Schätzung, aus den
+  Faktoren des Wikis]*.
+- *Verworfen:* Daedalus' feste Folge der Stufe 50 („beast → you → Rallying Cheer → beast → Rally → finisher"). Sie ist
+  ein Fall dieser Regel, wenn Rally den Abschluss trägt; die Regel gilt dazu auf jeder Stufe und in jeder Reihenfolge.
+  Ebenso verworfen: TP zurückhalten, um zwei Äxte hintereinander zu setzen – eine Axt verbraucht alle TP.
+- *SWOT:* Stärke: höherer Kettenfaktor aus denselben TP, auch mehr Natural und Mastered Instinct. Schwäche: Wartende
+  Auffüller fehlen dem nächsten Paar; kommt binnen 120 s keine Kette, verfallen ihre Einsätze nicht, sie warten nur.
+  Chance: Rudel, in denen die Kette über mehrere Ziele läuft. Bedrohung: Die Faktoren stammen aus dem Wiki, nicht aus
+  einem Wirktext – deshalb die Option.
+- *Falsifikation:* (1) Kein Defekt, weil RSR schon Kombos schließt? Die Mitschnitte zeigen keine einzige zweite Kombo
+  in einer Kette. (2) Option falsch, weil eine stärkere Axt mehr bringt? Die Potenz ist linear in den TP; verteilt geht
+  nichts verloren. (3) Ausgeliefert, und nichts ändert sich? Wenn Rally und Cheer nie bereit sind, solange ein Herz
+  steht – die Spur zeigt es: „bst chain: …" je Auffüllen in einer Kette mit der Kettenzahl; die Vorhersage dazu steht
+  in `predictions/2026-11-18.json`.
 
 
 **Crucible of the Unbroken:** eigenes Konzept `21-crucible.md` – Bretter, Kämpfe, Strategien K1 bis K14 und ihre

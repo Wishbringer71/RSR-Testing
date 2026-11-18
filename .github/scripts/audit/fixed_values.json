@@ -2693,6 +2693,16 @@
    "status": "exception",
    "loop": "A885",
    "reason": "Definition of the median of the measured burst cadences (the middle element of the sorted list): arithmetic of the statistic, not a figure of the game (concept 03, A885)."
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.Chains.cs",
+   "code": "private const int FullInstinctStacks = 3;",
+   "values": [
+    "3"
+   ],
+   "status": "exception",
+   "loop": "A886",
+   "reason": "The most stacks of Mastered and Natural Instinct the gauge holds (three notches each, BeastmasterGauge); no sheet states it, and upstream's rotation compares the stacks with 3 in the same places (concept 01, A886)."
   }
  ]
 }

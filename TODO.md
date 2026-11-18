@@ -34,12 +34,7 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
 
 ## Offene Arbeit
 
-- **Beastmaster: Ketten aus mehr als einer Kombo** (A885). Im Kampf: In seinen Läufen hielt jede Kette genau eine Kombo;
-  Rally und Rallying Cheer gingen beide in dieselbe erste Kombo, die nächste kam 26 bis 150 s später. Nach dem
-  Community-Wiki (Werkzeugquelle) wächst der Schaden einer Kombo mit ihrem Platz in der Kette (1,0- bis 3,0-fach), und
-  jede weitere Kombo braucht nur eine Instinktfertigkeit statt zwei. Ort: `BST_Reborn.AttackAbility` (Axt, Trick, Rally,
-  Rallying Cheer). Nächster Schritt: Anteil der Kombos am Schaden und TP-Gewinn je GCD in seinen Mitschnitten messen,
-  dann die Verkettung im Loop. **N**. Konzept 01, „Ketten aus mehr als einer Kombo“.
+- Keine offene Arbeit.
 
 ## Technische Schuld
 

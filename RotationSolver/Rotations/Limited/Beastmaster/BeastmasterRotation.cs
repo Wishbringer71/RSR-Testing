@@ -813,12 +813,13 @@ public partial class BeastmasterRotation
 	/// <summary>
 	/// TP Rally would restore right now, based on <see cref="MasteredInstinct"/>.
 	/// </summary>
-	public static int RallyTPRestore => TPRestoredByStacks(MasteredInstinct);
+	public static int RallyTPRestore => RestoredByStacks(ActionID.RallyPvE, MasteredInstinct);
 
 	/// <summary>
-	/// Pet TP Rallying Cheer would restore right now, based on <see cref="NaturalInstinct"/>.
+	/// Pet TP Rallying Cheer would restore right now, based on <see cref="NaturalInstinct"/>: its own standard figure, 30 -
+	/// not Rally's 40 (A886, effect text 44904).
 	/// </summary>
-	public static int RallyingCheerTPRestore => TPRestoredByStacks(NaturalInstinct);
+	public static int RallyingCheerTPRestore => RestoredByStacks(ActionID.RallyingCheerPvE, NaturalInstinct);
 
 	/// <summary>
 	///

@@ -6,7 +6,10 @@ namespace RotationSolver.Rotations.Duties;
 /// </summary>
 public sealed partial class PhantomDefault
 {
-	[RotationConfig(CombatType.PvE, Name = "Hold Phantom Aim for your burst while that costs no use in the fight")]
+	[RotationConfig(CombatType.PvE, Name = "Hold Phantom Aim for your burst while that costs no use in the fight",
+		Tooltip = "In a fight: Phantom Aim waits for your job's next burst when the time your target has left gives the same number of "
+			+ "Aims either way, so each lands in a burst and none is lost. Your burst is where your rotation asks for the "
+			+ "tincture; its cadence is learned in your fights. Off: Aim goes whenever it is ready.")]
 	public bool AimWaitsForBurst { get; set; } = true;
 
 	// The bursts as a buff of Phantom Aim's length sees them: a new one after a gap longer than Aim lasts.

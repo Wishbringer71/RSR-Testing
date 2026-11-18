@@ -1822,8 +1822,8 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
   - *Ketten der Instinktfertigkeiten* („a chain is no longer dropped while one half waits for the other“; „two intentional
     combos can't come back to back“): Die zweite Aussage steht nicht im Job-Guide (na, „Intentional Combos“, abgerufen
     18.11.2026) – unbelegt. Gemessen in seinen Mitschnitten (11. und 14.11.2026, Aktionen 44910 bis 44916): Jede Kette
-    hielt genau eine Kombo, die nächste kam 26 bis 150 s später. Das ist eine Frage der Rotation (Konzept 01,
-    „Kompass“) und steht im TODO („Beastmaster: Ketten aus mehr als einer Kombo“).
+    hielt genau eine Kombo, die nächste kam 26 bis 150 s später. Das ist eine Frage der Rotation: Konzept 01, „Ketten: Rally und Rallying Cheer tragen die Kette
+    weiter“ (A886).
 
 *Falsifikation:* Kein Defekt, weil das erste Brett zweimal ohne Tod fiel? Das gelang mit Gegenständen und Zähnefletschen
 von seiner Hand; die Meisterbretter haben Rang 20 und 25 und Gegner ohne Schwäche. Option falsch? K1 ohne gemessenen

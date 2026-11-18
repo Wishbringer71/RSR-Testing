@@ -75,6 +75,15 @@ What this release changes in the fight. For the whole distance from upstream, se
 - **Resting enemies seen by every area.** "Don't pull new enemies with AoE" looked for resting enemies only among those
   RSR would attack; with an engage setting that skips them, an area hit them anyway. Every enemy in the area counts now.
 
+## Beastmaster
+
+- **Combo chains longer than one combo.** Every chain in your runs held a single combo: Rallying Cheer and Rally both
+  went into the Trick and axe of the same first combo. With "Keep Rally and Rallying Cheer to carry a combo chain on",
+  on by default, they now wait outside a chain while their stacks can still grow, and in a chain the one whose skill can
+  then follow refills - Rallying Cheer for Trick, Rally for an axe - so that skill completes the next combo, which deals
+  more the later it comes in the chain. An axe or Trick loses nothing by the split: their potency rises evenly with the
+  TP spent. Rallying Cheer is now counted with its own 30 base TP, not Rally's 40. The trace writes "bst chain: ...".
+
 ## Beastmaster in the Crucible
 
 - **Start a board from RSR's team window.** With the team as recommended, "Start" presses the board choice's start
