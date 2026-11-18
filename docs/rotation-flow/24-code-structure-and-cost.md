@@ -101,7 +101,10 @@ Laufzeit nach gemessenem Verhalten – das, was Visual Studio für C++ als profi
 (`Dalamud.runtimeconfig.json`) schaltet weder die gestufte Übersetzung noch PGO ab; es misst und übersetzt in jeder
 Sitzung neu, im Hintergrund. (3) übersetzt
 jede Methode beim ersten Aufruf voll optimiert – teurer, der Ruckler würde länger. (1) übersetzt beim Laden auf einem
-Hintergrundthread jede Methode des Kerns (alles außer Oberfläche und Rotationen) und beim Wechsel der Rotation deren
+Hintergrundthread jede Methode des Kerns (alles außer Oberfläche und Rotationen; eine Rotation ist, was
+`ICustomRotation` umsetzt, nicht ein Namensraum: Seit Upstreams Umbau c170c9cd5 stehen in den Namensräumen der Jobs auch
+Hilfstypen wie `FamiliarProfile` und `CarnivalePick`, die sonst erst im ersten Crucible- oder Carnivale-Kampf übersetzt
+würden, A878) und beim Wechsel der Rotation deren
 Klasse samt Basisklassen; der Spielthread findet sie fertig vor. *Gewählt:* (1). *Gemessen* an der gebauten Bibliothek
 (Testprogramm, das dieselbe Auswahl übersetzt, 13.11.2026, Linux-Container): der Kern 6.959 Methoden in 0,5 s, keine
 abgelehnt; die Rotation des Weißmagiers mit Basisklassen 1.083 Methoden in 70 ms – im Mittel 0,07 ms je Methode. Ein

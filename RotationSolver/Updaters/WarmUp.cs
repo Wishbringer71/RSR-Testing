@@ -32,9 +32,17 @@ internal static class WarmUp
 			foreach (var type in TypesOf(assembly))
 			{
 				var space = type.Namespace ?? string.Empty;
+				// A rotation is what implements ICustomRotation, not a namespace: the job namespaces also hold helper
+				// types (FamiliarProfile, CarnivalePick) that the first fight would otherwise compile. A type nested in a
+				// rotation (its lambdas' closures) goes with that rotation, not with every job's (concept 24).
+				var outer = type;
+				while (outer.DeclaringType != null)
+				{
+					outer = outer.DeclaringType;
+				}
+
 				if (!space.StartsWith("RotationSolver.UI", StringComparison.Ordinal)
-					&& !IsJobRotationSpace(space)
-					&& !typeof(ICustomRotation).IsAssignableFrom(type))
+					&& !typeof(ICustomRotation).IsAssignableFrom(outer))
 				{
 					types.Add(type);
 				}
@@ -199,28 +207,6 @@ internal static class WarmUp
 			// first call as before.
 			refused++;
 		}
-	}
-
-	// The job rotations - the shipped ones and the job's base class with its parts - live in one namespace per job since
-	// upstream c170c9cd5 (RotationSolver.Rotations.<role>.<job>); before, the shipped ones had their own
-	// (RotationSolver.RebornRotations, RotationSolver.ExtraRotations). Rotations.Core and Rotations.Duties stay core.
-	private static readonly string[] JobRotationSpaces =
-	[
-		"RotationSolver.Rotations.Healer", "RotationSolver.Rotations.Tank", "RotationSolver.Rotations.Melee",
-		"RotationSolver.Rotations.Ranged", "RotationSolver.Rotations.Magical", "RotationSolver.Rotations.Limited",
-	];
-
-	private static bool IsJobRotationSpace(string space)
-	{
-		foreach (var root in JobRotationSpaces)
-		{
-			if (space.StartsWith(root, StringComparison.Ordinal))
-			{
-				return true;
-			}
-		}
-
-		return false;
 	}
 
 	private static Type[] TypesOf(Assembly assembly)
