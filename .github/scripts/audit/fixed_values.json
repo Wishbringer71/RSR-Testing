@@ -2703,6 +2703,22 @@
    "status": "exception",
    "loop": "A886",
    "reason": "The most stacks of Mastered and Natural Instinct the gauge holds (three notches each, BeastmasterGauge); no sheet states it, and upstream's rotation compares the stacks with 3 in the same places (concept 01, A886)."
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.Chains.cs",
+   "code": "private static readonly uint[] ComboActions = [44910, 44911, 44912, 44913, 44914, 44915, 44916];",
+   "values": [
+    "44910",
+    "44911",
+    "44912",
+    "44913",
+    "44914",
+    "44915",
+    "44916"
+   ],
+   "status": "exception",
+   "loop": "A889",
+   "reason": "Action rows of the Beastmaster's combos (Instinctual Combo: Volant, Rampant, Durant, Eldritch; Intentional Combo: Sunstrider, Moonstalker; Infinitive Combo: Universality; xivapi v2, 18.11.2026): identities of game rows the source generator lists no enum entry for, not figures (concept 01, A889)."
   }
  ]
 }

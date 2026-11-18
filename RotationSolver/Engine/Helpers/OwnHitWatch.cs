@@ -89,8 +89,14 @@ internal static class OwnHitWatch
 	/// <param name="target">The main target, for its weakness in the Masked Carnivale; null where unknown.</param>
 	internal static void Hit(uint actionId, uint amount, IBattleChara? target = null)
 	{
-		if (amount == 0 || !ActionTooltip.TryPlainPotency(actionId, out var potency) || potency <= 0f)
+		if (amount == 0)
 		{
+			return;
+		}
+
+		if (!ActionTooltip.TryPlainPotency(actionId, out var potency) || potency <= 0f)
+		{
+			NoteUnstated(actionId, amount);
 			return;
 		}
 
@@ -155,6 +161,60 @@ internal static class OwnHitWatch
 			DefenseTrace.Line($"weakness factor: first measure at level {at.Item1} in area {at.Item2}: {WeaknessFactor:F2}"
 				+ $" (assumed {AssumedWeaknessFactor:F0} until now)");
 		}
+	}
+
+	// A889 (concept 01, "Die Rotation als Ganzes"): own hits whose text states no potency - the Beastmaster's combos - per
+	// action since the level or the area last changed, read in potency through DamagePerPotency.
+	private static readonly Dictionary<uint, (double Damage, int Count)> _unstated = [];
+	private static (int Level, uint Territory) _unstatedAt;
+
+	private static void NoteUnstated(uint actionId, uint amount)
+	{
+		var at = (DataCenter.PlayerSyncedLevel(), DataCenter.TerritoryID);
+		lock (_gate)
+		{
+			if (_unstatedAt != at)
+			{
+				_unstatedAt = at;
+				_unstated.Clear();
+			}
+
+			_unstated[actionId] = _unstated.TryGetValue(actionId, out var sum) ? (sum.Damage + amount, sum.Count + 1) : (amount, 1);
+		}
+	}
+
+	/// <summary>
+	/// The mean damage of the player's hits with any of <paramref name="actionIds"/> - actions whose text states no
+	/// potency - in potency, through <see cref="DamagePerPotency"/>; NaN before both are measured at this level and area.
+	/// </summary>
+	internal static float MeasuredPotency(ReadOnlySpan<uint> actionIds)
+	{
+		var perPotency = DamagePerPotency;
+		if (float.IsNaN(perPotency) || perPotency <= 0f)
+		{
+			return float.NaN;
+		}
+
+		var damage = 0d;
+		var count = 0;
+		lock (_gate)
+		{
+			if (_unstatedAt != (DataCenter.PlayerSyncedLevel(), DataCenter.TerritoryID))
+			{
+				return float.NaN;
+			}
+
+			foreach (var id in actionIds)
+			{
+				if (_unstated.TryGetValue(id, out var sum))
+				{
+					damage += sum.Damage;
+					count += sum.Count;
+				}
+			}
+		}
+
+		return count > 0 ? (float)(damage / count / perPotency) : float.NaN;
 	}
 
 	/// <summary>

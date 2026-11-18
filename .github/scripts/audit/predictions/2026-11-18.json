@@ -61,5 +61,12 @@
   "kind": "present",
   "situation": "crucible",
   "match": "bst chain: (Rally|Rallying Cheer) carries chain [0-9]+ on, [0-9.,]+ s left \\| (familiar )?TP [0-9]+ \\+ [0-9]+$"
+ },
+ {
+  "id": "bst-finisher-hold-line-form",
+  "archive": "A889",
+  "kind": "each",
+  "situation": "bst finisher: ",
+  "match": "bst finisher: axes held for [0-9]+ enemies \\| [0-9]+ against [0-9]+ potency, combo [0-9]+ \\| TP [0-9]+ full in [0-9]+ s, pack falls in [0-9]+ s$"
  }
 ]

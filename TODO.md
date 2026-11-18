@@ -39,13 +39,6 @@ den erfolgten einbau in fork auf synergieeffekte prüfen. danach die chains prü
 werden können … synergieeffekte von kombinationen und aufbau einer richtigen umfassenden schadensrotation so wie bei
 anderen jobs. umgekehrt prüfung, ob von den neuen ideen aus daedalus auch alle anderen jobs profitieren könnten."
 
-- **Beastmaster: Ketten nach Lage und eine vollständige Schadensrotation** (A886; seine Rüge vom 18.11.2026: „das sollte
-  ursprünglich von dir auch geprüft werden“). Im Kampf: Die Kettenregel füllt nur auf, wenn sonst nichts folgen kann; ob
-  Äxte, Dressur, Abschlüsse, Rally, Rallying Cheer, Entfesseln, Borrow, Scheidender Schlag und die GCD-Kombo nach Lage
-  (Zahl der Gegner, Restzeit, Kompass, Universality, Burst der Gruppe) zu einer Rotation zusammengesetzt mehr Schaden
-  bringen, ist nicht gerechnet. Ort: `BST_Reborn.AttackAbility`, `GeneralGCD`. Nächster Schritt: Grundlagenforschung
-  (Wirktexte aller Aktionen, Kombo- und Kettenfaktoren, TP-Haushalt aus seinen Mitschnitten), ein Modell der Rotation,
-  dann Optionen und Loop. **N**. Konzept 01, „Ketten: Rally und Rallying Cheer tragen die Kette weiter“.
 - **Daedalus-Ideen für alle Jobs** (A885, A886). Im Kampf: Die Burst-Uhr und „Verstärker warten auf den Burst, wenn es
   keinen Einsatz kostet“ gelten heute nur für Phantom Aim; ob andere Verstärker aller Jobs (Inhaltsaktionen, eigene
   Buffs mit eigener Dauer) und die Verkettung von Ressourcen anderswo daraus gewinnen, ist ungeprüft. Ein Fall aus der

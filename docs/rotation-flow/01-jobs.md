@@ -2198,13 +2198,53 @@ höheren Kettenfaktor. Zudem rechnete RSR Rallying Cheer mit 40 statt 30 Grund-T
   Ebenso verworfen: TP zurückhalten, um zwei Äxte hintereinander zu setzen – eine Axt verbraucht alle TP.
 - *SWOT:* Stärke: höherer Kettenfaktor aus denselben TP, auch mehr Natural und Mastered Instinct. Schwäche: Wartende
   Auffüller fehlen dem nächsten Paar; kommt binnen 120 s keine Kette, verfallen ihre Einsätze nicht, sie warten nur.
-  Chance: Rudel, in denen die Kette über mehrere Ziele läuft. Bedrohung: Die Faktoren stammen aus dem Wiki, nicht aus
+  Chance: lange Kämpfe, in denen Rally und Cheer jede zweite Minute eine Kette tragen. Bedrohung: Die Faktoren stammen aus dem Wiki, nicht aus
   einem Wirktext – deshalb die Option.
 - *Falsifikation:* (1) Kein Defekt, weil RSR schon Kombos schließt? Die Mitschnitte zeigen keine einzige zweite Kombo
   in einer Kette. (2) Option falsch, weil eine stärkere Axt mehr bringt? Die Potenz ist linear in den TP; verteilt geht
   nichts verloren. (3) Ausgeliefert, und nichts ändert sich? Wenn Rally und Cheer nie bereit sind, solange ein Herz
   steht – die Spur zeigt es: „bst chain: …" je Auffüllen in einer Kette mit der Kettenzahl; die Vorhersage dazu steht
   in `predictions/2026-11-18.json`.
+
+**Die Rotation als Ganzes: Wann die TP in Äxte gehen und wann in den Abschluss** (A889; sein Auftrag vom 18.11.2026,
+„aufbau einer richtigen umfassenden schadensrotation so wie bei anderen jobs“, mit seiner Rüge, dass das früher hätte
+geprüft werden müssen).
+
+*Grundlagen* (Wirktexte aller 32 Aktionen des Jobs, xivapi v2, 18.11.2026; seine Mitschnitte vom 14.11.2026):
+- *TP:* Die GCD-Kombo gibt sie (Axeblade Bite +13, Shieldsplitter +15 je drei GCDs, 44883, 44885), Rally dazu. Eine Axt
+  verbraucht alle TP und trifft mit 4 Potenz je TP (400 bei 100, 1.000 bei 250; 44884); der Abschluss bei 250 TP trifft
+  das Ziel und jeden Gegner in 6 Yalm um es mit 1.200 (Brutal Rage, Risen Fall, Hawkish Talons; Calamity auf einer Linie
+  von 10 Yalm; 44930 bis 44933), also 4,8 je TP und Ziel. Abschlüsse sind Instinktfertigkeiten und schließen Kombos.
+- *Gemessen* (ACT, Schaden auf dem Hauptziel, Median): Smash Axe 125, Shieldsplitter 463, Axt bei 100 TP 374 bis 416,
+  absichtliche Kombo 568 bis 716, instinktive 558. Kombos, Äxte und Abschlüsse treffen je nur ihr Ziel (nur Zeilen mit
+  einem Ziel); einen Abschluss gab es in seinen Läufen nie.
+- *Folge:* Eine Kombo ist mehr wert als die Axt, die sie schließt. Deshalb gehen die TP in Äxte, sobald 100 stehen –
+  jeder Einsatz ist eine Kombo mehr (oben, „Ketten“). Auf einem Rudel dreht sich das: Ein Abschluss trifft jeden Gegner
+  um das Ziel.
+
+*Was gilt* (Option „Hold the axes for a finisher on a pack while it is worth more", ab Werk an; ab Stufe 50, wo es die
+Abschlüsse gibt):
+- *Wert je 250 TP:* Mit Äxten bringen sie 2,5 Äxte zu je 400 Potenz und 2,5 Kombos, mit dem Abschluss 1.200 auf jeden
+  der n Gegner und eine Kombo. Die Äxte warten, wenn 1.200 · n + K > 4 · 250 + 2,5 · K; K ist der gemessene Wert einer
+  Kombo in Potenz (ihr mittlerer Schaden durch den gemessenen Schaden je Potenz, `OwnHitWatch`). Mit den Werten vom
+  14.11. (K rund 630) lohnt das ab zwei Gegnern *[Schätzung]*. Die Zahlen kommen aus den Wirktexten der laufenden
+  Fassung (Potenz, TP-Kosten), K aus der Messung; vor der ersten gemessenen Kombo gilt die Regel vorher.
+- *Zeit:* Nur wenn das Rudel länger lebt (`PackTimeToKill`) als die TP bis 250 brauchen, beim gemessenen TP-Gewinn je
+  Sekunde. Sonst gingen Äxte verloren, und das Rudel fiele ohne Abschluss.
+- *Während des Wartens* wartet auch die Dressur, damit sie sich mit dem Abschluss zur Kombo paart, außer die TP des
+  Begleiters stehen voll (250) – dann ginge mehr verloren.
+- *Im Kampf* (Brett 3, drei Gegner im Kreis um das Ziel, 60 s Lebenszeit): Bisher alle 27 s eine Axt (400) mit Kombo, je
+  Ziel nur eines. Jetzt nach etwa 40 s ein Abschluss: 1.200 auf alle drei und eine Kombo – 3.600 statt rund 1.000 Potenz
+  aus denselben TP *[Schätzung]*.
+- *Verworfen:* Immer bis 250 sparen – gegen einen Gegner verliert das 1,5 Kombos je 250 TP. Den Abschluss nur über Rally
+  (bisheriger Stand) – Rally kommt alle 120 s, ein Rudel hält länger zwischen zwei.
+- *SWOT:* Stärke: Fläche aus denselben TP. Schwäche: Fällt das Rudel früher als vorhergesagt, gehen die gesparten TP in
+  den nächsten Kampf (ob TP ohne Kampf stehen bleiben: unbelegt), und eine Kombo fällt aus. Chance: Rudel auf den
+  Brettern und in der offenen Welt. Bedrohung: Die Lebenszeit des Rudels ist eine Vorhersage.
+- *Falsifikation:* (1) Kein Defekt, weil die Äxte auf Rudeln genug treffen? Sie treffen ein Ziel; der Abschluss alle.
+  (2) Option falsch, weil der Kombowert schwankt? K ist gemessen und wird mit jeder Kombo neu; die Regel vergleicht nur.
+  (3) Ausgeliefert, und nichts ändert sich? Wenn Rudel nie lange genug leben – die Spur zeigt es: „bst finisher: axes
+  held …“ je Warten, mit Gegnern, K und Zeiten; die Vorhersage steht in `predictions/2026-11-18.json`.
 
 
 **Crucible of the Unbroken:** eigenes Konzept `21-crucible.md` – Bretter, Kämpfe, Strategien K1 bis K14 und ihre

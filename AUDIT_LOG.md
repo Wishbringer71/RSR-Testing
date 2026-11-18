@@ -25940,6 +25940,29 @@ und Ressourcen erhoben (`git grep` auf `BurstClock`, `TinctureClock`, `IsInBurst
   (`IsBursting` immer wahr); die Burst-Uhr kennt deren Burst. Ins TODO „Daedalus-Ideen für alle Jobs".
 - *Prüfgrad:* statisch an Code und Wirktexten; kein Code geändert.
 
+### A889 · Beastmaster: die Rotation als Ganzes – Äxte gegen Abschluss, Rudel (18.11.2026)
+
+TODO-Punkt „Beastmaster: Ketten nach Lage und eine vollständige Schadensrotation" (sein Auftrag und seine Rüge vom
+18.11.2026: „das sollte ursprünglich von dir auch geprüft werden").
+- *Grundlagen:* Wirktexte aller 32 Aktionen (xivapi v2): Äxte 4 Potenz je TP und alle TP; Abschlüsse bei 250 TP 1.200
+  auf Ziel und 6 Yalm (Calamity Linie 10 Yalm), Instinktfertigkeiten; die GCD-Kombo gibt 28 TP je drei GCDs.
+- *Gemessen* (ACT 14.11.2026, Hauptziel, Median): Smash Axe 125, Shieldsplitter 463, Axt bei 100 TP 374 bis 416,
+  absichtliche Kombo 568 bis 716, instinktive 558; Kombos, Äxte und Abschlüsse nur Einzelziel-Zeilen; kein Abschluss in
+  seinen Läufen. Daraus: Eine Kombo ist mehr wert als ihre Axt – TP gehen gegen ein Ziel richtig in Äxte zu 100 (A886);
+  auf Rudeln trägt der Abschluss mehr.
+- *Gebaut:* `BST_Reborn.HoldsAxesForFinisher` – ab Stufe 50 warten Äxte und außerhalb einer Kette die Dressur, wenn
+  F · n + K > a · 250 + 2,5 · K (n Gegner im Kreis um das Ziel, F und a aus den Wirktexten, K gemessen) und das Rudel
+  länger lebt, als die TP bei gemessenem Gewinn bis 250 brauchen. Option „Hold the axes for a finisher on a pack while it
+  is worth more", ab Werk an. `OwnHitWatch.MeasuredPotency`: Schaden eigener Treffer ohne Potenz im Wirktext, in Potenz
+  (für jeden Job; heute liest ihn nur diese Regel). Die Stapel- und TP-Grenzen der angefassten Zeilen kommen aus
+  `FullInstinctStacks` und den Kosten; die Kombo-Ids sind Ausnahme (Zeilen ohne Eintrag im Generator).
+- *Rest des Punkts:* Hörner, Entfesseln, Borrow, Scheidender Schlag und Shield Charge haben ihre Regeln (B0 bis B5, R1, C3,
+  W5); keine weitere Lücke in der Schadensrotation gefunden. Unbelegt bleibt, ob TP ohne Kampf stehen bleiben.
+- *Vorhersage:* `predictions/2026-11-18.json`, `bst-finisher-hold-line-form`; im ACT-Mitschnitt erscheinen Abschlüsse
+  (Aktionen 44930 bis 44933) auf Brettern ab Stufe 50 mit Rudeln. Wirkt nicht: keine Zeile „bst finisher" und kein
+  Abschluss trotz Rudeln über 40 s.
+- *Prüfgrad:* Compile, Prüfskripte; Laufzeit nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

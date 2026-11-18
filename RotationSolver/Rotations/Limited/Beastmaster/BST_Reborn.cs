@@ -719,7 +719,12 @@ public sealed partial class BST_Reborn : BeastmasterRotation
 
 		WatchChargeHeld();
 
-		if (NaturalInstinct == 3 || MasteredInstinct < 3)
+		// A889 (concept 01, "Die Rotation als Ganzes"): on a pack the axes wait for the finisher, and Trick with them
+		// outside a chain - unless the familiar's gauge is full - so it pairs with the finisher.
+		var holdForFinisher = HoldsAxesForFinisher();
+		var trickHeld = holdForFinisher && ChainTimeLeft <= 0f && PetTPCount < GaugeFullTP;
+
+		if (!holdForFinisher && (NaturalInstinct == FullInstinctStacks || MasteredInstinct < FullInstinctStacks))
 		{
 			if (TPCount >= 100 && !IsLastAction(true, PartingBlowPvE))
 			{
@@ -747,9 +752,9 @@ public sealed partial class BST_Reborn : BeastmasterRotation
 			}
 		}
 
-		if (MasteredInstinct == 3 || NaturalInstinct < 3)
+		if (MasteredInstinct == FullInstinctStacks || NaturalInstinct < FullInstinctStacks || holdForFinisher)
 		{
-			if (PetTPCount >= 100)
+			if (PetTPCount >= TrickTPNeed && !holdForFinisher)
 			{
 				// K1 (concept 01, A487): the axe that keeps the compass clockwise, so the Trick closes intentionally.
 				if (CompassAxe(out act))
@@ -778,7 +783,7 @@ public sealed partial class BST_Reborn : BeastmasterRotation
 				}
 			}
 
-			if (!IsLastAction(true, PartingBlowPvE))
+			if (!IsLastAction(true, PartingBlowPvE) && !trickHeld)
 			{
 				if (TrickPvE.CanUse(out act))
 				{
