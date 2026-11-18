@@ -1806,10 +1806,11 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     Reserve (Stufe 1 bis 3) für die Fälle, in denen ein Begleiter über das Überleben eines späteren Kampfs entscheidet
     – Endkampf-Heiler und den einzigen Unterbrecher – und hat das Zurückhalten der Schwächentreffer mit Grund verworfen
     (Stufe 2). Daedalus' Liste je Kampf ist ein fester Plan für einen Grad und ein Brett. *Keine Änderung.*
-  - *Ein Trank bleibt, wenn eine Campsite folgt; dort nur unter 20 % LP*, mit der Begründung „the camp heals 90%“. Die
-    Campsite gab in seinem Lauf 30 % je Begleiter (Spur vom 07.11.2026, oben unter Stufe 2); 90 % ist unbelegt. RSR heilt
-    unter seiner Trankschwelle („Use HP potions below this HP“). Eine Schwelle von 20 % stünde gegen seine Regel, dass
-    Sicherheit vor dem Vorrat geht. *Keine Änderung.*
+  - *Ein Trank bleibt, wenn eine Campsite folgt; dort nur unter 20 % LP*, mit der Begründung „the camp heals 90%“. Das
+    gilt, wenn du allein ruhst (oben, „Campsite“: allein 90 %, mit einem Begleiter je 45 %, mit zweien je 30 %); RSRs
+    Rast (K10) rechnet damit. RSR heilt unter seiner Trankschwelle („Use HP potions below this HP“), und die Reserve
+    rechnet die nächste Campsite schon ein (Stufe 1, „Gegenthese 1“). Eine feste Schwelle von 20 % stünde gegen seine
+    Regel, dass Sicherheit vor dem Vorrat geht. *Keine Änderung.*
   - *Tome of the Impervious gegen einen physischen Tankbuster, ein Schutzmittel gegen magischen:* RSR wählt den Schutz
     schon nach der Angriffsart (Schritt 6, `CrucibleItemKind.NullifyPhysical` und `ReflectMagic`). *Keine Änderung.*
   - *Gift der Terrormilbe:* RSR nimmt das Bestien-Gegengift bei Gift sofort (unmittelbare Gefahr, K8), Daedalus erst

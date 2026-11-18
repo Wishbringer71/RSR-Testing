@@ -34,7 +34,34 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
 
 ## Offene Arbeit
 
-- Keine offene Arbeit.
+Sein Auftrag vom 18.11.2026, in dieser Reihenfolge, jeder Punkt im vollen Loop mit den Konzepten: „daedalus änderungen und
+den erfolgten einbau in fork auf synergieeffekte prüfen. danach die chains prüfen, ob sie situationsbezogen dynamisiert
+werden können … synergieeffekte von kombinationen und aufbau einer richtigen umfassenden schadensrotation so wie bei
+anderen jobs. umgekehrt prüfung, ob von den neuen ideen aus daedalus auch alle anderen jobs profitieren könnten."
+
+- **Daedalus-Übernahmen auf Synergien prüfen** (A885, A886). Im Kampf: Phantom Aim, Sternenfall, Burst-Uhr und
+  Kettenregel wirken je für sich; ob sie zusammen mit bestehenden Regeln (Tinktur, Hornwahl, Crucible-Gegenstände,
+  Orakel) mehr bringen oder sich stören, ist ungeprüft. Ort: `BurstClock`, `PhantomDefault.*`, `BST_Reborn.Chains`.
+  Nächster Schritt: Wechselwirkungen je Übernahme erheben (Leser, Zeitpunkte, Ressourcen), Loop. **N**. Konzepte 01, 03,
+  07, 21.
+- **Beastmaster: Ketten nach Lage und eine vollständige Schadensrotation** (A886; seine Rüge vom 18.11.2026: „das sollte
+  ursprünglich von dir auch geprüft werden“). Im Kampf: Die Kettenregel füllt nur auf, wenn sonst nichts folgen kann; ob
+  Äxte, Dressur, Abschlüsse, Rally, Rallying Cheer, Entfesseln, Borrow, Scheidender Schlag und die GCD-Kombo nach Lage
+  (Zahl der Gegner, Restzeit, Kompass, Universality, Burst der Gruppe) zu einer Rotation zusammengesetzt mehr Schaden
+  bringen, ist nicht gerechnet. Ort: `BST_Reborn.AttackAbility`, `GeneralGCD`. Nächster Schritt: Grundlagenforschung
+  (Wirktexte aller Aktionen, Kombo- und Kettenfaktoren, TP-Haushalt aus seinen Mitschnitten), ein Modell der Rotation,
+  dann Optionen und Loop. **N**. Konzept 01, „Ketten: Rally und Rallying Cheer tragen die Kette weiter“.
+- **Daedalus-Ideen für alle Jobs** (A885, A886). Im Kampf: Die Burst-Uhr und „Verstärker warten auf den Burst, wenn es
+  keinen Einsatz kostet“ gelten heute nur für Phantom Aim; ob andere Verstärker aller Jobs (Inhaltsaktionen, eigene
+  Buffs mit eigener Dauer) und die Verkettung von Ressourcen anderswo daraus gewinnen, ist ungeprüft. Nächster Schritt:
+  je Rolle und Job die Verstärker mit eigener Dauer erheben, Loop nach „Universell zuerst“. **N**. Konzept 03.
+
+- **Tooltips kürzer und verständlich** (sein Auftrag vom 18.11.2026: „einige tooltips sind im branch wirklich sehr lang.
+  wie können sie anhand ingameverhalten besser und kürzer aber verständlich formuliert werden? im loop prüfen“). Im Kampf:
+  Lange Texte erklären die Regel, aber man liest sie beim Einstellen nicht ganz; was die Einstellung im Spiel ändert,
+  geht darin unter. Ort: `RotationConfig`-Tooltips der Fork-Einstellungen, `Configs`. Nächster Schritt: Längen messen,
+  je Tooltip die Wirkung im Kampf in einem Satz und den Preis der Abwahl, Loop mit `check_setting_tooltips.py` und den
+  Regeln zur Lesbarkeit (Konzept 03, „Hilfsfenster“). **N**. Konzept 03.
 
 ## Technische Schuld
 

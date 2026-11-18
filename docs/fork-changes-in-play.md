@@ -1,6 +1,6 @@
 # What this fork does differently in a fight
 
-The whole distance from upstream **7.5.8.3**, as of release `7.5.8.3+wsh1`. What a single
+The whole distance from upstream **7.5.8.5**, as of release `7.5.8.5+wsh1`. What a single
 release changed is in [`fork-changes-since-last-release.md`](fork-changes-since-last-release.md),
 which is the text of the release description; this document is the standing picture and takes
 each release's text over once it has shipped.
@@ -140,7 +140,9 @@ the low 16 bits only, and a raidwide that hit a tank harder than that could be r
 - **The GCD length holds between GCDs.** Out of range, between pulls and before the first GCD the
   game reports no GCD length, and everything measured in GCDs collapsed: heal-ahead looked nowhere,
   the one-GCD window in which a running enemy cast is answered was closed, and the first-GCDs-of-combat
-  guards did not hold. The last GCD length now stands in while none runs.
+  guards did not hold. The last GCD length now stands in while none runs; before the first GCD of a pull it
+  is the game's length of an ordinary GCD of your kind, with gear, materia, food and haste in it - not a shortened
+  GCD such as a dance step, nor for healers and casters a weaponskill's length without their spell speed.
 - **Healing ahead of an announced area cast** — `Heal ahead of an announced area cast`, **on by
   default**. 60 % in front of a 45 % raidwide is not healthy. An existing barrier counts against
   the hit it absorbs. The area heal goes out ahead of the hit only when the hit would leave someone
@@ -275,6 +277,10 @@ the low 16 bits only, and a raidwide that hit a tank harder than that could be r
   while a targetable enemy stood in the list. When a boss left for a transition and the damage went on, the samples
   stopped, every forecast was stale after three seconds, and healing ahead saw nobody falling until an enemy could be
   targeted again. The party is now sampled for as long as the fight runs.
+
+- **Starfall lands just before Phantom Rejuvenation heals** (Occult Crescent, Phantom Oracle). Starfall costs you up
+  to 90% of your HP. While a Phantom Rejuvenation runs on you and the Starfall prophecy outlasts it, Starfall waits for
+  the last GCD before the heal, so you are not left low until some later heal.
 
 ## Healing — who it picks
 
@@ -879,6 +885,13 @@ off.
   enemy during a channel no longer counts as a step of the AI, and a later channel in which you stood for longer than a
   GCD under the AI's steering sets the answer right again.
 
+- **Spells start by your own walking.** Without the movement lock, RSR measures how many seconds before a hit that
+  reaches you - one RSR sees or a BossModReborn zone on your spot - you step off, and how long you stand after your
+  walking broke a spell before you walk again. No spell begins that would still be running when you step off, nor
+  within such a pause. A movement key BossModReborn reports holds a spell before your character moves. Instant spells
+  fill the gap. `DefenseTrace.log` writes "cast broken by moving" and what was learned; without a measurement, the rule
+  is the one before.
+
 ### Gaze attacks
 
 - **RSR turns away from a gaze just before it lands.** A gaze is an action with the sheet's gaze mark, an enemy action
@@ -903,6 +916,10 @@ off.
   leaves it alone, per cast row and until RSR is loaded again. Where other members hit by the packet faced the safe way
   and none faced the eye as RSR placed it, the model counts as refuted and RSR leaves the gaze at once.
   `DefenseTrace.log` writes "gaze: avoided" and "gaze: hit despite" for each one.
+
+- **Only gazes are treated as gazes.** An enemy attack that only shares its name with a gaze - such as the Taurus's
+  Mortal Ray in the Crucible, which hits everyone with Doom - no longer turns you away or holds your actions back. A
+  gaze's own helper casts, which carry no mark of their own, still count.
 
 ## The learned lists
 
@@ -1977,6 +1994,57 @@ off.
   before that - the Beastmaster snarls so the familiar's Cover takes the blast and its Vulnerability Up, unless the next
   loss would fell the familiar.
 
+- **The AoE settings hold for every area that hits enemies.** Assize, Macrocosmos and Lord of Crowns deal damage to
+  all nearby enemies and count as attacks now, so `AoE usage` set to Off stops them and they spare an enemy no area may
+  touch, such as a sleeping one. `Don't pull new enemies with AoE` is asked by every area, those around you included
+  (Overpower, Total Eclipse, Holy and every other), and by a rotation that skips the minimum enemy count.
+- **Areas spare the enemies your engage setting does not attack.** With "Previously engaged targets (Non-Tanks)", or
+  the default in a party, no area reaches an enemy that is not fighting yet and that RSR would not attack itself; a
+  priority target, or an object RSR attacks anyway, stays in reach. With "All targets that are in range for any
+  abilities (Tanks/Autoduty)" only "Don't pull new enemies with AoE" decides.
+- **No fight opened while a ready check waits for an answer.** Out of combat and without a countdown, RSR attacks no
+  enemy that is not fighting yet while a party member has not answered a ready check - whatever the engage setting or
+  a priority rule allows. A countdown is the signal to pull. `DefenseTrace.log` writes "pull: RSR opened ..." whenever
+  RSR's own action opens a fight, with the engage setting, countdown and ready check.
+- **Why a tincture did not come.** When the rule holds a tincture in a fight, the trace says why, once per pull:
+  "Tincture usage" allows none in this content, none of your job's kind is in the bags, the one you hold is switched
+  off in the item list, or it waits for a later burst.
+- **Phantom Aim waits for your burst** (Occult Crescent, Phantom Ranger). With "Hold Phantom Aim for your burst while
+  that costs no use in the fight", **on by default**, it waits for your job's next burst when the time your target has
+  left gives the same number of Aims either way, so each lands in a burst and none is lost. RSR reads your burst from
+  where your rotation asks for the tincture, for every job, and learns its cadence in your fights; the tincture's own
+  rule reads the same. In a short fight, or before two bursts were seen in one fight, Aim goes as before.
+- **Aggro control of its own in deep dungeons.** Three options under Deep dungeon, **on by default**, leave every other
+  content as it was. *Heals that also deal damage don't pull new enemies:* Assize, Macrocosmos and Pneuma wait while
+  they would hit an enemy that is not fighting yet, except while a party member is about to die. *Damage doesn't pull
+  new enemies:* no area of yours reaches a resting enemy - the caster's Sleep included - and during a fight RSR picks no
+  resting enemy as a new target; the enemy you pull yourself stays your target. *Put further enemies that attack your
+  party to sleep:* a healer or caster whose party two or more enemies attack sleeps the ones nobody fights with Repose
+  or Sleep, renews a sleep just before it runs out while an awake enemy is fought, spares every sleeping enemy with its
+  areas and attacks it only when no awake enemy is left; a kind that resists is learned. A caster's Sleep goes on the
+  enemy whose area puts the most attackers to sleep and cuts short the fewest sleeps already running. "Don't pull new
+  enemies with AoE" also sees every resting enemy in an area now, not only those RSR would attack.
+- **Beastmaster combo chains longer than one combo.** With "Keep Rally and Rallying Cheer to carry a combo chain on",
+  **on by default**, Rally and Rallying Cheer wait outside a chain while their stacks can still grow, and in a chain the
+  one whose skill can then follow refills - Rallying Cheer for Trick, Rally for an axe - so that skill completes the
+  next combo. An axe or Trick loses nothing by the split: their potency rises evenly with the TP spent. Rallying Cheer
+  is counted with its own 30 base TP.
+- **Crucible: start a board from RSR's team window.** With the team as recommended, "Start" presses the board choice's
+  start button and commences the duty confirmation; if the start does not reach the board, it is not offered again
+  that session.
+- **Crucible: protective items go where the run planned them.** With no item bonus left to keep, each protective item
+  you hold belongs to the final fight or to one of the heaviest fights still ahead, and there it goes as soon as an
+  enemy attacks you. A fight is planned for one when the way ahead with the most heavier fights holds fewer of them
+  than you carry items.
+- **Crucible: the shop keeps tokens for Rolling in Riches.** While you carry the way to the final fight, it keeps as
+  many tokens as you need to end with 2,000, counting what the fights still ahead earn, and buys only from what is
+  above that. Cover against a status that kills still comes from all your tokens.
+- **Crucible: attack stats and feed are weighed.** Damage Dealt, Physical and Magic Damage Dealt, Critical Hit Rate,
+  Haste and Slow give a piece, and a feed its familiar, a pace: how much faster the team deals damage, from your share
+  of it and what a critical hit adds, both measured from your own hits. The shop and treasure window name it; on the
+  safety scale it counts for the enemy auto-attacks a faster team takes fewer of. Physical Damage Dealt on a feed no
+  longer reads as damage of every kind.
+
 ## Seeing what the rules decide
 
 - **Diagnostics window** — Settings → UI → Windows → **Show Diagnostics Window** (off by default):
@@ -2084,6 +2152,13 @@ control window. RSR uses RebornMaterial 7.5.7.5, which keeps each font until the
 - **More code structure.** The fork's own members of 27 more upstream classes moved into partial files per concept; no
   signature changed.
 
+- **No crash at the first action after loading, nor at a figure that left the game.** Two lists built on start-up
+  read another list before it existed; both are in order, and the build refuses such a read. Figures kept from an
+  earlier frame - a gaze's caster, party and enemy lists, the tankbuster plan, a tank swap - are held by their id, read
+  from the object table where used, and dropped once gone; whether a figure is gone is read from the object table alone.
+- **What RSR learned is saved even when another program holds the file for a moment**, such as a virus scanner; the
+  save is retried. An unreadable settings file is kept as `RotationSolver_LoadFailed.json` by upstream's backup.
+
 ## For rotation authors
 
 - `BeastmasterRotation` gains what the Crucible windows read: `CrucibleTreasureOffers` (each treasure offer as a
@@ -2099,7 +2174,7 @@ control window. RSR uses RebornMaterial 7.5.7.5, which keeps each font until the
   without rating it; `DataCenter.SingleHitReachesPlayer` whether the single hit reaches the player;
   `DataCenter.AreaCasters` holds the hostile list plus the untargetable enemies casting a listed area
   action. `DataCenter.DefaultGCDTotal` keeps the last GCD length between GCDs instead of 0, and
-  before the first GCD it is the adjusted recast of a weaponskill.
+  before the first GCD it is the game's length of an ordinary GCD of the player's kind.
 - `ActionTargetInfo.FindTarget` orders the candidates of a damage-over-time action itself (most HP
   first, then by expiry; `Configs.DotTargetByHpThenExpiry`); `TargetFilter.GetDeath` leaves out the dead
   someone else is raising; the area heal flags rise ahead of an announced hit only when it endangers
@@ -2157,3 +2232,5 @@ control window. RSR uses RebornMaterial 7.5.7.5, which keeps each font until the
   `CrucibleGoalNow`, `CrucibleGoalPlayed`, `CrucibleGoalsOffered`, `CrucibleGoalWhyNot`, `ChooseCrucibleGoal`,
   `CrucibleGoalSetting`, `CrucibleTeamRequestRunning`). `MaskedCarnivaleHelper.IsImmuneTo` with `CarnivaleControl`;
   `StatusHelper.PvPGuardStatuses` and `StatusHelper.GuardWastedStatuses`.
+- `BeastmasterRotation.RallyingCheerTPRestore` gives 30 TP plus 70 per stack of Natural Instinct, as Rallying Cheer's
+  effect text states (it gave Rally's 40 before); it and `RallyTPRestore` read their figures from the effect text.

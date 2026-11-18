@@ -25848,7 +25848,7 @@ geprüft.
   `CustomRotation_Ability.cs:107`). Verjüngung vor Predict (Daedalus) verworfen: Wo Sternenfall in den 30 s kommt, sagt kein
   Wirktext. *Gebaut:* Sternenfall wartet bis zum letzten GCD vor der Heilung einer laufenden Phantom-Verjüngung, solange
   seine Karte sie überdauert (Action 41640, 41643). Konzept 07, „Sternenfall vor einer laufenden Phantom-Verjüngung".
-- *Crucible* (3189316): Schonung später gebrauchter Begleiter, Trank vor der Campsite („heals 90%", in seinem Lauf 30 %),
+- *Crucible* (3189316): Schonung später gebrauchter Begleiter, Trank vor der Campsite („heals 90%" – allein ruhend richtig; die Fassung vom 18.11.2026 nannte es unbelegt, berichtigt),
   Tome gegen physische Tankbuster, Gift, Eröffnung nach dem ersten Begleiter, Essen und Weg: bei RSR gelöst, gegen seine
   Regel oder nicht übertragbar; je Punkt in Konzept 21, „Abgleich mit Daedalus v0.1.124". Antigift-Serum heilt kein
   bestehendes Gift (Wirktext); Daedalus trinkt es vergiftet.
@@ -25885,6 +25885,37 @@ TODO-Punkt „Beastmaster: Ketten aus mehr als einer Kombo" (aus A885), Vorrang 
   Cheer carries chain …"; im ACT-Mitschnitt folgen Kombos einer Kette im Abstand unter 7 s (Kettenzahl ≥ 2). Wirkt nicht:
   weiter nur einzelne Kombos, Abstände über 26 s.
 - *Prüfgrad:* Compile, Prüfskripte; Laufzeit nicht beobachtet; die Kettenfaktoren sind unbelegt im Spiel (Wiki).
+
+### A887 · Release 7.5.8.5+wsh1 veröffentlicht, Release-Text übergeben, neuer Zweig (18.11.2026)
+
+Sein Auftrag (18.11.2026): „branch zu main, compile, release, neuer branch" – die Freigabe (Regeln, „Grenzen und
+Löschungen"). Danach seine Aufträge vom selben Tag ins TODO: Synergien der Daedalus-Übernahmen, Beastmaster-Ketten nach
+Lage und eine vollständige Schadensrotation (seine Rüge: „das sollte ursprünglich von dir auch geprüft werden"),
+Daedalus-Ideen für alle Jobs, kürzere Tooltips.
+- *Vorher gemessen:* Upstream abgeglichen (0 ausstehend); `main` Vorfahr des Arbeitszweigs, 129 Commits voraus; Tag
+  `7.5.8.5+wsh1` frei auf `origin`; Versionsangaben auf 7.5.8.5 (+wsh1, -wsh1). Build und 62 CI-Schritte grün. Im
+  PR-Lauf waren drei frühere Stände rot (3675a9d61 Fork-Version, 5e5c8070e Einstellungsname im Release-Text,
+  f6093e4ba fehlender Tooltip); jeder ist in einem späteren Commit behoben, 986b3be74 lief grün.
+- *Prüfmittel:* Der dritte Fehlschlag war lokal grün, weil die Skripte ihre Dateiliste aus dem Git-Index lesen und
+  mein Lauf vor `git add` kam. `run_ci_checks.py` verweigert jetzt den Lauf, solange nicht vorgemerkte Dateien bestehen
+  (fe4542e3f); geprüft mit einer Probedatei.
+- *CHANGELOG:* Abschnitt 7.5.8.5+wsh1: `BeastmasterRotation.RallyingCheerTPRestore` gibt 30 statt 40 Grund-TP. Erhoben
+  über die öffentlichen Zeilen der Fork-Commits seit dem Tag; die übrigen sind Umzüge in Teildateien oder interne Typen.
+- *Zweig zu `main`:* `main` auf `claude/fixes-after-7.5.8.3` (95a9931bc) vorgespult und gepusht.
+- *Release:* `publish.yaml` per `workflow_dispatch` auf `main` mit `7.5.8.5+wsh1`, Lauf 44291804095. Release auf
+  95a9931bc, `latest.zip` 3 748 905 Bytes, Digest sha256:ffa4cc0e…2b0c, Text gleich dem Release-Text.
+- *Übergabe:* `fork-changes-in-play.md` steht auf Upstream 7.5.8.5; die Einträge sind in die Themen eingearbeitet
+  (Gehen vor Zaubern bei „Movement safety", Blicke bei „Gaze attacks", Sternenfall bei „Healing — when it lands",
+  Flächen, Bereitschaftsanfrage, Tinktur, Phantom Aim, Tiefe Gewölbe, Beastmaster-Ketten und Crucible bei „Damage and
+  rotation", Abstürze und Speichern bei „Frame time", Rallying Cheer bei „For rotation authors"); der Eintrag zur
+  GCD-Länge vor dem ersten GCD ist auf den neuen Stand gebracht. `fork-changes-since-last-release.md` beginnt mit
+  „Changes since 7.5.8.5+wsh1".
+- *Berichtigt beim Übergeben:* Meine Aussage in A885, „the camp heals 90%" sei unbelegt (C229).
+- *Zweige:* `claude/fixes-after-7.5.8.5` von `main` nach seiner Namensvorgabe, die Übergabe darauf.
+  `claude/fixes-after-7.5.8.3` ist vollständig gemergt und ein Löschfall auf `origin`, ebenso weiter
+  `claude/fixes-after-7.5.8.2` und `claude/fixes-after-7.5.7.15` (Ref-Löschungen sind der Sitzung gesperrt).
+
+*Prüfgrad:* Workflow-Lauf und Release-API gelesen, Prüfskripte; die Übergabe gegen den Release-Text abgeglichen.
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
@@ -26269,3 +26300,4 @@ geben den Stand vom 14.10.2026 wieder.
 | C226 | A865 und Konzept 03, „Die eigene Geschwindigkeit“ (Stand a1cef7cdb): Essen samt Restzeit zu verfolgen sei ohne Bedarf | Seine Vorgabe vom 17.11.2026 verlangt es („daher muss geprüft werden, wie lange und ob die statuseffekte aktiv sind“); die Stelle ersetzte seine Vorgabe durch meine Abwägung. Wieder offen im TODO, „Eigene Geschwindigkeit“ |
 | C227 | A865 und Konzept 03 (Stand a1cef7cdb): Upstreams 2,5 s für Sacrificium unterschieden sich beim Schnitter um unter 0,1 s vom GCD | Unter Enshroud läuft der GCD mit 1,5 s; die 2,5 s sind ein Zeitfenster bis Arkaner Kreis, kein GCD (A872) |
 | C228 | A740 und Konzept 24, „Fork-Code in eigenen Teildateien“ (Stand A740): Statische Felder, deren Startwert ein anderes liest, bleiben in ihrer Datei – das schütze die Reihenfolge | `_channelSince` und `_channelSeen` blieben in `DataCenter.cs`, `KeptChannels` zog nach `DataCenter.Channels.cs`; richtig nur durch die Dateireihenfolge, gebrochen durch Upstreams Aufteilung. Die Grenze ist „in derselben Datei hinter dem Gelesenen“ (A878) |
+| C229 | A885 und Konzept 21, „Abgleich mit Daedalus v0.1.124“ (Stand f6093e4ba): „the camp heals 90%“ sei unbelegt, die Campsite gebe 30 % | Allein ruhend heilt sie 90 % (Wiki zum ersten Brett, in Konzept 21 „Campsite“ und in RSRs Rast K10 geführt); 30 % je Teilnehmer gilt bei zwei Begleitern. Berichtigt am 18.11.2026; das Ergebnis „keine Änderung“ bleibt, weil eine feste Trankschwelle von 20 % seiner Sicherheitsregel widerspräche. |
