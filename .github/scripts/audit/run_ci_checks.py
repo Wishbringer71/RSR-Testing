@@ -11,6 +11,11 @@ The models (the workflow's MODELS line) run as the workflow runs them: only when
 changed - here against the branch's upstream, so uncommitted and unpushed edits count - and all of
 them with --models. They read no plugin code, so a run without a change to them says nothing new
 (A323).
+
+New files must be staged first: the scripts take their file lists from git's index (`git ls-files`),
+so a file git does not track yet is invisible to them, and the run would pass where the workflow on
+the commit fails (A886: a new setting without a tooltip passed here and failed on f6093e4ba). The
+runner refuses while such files exist.
 """
 import pathlib
 import re
@@ -59,10 +64,23 @@ def self_test():
           'block scripts and other tools are left out')
 
 
+def untracked_files():
+    """Files git does not track yet and does not ignore - the scripts' file lists leave them out."""
+    out = subprocess.run(['git', 'ls-files', '--others', '--exclude-standard'], capture_output=True, text=True)
+    return [line for line in out.stdout.splitlines() if line]
+
+
 def main():
     self_test()
     if not WORKFLOW.exists():
         print(f'{WORKFLOW} not found - run from the repository root')
+        return 2
+
+    untracked = untracked_files()
+    if untracked:
+        print(f'{len(untracked)} untracked file(s) the checks would not see - stage them first (git add):')
+        for name in untracked[:20]:
+            print(f'  {name}')
         return 2
 
     text = WORKFLOW.read_text(encoding='utf-8')
