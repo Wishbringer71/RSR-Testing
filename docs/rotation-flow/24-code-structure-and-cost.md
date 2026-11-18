@@ -275,6 +275,15 @@ Zeilen; `fork_placement.json` 390 → 314. Eine Datei, die mit einer Bytefolge (
 Werkzeug keinen Namensraum mit – die Teildatei lag im globalen Namensraum, und der Build schlug an; das Werkzeug liest die
 Zeile jetzt auch hinter einer BOM, und jede Teildatei trägt ihren Namensraum.
 
+*Upstreams eigene Aufteilung (c170c9cd5, A878):* Upstream teilte sechs Klassen selbst in Teildateien (`DataCenter` in
+`.BMR`, `.Combat`, `.JobAndGcd`, `.Pets`, `.Territory`; `ObjectHelper`, `ActionTargetInfo`, `StatusHelper`, `Configs`,
+`CustomRotation_OtherInfo`) und verschob den Namensraum `RotationSolver.Basic`. Jeder Fork-Member ging in die Teildatei
+von Upstream, in der sein Nachbar landete, in der Reihenfolge des Forks; die Teildateien des Forks blieben. Ein Werkzeugfehler
+setzte dabei 31 Member an den Anfang ihrer Klasse; sie stehen wieder hinter ihrem Vorgänger (A878). Die Reihenfolge der
+Einstellungen im Fenster ist je Filtergruppe unverändert (316 von 316, gemessen 18.11.2026); zwei Gruppen reichen über
+`Configs.CombatAndTarget.cs` und `Configs.cs`, deren Übersetzungsreihenfolge unter Windows und Linux dieselbe ist –
+`Configs.DutiesAndPvP.cs` steht unter Windows vor, unter Linux hinter `Configs.cs`, trägt aber keine geteilte Gruppe.
+
 ### Speicher
 
 `_tankbusterHelpHeld` (Fork) behält je Gegner und Aktion einen Zeitpunkt, gelesen nur innerhalb eines GCD; ältere
@@ -388,7 +397,7 @@ Sitzung mit Kampf steht keine Zeile „exception:"; steht eine, ist sie eine Urs
   die Prüfung auf `null` danach war tot (CA1508) – jetzt `GetRowOrDefault`. Versiegelt: zehn Fork-Klassen (CA1852);
   `DRK_Reborn.GroupStunRunning` statisch (CA1822); `Regex.Count` statt einer Trefferliste (CA1875); elf Vorbelegungen
   mit dem Standardwert entfernt (CA1805). Im Kampf ohne messbare Wirkung, ohne Preis.
-- *Bleibt:* CA1802 in `Configs.cs` – die Felder sind das Muster, aus dem der Source Generator die Einstellungen baut;
+- *Bleibt:* CA1802 in den `Configs`-Dateien – die Felder sind das Muster, aus dem der Source Generator die Einstellungen baut;
   CA1822 an `RunningSwiftGoesToRaise` – geschützte Eigenschaft, die abgeleitete Rotationen lesen;
   CA1819 in `StatusHelper` – die Felder sind öffentliche Schnittstelle für abgeleitete Rotationen; die übrigen
   CA1508 auf Fork-Zeilen sind falsch positiv (`Player.Object` ist beim Login `null`, obwohl die Signatur es nicht sagt).
@@ -445,8 +454,9 @@ bevor RSR neu erscheint; dasselbe gilt heute schon für jeden der übrigen Clien
   Member dieses Namens (eine geänderte Signatur bleibt Upstreams Member; Preis: eine neue Überladung einer Methode von
   Upstream geht unbemerkt durch). Die 563 Member, die am 13.11.2026 in 75 Dateien von Upstream standen, führt
   `fork_placement.json`; die Liste wird nur kürzer, weil ein Member beim nächsten Eingriff in seine Teildatei zieht.
-  Ausgenommen: fremde Rotationen und `Configs.cs` (alle Einstellungen in einer Klasse, das Muster von Upstream, das der
-  Source Generator liest).
+  Ausgenommen: fremde Rotationen und die `Configs`-Dateien (`Configs.cs`, `.CombatAndTarget.cs`, `.DutiesAndPvP.cs` seit
+  Upstreams Aufteilung c170c9cd5; alle Einstellungen in einer Klasse, das Muster von Upstream, das der Source Generator
+  liest).
 
 - Der Plugin-Build der CI behandelt CS8600 bis CS8604 als Fehler (`build.yaml`, mit Gegenprobe; A878). Wogegen: einen
   Startwert, der ein noch nicht belegtes statisches Mitglied liest (Grenze unter „Fork-Code in eigenen Teildateien");

@@ -17,6 +17,7 @@ run over `check_*.py` alone misses the scans and model scripts the workflow also
 | Script | Defect classes | Found (AUDIT_LOG) |
 |---|---|---|
 | `scan.py` | Range/default mismatches, config properties never read, stale `RotationDesc`, dead code, unguarded dereferences | A8: SAM `MeikyoShisuiCountdown`, BLU `UseBasicInstinct`/`UseMightyGuard`, nine `RotationDesc`, eleven configs, `OldUpdateTargets` |
+| `layout.py` | Where each kind of code lives (job folders, shipped, base and third-party rotations, core, duties, data, configuration), for every script that reads the tree; self-test against the repository in the CI | A878: after upstream's move two scripts read no file and stayed green, `scan3`, `scan7`, `check_status_list` and `mitscan` read old folders |
 | `mitscan.py` | Mitigation actions in methods that carry no danger gate | A9: SMN Radiant Aegis in `GeneralAbility` |
 | `scan2.py` | Percent-versus-ratio comparisons, float equality, `usedUp`, `skipStatusProvideCheck`, contradictory level predicates, repeated conditions, unguarded division | A10: four HP thresholds compared against the wrong scale |
 | `scan3.py` | Discarded `CanUse` results, unreachable duplicate branches, inverted level gates | A10: Viper structural finding |
