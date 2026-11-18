@@ -25747,6 +25747,24 @@ wichtiger als dmg.“
   Zauber je Kampf als am 17.11. in vergleichbaren Inhalten.
 - Konzept 03, „Zauberbeginn vor dem eigenen Gehen“.
 
+### A881 · Tinktur: warum keine kam, je Zug in der Spur (18.11.2026)
+
+TODO-Punkt aus A877 (Shinryu Unreal, Schnitter 621 s ohne Tinktur, der Beschwörer trank) im vollen Loop; dazu sein
+Hinweis (18.11.2026): „es kann sein, dass keine richtige tinktur vorlag, oder diese in der ui bei items durch mich nicht
+freigegeben war“.
+
+- *Am Code* (`CustomRotation.UseBurstMedicine`): Außerhalb des Countdowns hält die allgemeine Regel eine Tinktur aus vier
+  Gründen – „Tincture usage“ erlaubt hier keine, keine des Typs im Inventar (`HasIt`), die vorhandene ist abgeschaltet
+  (`IsEnabled`, Gegenstandsliste), oder sie wartet auf einen späteren Burst (`TinctureWaitsForLaterBurst`; der Schnitter
+  zählt zu den Jobs mit stärkerem Zwei-Minuten-Burst, A781). Der Beschwörer trank im selben Inhalt, also galt „Tincture
+  usage“ dort für beide; die übrigen drei bleiben. Welcher es war, steht in keiner Datei: keine Spurzeile, sein
+  Inventar und seine Gegenstandsliste liegen nicht vor.
+- *Gebaut:* je Zug und Grund eine Zeile „tincture held: …“; der Text entsteht nur beim Wechsel des Grunds. Keine
+  Verhaltensänderung: Jeder Grund folgt seiner Einstellung oder seinem Bestand.
+- *Prüfgrad:* Compile. *Vorhersage:* `tincture-held-names-reason` (predictions/2026-11-18.json); im nächsten Kampf ohne
+  Tinktur nennt die Zeile den Grund.
+- Konzept 03, „Warum keine kam“.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

@@ -127,9 +127,12 @@ public partial class CustomRotation
 
 		if (!TinctureAllowedHere)
 		{
+			TraceTinctureHold(TinctureHold.NotAllowed);
 			return false;
 		}
 
+		var held = false;
+		var heldEnabled = false;
 		foreach (var medicine in Medicines)
 		{
 			if (medicine.Type != MedicineType)
@@ -141,6 +144,7 @@ public partial class CustomRotation
 			// two-minute burst is stronger where that costs no tincture over the fight.
 			if (TinctureWaitsForLaterBurst(medicine.EffectSeconds, medicine.RecastSeconds))
 			{
+				TraceTinctureHold(TinctureHold.LaterBurst);
 				return false;
 			}
 
@@ -148,8 +152,13 @@ public partial class CustomRotation
 			{
 				return true;
 			}
+
+			held |= medicine.HasIt;
+			heldEnabled |= medicine.HasIt && medicine.IsEnabled;
 		}
 
+		// A881 (concept 03, "Warum keine kam"): what holds the tincture, once per pull and reason.
+		TraceTinctureHold(!held ? TinctureHold.NoneHeld : !heldEnabled ? TinctureHold.SwitchedOff : TinctureHold.None);
 		return false;
 	}
 

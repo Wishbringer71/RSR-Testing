@@ -646,6 +646,14 @@ merklich schneller zu beenden; sie kostet Geld, und sie für einen gewöhnlichen
     2-Minuten-Burst erreicht, trinkt der nächste im Opener. Im geschafften Kampf trinkt jeder Zug im Opener.
   - Der Schnitter verlor dafür seine eigenen Schalter „Use potion“ und „First Potion timing“ (Upstream 6462f8a90), wie
     die anderen Schalter unten. Sie stellten dieselbe Frage ein zweites Mal.
+- *Warum keine kam* (A881): Hält die allgemeine Regel eine Tinktur im Kampf zurück, schreibt die Spur je Zug und Grund
+  eine Zeile „tincture held“: „Tincture usage“ erlaubt hier keine (mit dem Kennzeichen des Inhalts für High-End), keine
+  Tinktur des Typs im Inventar, die vorhandene ist in der Gegenstandsliste abgeschaltet, oder sie wartet auf einen
+  späteren Burst. Abklingzeit und Weben sind kein Grund dafür; sie halten jeden Gegenstand. *Anlass:* Shinryu (Unreal),
+  17.11.2026, Schnitter 621 s ohne Tinktur, der Beschwörer trank im selben Inhalt (A877). *Sein Hinweis (18.11.2026):*
+  „es kann sein, dass keine richtige tinktur vorlag, oder diese in der ui bei items durch mich nicht freigegeben war“ –
+  zwei der vier Gründe; welcher es war, sagt die nächste Zeile. Gebaut ist nur die Zeile: Jeder Grund folgt seiner
+  Einstellung oder seinem Bestand, keiner ist ein Defekt.
 - *Entfernt* sind die Schalter der Rotationen, die dieselbe Frage ein zweites Mal stellten: beim Beschwörer „Use potion",
   „Potion timing" und „Only use potion during a big summon" (Upstream 444388102), beim Weißmagier „Use Tincture/Gemdraught
   when about to use Presence of Mind", bei der Viper „Experimental Pot Usage", beim Maschinisten „Use burst medicine in

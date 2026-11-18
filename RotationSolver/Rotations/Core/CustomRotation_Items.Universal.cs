@@ -18,6 +18,54 @@ public partial class CustomRotation
 		_ => false,
 	};
 
+	/// <summary>Why the general rule held a tincture in a fight (concept 03, "Warum keine kam", A881).</summary>
+	internal enum TinctureHold : byte
+	{
+		None,
+		NotAllowed,
+		NoneHeld,
+		SwitchedOff,
+		LaterBurst,
+	}
+
+	// The reason written in this pull, and the combat time it was seen at: a lower combat time is the next pull.
+	private static TinctureHold _tinctureHoldWritten;
+	private static float _tinctureHoldSeenAt;
+
+	/// <summary>
+	/// Writes once per pull and reason why the tincture was held. Formats the line only when the reason changes: the rule
+	/// asks every frame in a burst.
+	/// </summary>
+	private void TraceTinctureHold(TinctureHold reason)
+	{
+		if (!DataCenter.InCombat)
+		{
+			return;
+		}
+
+		var now = DataCenter.CombatTimeRaw;
+		if (now < _tinctureHoldSeenAt)
+		{
+			_tinctureHoldWritten = TinctureHold.None;
+		}
+
+		_tinctureHoldSeenAt = now;
+		if (reason == TinctureHold.None || reason == _tinctureHoldWritten)
+		{
+			return;
+		}
+
+		_tinctureHoldWritten = reason;
+		var why = reason switch
+		{
+			TinctureHold.NotAllowed => $"\"Tincture usage\" {DataCenter.CurrentTinctureUseType} allows none here (high-end {DataCenter.Territory?.IsHighEndDuty ?? false})",
+			TinctureHold.NoneHeld => $"no {MedicineType} tincture in the bags",
+			TinctureHold.SwitchedOff => $"the {MedicineType} tincture held is switched off in the item list",
+			_ => "it waits for a later burst",
+		};
+		DefenseTrace.Line($"tincture held: {why} | {ECommons.GameHelpers.Player.Job} at {now:F0} s");
+	}
+
 	/// <summary>
 	/// Whether the player has cleared the duty they are in, as the game keeps it (A779): a cleared duty is farmed, one not
 	/// yet cleared is learned with wipes. A rotation may weigh a tincture in the opener by it; outside an instanced duty false.

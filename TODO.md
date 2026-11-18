@@ -19,7 +19,7 @@ auswahl und das timing der beschwörung" – je Kampf aller fünf Bretter (Gegne
 BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Zeitpunkt ihres Aufrufs im Loop prüfen
 (Beispiel seiner Beobachtung: der Raptor gegen Feuer, bevor feueranfällige Gegner da waren; A581).
 
-Zuerst die Tinktur des Schnitters; was auf Daten oder auf ihn wartet, steht unten.
+Was auf Daten oder auf ihn wartet, steht unten.
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -34,11 +34,7 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
 
 ## Offene Arbeit
 
-- **Schnitter ohne Tinktur in Shinryu** (A877). Im Kampf: 621 s mit fünf Arkanen Kreisen ohne Tinktur; der Beschwörer
-  trank seine im selben Inhalt. Ob er eine Stärketinktur besitzt und welcher Grund hielt, ist unbelegt: Die allgemeine
-  Regel (`UseBurstMedicine`) schreibt ihren Grund nicht. Nächster Schritt: die Gründe am Code (`TinctureAllowedHere`,
-  `TinctureWaitsForLaterBurst`, Bestand) und je Kampf eine Spurzeile mit dem haltenden Grund. **N**. Konzept 03, „In der
-  Lernphase“.
+- Keine offene Arbeit.
 
 ## Technische Schuld
 

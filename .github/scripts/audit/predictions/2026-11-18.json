@@ -26,5 +26,12 @@
   "kind": "present",
   "situation": "cast broken by moving: ",
   "match": "move forecast: (lead before a hit|pause in a walking phase) [0-9.,]+ s, median [0-9.,]+ s from [0-9]+$"
+ },
+ {
+  "id": "tincture-held-names-reason",
+  "archive": "A881",
+  "kind": "each",
+  "situation": "tincture held: ",
+  "match": "tincture held: (\"Tincture usage\" \\w+ allows none here \\(high-end (True|False)\\)|no \\w+ tincture in the bags|the \\w+ tincture held is switched off in the item list|it waits for a later burst) \\| \\w+ at [0-9]+ s$"
  }
 ]
