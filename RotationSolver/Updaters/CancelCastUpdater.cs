@@ -70,6 +70,7 @@ internal static partial class CancelCastUpdater
 			if (uiState != null)
 			{
 				uiState->Hotbar.CancelCast();
+				OwnCancelAt = DateTime.Now;
 				TraceCancel(player, stopForDeadTarget ? "target dead" : hasNoCastingStatus ? "no-casting status resolves"
 					: castMeetsPenalty ? "a status that damages every action lands" : tarHasRaise ? "target already raised"
 					: raiseLandsFirstElsewhere ? "another raise lands first" : tarHasGuard ? "target under Guard"

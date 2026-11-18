@@ -16,6 +16,9 @@ internal static partial class CancelCastUpdater
 
 	private static (uint Action, DateTime At) _cancelTraced = (0, DateTime.MinValue);
 
+	/// <summary>When RSR last cancelled the player's spell itself: a spell it ended is no break by walking (concept 03, A880).</summary>
+	internal static DateTime OwnCancelAt { get; private set; } = DateTime.MinValue;
+
 	/// <summary>
 	/// Whether the player is casting a raise on a body another player's raise lands on first.
 	/// </summary>

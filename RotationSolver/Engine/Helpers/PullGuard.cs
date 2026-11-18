@@ -61,8 +61,7 @@ internal static class PullGuard
 			return;
 		}
 
-		if (_openedWritten || action is not IBaseAction act || act.Target.Target is not IBattleChara target
-			|| !target.IsEnemy() || !DataCenter.NotFightingYet(target))
+		if (_openedWritten || action is not IBaseAction act || OpenedOn(act.Target) is not { } target)
 		{
 			return;
 		}
@@ -75,6 +74,29 @@ internal static class PullGuard
 		DefenseTrace.Line($"pull: RSR opened the fight with {act.Name} #{act.Info.ID} on {target.Name}, not fighting yet | engage {engage}"
 			+ $" | countdown {Service.CountDownTime:F1} s | ready check {(awaiting > 0 ? $"{awaiting} not answered" : "none")}"
 			+ $" | party {DataCenter.PartyMembers.Count} | priority rule {target.IsTopPriorityHostile()}");
+	}
+
+	// The enemy not fighting yet that the action reaches: its target, or one in its area (an area around the player has
+	// the player as target).
+	private static IBattleChara? OpenedOn(TargetResult result)
+	{
+		if (result.Target is IBattleChara target && target.IsEnemy() && DataCenter.NotFightingYet(target))
+		{
+			return target;
+		}
+
+		if (result.AffectedTargets != null)
+		{
+			foreach (var affected in result.AffectedTargets)
+			{
+				if (affected != null && affected.IsEnemy() && DataCenter.NotFightingYet(affected))
+				{
+					return affected;
+				}
+			}
+		}
+
+		return null;
 	}
 
 	private static unsafe int CountAwaiting()

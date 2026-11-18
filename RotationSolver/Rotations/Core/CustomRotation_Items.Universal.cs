@@ -28,9 +28,30 @@ public partial class CustomRotation
 		LaterBurst,
 	}
 
-	// The reason written in this pull, and the combat time it was seen at: a lower combat time is the next pull.
+	// The reason written in this pull, and the combat time and last pull's length it was seen with: a lower combat time
+	// or another last pull is the next pull (code review A883: a short pull left the combat time higher than before).
 	private static TinctureHold _tinctureHoldWritten;
 	private static float _tinctureHoldSeenAt;
+	private static float _tinctureHoldLastPull = float.NaN;
+
+	/// <summary>Whether a reason about the bags (none held, switched off) can still be written in this pull.</summary>
+	private static bool TinctureBagsUnwritten()
+	{
+		ResetTinctureHoldOnNewPull();
+		return _tinctureHoldWritten is not (TinctureHold.NoneHeld or TinctureHold.SwitchedOff);
+	}
+
+	private static void ResetTinctureHoldOnNewPull()
+	{
+		var now = DataCenter.CombatTimeRaw;
+		if (now < _tinctureHoldSeenAt || DataCenter.LastPullSeconds != _tinctureHoldLastPull)
+		{
+			_tinctureHoldWritten = TinctureHold.None;
+		}
+
+		_tinctureHoldSeenAt = now;
+		_tinctureHoldLastPull = DataCenter.LastPullSeconds;
+	}
 
 	/// <summary>
 	/// Writes once per pull and reason why the tincture was held. Formats the line only when the reason changes: the rule
@@ -43,13 +64,8 @@ public partial class CustomRotation
 			return;
 		}
 
+		ResetTinctureHoldOnNewPull();
 		var now = DataCenter.CombatTimeRaw;
-		if (now < _tinctureHoldSeenAt)
-		{
-			_tinctureHoldWritten = TinctureHold.None;
-		}
-
-		_tinctureHoldSeenAt = now;
 		if (reason == TinctureHold.None || reason == _tinctureHoldWritten)
 		{
 			return;

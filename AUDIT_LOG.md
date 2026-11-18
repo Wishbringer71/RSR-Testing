@@ -25786,6 +25786,30 @@ audit und codereview“.
 - *Prüfgrad:* statisch, Compile, Zeilenmengen, Roslyn-Messung; keine Verhaltensänderung.
 - Konzept 24, „Was der Fork aus Upstreams Umbau mitnimmt“.
 
+### A883 · Audit und Code-Review über die Arbeit des 18.11.2026 (18.11.2026)
+
+Sein Auftrag: „danach auf alles audit und codereview“. Code-Review (hoch) über `3675a9d61..HEAD`, acht Befunde, je mit
+Ergebnis:
+1. *Vorlauf aus jedem Schritt gelernt* (`MoveForecast`): Ein früher Schritt aus anderem Grund hätte den Median auf das ganze
+   Ankündigungsfenster gesetzt und jeden Zauber davor gesperrt. *Behoben:* Die Messung zählt erst, wenn der Treffer den
+   Spieler danach vor der Landung nicht mehr erreicht.
+2. *Eröffnung durch eine Fläche um den Spieler nicht geschrieben* (`PullGuard`): Ihr Ziel ist der Spieler, die Zeile fehlte,
+   und das Konzept liest ihr Fehlen als „er drückte“. *Behoben:* auch die getroffenen Gegner der Aktion.
+3. *Gehen der KI nicht als Bewegung gezählt:* *kein Defekt* – `Player.IsMoving` liest das Spielkennzeichen
+   `AgentMap.IsPlayerMoving` (ECommons 7d50941, 16.11.2026) für jede Bewegung der Figur.
+4. *Neuer Zug der Tinkturzeile nicht erkannt* nach einem kurzen Zug: *behoben* über die Länge des letzten Zugs
+   (`LastPullSeconds`).
+5. *RSRs eigener Abbruch als Gehbruch gezählt:* *behoben* (`CancelCastUpdater.OwnCancelAt`); eine Unterbrechung durch einen
+   Gegner im Gehen zählt weiter mit (selten, Preis benannt).
+6. *Inventar je Grad und Bild gelesen:* *behoben* – nur, solange der Grund des Inventars in diesem Zug nicht geschrieben ist.
+7. *Treffer und BossMod-Fläche je Bild gelesen, auch außerhalb des Kampfes:* *behoben* – nur im Kampf ohne Sperre.
+8. *Ohne Option* (code.md: „Eine Verbesserung, deren Nutzen ich nicht belegen kann, kommt hinter eine Option. Belegte
+   Defektbehebungen nicht.“): *keine Änderung* – der Verlust (58 s gebrochene Zauber, darunter Wiederbelebungen) ist
+   gemessen, die Regel behebt ihn nach seiner Vorgabe vom 18.11.2026, und ohne Messung gilt das Verhalten vorher.
+- *Audit:* Build mit allen CI-Schaltern, 62 Prüfschritte lokal grün, Startwert-Messung 0 von 2 037, Dreiwegeprüfung des
+  Merges (A878), Zeilenmengen der Umzüge (A882).
+- *Prüfgrad:* statisch, Compile, Roslyn-Messungen; Laufzeit nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

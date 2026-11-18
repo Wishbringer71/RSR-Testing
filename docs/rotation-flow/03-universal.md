@@ -1348,7 +1348,8 @@ dieselben 26, die neue lässt nur die Sterndetonation aus (A832).
 Countdown läuft, greift RSR außerhalb des Kampfes keinen Gegner an, der noch nicht kämpft (`DataCenter.NotFightingYet`:
 kein Ziel, nicht im Kampf). Das gilt für jeden Job, jede Einstellung „Engage settings“ und jede Vorrangregel; ein Gegner,
 der schon kämpft, bleibt angreifbar, und mit dem Countdown kommt das Signal zum Pull (`CountDownAction`). Eröffnet RSR
-selbst einen Kampf – eine eigene Aktion außerhalb des Kampfes auf einen Gegner, der noch nicht kämpft –, schreibt die Spur
+selbst einen Kampf – eine eigene Aktion außerhalb des Kampfes, deren Ziel oder Wirkgebiet einen Gegner erreicht, der noch
+nicht kämpft (eine Fläche um dich hat dich als Ziel, A883) –, schreibt die Spur
 je Annäherung eine Zeile „pull: RSR opened …“ mit Aktion, Gegner, Einstellung, Countdown und offener Anfrage; die gehaltene
 Anfrage schreibt „pull: held …“ einmal je Anfrage.
 
@@ -2394,10 +2395,11 @@ party member in danger before an announced hit." Die Entscheidung fällt je Bild
 - *Vorlauf:* Erreicht dich ein Treffer, dem ein Schritt entgeht (RSRs Erkennung, `MovementLock.CertainDodgeableWithin`),
   oder liegt eine Fläche von BossMod auf deinem Ort (`MovementLock.SpotDangerIn`), misst RSR, wie viele Sekunden vor der
   Landung du losgehst; ein Zauber beginnt nur, wenn er vor „Landung minus dein Vorlauf" endet (Median deiner Messungen
-  dieser Sitzung; ohne Messung „vor der Landung", wie bisher).
+  dieser Sitzung; ohne Messung „vor der Landung", wie bisher). Eine Messung zählt erst, wenn der Treffer dich danach vor
+  seiner Landung nicht mehr erreicht – ein Schritt aus anderem Grund lehrt nichts (A883).
 - *Pause:* Bricht dein Gehen einen Zauber, beginnt bis zum nächsten vollständigen Zauber keiner, bevor du so lange
   stehst, wie du in solchen Phasen sonst stehst, ehe du wieder gehst (Median der Pausen unter einem GCD; ohne Messung
-  keine Wartezeit). BossMods KI hält dafür fest 0,5 s (`CastSettleHold`); hier ist es dein gemessenes Maß.
+  keine Wartezeit). Einen Zauber, den RSR selbst abbrach (`CancelCastUpdater`), zählt sie nicht als gebrochen (A883). BossMods KI hält dafür fest 0,5 s (`CastSettleHold`); hier ist es dein gemessenes Maß.
 - *Eingabe:* Drückst du eine Bewegungstaste, sieht BossMod das vor der Bewegung der Figur (`Movement.IsMoveRequested`);
   ohne Sperre beginnt dann kein Zauber.
 Passt so kein Zauber, gehen die Sofortzauber (C6). Je gebrochenem Zauber eine Spurzeile „cast broken by moving“ mit

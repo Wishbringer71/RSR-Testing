@@ -131,8 +131,6 @@ public partial class CustomRotation
 			return false;
 		}
 
-		var held = false;
-		var heldEnabled = false;
 		foreach (var medicine in Medicines)
 		{
 			if (medicine.Type != MedicineType)
@@ -152,13 +150,26 @@ public partial class CustomRotation
 			{
 				return true;
 			}
-
-			held |= medicine.HasIt;
-			heldEnabled |= medicine.HasIt && medicine.IsEnabled;
 		}
 
-		// A881 (concept 03, "Warum keine kam"): what holds the tincture, once per pull and reason.
-		TraceTinctureHold(!held ? TinctureHold.NoneHeld : !heldEnabled ? TinctureHold.SwitchedOff : TinctureHold.None);
+		// A881 (concept 03, "Warum keine kam"): what holds the tincture, once per pull and reason; the bags are read only
+		// while that reason is not written yet (an inventory count per grade, every frame of a burst otherwise).
+		if (DataCenter.InCombat && TinctureBagsUnwritten())
+		{
+			var held = false;
+			var heldEnabled = false;
+			foreach (var medicine in Medicines)
+			{
+				if (medicine.Type == MedicineType && medicine.HasIt)
+				{
+					held = true;
+					heldEnabled |= medicine.IsEnabled;
+				}
+			}
+
+			TraceTinctureHold(!held ? TinctureHold.NoneHeld : !heldEnabled ? TinctureHold.SwitchedOff : TinctureHold.None);
+		}
+
 		return false;
 	}
 

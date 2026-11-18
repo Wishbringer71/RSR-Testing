@@ -21,8 +21,13 @@ internal static class MoveForecast
 	private static uint _castAction;
 	private static float _castElapsed;
 
-	// The hit whose dodge was measured last: a lead is taken once per hit.
+	private static DateTime _castStart = DateTime.MinValue;
+
+	// The hit whose dodge was measured last: a lead is taken once per hit, and only once the hit stops reaching the player
+	// before it lands - a step taken for another reason teaches nothing (code review A883).
 	private static DateTime _sampledLanding = DateTime.MinValue;
+	private static float _candidateLead = float.NaN;
+	private static DateTime _candidateLanding = DateTime.MinValue;
 	private static readonly List<float> _leads = [];
 	private static readonly List<float> _pauses = [];
 
@@ -85,14 +90,29 @@ internal static class MoveForecast
 
 		var now = DateTime.Now;
 		var moving = Player.IsMoving || DataCenter.BMRMoveRequested;
-		_mustLeaveIn = MustLeaveIn();
+		// Read only where the spell start uses it: in combat and without the lock (the reads walk BossMod's zones).
+		_mustLeaveIn = DataCenter.InCombat && DataCenter.NoPoslock ? MustLeaveIn() : float.MaxValue;
+
+		if (!float.IsNaN(_candidateLead))
+		{
+			if (now >= _candidateLanding)
+			{
+				_candidateLead = float.NaN;
+			}
+			else if (_mustLeaveIn == float.MaxValue)
+			{
+				Learn(_leads, _candidateLead, value => Lead = value, "lead before a hit");
+				_candidateLead = float.NaN;
+			}
+		}
 
 		if (moving && !_wasMoving)
 		{
 			if (_mustLeaveIn < float.MaxValue && now > _sampledLanding)
 			{
 				_sampledLanding = now.AddSeconds(_mustLeaveIn);
-				Learn(_leads, _mustLeaveIn, value => Lead = value, "lead before a hit");
+				_candidateLead = _mustLeaveIn;
+				_candidateLanding = _sampledLanding;
 			}
 
 			if (_inPhase)
@@ -115,6 +135,11 @@ internal static class MoveForecast
 		}
 
 		var casting = player.IsCasting;
+		if (casting && !_wasCasting)
+		{
+			_castStart = now;
+		}
+
 		if (casting)
 		{
 			var info = ((FFXIVClientStructs.FFXIV.Client.Game.Character.Character*)player.Address)->GetCastInfo();
@@ -124,7 +149,7 @@ internal static class MoveForecast
 		}
 		else if (_wasCasting)
 		{
-			if (!_castAnswered && moving)
+			if (!_castAnswered && moving && RotationSolver.Updaters.CancelCastUpdater.OwnCancelAt < _castStart)
 			{
 				_inPhase = true;
 				DefenseTrace.Line($"cast broken by moving: #{_castAction} {_castElapsed:F2} s in | lead {Lead:F2} s ({_leads.Count})"
