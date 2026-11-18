@@ -25963,6 +25963,23 @@ TODO-Punkt „Beastmaster: Ketten nach Lage und eine vollständige Schadensrotat
   Abschluss trotz Rudeln über 40 s.
 - *Prüfgrad:* Compile, Prüfskripte; Laufzeit nicht beobachtet.
 
+### A890 · Daedalus-Ideen für alle Jobs: die Phantom-Angriffe folgen der Burst-Uhr (18.11.2026)
+
+TODO-Punkt „Daedalus-Ideen für alle Jobs" (sein Auftrag vom 18.11.2026).
+- *Erhoben:* Die übernommenen Ideen sind die Burst-Uhr mit dem Warten ohne Einsatzverlust (A885), die Verkettung der
+  Auffüller (A886) und die Messung des Werts von Treffern ohne Potenz (A889). Verkettung gibt es nur beim Beastmaster;
+  die Messung steht allen Jobs offen (`OwnHitWatch.MeasuredPotency`), heute liest sie nur der Beastmaster.
+- *Phantom-Angriffe:* Upstreams „Save Phantom Attacks for class specific damage bonus?" hielt bei 13 von 21 Jobs nie
+  (`IsBursting` aus `CustomRotation`, immer wahr). *Gebaut:* Bei einem Job ohne eigenes `IsBursting` (über Reflexion je
+  Rotationstyp erkannt) warten die bereiten Fähigkeiten aus Upstreams Abschnitt „Burst abilities" auf den Burst der Uhr
+  (`TinctureClock`), wenn keine einen Einsatz verliert (⌊R/r⌋ = ⌊(R − w)/r⌋ je eigener Wiederverwendung). GCDs und
+  Orakelkarten behalten Upstreams Regel. Konzept 03, „Die Uhr für die Phantom-Angriffe".
+- *Bozja:* Lost Font of Power und die Banner sind Verstärker mit eigener Dauer und gingen ebenso besser in den Burst.
+  Bozja liegt außerhalb seines Profils, bis er es nennt (CLAUDE.md, „Nutzungsprofil"); erfasst, nicht bearbeitet.
+- *Eigene Buffs der Jobs* setzen die Rotationen selbst in ihren Burst – sie sind der Burst, den die Uhr liest.
+- *Vorhersage:* `predictions/2026-11-18.json`, `phantom-attacks-hold-line-form`.
+- *Prüfgrad:* Compile, Prüfskripte; Laufzeit nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

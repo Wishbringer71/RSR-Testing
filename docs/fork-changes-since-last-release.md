@@ -3,6 +3,13 @@
 What this release changes in the fight. For the whole distance from upstream, see
 [`fork-changes-in-play.md`](fork-changes-in-play.md).
 
+## Occult Crescent
+
+- **Phantom attacks wait for your burst on every job.** "Save Phantom Attacks for class specific damage bonus?" held
+  them only for jobs whose rotation states a burst window of its own; for 13 of 21 jobs it never held. For those jobs
+  the ready phantom abilities now wait for the burst RSR reads from where your rotation asks for the tincture, when none
+  of them loses a use over the time your target has left. The trace writes "phantom attacks: held for the burst ...".
+
 ## Beastmaster
 
 - **A finisher on a pack.** From level 50, on a pack that lives long enough for your TP to reach 250, the axes now wait

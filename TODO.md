@@ -39,13 +39,6 @@ den erfolgten einbau in fork auf synergieeffekte prüfen. danach die chains prü
 werden können … synergieeffekte von kombinationen und aufbau einer richtigen umfassenden schadensrotation so wie bei
 anderen jobs. umgekehrt prüfung, ob von den neuen ideen aus daedalus auch alle anderen jobs profitieren könnten."
 
-- **Daedalus-Ideen für alle Jobs** (A885, A886). Im Kampf: Die Burst-Uhr und „Verstärker warten auf den Burst, wenn es
-  keinen Einsatz kostet“ gelten heute nur für Phantom Aim; ob andere Verstärker aller Jobs (Inhaltsaktionen, eigene
-  Buffs mit eigener Dauer) und die Verkettung von Ressourcen anderswo daraus gewinnen, ist ungeprüft. Ein Fall aus der
-  Synergieprüfung (A888): Upstreams „Save Phantom Attacks for class specific damage bonus?“ hält bei 13 von 21 Jobs nie,
-  weil ihr `IsBursting` immer wahr ist; die Burst-Uhr kennt ihren Burst. Nächster Schritt:
-  je Rolle und Job die Verstärker mit eigener Dauer erheben, Loop nach „Universell zuerst“. **N**. Konzept 03.
-
 - **Tooltips kürzer und verständlich** (sein Auftrag vom 18.11.2026: „einige tooltips sind im branch wirklich sehr lang.
   wie können sie anhand ingameverhalten besser und kürzer aber verständlich formuliert werden? im loop prüfen“). Im Kampf:
   Lange Texte erklären die Regel, aber man liest sie beim Einstellen nicht ganz; was die Einstellung im Spiel ändert,

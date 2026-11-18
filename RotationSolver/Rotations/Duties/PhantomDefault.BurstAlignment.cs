@@ -64,4 +64,84 @@ public sealed partial class PhantomDefault
 
 		return true;
 	}
+
+	// A890 (concept 03, "Die Uhr für die Phantom-Angriffe"): the job rotations whose IsBursting is CustomRotation's own,
+	// which always answers true - upstream's "Save Phantom Attacks" never held for them.
+	private static readonly Dictionary<Type, bool> _noBurstWindow = [];
+	private IBaseAction[]? _burstAttacks;
+	private bool _attackHoldWritten;
+
+	// The abilities of upstream's region "Burst abilities".
+	private IBaseAction[] BurstAttacks => _burstAttacks ??= [DrainTouchPvE, FlameScrollPvE, FumaShurikenPvE, LancePvE,
+		LightningScrollPvE, MesmerizePvE, OccultCounterPvE, OccultLibraPvE, PhantomKickPvE, PilferWeaponPvE];
+
+	private static bool JobHasNoBurstWindow()
+	{
+		if (DataCenter.CurrentRotation is not { } rotation)
+		{
+			return false;
+		}
+
+		var type = rotation.GetType();
+		if (!_noBurstWindow.TryGetValue(type, out var none))
+		{
+			none = type.GetMethod(nameof(CustomRotation.IsBursting), Type.EmptyTypes)?.DeclaringType == typeof(CustomRotation);
+			_noBurstWindow[type] = none;
+		}
+
+		return none;
+	}
+
+	/// <summary>
+	/// Under "Save Phantom Attacks", for a job without a burst window of its own: the ready phantom attacks wait for the
+	/// burst the clock expects (a gap as long as a tincture lasts), when none of them loses a use over the time the
+	/// target has left - ⌊R/r⌋ = ⌊(R − w)/r⌋ for each one's recast r.
+	/// </summary>
+	private bool PhantomAttacksWaitForBurst()
+	{
+		if (!SaveForBurstWindow || !InCombat || BurstClock.InBurstNow || !JobHasNoBurstWindow())
+		{
+			_attackHoldWritten = false;
+			return false;
+		}
+
+		var wait = CustomRotation.TinctureClock.SecondsToNext;
+		var remaining = HostileTarget?.GetCorrectedTTK() ?? float.NaN;
+		if (float.IsNaN(wait) || wait <= 0f || float.IsNaN(remaining) || wait > remaining)
+		{
+			_attackHoldWritten = false;
+			return false;
+		}
+
+		var ready = 0;
+		foreach (var attack in BurstAttacks)
+		{
+			if (!attack.CanUse(out _))
+			{
+				continue;
+			}
+
+			var recast = attack.Cooldown.RecastTimeOneChargeRaw;
+			if (recast <= 0f || MathF.Floor((remaining - wait) / recast) < MathF.Floor(remaining / recast))
+			{
+				_attackHoldWritten = false;
+				return false;
+			}
+
+			ready++;
+		}
+
+		if (ready == 0)
+		{
+			return false;
+		}
+
+		if (!_attackHoldWritten)
+		{
+			_attackHoldWritten = true;
+			DefenseTrace.Line($"phantom attacks: held for the burst in {wait:F1} s | {ready} ready | fight {remaining:F0} s left | {DataCenter.Job}");
+		}
+
+		return true;
+	}
 }

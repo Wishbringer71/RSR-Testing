@@ -337,7 +337,8 @@ public sealed partial class PhantomDefault : PhantomRotation
 		#endregion Utility/Non-scaling abilities that don't care about burst
 
 		#region Burst abilities
-		if (ShouldHoldBurst())
+		// A890 (concept 03): for a job without a burst window of its own, the burst clock holds them where no use is lost.
+		if (ShouldHoldBurst() || PhantomAttacksWaitForBurst())
 		{
 			return base.AttackAbility(nextGCD, out act);
 		}

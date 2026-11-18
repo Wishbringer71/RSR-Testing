@@ -719,6 +719,23 @@ merklich schneller zu beenden; sie kostet Geld, und sie für einen gewöhnlichen
     in kurzen Rudeln ist das richtig. Die Spur schreibt je Halten „phantom aim: held for the burst …" und, wenn der Kampf
     vor dem Burst endet, „phantom aim: hold ended with the fight …"; die Vorhersagen dazu stehen in
     `predictions/2026-11-18.json`.
+- *Die Uhr für die Phantom-Angriffe der Jobs ohne eigenes Burstfenster* (A890; TODO „Daedalus-Ideen für alle Jobs“,
+  Fund aus A888). Upstreams Option „Save Phantom Attacks for class specific damage bonus?" (ab Werk an) hält die
+  schadenden Phantom-Fähigkeiten und -GCDs, solange die Rotation des Jobs nicht im Burst ist (`IsBursting`). Bei 13 von
+  21 Jobs gibt `IsBursting` immer wahr (die Grundfassung in `CustomRotation`), bei Krieger, Dunkelritter, Samurai und
+  Tänzer fast immer – dort hielt die Option nie, obwohl ihr Text es verspricht. *Regel:* Bei einem Job ohne eigenes
+  `IsBursting` warten die bereiten Phantom-Angriffe auf den Burst, den die Uhr erwartet (Lücke so lang wie eine Tinktur
+  wirkt, wie für die Tinktur), wenn keiner von ihnen dabei einen Einsatz verliert – dieselbe Rechnung wie für Phantom
+  Aim, je Angriff mit seiner eigenen Wiederverwendung. Ein GCD-Angriff verliert bei jedem Warten über einen GCD einen
+  Einsatz und wartet deshalb nie. Jobs mit eigenem `IsBursting` behalten Upstreams Verhalten. *Im Kampf:* Beschwörer im
+  Gefecht von 4 min, Searing Light in 40 s: Ein bereiter Phantom-Angriff mit 120 s Wiederverwendung wartet und trifft
+  unter Searing Light (+5 %, Action 25801) und den Buffs der Gruppe; ist zugleich einer mit 30 s bereit, gehen beide
+  sofort, weil dieser sonst einen Einsatz verlöre. Gehalten werden die Fähigkeiten aus Upstreams Abschnitt „Burst
+  abilities" (Drain Touch, die Rollen, Fuma Shuriken, Lance, Mesmerize, Occult Counter, Occult Libra, Phantom Kick,
+  Pilfer Weapon); die GCDs und die Orakelkarten behalten Upstreams Regel. *Gegenthese:* Upstream hat die Jobs ohne Fenster bewusst ausgelassen. Nicht belegt: Die
+  Grundfassung gibt einfach wahr zurück, und der Text der Option nennt keine Ausnahme. *Ausgeliefert, und nichts ändert
+  sich?* Ohne gemessenen Takt, ohne Zeit bis zum Fall oder wenn ein bereiter Angriff verlöre; die Spur schreibt „phantom
+  attacks: held for the burst …".
 - *Begriffe* (sein Hinweis, 03.11.2026): Im Spiel heißen Heiltränke „Potion" (Kategorie „Medicine"), die Schadensbuffs
   „Gemdraught" oder „Tincture"; „pot" im englischen Spielerjargon meint die Tinktur. Upstreams „Use potion" meinte die
   Tinktur und las sich wie ein Heiltrank – auch deshalb entfernt.

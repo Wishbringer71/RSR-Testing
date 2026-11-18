@@ -68,5 +68,12 @@
   "kind": "each",
   "situation": "bst finisher: ",
   "match": "bst finisher: axes held for [0-9]+ enemies \\| [0-9]+ against [0-9]+ potency, combo [0-9]+ \\| TP [0-9]+ full in [0-9]+ s, pack falls in [0-9]+ s$"
+ },
+ {
+  "id": "phantom-attacks-hold-line-form",
+  "archive": "A890",
+  "kind": "each",
+  "situation": "phantom attacks: held",
+  "match": "phantom attacks: held for the burst in [0-9.,]+ s \\| [0-9]+ ready \\| fight [0-9]+ s left \\| \\w+$"
  }
 ]
