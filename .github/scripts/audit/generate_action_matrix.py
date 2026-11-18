@@ -33,12 +33,12 @@ import re
 import sys
 from datetime import date
 from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import layout  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[3]
 PROPERTIES = ROOT / "RotationSolver.SourceGenerators" / "Properties"
-BASIC = ROOT / "RotationSolver" / "Basic" / "Rotations" / "Basic"
-CENTRAL = ROOT / "RotationSolver" / "Basic" / "Rotations"
-REBORN = ROOT / "RotationSolver" / "RebornRotations"
+CENTRAL = layout.CORE
 OUTPUT = ROOT / "docs" / "action-matrix"
 
 # The owner's levels. Job codes as the effect texts print them; a class code (GLA, CNJ, ...) counts
@@ -382,7 +382,7 @@ def with_parts(path):
 def central_channel_locks():
     return channel_locks(with_parts(CENTRAL / "CustomRotation_GCD.cs"),
                          with_parts(CENTRAL / "CustomRotation_Ability.cs"),
-                         (ROOT / "RotationSolver" / "Basic" / "Configuration" / "Configs.cs").read_text(encoding="utf-8"))
+                         with_parts(layout.CONFIGS / "Configs.cs"))
 
 
 def channel_locks(gcd_code, ability_code, configs_code):
@@ -405,7 +405,7 @@ def channel_locks(gcd_code, ability_code, configs_code):
 @functools.lru_cache(maxsize=None)
 def rated_ids():
     """Action ids DefensiveValues rates - the same table the defense rules read."""
-    path = ROOT / "RotationSolver" / "Basic" / "Data" / "DefensiveValues.g.cs"
+    path = layout.DATA / "DefensiveValues.g.cs"
     text = path.read_text(encoding="utf-8")
     head = text.split("DurationByActionId", 1)[0]
     return {int(x) for x in re.findall(r"\[(\d+)\] = new\(", head)}
@@ -703,7 +703,7 @@ def analyse(job, actions, job_actions, traits, general_actions, central, central
                 start = end
         return result
 
-    base_path = BASIC / f"{class_name}.cs"
+    base_path = next((p for p in layout.base_rotation_files() if p.name == f"{class_name}.cs"), layout.ROTATIONS / f"{class_name}.cs")
     base_code = strip_code(with_parts(base_path))
     bodies = modify_bodies(base_code)
     # What the base rotation casts outside its Modify methods. A CanUse inside a Modify body is part
@@ -712,7 +712,8 @@ def analyse(job, actions, job_actions, traits, general_actions, central, central
     for start, end in reversed(modify_spans(base_code)):
         base_outside = base_outside[:start] + base_outside[end:]
 
-    files = [REBORN / f for f in ROTATION_FILES.get(job, [])]
+    shipped = {p.name: p for p in layout.shipped_rotation_files()}
+    files = [shipped.get(f.split("/")[-1], layout.ROTATIONS / f) for f in ROTATION_FILES.get(job, [])]
     rotation_code = "\n".join(strip_code(with_parts(p)) for p in files if p.exists())
 
     direct = set(CAST.findall(rotation_code)) | set(CAST.findall(base_outside))

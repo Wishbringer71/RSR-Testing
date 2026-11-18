@@ -20,13 +20,15 @@ Reports rather than fails, except for the self-test.
 import re
 import sys
 from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import layout  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[3]
 RESX = ROOT / "RotationSolver.SourceGenerators" / "Properties" / "ActionId.resx"
-ROTATION_DIRS = [
-    ROOT / "RotationSolver" / "RebornRotations",
-    ROOT / "RotationSolver" / "Basic" / "Rotations",
-]
+# The shipped rotations, PvP included, the job base classes, CustomRotation and the duties - not third-party ones (A878).
+def rotation_files():
+    return (layout.shipped_rotation_files() + layout.base_rotation_files() + sorted(layout.CORE.glob("*.cs"))
+            + sorted(layout.DUTIES.glob("*.cs")))
 
 # "...when HP falls below 75%...", "...while HP is below 50%..." - a share the game itself applies.
 SHARE_THRESHOLD = re.compile(r"\b(?:HP|health)\b[^.<]{0,40}?below\s+(\d{1,3})\s*%", re.IGNORECASE)
@@ -114,9 +116,10 @@ def main():
     )
 
     files = []
-    for directory in ROTATION_DIRS:
-        if directory.exists():
-            files.extend(sorted(directory.rglob("*.cs")))
+    files.extend(rotation_files())
+    if not any(p.name == "WHM_Reborn.cs" for p in files):
+        print("no shipped rotation found - the layout moved again (layout.py); nothing would be checked")
+        return 1
 
     hits = scan(share_actions, files)
     if hits:

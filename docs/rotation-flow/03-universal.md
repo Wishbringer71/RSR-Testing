@@ -1885,7 +1885,7 @@ bei zu früher Anfrage: zurückhalten, ablehnen, ignorieren.
 - *Die Statistik eines Gebiets ist zu Beginn dünn:* Vor der zweiten Antwort kürzt RSR nichts, und die Hüllkurve zieht
   die Abweichung ab, solange es wenige Antworten gibt. Der Regler beginnt bei null.
 
-**Betroffene:** Alle Jobs und Rotationen, auch die fremden unter `ExtraRotations`. Die öffentlichen Eigenschaften
+**Betroffene:** Alle Jobs und Rotationen, auch die fremden in den Jobordnern. Die öffentlichen Eigenschaften
 `EnoughWeaveTime` und `CanWeave` rechnen jetzt mit der gemessenen Grenze statt mit „Action ahead“. `DelayEstimate` und
 `DelayAverage` von `AnimationLockTweak` nennen den erwarteten Rest und die mittlere Verzögerung des Gebiets. Die
 Einstellungen „Max simulated animation lock delay“, „Delay smoothing factor“ und „Max cooldown adjustment“ entfallen;

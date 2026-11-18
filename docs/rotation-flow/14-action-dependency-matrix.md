@@ -118,7 +118,7 @@ Eigenschaft oder einem umschließenden `if`, das der Abgleich nicht verfolgt.
   Shroud, …), weil die Texte das vorige Feld in den Namen laufen lassen.
 - **Vom Spiel ausgeblendete Namen:** Hängt ein Combo-Vorgänger von einer Eigenschaft ab, lässt der
   Wirktext ihn leer (wie eine Potenz); dann fehlt die Combo-Kante.
-- **Nicht erfasst:** Zusatzrotationen (`ExtraRotations`), PvP. Blaumagier und Beastmaster werden
+- **Nicht erfasst:** fremde Rotationen (`layout.is_third_party`), PvP. Blaumagier und Beastmaster werden
   erzeugt, aber nicht bewertet (begrenzte Jobs, außerhalb seines Profils).
 - **Die Zahlen altern** mit jeder Rotationsänderung; die erzeugten Dateien tragen ihr Datum,
   `--check` zeigt, ob sie noch stimmen.

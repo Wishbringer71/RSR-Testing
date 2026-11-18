@@ -2,7 +2,7 @@
  "comment": "Every numeric literal on a C# line the fork added against upstream/main. 'exception': a loop found it cannot be derived from the game, recorded in AUDIT_LOG.md under 'loop'. 'open': no loop yet - the owner's rule says derive it or run the loop. Checked by check_fixed_values.py.",
  "entries": [
   {
-   "file": "RotationSolver/Basic/Actions/ActionTargetInfo.cs",
+   "file": "RotationSolver/Engine/Actions/ActionTargetInfo.Filtering.cs",
    "code": ": 2;",
    "values": [
     "2"
@@ -12,7 +12,7 @@
    "reason": "Rank of a role in a tie-break order (healer 0, tank 1, others 2) beside the 0 and 1 above it; an ordinal of a tie-break order for equal points, not a figure of the game (A340)."
   },
   {
-   "file": "RotationSolver/Basic/Actions/PhoenixDownItem.cs",
+   "file": "RotationSolver/Engine/Actions/PhoenixDownItem.cs",
    "code": "return manager->GetActionStatus(ActionType.Item, hq ? ID + 1000000 : ID, target.GameObjectId) == 0;",
    "values": [
     "1000000"
@@ -22,7 +22,7 @@
    "reason": "The client's offset for the high-quality form of an item id, used the same way by upstream's BaseItem for every HQ use and status query; a convention of the game client, stated in no sheet (A340)."
   },
   {
-   "file": "RotationSolver/Basic/Configuration/Configs.cs",
+   "file": "RotationSolver/Configuration/Configs.CombatAndTarget.cs",
    "code": "[Range(0, 10, ConfigUnitType.Seconds, 0.05f)]",
    "values": [
     "10",
@@ -33,7 +33,7 @@
    "reason": "slider bounds of ProvokeDelay, upstream's own until 7.5.7.14 removed the unread setting; the fork reads it (A338), the default is 0 to 0 s, and the bounds only limit what the player can enter"
   },
   {
-   "file": "RotationSolver/Basic/Configuration/Configs.cs",
+   "file": "RotationSolver/Configuration/Configs.CombatAndTarget.cs",
    "code": "[Range(0, 1, ConfigUnitType.Percent, 0.02f)]",
    "values": [
     "0.02"
@@ -43,7 +43,7 @@
    "reason": "Slider step of a share the owner sets, the step of upstream's heal sliders beside it (HealthTankRatio, HealthHealerRatio, HealthSelfRatio); a property of the setting, not a figure of the game (A340)."
   },
   {
-   "file": "RotationSolver/Basic/Configuration/Configs.cs",
+   "file": "RotationSolver/Configuration/Configs.CombatAndTarget.cs",
    "code": "[Range(1, 8, ConfigUnitType.None, 1)]",
    "values": [
     "8"
@@ -53,7 +53,7 @@
    "reason": "Upper slider bound of an enemy count the owner sets, the bound of upstream's AutoDefenseNumber beside it; bounds of a setting, not a figure of the game (A340)."
   },
   {
-   "file": "RotationSolver/Basic/Configuration/Configs.cs",
+   "file": "RotationSolver/Configuration/Configs.CombatAndTarget.cs",
    "code": "public float HealthProtectedRatio { get; set; } = 0.15f;",
    "values": [
     "0.15"
@@ -63,7 +63,7 @@
    "reason": "Default of the owner's setting for healing under an invulnerability; A83 found the right value not derivable from the code and left the setting as the lever. No sheet states how far a protected target may fall (A340)."
   },
   {
-   "file": "RotationSolver/Basic/Configuration/Configs.cs",
+   "file": "RotationSolver/Configuration/Configs.CombatAndTarget.cs",
    "code": "public int MitigationSustainHostileCount { get; set; } = 4;",
    "values": [
     "4"
@@ -73,7 +73,7 @@
    "reason": "Enemy count of a pull worth keeping the enemy debuffs up without a prediction, a user setting (00a426b14 made the fixed 4 configurable); no sheet says how many enemies make a pull, the reasoning of A184 (A340)."
   },
   {
-   "file": "RotationSolver/Basic/Data/AttackType.cs",
+   "file": "RotationSolver/Engine/Data/AttackType.cs",
    "code": "Shot = 4,",
    "values": [
     "4"
@@ -83,7 +83,7 @@
    "reason": "Enum ordinal mirroring row 4 of the game's AttackType sheet (shot, physical); the enum is the typed name of that row id, compared with AttackType.RowId, so the ordinal is the game's own number"
   },
   {
-   "file": "RotationSolver/Basic/Data/BossModEnums.cs",
+   "file": "RotationSolver/Engine/Data/BossModEnums.cs",
    "code": "Raidwide = 2,",
    "values": [
     "2"
@@ -93,7 +93,7 @@
    "reason": "IPC ordinal contract with BossModReborn: the value arrives as a bare int without a name, so it cannot be derived at runtime; mapping verified against BMR's source in A119"
   },
   {
-   "file": "RotationSolver/Basic/Data/BossModEnums.cs",
+   "file": "RotationSolver/Engine/Data/BossModEnums.cs",
    "code": "Shared = 3",
    "values": [
     "3"
@@ -103,7 +103,7 @@
    "reason": "IPC ordinal contract with BossModReborn: the value arrives as a bare int without a name, so it cannot be derived at runtime; mapping verified against BMR's source in A119"
   },
   {
-   "file": "RotationSolver/Basic/Helpers/ObjectHelper.cs",
+   "file": "RotationSolver/Engine/Helpers/ObjectHelper.CombatAndGeometry.cs",
    "code": "&& holder.GetEffectiveHpPercent() <= Service.Config.HealthForDyingTanks * 100f",
    "values": [
     "100"
@@ -113,7 +113,7 @@
    "reason": "Unit conversion, not a game value: GetEffectiveHpPercent answers in percent and HealthForDyingTanks is a share, as in the critical class beside it (A154, A340)."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/ObjectHelper.HealTarget.cs",
+   "file": "RotationSolver/Engine/Helpers/ObjectHelper.HealTarget.cs",
    "code": "_ttkBias[id] = Math.Clamp(smoothed, 0.25f, 4f);",
    "values": [
     "0.25",
@@ -124,7 +124,7 @@
    "reason": "Bounds of the TTK self-correction against a runaway ratio when a long forecast meets a burst; they limit how far the learned bias may move, the bias itself is measured. No figure of the game (A340)."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/ObjectHelper.cs",
+   "file": "RotationSolver/Engine/Helpers/ObjectHelper.CombatAndGeometry.cs",
    "code": "private static readonly TimeSpan ForecastFreshness = TimeSpan.FromSeconds(3);",
    "values": [
     "3"
@@ -134,7 +134,7 @@
    "reason": "Tolerance counted in rounds of upstream's 1 Hz health history (TargetUpdater.TimeToKillUpdateIntervalMs): two missed rounds before a forecast counts as stale. A cadence of the plugin's own sampling; the exact test 'filed in the latest round' would still need a bound for when sampling stops (A340)."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/ObjectHelper.HealTarget.cs",
+   "file": "RotationSolver/Engine/Helpers/ObjectHelper.HealTarget.cs",
    "code": "var smoothed = (previous * 3f + sample) / 4f;",
    "values": [
     "3",
@@ -145,7 +145,7 @@
    "reason": "Weight of the TTK self-correction's moving average (a sample counts a quarter), so one spike does not take over; it sets how fast the bias learns, not what it learns. No figure of the game (A340)."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/StatusHelper.HealTarget.cs",
+   "file": "RotationSolver/Engine/Helpers/StatusHelper.HealTarget.cs",
    "code": "private const uint DeathTriggerLeadGCDs = 2;",
    "values": [
     "2"
@@ -155,7 +155,7 @@
    "reason": "Structural count measured to the decision: the running GCD plus one cast, and every healer's healing GCD casts within one GCD (Cure 1.5 s, Cure II 2.0 s, Benefic II 1.5 s, Adloquium 2.0 s, Diagnosis 1.5 s against 2.5 s recast, xivapi 24.10.2026); scaled by the player's real GCD (A340)."
   },
   {
-   "file": "RotationSolver/Basic/Actions/HpPotionItem.cs",
+   "file": "RotationSolver/Engine/Actions/HpPotionItem.cs",
    "code": "private static readonly uint[] ContentRegenerationIds = [20309, 22306, 23163, 38944, 47102];",
    "values": [
     "20309",
@@ -169,7 +169,7 @@
    "reason": "Item identities of the content potions that regenerate (Sustaining, Eurekan, Empyrean, Orthos, Pilgrim's Potion): exactly the items whose item action is action 8667 in cooldown group 60 (xivapi, 06.11.2026); identities, not tunables, kept in one place instead of the three per-content ids before (A340, A613)."
   },
   {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_Items.cs",
+   "file": "RotationSolver/Rotations/Core/CustomRotation_Items.cs",
    "code": "if ((isMedicineCategory && i.FilterGroup == 8) || HpPotionItem.IsContentRegenerationId(i.RowId))",
    "values": [
     "8"
@@ -179,7 +179,7 @@
    "reason": "Upstream's Item sheet filter group of the ordinary HP potions, as the neighbouring lines read 6 for medicines and 9 for MP potions; a sheet category, not a figure of the game. The line changed only in its second half (A613)."
   },
   {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_OtherInfo.Universal.cs",
+   "file": "RotationSolver/Rotations/Core/CustomRotation_OtherInfo.Universal.cs",
    "code": "return (int)Math.Round(factor * 100f);",
    "values": [
     "100"
@@ -189,7 +189,7 @@
    "reason": "Unit conversion, not a game value: the factor is a share and the method answers in percent (A340)."
   },
   {
-   "file": "RotationSolver/RebornRotations/Duty/PhantomDefault.cs",
+   "file": "RotationSolver/Rotations/Duties/PhantomDefault.cs",
    "code": "if (Player?.GetEffectiveHpPercent() <= DrainTouchEmergencyOnlyThreshold * 100f)",
    "values": [
     "100"
@@ -199,7 +199,7 @@
    "reason": "Unit conversion, not a game value: the setting is a share and the method answers in percent; in his profile since 03.11.2026 - the Blue Mage named, Occult Crescent played (A518, C153)."
   },
   {
-   "file": "RotationSolver/RebornRotations/Duty/PhantomDefault.cs",
+   "file": "RotationSolver/Rotations/Duties/PhantomDefault.cs",
    "code": "if (Player?.GetEffectiveHpPercent() <= DrainTouchHealyOnlyThreshold * 100f)",
    "values": [
     "100"
@@ -209,7 +209,7 @@
    "reason": "Unit conversion, not a game value: the setting is a share and the method answers in percent; in his profile since 03.11.2026 - the Blue Mage named, Occult Crescent played (A518, C153)."
   },
   {
-   "file": "RotationSolver/RebornRotations/Healer/AST_Reborn.cs",
+   "file": "RotationSolver/Rotations/Healer/Astrologian/AST_Reborn.cs",
    "code": "[Range(1, 12, ConfigUnitType.None, 1)]",
    "values": [
     "12"
@@ -219,7 +219,7 @@
    "reason": "Enemy count that marks a dungeon pull, a player's judgement and a user setting: no sheet says how many enemies make a pull. The white mage's Regen is the reference of the healers' pre-pull rule (A184, concept 15, V1); its default and range are the ones the shield healers and the astrologian copy (A340)."
   },
   {
-   "file": "RotationSolver/RebornRotations/Healer/AST_Reborn.cs",
+   "file": "RotationSolver/Rotations/Healer/Astrologian/AST_Reborn.cs",
    "code": "[Range(1, 8, ConfigUnitType.None, 1)]",
    "values": [
     "8"
@@ -229,7 +229,7 @@
    "reason": "Enemy count that marks a dungeon pull, a player's judgement and a user setting: no sheet says how many enemies make a pull. The white mage's Regen is the reference of the healers' pre-pull rule (A184, concept 15, V1); its default and range are the ones the shield healers and the astrologian copy (A340)."
   },
   {
-   "file": "RotationSolver/RebornRotations/Healer/AST_Reborn.cs",
+   "file": "RotationSolver/Rotations/Healer/Astrologian/AST_Reborn.cs",
    "code": "public int PreAspectedBeneficMinHostiles { get; set; } = 2;",
    "values": [
     "2"
@@ -239,7 +239,7 @@
    "reason": "Enemy count that marks a dungeon pull, a player's judgement and a user setting: no sheet says how many enemies make a pull. The white mage's Regen is the reference of the healers' pre-pull rule (A184, concept 15, V1); its default and range are the ones the shield healers and the astrologian copy (A340)."
   },
   {
-   "file": "RotationSolver/RebornRotations/Healer/AST_Reborn.cs",
+   "file": "RotationSolver/Rotations/Healer/Astrologian/AST_Reborn.cs",
    "code": "public int PreAspectedBeneficMinWallToWallHostiles { get; set; } = 3;",
    "values": [
     "3"
@@ -249,7 +249,7 @@
    "reason": "Enemy count that marks a dungeon pull, a player's judgement and a user setting: no sheet says how many enemies make a pull. The white mage's Regen is the reference of the healers' pre-pull rule (A184, concept 15, V1); its default and range are the ones the shield healers and the astrologian copy (A340)."
   },
   {
-   "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
+   "file": "RotationSolver/Rotations/Healer/WhiteMage/WHM_Reborn.cs",
    "code": "[Range(0, 1200, ConfigUnitType.None, 100)]",
    "values": [
     "1200",
@@ -260,7 +260,7 @@
    "reason": "Slider of an optional cap the owner sets, off at 0 by default; his own corner values 300 and 900 lie inside it (concept 08, 'Wozu die Aussetzbedingungen da sind'). Bounds of a setting, not a figure of the game (A340)."
   },
   {
-   "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
+   "file": "RotationSolver/Rotations/Healer/WhiteMage/WHM_Reborn.cs",
    "code": "[Range(1, 12, ConfigUnitType.None, 1)]",
    "values": [
     "12"
@@ -270,7 +270,7 @@
    "reason": "Enemy count that marks a dungeon pull, a player's judgement and a user setting: no sheet says how many enemies make a pull. The white mage's Regen is the reference of the healers' pre-pull rule (A184, concept 15, V1); its default and range are the ones the shield healers and the astrologian copy (A340)."
   },
   {
-   "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
+   "file": "RotationSolver/Rotations/Healer/WhiteMage/WHM_Reborn.cs",
    "code": "[Range(1, 8, ConfigUnitType.None, 1)]",
    "values": [
     "8"
@@ -280,7 +280,7 @@
    "reason": "Enemy count that marks a dungeon pull, a player's judgement and a user setting: no sheet says how many enemies make a pull. The white mage's Regen is the reference of the healers' pre-pull rule (A184, concept 15, V1); its default and range are the ones the shield healers and the astrologian copy (A340)."
   },
   {
-   "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
+   "file": "RotationSolver/Rotations/Healer/WhiteMage/WHM_Reborn.cs",
    "code": "[Range(2, 8, ConfigUnitType.None, 1)]",
    "values": [
     "2",
@@ -291,7 +291,7 @@
    "reason": "Slider bounds of two enemy counts the owner sets - the slowed minimum of his Holy rule and the group pull for holding Holy under The Blackest Night; bounds of a setting, not a figure of the game (A340)."
   },
   {
-   "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.HitResponse.cs",
+   "file": "RotationSolver/Rotations/Healer/WhiteMage/WHM_Reborn.HitResponse.cs",
    "code": "if (slowed * 2 <= inRange)",
    "values": [
     "2"
@@ -301,7 +301,7 @@
    "reason": "The owner's rule for holding Holy while the pack is slowed: more than half of the enemies in radius slowed (concept 08, 'Die Aussetzbedingung ist ein Anteil': both parts are his statement); the setting's own text names it, and the text binds. A share of enemies is no game figure (A340)."
   },
   {
-   "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
+   "file": "RotationSolver/Rotations/Healer/WhiteMage/WHM_Reborn.cs",
    "code": "public int HoldHolyMinSlowedHostiles { get; set; } = 3;",
    "values": [
     "3"
@@ -311,7 +311,7 @@
    "reason": "The owner's minimum of slowed enemies for holding Holy (concept 08, 'Die Aussetzbedingung ist ein Anteil': his statement), a user setting; no sheet states an enemy count (A340)."
   },
   {
-   "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
+   "file": "RotationSolver/Rotations/Healer/WhiteMage/WHM_Reborn.cs",
    "code": "public int PreRegenMinHostiles { get; set; } = 2;",
    "values": [
     "2"
@@ -321,7 +321,7 @@
    "reason": "Enemy count that marks a dungeon pull, a player's judgement and a user setting: no sheet says how many enemies make a pull. The white mage's Regen is the reference of the healers' pre-pull rule (A184, concept 15, V1); its default and range are the ones the shield healers and the astrologian copy (A340)."
   },
   {
-   "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
+   "file": "RotationSolver/Rotations/Healer/WhiteMage/WHM_Reborn.cs",
    "code": "public int PreRegenMinWallToWallHostiles { get; set; } = 3;",
    "values": [
     "3"
@@ -331,7 +331,7 @@
    "reason": "Enemy count that marks a dungeon pull, a player's judgement and a user setting: no sheet says how many enemies make a pull. The white mage's Regen is the reference of the healers' pre-pull rule (A184, concept 15, V1); its default and range are the ones the shield healers and the astrologian copy (A340)."
   },
   {
-   "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
+   "file": "RotationSolver/Rotations/Healer/WhiteMage/WHM_Reborn.cs",
    "code": "public int StretchHolyMinHostiles { get; set; } = 3;",
    "values": [
     "3"
@@ -341,7 +341,7 @@
    "reason": "Enemy count that marks a group pull for holding Holy under The Blackest Night - the owner's qualification 'group pulls only' (concept 10), a player's judgement and a user setting; no sheet says how many enemies make a pull (A340)."
   },
   {
-   "file": "RotationSolver/RebornRotations/Limited Jobs/BLU_Reborn.cs",
+   "file": "RotationSolver/Rotations/Limited/BlueMage/BLU_Reborn.cs",
    "code": "if (DevourPvE.CanUse(out act, skipStatusProvideCheck: Player?.GetEffectiveHpPercent() <= DevourHealThreshold * 100f || IsTank))",
    "values": [
     "100"
@@ -351,7 +351,7 @@
    "reason": "Unit conversion, not a game value: the setting is a share and the method answers in percent; in his profile since 03.11.2026 - the Blue Mage named, Occult Crescent played (A518, C153)."
   },
   {
-   "file": "RotationSolver/RebornRotations/Limited Jobs/BLU_Reborn.cs",
+   "file": "RotationSolver/Rotations/Limited/BlueMage/BLU_Reborn.cs",
    "code": "if (MissilePvE.Target.Target != null && MissilePvE.Target.Target.GetEffectiveHpPercent() >= TheMissileKnowsWhereItIs * 100f)",
    "values": [
     "100"
@@ -361,7 +361,7 @@
    "reason": "Unit conversion, not a game value: the setting is a share and the method answers in percent; in his profile since 03.11.2026 - the Blue Mage named, Occult Crescent played (A518, C153)."
   },
   {
-   "file": "RotationSolver/RebornRotations/Magical/PCT_Reborn.cs",
+   "file": "RotationSolver/Rotations/Magical/Pictomancer/PCT_Reborn.cs",
    "code": "&& (MergedStatus.HasFlag(AutoStatus.DefenseArea) || StatusHelper.PlayerWillStatusEndGCD(2, 0, true, StatusID.TemperaCoat)) && TemperaGrassaPvE.CanUse(out act))",
    "values": [
     "2"
@@ -371,7 +371,7 @@
    "reason": "Upstream's lead for turning Tempera Coat into Tempera Grassa before it runs out; the fork changed the line only for the burst guard. Upstream's rule, derived nowhere else (A340)."
   },
   {
-   "file": "RotationSolver/RebornRotations/Ranged/MCH_Reborn.cs",
+   "file": "RotationSolver/Rotations/Ranged/Machinist/MCH_Reborn.cs",
    "code": "&& !BMRDowntimeWithin(10f) && (Heat >= 50 || HasHypercharged) && WeaponRemain < (GCDTime(1) / 2))",
    "values": [
     "10",
@@ -383,7 +383,7 @@
    "reason": "Mirror of upstream's own burst triggers in MCH_Reborn.AttackAbility (Wildfire: no downtime within 10 s, Heat 50 or Hypercharged, under half a GCD left; Barrel Stabilizer: no downtime within two GCDs, upstream 33e6acb1f), so the timed Tactician sees the weave slot those take. The figures belong to upstream's rule; deriving them here alone would split the mirror from what it mirrors (A340)."
   },
   {
-   "file": "RotationSolver/RebornRotations/Ranged/MCH_Reborn.cs",
+   "file": "RotationSolver/Rotations/Ranged/Machinist/MCH_Reborn.cs",
    "code": "|| (IsBurst && BarrelStabilizerPvE.EnoughLevel && !BMRDowntimeWithin(GCDTime(2)) && BarrelStabilizerPvE.CanUse(out _));",
    "values": [
     "2"
@@ -393,7 +393,7 @@
    "reason": "Mirror of upstream's own burst triggers in MCH_Reborn.AttackAbility (Wildfire: no downtime within 10 s, Heat 50 or Hypercharged, under half a GCD left; Barrel Stabilizer: no downtime within two GCDs, upstream 33e6acb1f), so the timed Tactician sees the weave slot those take. The figures belong to upstream's rule; deriving them here alone would split the mirror from what it mirrors (A340)."
   },
   {
-   "file": "RotationSolver/RebornRotations/Tank/DRK_Reborn.cs",
+   "file": "RotationSolver/Rotations/Tank/DarkKnight/DRK_Reborn.cs",
    "code": "[Range(1, 8, ConfigUnitType.None, 1)]",
    "values": [
     "8"
@@ -403,7 +403,7 @@
    "reason": "Upper slider bound of an enemy count the owner sets ('Hostiles that make a pull big enough for The Blackest Night'), as AutoDefenseNumber's; bounds of a setting, not a figure of the game (A340)."
   },
   {
-   "file": "RotationSolver/RebornRotations/Tank/DRK_Reborn.cs",
+   "file": "RotationSolver/Rotations/Tank/DarkKnight/DRK_Reborn.cs",
    "code": "if (stunned >= 2 && stunned * 2 >= inRange)",
    "values": [
     "2",
@@ -414,7 +414,7 @@
    "reason": "Quantor of A48: at least two stunned (an area stun, not one's own interrupt) and at least half of the enemies in reach; the half rule was recorded as an exception with A195. No figure of the game (A340)."
   },
   {
-   "file": "RotationSolver/RebornRotations/Tank/DRK_Reborn.cs",
+   "file": "RotationSolver/Rotations/Tank/DarkKnight/DRK_Reborn.cs",
    "code": "private float BlackestNightHealthRatio { get; set; } = 0.6f;",
    "values": [
     "0.6"
@@ -424,7 +424,7 @@
    "reason": "Default of the owner's emergency line for The Blackest Night (concept 10, 'Vorgabe 60 %'); a share he sets, no sheet states one (A340)."
   },
   {
-   "file": "RotationSolver/RebornRotations/Tank/DRK_Reborn.cs",
+   "file": "RotationSolver/Rotations/Tank/DarkKnight/DRK_Reborn.cs",
    "code": "private int BlackestNightMinHostiles { get; set; } = 4;",
    "values": [
     "4"
@@ -434,7 +434,7 @@
    "reason": "Default of the owner's pull size for The Blackest Night; its text decides when a pull is big enough, and the measured stream now checks it in a fight (A340). No sheet says how many enemies make a pull, the reasoning of A184."
   },
   {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_OtherInfo.Channels.cs",
+   "file": "RotationSolver/Rotations/Core/CustomRotation_OtherInfo.Channels.cs",
    "code": "return inRange > 0 && slowed >= 2 && slowed * 2 >= inRange;",
    "values": [
     "2",
@@ -465,7 +465,7 @@
    "reason": "Upstream's health stand-in for a doomed player, on a line the fork changed only for the forecast. Unreachable in practice: both callers decide Doom first (selfDoomed ||, upstream likewise); removing it would only widen the distance to upstream (A340)."
   },
   {
-   "file": "RotationSolver/Watcher.cs",
+   "file": "RotationSolver/Engine/Watcher.cs",
    "code": "if (landed || (damageEffect.param0 & 6) == 6)",
    "values": [
     "6",
@@ -476,7 +476,7 @@
    "reason": "Upstream's protocol bits of the action effect for a hit that landed at zero, moved unchanged; stated in no game sheet, as the 0x40 bit beside it (A144, A340)."
   },
   {
-   "file": "RotationSolver/RebornRotations/Magical/SMN_Reborn.cs",
+   "file": "RotationSolver/Rotations/Magical/Summoner/SMN_Reborn.cs",
    "code": "if (InPhoenix && SummonTimeEndAfterGCD(3))",
    "values": [
     "3"
@@ -486,7 +486,7 @@
    "reason": "Upstream's lead for Rekindle before the Phoenix phase ends - the longer of its two branches, which the fork merged into one (d67ae59af); upstream's timing, derived nowhere else (A340)."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/ActionEffectReading.cs",
+   "file": "RotationSolver/Engine/Helpers/ActionEffectReading.cs",
    "code": "=> (entry.flags & 0x40) != 0 ? entry.Damage : entry.value;",
    "values": [
     "0x40"
@@ -496,7 +496,7 @@
    "reason": "Protocol bit of the action effect: marks an amount whose third byte is carried separately (cactbot LogGuide, Ability Damage). Stated in no game sheet, so it cannot be derived at runtime."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/ActionEffectReading.cs",
+   "file": "RotationSolver/Engine/Helpers/ActionEffectReading.cs",
    "code": "=> (entry.flags & 0x80) != 0;",
    "values": [
     "0x80"
@@ -506,7 +506,7 @@
    "reason": "Protocol bit of the action effect: the entry lands on the source, as the self-heal of an attack (BossModReborn ActionEffect.AtSource; Storm's Path in his log of 04.11.2026). Stated in no game sheet, as the 0x40 bit beside it, so it cannot be derived at runtime."
   },
   {
-   "file": "RotationSolver/Basic/Actions/HpPotionItem.cs",
+   "file": "RotationSolver/Engine/Actions/HpPotionItem.cs",
    "code": "_percentNq = dataNq[0] / 100f;",
    "values": [
     "100"
@@ -516,7 +516,7 @@
    "reason": "Unit conversion, not a game value: the ItemAction sheet states the potion's share of maximum HP in percent, and the HQ line beside it (upstream) divides the same way."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/StatusHelper.HealTarget.cs",
+   "file": "RotationSolver/Engine/Helpers/StatusHelper.HealTarget.cs",
    "code": "|| (PlayerHasStatus(false, StatusID.ShackledHealing) && DataCenter.NumberOfPartyMembersInRangeOf(21) != 1);",
    "values": [
     "21"
@@ -526,7 +526,7 @@
    "reason": "Upstream's radius for Shackled Healing, moved unchanged from CustomRotation_GCD so every heal path obeys one test; the status text says only 'those nearby', no sheet states the radius (A340)."
   },
   {
-   "file": "RotationSolver/RebornRotations/Magical/SMN_Reborn.cs",
+   "file": "RotationSolver/Rotations/Magical/Summoner/SMN_Reborn.cs",
    "code": "if (StatusHelper.PlayerWillStatusEndGCD(3, 0, true, StatusID.RefulgentLux))",
    "values": [
     "3"
@@ -536,7 +536,7 @@
    "reason": "Upstream's lead for Lux Solaris before Refulgent Lux runs out; the fork reordered the block around it. Upstream's rule, derived nowhere else (A340)."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/ObjectHelper.HealTarget.cs",
+   "file": "RotationSolver/Engine/Helpers/ObjectHelper.HealTarget.cs",
    "code": "&& battleChara.GetForecastEffectiveHpPercent() <= Service.Config.HealthForDyingTanks * 100f;",
    "values": [
     "100"
@@ -546,7 +546,7 @@
    "reason": "Unit conversion, not a game value: GetForecastEffectiveHpPercent answers in percent and HealthForDyingTanks is a share. The one shared definition of the critical class (A159), read by the heal target order, the defense holds and Lux Solaris."
   },
   {
-   "file": "RotationSolver/Watcher.cs",
+   "file": "RotationSolver/Engine/Watcher.cs",
    "code": "var intakeOpen = Service.Config.RecordCastingArea && partyMemberCount >= 4;",
    "values": [
     "4"
@@ -556,7 +556,7 @@
    "reason": "Upstream's intake criterion: a set that hits every counted member marks a party-wide hit only in a party of at least a light party; the smallest party composition in the game is 4 (ContentMemberType row 2: one tank, one healer, one melee, one ranged). Below it a cleave or a small circle can hit everyone. Deriving it from the current duty's composition would only raise the minimum where every member must be hit anyway"
   },
   {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_OtherInfo.cs",
+   "file": "RotationSolver/Rotations/Core/CustomRotation_OtherInfo.cs",
    "code": "damageFactor *= 0.85f;",
    "values": [
     "0.85f"
@@ -566,7 +566,7 @@
    "reason": "Troubadour, Tactician and Shield Samba: the job guide states 15% for each (read 2026-09-27); the effect texts in ActionId.resx leave the figure blank, so the generated DefensiveValues cannot carry it"
   },
   {
-   "file": "RotationSolver/Basic/DataCenter.Universal.cs",
+   "file": "RotationSolver/Engine/State/DataCenter.Universal.cs",
    "code": "internal const int LightPartySize = 4;",
    "values": [
     "4"
@@ -576,7 +576,7 @@
    "reason": "The smallest party composition in the game (ContentMemberType row 2: one tank, one healer, one melee, one ranged), read through v2.xivapi.com in A171; the area-heal statistics weigh the lowest this many members of a larger party, as the level statistics beside them always have"
   },
   {
-   "file": "RotationSolver/RebornRotations/Healer/SGE_Reborn.cs",
+   "file": "RotationSolver/Rotations/Healer/Sage/SGE_Reborn.cs",
    "code": "[Range(1, 8, ConfigUnitType.None, 1)]",
    "values": [
     "8"
@@ -586,7 +586,7 @@
    "reason": "Enemy count that marks a dungeon pull, a player's judgement and a user setting; the owner's rule for shield healers is 'the same conditions as the white mage's Regen' (concept 15, V1), so the default and range are those of PreRegenMin*/PreAspectedBeneficMin*. Not derivable from game data: no sheet says how many enemies make a pull"
   },
   {
-   "file": "RotationSolver/RebornRotations/Healer/SGE_Reborn.cs",
+   "file": "RotationSolver/Rotations/Healer/Sage/SGE_Reborn.cs",
    "code": "public int PreEukrasianDiagnosisMinHostiles { get; set; } = 2;",
    "values": [
     "2"
@@ -596,7 +596,7 @@
    "reason": "Enemy count that marks a dungeon pull, a player's judgement and a user setting; the owner's rule for shield healers is 'the same conditions as the white mage's Regen' (concept 15, V1), so the default and range are those of PreRegenMin*/PreAspectedBeneficMin*. Not derivable from game data: no sheet says how many enemies make a pull"
   },
   {
-   "file": "RotationSolver/RebornRotations/Healer/SGE_Reborn.cs",
+   "file": "RotationSolver/Rotations/Healer/Sage/SGE_Reborn.cs",
    "code": "[Range(1, 12, ConfigUnitType.None, 1)]",
    "values": [
     "12"
@@ -606,7 +606,7 @@
    "reason": "Enemy count that marks a dungeon pull, a player's judgement and a user setting; the owner's rule for shield healers is 'the same conditions as the white mage's Regen' (concept 15, V1), so the default and range are those of PreRegenMin*/PreAspectedBeneficMin*. Not derivable from game data: no sheet says how many enemies make a pull"
   },
   {
-   "file": "RotationSolver/RebornRotations/Healer/SGE_Reborn.cs",
+   "file": "RotationSolver/Rotations/Healer/Sage/SGE_Reborn.cs",
    "code": "public int PreEukrasianDiagnosisMinWallToWallHostiles { get; set; } = 3;",
    "values": [
     "3"
@@ -616,7 +616,7 @@
    "reason": "Enemy count that marks a dungeon pull, a player's judgement and a user setting; the owner's rule for shield healers is 'the same conditions as the white mage's Regen' (concept 15, V1), so the default and range are those of PreRegenMin*/PreAspectedBeneficMin*. Not derivable from game data: no sheet says how many enemies make a pull"
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/RedMageRotation.cs",
+   "file": "RotationSolver/Rotations/Magical/RedMage/RedMageRotation.cs",
    "code": "setting.BackstepDistance = 15;",
    "values": [
     "15"
@@ -626,7 +626,7 @@
    "reason": "The backstep distance is stated only in the effect text (Displacement: \"Additional Effect: 15-yalm backstep\", ActionId.resx and the job guide); no sheet carries it, so it cannot be read at runtime"
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/SamuraiRotation.cs",
+   "file": "RotationSolver/Rotations/Melee/Samurai/SamuraiRotation.cs",
    "code": "setting.BackstepDistance = 10;",
    "values": [
     "10"
@@ -636,7 +636,7 @@
    "reason": "The backstep distance is stated only in the effect text (Hissatsu: Yaten: \"Additional Effect: 10-yalm backstep\", ActionId.resx and the job guide); no sheet carries it, so it cannot be read at runtime"
   },
   {
-   "file": "RotationSolver/RebornRotations/Tank/DRK_Reborn.cs",
+   "file": "RotationSolver/Rotations/Tank/DarkKnight/DRK_Reborn.cs",
    "code": "private const byte BloodPoolLimit = 70;",
    "values": [
     "70"
@@ -646,7 +646,7 @@
    "reason": "The Balance 7.5 Dark Knight guide: enter Delirium with 70 or less Blood so the three Blood Weapon stacks it grants (+10 each, job guide) do not overcap. The gauge's maximum is not in any sheet, so the limit cannot be computed at runtime"
   },
   {
-   "file": "RotationSolver/RebornRotations/Healer/SGE_Reborn.cs",
+   "file": "RotationSolver/Rotations/Healer/Sage/SGE_Reborn.cs",
    "code": "if (InCombat && Addersgall >= 3 && AddersgallEndAfterGCD(1)",
    "values": [
     "3"
@@ -656,7 +656,7 @@
    "reason": "Addersgall's maximum of three stacks (job guide, 'Maximum Stacks: 3'; The Balance). The gauge does not expose its maximum"
   },
   {
-   "file": "RotationSolver/Basic/DataCenter.Universal.cs",
+   "file": "RotationSolver/Engine/State/DataCenter.Universal.cs",
    "code": "&& across <= (act.XAxisModifier / 2f) + member.HitboxRadius;",
    "values": [
     "2"
@@ -666,7 +666,7 @@
    "reason": "XAxisModifier is a line's full width (the player-side line check in ActionTargetInfo reads it the same way); half of it is the distance to either edge, geometry rather than a claim about the game"
   },
   {
-   "file": "RotationSolver/Basic/DataCenter.Universal.cs",
+   "file": "RotationSolver/Engine/State/DataCenter.Universal.cs",
    "code": "private const byte LineFromCasterCastType = 12;",
    "values": [
     "12"
@@ -676,7 +676,7 @@
    "reason": "A value of the Action sheet's CastType column that the CastType enum does not name; the listed type-12 actions carry a length and a width (Diffuse Laser 60 by 60, the line stacks 60 by 8, xivapi 29.09.2026). An identifier of a game data category, not a tunable"
   },
   {
-   "file": "RotationSolver/RebornRotations/Tank/DRK_Reborn.cs",
+   "file": "RotationSolver/Rotations/Tank/DarkKnight/DRK_Reborn.cs",
    "code": "if (reached >= 2 && reached * 2 >= inRange)",
    "values": [
     "2",
@@ -687,7 +687,7 @@
    "reason": "Same quantor as the stun condition beside it (A48), for the enemies a party member's Holy will reach; no figure of the game (A340)."
   },
   {
-   "file": "RotationSolver/Basic/DataCenter.AreaDamage.cs",
+   "file": "RotationSolver/Engine/State/DataCenter.AreaDamage.cs",
    "code": "if (member != null && !member.IsDead && AreaCastReaches(h, act, member) && ++reached >= 2)",
    "values": [
     "2"
@@ -697,7 +697,7 @@
    "reason": "More than one member reached is what separates an area hit from a single-target one - the definition the flag needs, not a tunable value; half of the party was rejected because a cleave on the tank and two melee is three of eight"
   },
   {
-   "file": "RotationSolver/RebornRotations/Tank/WAR_Reborn.TankProtection.cs",
+   "file": "RotationSolver/Rotations/Tank/Warrior/WAR_Reborn.TankProtection.cs",
    "code": "private bool BloodwhettingForDefense => SoloIntuition || NumberOfHostilesInRange > 2;",
    "values": [
     "2"
@@ -707,7 +707,7 @@
    "reason": "Upstream's enemy count for Bloodwhetting in the defence beside its option (RawSingleTargets, here SoloIntuition), drawn into one property so two paths cannot disagree (A226); upstream's rule (A340)."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/ActionManagerHelper.cs",
+   "file": "RotationSolver/Engine/Helpers/ActionManagerHelper.cs",
    "code": "return ActionManager.GetAdjustedRecastTime(ActionType.Action, (uint)ActionID.HeatedSplitShotPvE) / 1000f;",
    "values": [
     "1000"
@@ -717,7 +717,7 @@
    "reason": "Unit conversion, not a game value: GetAdjustedRecastTime returns milliseconds (ClientStructs; ActionCooldownInfo.RecastTimeOneChargeRaw divides the same way), the readers expect seconds."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/TraitDurations.cs",
+   "file": "RotationSolver/Engine/Helpers/TraitDurations.cs",
    "code": "float.Parse(improves.Groups[\"percent\"].Value, System.Globalization.CultureInfo.InvariantCulture) / 100f, trait.Level);",
    "values": [
     "100"
@@ -727,7 +727,7 @@
    "reason": "Percent to share: the trait text states the figure in percent and the table holds shares; the divisor is the definition of the unit, not a figure of the game"
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/ReaperRotation.cs",
+   "file": "RotationSolver/Rotations/Melee/Reaper/ReaperRotation.cs",
    "code": "setting.BackstepDistance = 15;",
    "values": [
     "15"
@@ -737,7 +737,7 @@
    "reason": "The dash distance is stated only in the effect text (Hell's Ingress: \"Quickly dash 15 yalms forward\"; Hell's Egress: \"Quickly dash 15 yalms backwards\", ActionId.resx); no sheet carries it, so it cannot be read at runtime"
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/BardRotation.cs",
+   "file": "RotationSolver/Rotations/Ranged/Bard/BardRotation.cs",
    "code": "setting.BackstepDistance = 10;",
    "values": [
     "10"
@@ -757,7 +757,7 @@
    "reason": "The setting's own condition, \"Auto provoke when there is another tank in party\": another tank besides the player means two; a count named by the option text, not a tunable. Moved unchanged from StateUpdater.ShouldAddProvoke (upstream line); counts the party since upstream 7.5.7.5 (A331)"
   },
   {
-   "file": "RotationSolver/Basic/Helpers/ObjectHelper.Jobs.cs",
+   "file": "RotationSolver/Engine/Helpers/ObjectHelper.Jobs.cs",
    "code": "private const BattleNpcSubKind HelperSubKind = (BattleNpcSubKind)11;",
    "values": [
     "11"
@@ -767,7 +767,7 @@
    "reason": "The game's battle NPC sub kind of a boss's invisible helpers, read from the object as a byte and compared; FFXIVClientStructs names no member for it, BossModReborn calls it Helper (ActorType 0x20B). A kind of the game, not a tunable"
   },
   {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_OtherInfo.Universal.cs",
+   "file": "RotationSolver/Rotations/Core/CustomRotation_OtherInfo.Universal.cs",
    "code": "return percent / 100f;",
    "values": [
     "100"
@@ -777,7 +777,7 @@
    "reason": "Percent to share: the effect text states the slow in percent and the reader needs a share; the divisor is the definition of the unit, as for the trait texts (A290, A340)."
   },
   {
-   "file": "RotationSolver/Basic/DataCenter.AreaDamage.cs",
+   "file": "RotationSolver/Engine/State/DataCenter.AreaDamage.cs",
    "code": "public const int HP_RECORD_TIME = 240;",
    "values": [
     "240"
@@ -787,7 +787,7 @@
    "reason": "Length of the party's own health history in samples of the 1 Hz sampling (four minutes), upstream's former figure, fork-owned since upstream 3c6ce9ee2 removed the history. The readers measure from a member's first sample below full, so the bound only reaches a member never at full for four minutes; the TTK self-correction (ScoreTtkForecast, GetCorrectedTTK) measures what an old trend costs and divides it out. A memory length of the plugin, no figure of the game (A341)."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/ObjectHelper.cs",
+   "file": "RotationSolver/Engine/Helpers/ObjectHelper.CombatAndGeometry.cs",
    "code": "private static readonly TimeSpan CheckSpan = TimeSpan.FromSeconds(2.5);",
    "values": [
     "2.5"
@@ -797,7 +797,7 @@
    "reason": "Least span of a member's fall before a trend is read: three samples of the 1 Hz history, the same minimum upstream's TimeToKillTracker sets (MinSamples = 3); with two, one hit would be read as a rate. Upstream's former figure, fork-owned since 3c6ce9ee2. A statistical guard of the plugin's own estimate, no figure of the game; a GCD would match it only by chance (A341)."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/ObjectHelper.Universal.cs",
+   "file": "RotationSolver/Engine/Helpers/ObjectHelper.Universal.cs",
    "code": "const int movingAverageWindow = 5;",
    "values": [
     "5"
@@ -807,7 +807,7 @@
    "reason": "Smoothing of the trend's end point over the latest five samples, so one hit moves it by a fifth. Upstream's former figure, fork-owned since 3c6ce9ee2. The lag it brings on a steady fall makes the forecast late, which the TTK self-correction measures and divides out. No figure of the game (A341)."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/ActionTooltip.cs",
+   "file": "RotationSolver/Engine/Helpers/ActionTooltip.cs",
    "code": "var rest = TryStated(actionId, StatedFalloff, out var falloff) ? first * (1f - (falloff / 100f)) : first;",
    "values": [
     "100"
@@ -817,7 +817,7 @@
    "reason": "Unit conversion, not a game value: the tooltip states the falloff in percent (\"30% less for all remaining enemies\"), the potency of a further enemy is the share left (A342, A344)."
   },
   {
-   "file": "RotationSolver/RebornRotations/Melee/VPR_Reborn.cs",
+   "file": "RotationSolver/Rotations/Melee/Viper/VPR_Reborn.cs",
    "code": "if (InCombat && NoAbilityReady && IsBurst && SerpentsIrePvE.EnoughLevel && SerpentsIrePvE.Cooldown.WillHaveOneCharge(5)",
    "values": [
     "5"
@@ -827,7 +827,7 @@
    "reason": "The setting's own condition, \"Experimental Pot Usage(used up to 5 seconds before SerpentsIre comes off cooldown)\": a span named by the option text, not a tunable; it replaces the elapsed 115 s of the 120 s recast, which left out the time Serpent's Ire stands ready (A343)."
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/MachinistRotation.cs",
+   "file": "RotationSolver/Rotations/Ranged/Machinist/MachinistRotation.cs",
    "code": "AoeCount = 2,",
    "values": [
     "2"
@@ -837,7 +837,7 @@
    "reason": "Default AoE count of Flamethrower: The Balance, Machinist Basic Guide, \"If gauge is not usable, beats filler on 2+\". Recomputed (machinist_balance_model.py, job guide 7.5): 120 potency per second for 10 s on every enemy in the cone, 600 per 2.5-s GCD on two, against the Heated combo's 320 on one, 596 with the Heat and Battery it brings - even with the gauge, far ahead without; one enemy loses either way. The runtime tooltip cannot carry the comparison: the English text does not state the per-second rate, only the German one (\"im Sekundentakt\"). The count stays his setting's lower bound (A380)."
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/NinjaRotation.cs",
+   "file": "RotationSolver/Rotations/Melee/Ninja/NinjaRotation.cs",
    "code": "AoeCount = 2,",
    "values": [
     "2"
@@ -847,7 +847,7 @@
    "reason": "Default AoE count of Hellfrog Medium and Deathfrog Medium, the least that lets the potency comparison speak: on two enemies 250 (400) each out-damages Bhavacakra's 400 (Zesho Meppo's 700) at level 100 (job guide, 7.5). The decision above it is HellfrogOutdamagesBhavacakra, read from the tooltips; the count stays his setting's lower bound (A345)."
   },
   {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_OtherInfo.HitResponse.cs",
+   "file": "RotationSolver/Rotations/Core/CustomRotation_OtherInfo.HitResponse.cs",
    "code": "private const float PullDashLead = 0.5f;",
    "values": [
     "0.5"
@@ -857,7 +857,7 @@
    "reason": "How long before the pull a melee presses its target dash: The Balance's Viper opener (Slither at -0.5 s, patch 7.55) and upstream's Thunderclap (<= 0.5 s, 33e6acb1f). No game sheet gives the time between pressing a dash and the character moving, nor the run speed, so nothing to derive it from; the model (melee_gapcloser_model.py) shows the first weaponskill lands 0-0.4 s after the pull across 0.5-0.9 s of animation lock (A347)."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/ActionHelper.cs",
+   "file": "RotationSolver/Engine/Helpers/ActionHelper.cs",
    "code": "private const float CastUnitsPerSecond = 10f;",
    "values": [
     "10"
@@ -867,7 +867,7 @@
    "reason": "Unit conversion, not a game value: the Action sheet states cast times in tenths of a second (Cast100ms). The series window of the area measurement is the action's own cast time in seconds (A349), that of the tankbuster measurement the announcing cast's, a GCD at least (A454)."
   },
   {
-   "file": "RotationSolver/Basic/Configuration/Configs.cs",
+   "file": "RotationSolver/Configuration/Configs.CombatAndTarget.cs",
    "code": "[Range(0, 1, ConfigUnitType.Percent, 0.01f)]",
    "values": [
     "0.01"
@@ -877,7 +877,7 @@
    "reason": "Slider step of a health share the owner sets (\"Health the big mitigation waits for\"); a step of the settings window, not a figure of the game (A359)."
   },
   {
-   "file": "RotationSolver/Basic/Configuration/Configs.cs",
+   "file": "RotationSolver/Configuration/Configs.CombatAndTarget.cs",
    "code": "public float HoldBigTankMitigationBelow { get; set; } = 0.3f;",
    "values": [
     "0.3"
@@ -887,7 +887,7 @@
    "reason": "Default of the line a tank's big mitigation waits for in a pull - the owner's posture, which the setting leaves to him. No sheet states it; chosen in tank_pull_defense_model.py, where 30 % had the fewest deaths or least time under 30 % against 15, 45 and 65 % (A359)."
   },
   {
-   "file": "RotationSolver/Basic/Configuration/Configs.cs",
+   "file": "RotationSolver/Configuration/Configs.cs",
    "code": "var oldDefault = new Vector2(0.5f, 1f);",
    "values": [
     "0.5"
@@ -897,7 +897,7 @@
    "reason": "Not a rule value: it recognises upstream's former default of the interrupt and provoke delays in a stored configuration, to cut exactly that to none on load"
   },
   {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_DefenseHold.cs",
+   "file": "RotationSolver/Rotations/Core/CustomRotation_DefenseHold.cs",
    "code": "&& (measured || !RampartPvE.Cooldown.IsCoolingDown || RampartPvE.Cooldown.ElapsedAfter(60))",
    "values": [
     "60"
@@ -907,7 +907,7 @@
    "reason": "Upstream's spacing of the big mitigation after Rampart, moved unchanged from the four tank rotations into one place for the path with the pull hold off or the defence opened by something else than the pull. With the hold on in a pull the measured fall replaces it - the model found the spacing only cost there (A359)."
   },
   {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_DefenseHold.cs",
+   "file": "RotationSolver/Rotations/Core/CustomRotation_DefenseHold.cs",
    "code": "if ((!big.EnoughLevel || measured || (current.Cooldown.IsCoolingDown && current.Cooldown.ElapsedAfter(30)))",
    "values": [
     "30"
@@ -917,7 +917,7 @@
    "reason": "Upstream's spacing of Rampart after the big mitigation, moved unchanged from the four tank rotations for the same paths as the 60 s beside it; replaced by the measured fall under the pull hold (A359)."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/TankbusterForecast.cs",
+   "file": "RotationSolver/Engine/Helpers/TankbusterForecast.cs",
    "code": "return since > 2f * gap ? float.PositiveInfinity : Math.Max(0f, gap - since);",
    "values": [
     "2"
@@ -927,7 +927,7 @@
    "reason": "Two of the shortest gaps between tankbusters on the player in this fight without one: the fight has moved on (a phase without them), and nothing is kept for one any more. One gap overdue still counts as one due now - a late tankbuster is the likelier reading. The game states no spacing of an encounter's tankbusters; the count of gaps is the rule's own threshold, its cost named in A361: after a phase change the auto-attacks meet held mitigation for at most one more gap."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/ActionHelper.Timing.cs",
+   "file": "RotationSolver/Engine/Helpers/ActionHelper.Timing.cs",
    "code": "private const float FixedAbilityClipWindow = 0.5f;",
    "values": [
     "0.5"
@@ -937,7 +937,7 @@
    "reason": "Upstream's anti-clipping window before the GCD, unchanged in value, named once for its three readers (the ability path, the two checks in RSCommands) and the cast-time check of A486. The window answers how long an ability's animation lock may run into the GCD, which the client gives for the ability only once it is pressed (A388). Since A753 only before the first measurement in a zone; then the window is the lock plus the measured rest (concept 03, \"Weben, Animationssperre und Latenz\")."
   },
   {
-   "file": "RotationSolver/Watcher.cs",
+   "file": "RotationSolver/Engine/Watcher.cs",
    "code": "private const uint HotTickCategory = 0x604;",
    "values": [
     "0x604"
@@ -947,7 +947,7 @@
    "reason": "ActorControl category of the aggregated heal-over-time tick on a target, beside upstream's 0x605 for damage over time; a protocol value stated in no game sheet (DeathRecap reads it so, A429, A432)."
   },
   {
-   "file": "RotationSolver/RebornRotations/Magical/PCT_Reborn.cs",
+   "file": "RotationSolver/Rotations/Magical/Pictomancer/PCT_Reborn.cs",
    "code": "if (CombatTime < 5 && !HasStarryMuse)",
    "values": [
     "5"
@@ -957,7 +957,7 @@
    "reason": "Upstream's opener window, unchanged; the fork line adds only the Starry Muse guard. It is the same 5 s as upstream's Starry Muse hold from level 92 (adjustCombatTimeForOpener in AttackAbility), so both end the opener together; deriving this one alone (two GCDs) would part it from the hold, which stays upstream's. With the guard the window ends at the earlier of 5 s and Starry Muse (A462)."
   },
   {
-   "file": "RotationSolver/RebornRotations/Tank/GNB_Reborn.cs",
+   "file": "RotationSolver/Rotations/Tank/Gunbreaker/GNB_Reborn.cs",
    "code": "var gnashingFangInPack = !FatedCirclePvE.EnoughLevel || pack < 3;",
    "values": [
     "3"
@@ -967,7 +967,7 @@
    "reason": "Reference rule: The Balance, Gunbreaker Basic Guide (31.10.2026), 'Stop using Gnashing Fang on 3 or more targets'. The break-even of a three-GCD single-target chain against Fated Circle on the pack, computed there; the tooltips give potencies per hit, not the chain against the filler it replaces (A471)."
   },
   {
-   "file": "RotationSolver/RebornRotations/Tank/GNB_Reborn.cs",
+   "file": "RotationSolver/Rotations/Tank/Gunbreaker/GNB_Reborn.cs",
    "code": "if (gnashingFangInPack && AmmoComboStep == 0 && GnashingFangPvE.CanUse(out act, skipComboCheck: true, usedUp: HasNoMercy || GnashingFangPvE.Cooldown.WillHaveXChargesGCD(2, 1)))",
    "values": [
     "2"
@@ -977,7 +977,7 @@
    "reason": "Upstream's charge check (both charges within a GCD), unchanged; the fork only added the pack guard in front (A471)."
   },
   {
-   "file": "RotationSolver/RebornRotations/Tank/GNB_Reborn.Universal.cs",
+   "file": "RotationSolver/Rotations/Tank/Gunbreaker/GNB_Reborn.Universal.cs",
    "code": "if (pack < 3)",
    "values": [
     "3"
@@ -987,7 +987,7 @@
    "reason": "Reference rule: The Balance, Gunbreaker Basic Guide (31.10.2026), Sonic Break at 3 targets only for half its duration, below that always (A471)."
   },
   {
-   "file": "RotationSolver/RebornRotations/Tank/GNB_Reborn.Universal.cs",
+   "file": "RotationSolver/Rotations/Tank/Gunbreaker/GNB_Reborn.Universal.cs",
    "code": "if (pack > 5)",
    "values": [
     "5"
@@ -997,7 +997,7 @@
    "reason": "Reference rule: The Balance, Gunbreaker Basic Guide (31.10.2026), 'Use Sonic Break on up to 5 targets' (A471)."
   },
   {
-   "file": "RotationSolver/RebornRotations/Tank/GNB_Reborn.Universal.cs",
+   "file": "RotationSolver/Rotations/Tank/Gunbreaker/GNB_Reborn.Universal.cs",
    "code": "return ttk >= (pack == 3 ? duration / 2f : duration);",
    "values": [
     "3",
@@ -1008,7 +1008,7 @@
    "reason": "Reference rule: The Balance, Gunbreaker Basic Guide (31.10.2026): at 3 targets Sonic Break needs half its stated duration, at 4 and 5 the whole; the duration itself is read from the tooltip (A471)."
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/BeastmasterFamiliars.cs",
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BeastmasterFamiliars.cs",
    "code": "private const byte CapturableBase = 5;",
    "values": [
     "5"
@@ -1018,7 +1018,7 @@
    "reason": "A value in the game's own BNpcBase column 10, compared, not tuned: the base rows a beastmaster can capture carry 5 (WrathCombo reads it so; four of the ten rows with the squirrel's model carry it). No source names the column; the game's GetActionStatus for Capture on the target is asked as well, so a wrong reading costs no weaponskill."
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/BeastmasterCrucibleItems.cs",
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BeastmasterCrucibleItems.cs",
    "code": "share = percent / 100f;",
    "values": [
     "100"
@@ -1028,7 +1028,7 @@
    "reason": "Unit conversion, not a game value: the item's effect text states a percentage, the rule compares shares of HP."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/CrucibleBoard.cs",
+   "file": "RotationSolver/Engine/Helpers/CrucibleBoard.cs",
    "code": "internal const uint HornScreenMode = 2;",
    "values": [
     "2"
@@ -1038,7 +1038,7 @@
    "reason": "The game's mode of AgentXBMPetParty, not a tuned value: 0 pet list, 1 party preview, 2 party preview from content - the Crucible's horn screen before a battle (FFXIVClientStructs aad0de66; Daedalus 74659a6 sets the horns in that mode). Read by the K11 probe and the horn screen setter (K6, A562)."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/CrucibleBoard.cs",
+   "file": "RotationSolver/Engine/Helpers/CrucibleBoard.cs",
    "code": "internal const uint BattleEntryKind = 3;",
    "values": [
     "3"
@@ -1048,7 +1048,7 @@
    "reason": "The game's kind of an AgentXBMStageDetailList entry, not a tuned value: 0 stage, 1 stage with battles, 2 stage without battles, 3 battle detail (FFXIVClientStructs aad0de66, AgentXBMStageDetailList.StageDetailEntry, 05.11.2026). Read by the K11 probe and the horn screen setter (K6, A562)."
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/BeastmasterFamiliars.cs",
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BeastmasterFamiliars.cs",
    "code": "private const int PackAttackers = 2;",
    "values": [
     "2"
@@ -1058,7 +1058,7 @@
    "reason": "The smallest pack: C1 counts a Release that stops enemies as protection only when more than one enemy attacks you. One attacker alone is the elite or boss case (his three deaths of 02.11.2026, A489), where an immunity the game does not show would leave the danger without protection; bst_control_model.py shows that from two stoppable attackers on, a 15 s stun keeps more off than a 20 % mitigation over any danger of 10 to 60 s. A count of attackers, not a tuned threshold."
   },
   {
-   "file": "RotationSolver/Basic/Configuration/OtherConfiguration.Revision.cs",
+   "file": "RotationSolver/Configuration/OtherConfiguration.Revision.cs",
    "code": "private const int RevisionFormat = 2;",
    "values": [
     "2"
@@ -1068,7 +1068,7 @@
    "reason": "The revision file's form, a version number of the file, not a game quantity: raised to 2 with stage 3 so that an older RSR, which would drop the refuted layer when writing, leaves the file as it is and reads the old file (concept 13, rule 7)."
   },
   {
-   "file": "RotationSolver/Basic/Configuration/OtherConfiguration.Revision.cs",
+   "file": "RotationSolver/Configuration/OtherConfiguration.Revision.cs",
    "code": "private const float RollHigh = 1.05f;",
    "values": [
     "1.05"
@@ -1078,7 +1078,7 @@
    "reason": "The damage roll: each hit taken varies by +/-5 % before mitigations (Allagan Studies, 'How to be a Math Wizard', community source; concept 13, rule 5). The game shows no figure for it; learned_revision_model.py and learned_oldfile_model.py rate the lowering rules with this roll."
   },
   {
-   "file": "RotationSolver/Basic/Configuration/OtherConfiguration.Revision.cs",
+   "file": "RotationSolver/Configuration/OtherConfiguration.Revision.cs",
    "code": "private const float RollLow = 0.95f;",
    "values": [
     "0.95"
@@ -1088,7 +1088,7 @@
    "reason": "The lower end of the same damage roll (+/-5 %, concept 13, rule 5)."
   },
   {
-   "file": "RotationSolver/Basic/Configuration/OtherConfiguration.Revision.cs",
+   "file": "RotationSolver/Configuration/OtherConfiguration.Revision.cs",
    "code": "private const int SpreadReadings = 2;",
    "values": [
     "2"
@@ -1098,7 +1098,7 @@
    "reason": "Definitional: the fewest clean readings that can show a spread (concept 13, rule 5, A446; SPREAD_READINGS in learned_revision_model.py)."
   },
   {
-   "file": "RotationSolver/Basic/Configuration/OtherConfiguration.Revision.cs",
+   "file": "RotationSolver/Configuration/OtherConfiguration.Revision.cs",
    "code": "private const int SteadyReadings = 3;",
    "values": [
     "3"
@@ -1108,7 +1108,7 @@
    "reason": "The steady drop for old-file layers (concept 13, A482): the fewest clean readings at which no unchanged case of learned_oldfile_model.py falls more than half a point behind never lowering; two lose up to 1.2 points."
   },
   {
-   "file": "RotationSolver/Basic/Configuration/LearnedLocks.cs",
+   "file": "RotationSolver/Configuration/LearnedLocks.cs",
    "code": "internal const int RefuteLandings = 2;",
    "values": [
     "2"
@@ -1118,7 +1118,7 @@
    "reason": "Concept 13, rule 6 (decided with the revision, A451): a learned action laying a status that damages every action is refuted only after at least two landings on its target without it - one may be a case the effect does not show, two is the least that repeats. The game states no such count; a wrongly refuted action is the death of A427, so the count only rises with the sightings it had before (Before)."
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/AstrologianRotation.cs",
+   "file": "RotationSolver/Rotations/Healer/Astrologian/AstrologianRotation.cs",
    "code": "setting.BackstepDistance = 15;",
    "values": [
     "15"
@@ -1128,7 +1128,7 @@
    "reason": "The dash distance is stated only in the effect text (Epicycle, PvP: \"Quickly dash 15 yalms forward\", ActionTransient via xivapi v2, 03.11.2026); no sheet carries it as a number, so it cannot be read at runtime"
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/DancerRotation.cs",
+   "file": "RotationSolver/Rotations/Ranged/Dancer/DancerRotation.cs",
    "code": "setting.BackstepDistance = 10;",
    "values": [
     "10"
@@ -1138,7 +1138,7 @@
    "reason": "The dash distance is stated only in the effect text (En Avant: \"Quickly dash 10 yalms forward\", ActionTransient via xivapi v2, 03.11.2026); no sheet carries it as a number, so it cannot be read at runtime"
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/DragoonRotation.cs",
+   "file": "RotationSolver/Rotations/Melee/Dragoon/DragoonRotation.cs",
    "code": "setting.BackstepDistance = 15;",
    "values": [
     "15"
@@ -1148,7 +1148,7 @@
    "reason": "The dash distance is stated only in the effect text (Elusive Jump: \"Executes a jump to a location 15 yalms behind you\", ActionTransient via xivapi v2, 03.11.2026); no sheet carries it as a number, so it cannot be read at runtime"
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/PictomancerRotation.cs",
+   "file": "RotationSolver/Rotations/Magical/Pictomancer/PictomancerRotation.cs",
    "code": "setting.BackstepDistance = 15;",
    "values": [
     "15"
@@ -1158,7 +1158,7 @@
    "reason": "The dash distance is stated only in the effect text (Smudge: \"Quickly dash 15 yalms forward\", ActionTransient via xivapi v2, 03.11.2026); no sheet carries it as a number, so it cannot be read at runtime"
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Duties/PhantomRotation.cs",
+   "file": "RotationSolver/Rotations/Duties/PhantomRotation.cs",
    "code": "setting.BackstepDistance = 15;",
    "values": [
     "15"
@@ -1168,7 +1168,7 @@
    "reason": "The dash distance is stated only in the effect text (Occult Featherfoot: \"Quickly dash 15 yalms forward\", ActionTransient via xivapi v2, 03.11.2026); no sheet carries it as a number, so it cannot be read at runtime"
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/BeastmasterFamiliars.cs",
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BeastmasterFamiliars.cs",
    "code": "private const int AssignBattlehornsCommand = 2420;",
    "values": [
     "2420"
@@ -1178,7 +1178,7 @@
    "reason": "A server command id, not a game value in any sheet: the client sends GameMain.ExecuteCommand(2420, horn I, horn II, horn III, 0) for every Bestiary assignment, measured in the owner's BestiaryTrace.log of 03.11.2026 (ten assignments, each shown by the slots 10 to 16 ms later)"
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/WhiteMageRotation.cs",
+   "file": "RotationSolver/Rotations/Healer/WhiteMage/WhiteMageRotation.cs",
    "code": "setting.BackstepDistance = 15;",
    "values": [
     "15"
@@ -1188,7 +1188,7 @@
    "reason": "The dash distance is stated only in the effect text (Aetherial Shift: \"Quickly dash 15 yalms forward\", ActionTransient via xivapi v2, 03.11.2026); no sheet carries it as a number, so it cannot be read at runtime"
   },
   {
-   "file": "RotationSolver/RebornRotations/Ranged/MCH_Reborn.cs",
+   "file": "RotationSolver/Rotations/Ranged/Machinist/MCH_Reborn.cs",
    "code": "if (AirAnchorCountdown && IsBurst && remainTime <= 1.5f && UseBurstMedicine(out act))",
    "values": [
     "1.5"
@@ -1208,7 +1208,7 @@
    "reason": "The search field's text buffer, as long as upstream's search fields in the same window (MainWindow_List: 50). A limit of the input box, not a figure of the game; nothing in the game could supply it."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/ActionTooltip.cs",
+   "file": "RotationSolver/Engine/Helpers/ActionTooltip.cs",
    "code": "share = sum / count / 100f;",
    "values": [
     "100"
@@ -1218,7 +1218,7 @@
    "reason": "Unit conversion, not a game value: the effect text states the share in percent and the method answers a fraction (A507)."
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/BlueMageRotation.HealTarget.cs",
+   "file": "RotationSolver/Rotations/Limited/BlueMage/BlueMageRotation.HealTarget.cs",
    "code": "return left <= HealthForDyingTanks * 100f;",
    "values": [
     "100"
@@ -1228,7 +1228,7 @@
    "reason": "Unit conversion, not a game value: GetEffectiveHpPercent answers in percent and HealthForDyingTanks is a share, as in the critical class (A154, A340, A507)."
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/BlueMageRotation.Jobs.cs",
+   "file": "RotationSolver/Rotations/Limited/BlueMage/BlueMageRotation.Jobs.cs",
    "code": "var gain = damageUp / 100f * (burst + (filler * fillers));",
    "values": [
     "100"
@@ -1238,7 +1238,7 @@
    "reason": "Unit conversion, not a game value: Moon Flute's effect text states the damage increase in percent (A507)."
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/BeastmasterCrucibleTeam.cs",
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BeastmasterCrucibleTeam.cs",
    "code": "internal const int BossSafeFamiliars = 2;",
    "values": [
     "2"
@@ -1248,7 +1248,7 @@
    "reason": "How many familiars that heal or protect go on the horns before a boss: no sheet holds it, it is a choice weighed in game terms. bst_assign_model.py over 324 fights: with one, a danger after its stint found none in 36; with two, none was covered worse than with his own horns, at -0.3 % of the boss's potency on average where none came (A522)."
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/BeastmasterFamiliars.cs",
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BeastmasterFamiliars.cs",
    "code": "private const float RecordedMarkDelay = 0.62f;",
    "values": [
     "0.62"
@@ -1280,7 +1280,7 @@
    "reason": "Upstream's counts that call for an area heal - more than one member under Doom, more than two under the single threshold - kept as they were; A544 only counts each member with the deficit healing can close on him."
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/BeastmasterCrucibleCamp.cs",
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BeastmasterCrucibleCamp.cs",
    "code": "internal const uint CampsiteMode = 4;",
    "values": [
     "4"
@@ -1290,7 +1290,7 @@
    "reason": "The game's mode of AgentXBMPetParty in which the Crucible's campsite window stands (Daedalus 74659a6 rests in it, in the field 25. and 27.10.2026); FFXIVClientStructs aad0de6 names it differently, so every click is checked against the selection. Not a tuned value."
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/BeastmasterCrucibleCamp.cs",
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BeastmasterCrucibleCamp.cs",
    "code": "private const float RestAloneShare = 0.9f;",
    "values": [
     "0.9"
@@ -1300,7 +1300,7 @@
    "reason": "What a campsite rest restores alone, of the player's maximum HP (wiki: 90 % alone, 45 % with one, 30 % with two; 45 % in the game's prompt in Daedalus' field note, +30 % in his measurement of 04.11.2026). No sheet holds it (XBMContentCamp holds only the familiar count); the game states it in the rest prompt, and from its first reading RSR counts with the prompt's share instead."
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/BeastmasterCrucibleShop.cs",
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BeastmasterCrucibleShop.cs",
    "code": "private const int ShopBuyCallback = 2;",
    "values": [
     "2"
@@ -1310,7 +1310,7 @@
    "reason": "The game's command of the Crucible shop window XBMContentsItemShop to buy a row ([2, row]; Daedalus 74659a6, recorded 22.10.2026; BeastHelper be40a1e after AutoDuty's Screens.ItemShop.Buy). Not a tuned value; every click is checked at the row's sold flag."
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/BeastmasterCrucibleShop.cs",
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BeastmasterCrucibleShop.cs",
    "code": "return percent / 100f;",
    "values": [
     "100"
@@ -1320,7 +1320,7 @@
    "reason": "Percent to share: the gear's effect text states its figures in percent; the divisor is the definition of the unit, as for the item texts and the rest prompt (A551, A564)."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/ObjectHelper.Jobs.cs",
+   "file": "RotationSolver/Engine/Helpers/ObjectHelper.Jobs.cs",
    "code": "private const uint ZuPieceNameId = 14572;",
    "values": [
     "14572"
@@ -1330,7 +1330,7 @@
    "reason": "The zu piece's row in the game's BNpcName sheet (xivapi v2, 05.11.2026: \"zu piece\"), the Crucible's third-board elite; an identifier of the game, like the NameIds of upstream's Ymir and Siren rules, not a tuned value. Daedalus 74659a6 uses the same row."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/ObjectHelper.cs",
+   "file": "RotationSolver/Engine/Helpers/ObjectHelper.cs",
    "code": "private static readonly uint[] ZuEggNameIds = [14575, 14576];",
    "values": [
     "14575",
@@ -1341,7 +1341,7 @@
    "reason": "The zu eggs' rows in the game's BNpcName sheet (xivapi v2, 05.11.2026: both \"zu egg\"); identifiers of the game, not tuned values. Daedalus 74659a6 never attacks the same two rows."
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/BeastmasterCrucibleTreasure.cs",
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BeastmasterCrucibleTreasure.cs",
    "code": "private const int TreasureFirstOffer = 6;",
    "values": [
     "6"
@@ -1351,7 +1351,7 @@
    "reason": "The treasure window XBMContentsTreasure lists its first offer's XBMItem row at value 6 (Daedalus 74659a6, CrucibleAutoPilot.TakeTreasure and CrucibleAutoPilotRules, recorded 25.10.2026 in field use). The game's layout of the window, not a tuned value; an offer that does not read as an item is left out."
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/BeastmasterCrucibleTreasure.cs",
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BeastmasterCrucibleTreasure.cs",
    "code": "private const int TreasureOfferStride = 5;",
    "values": [
     "5"
@@ -1361,7 +1361,7 @@
    "reason": "Each further offer of XBMContentsTreasure sits five values after the one before (Daedalus 74659a6, CrucibleAutoPilot.TakeTreasure and CrucibleAutoPilotRules, recorded 25.10.2026 in field use). The game's layout of the window, not a tuned value."
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/BeastmasterCrucibleTreasure.cs",
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BeastmasterCrucibleTreasure.cs",
    "code": "private const int TreasureOffers = 4;",
    "values": [
     "4"
@@ -1371,7 +1371,7 @@
    "reason": "XBMContentsTreasure holds at most four offers (Daedalus 74659a6, CrucibleAutoPilot.TakeTreasure and CrucibleAutoPilotRules, recorded 25.10.2026 in field use); fewer are read as zero and left out. The game's layout of the window, not a tuned value."
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/BeastmasterCrucibleTreasure.cs",
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BeastmasterCrucibleTreasure.cs",
    "code": "private const int TreasureTakeCallback = 2;",
    "values": [
     "2"
@@ -1381,7 +1381,7 @@
    "reason": "The game's command of XBMContentsTreasure to take offer i ([2, i]; Daedalus 74659a6, CrucibleAutoPilot.TakeTreasure and CrucibleAutoPilotRules, recorded 25.10.2026 in field use). Not a tuned value; RSR sends it only on his click."
   },
   {
-   "file": "RotationSolver/RebornRotations/Limited Jobs/BST_Reborn.cs",
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
    "code": "private const uint StageEntriesBuilt = 2;",
    "values": [
     "2"
@@ -1391,7 +1391,7 @@
    "reason": "AgentXBMStageDetailList.AddonInitState 2 = entries built (FFXIVClientStructs aad0de6). The game's state of the field agent, not a tuned value: before it, the horn screen still shows the last battle's horn positions (his trace of 05.11.2026, four of five screens)."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/CrucibleBoard.cs",
+   "file": "RotationSolver/Engine/Helpers/CrucibleBoard.cs",
    "code": "private const int RecommendedRankStored = 2;",
    "values": [
     "2"
@@ -1401,7 +1401,7 @@
    "reason": "XBMContent's RecommendedRank is stored two above what the board screen shows: EXDSchema latest, \"Take this value subtract 2. It is how the exe is doing it.\"; board 2 stores 8 and shows \"Recommended Beast Rank: 6 (Sync from 10)\" (Daedalus 74659a6, field note). The game's own definition, not a tuned value."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/CrucibleBoard.cs",
+   "file": "RotationSolver/Engine/Helpers/CrucibleBoard.cs",
    "code": "private const int AspectShift = 4;",
    "values": [
     "4"
@@ -1411,7 +1411,7 @@
    "reason": "The effect entry's second parameter carries the hit's aspect in its upper four bits and its attack type in its lower (ECommons EffectEntry.AttackType = param1 & 0xF; the third byte of ACT's effect flags: 0x71 slashing unaspected on every beastmaster axe hit, 0x25 ice magic on Frost Breath, 0x15 fire magic on Foul Breath, his log of 05.11.2026). The game's layout of a hit, not a tuned value."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/CrucibleBoard.cs",
+   "file": "RotationSolver/Engine/Helpers/CrucibleBoard.cs",
    "code": "private const float WeaknessBonusFallback = 0.27f;",
    "values": [
     "0.27f"
@@ -1421,7 +1421,7 @@
    "reason": "The Crucible's weakness bonus as measured in his ACT logs of 04 and 05.11.2026 (first board): 18 pairs of one action on a weak and an equally armoured other enemy (same PhysResistance or MagResistance grade in XBMBattleDetail), medians of plain hits, weighted 1.271 (range 1.21-1.40, physical and magic alike). No source states the bonus. A fallback from measurement until the board measures its own (WeaknessBonus), not a game value; the measurement replaces it."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/CrucibleBoard.cs",
+   "file": "RotationSolver/Engine/Helpers/CrucibleBoard.cs",
    "code": "private static readonly (float Auto, float Trick, float Release, float Parting) FamiliarSharesFallback = (0.32f, 0.18f, 0.19f, 0.32f);",
    "values": [
     "0.32f",
@@ -1434,7 +1434,7 @@
    "reason": "The share of familiar damage per source as measured on the first board in his ACT logs of 04 and 05.11.2026: all familiars together dealt 74,200 damage, 23,449 by auto-attacks, 13,041 by Tricks, 14,205 by Tempered Releases, 23,387 by Parting Blow's Aetheric Burst. A fallback from measurement until every source has hit since RSR loaded (FamiliarDamageShares), not a game value."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/ObjectHelper.Universal.cs",
+   "file": "RotationSolver/Engine/Helpers/ObjectHelper.Universal.cs",
    "code": "private const uint DisciplesOfMagic = 31;",
    "values": [
     "31"
@@ -1444,7 +1444,7 @@
    "reason": "The ClassJobCategory row of the disciples of magic in the game's ClassJob sheet (xivapi v2, 05.11.2026: WHM, BLM, RDM, PCT, BLU carry 31); an identifier of the game, not a tuned value. Concept 03, \"Gegner mit Stacheln\": a disciple of magic attacks with magic."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/ObjectHelper.Universal.cs",
+   "file": "RotationSolver/Engine/Helpers/ObjectHelper.Universal.cs",
    "code": "private const byte RangedRole = 3;",
    "values": [
     "3"
@@ -1454,7 +1454,7 @@
    "reason": "The ClassJob sheet's Role of the ranged jobs (xivapi v2, 05.11.2026: BRD, BLM, RDM, PCT, BLU carry 3; JobRole's own ordinal 3 is the unused \"Ranged\"); an identifier of the game. Concept 03, \"Gegner mit Stacheln\": they attack from range."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/ObjectHelper.Universal.cs",
+   "file": "RotationSolver/Engine/Helpers/ObjectHelper.Universal.cs",
    "code": "private const byte HealerRole = 4;",
    "values": [
     "4"
@@ -1464,7 +1464,7 @@
    "reason": "The ClassJob sheet's Role of the healers (xivapi v2, 05.11.2026: WHM 4; JobRole.Healer is the same ordinal); an identifier of the game. Concept 03, \"Gegner mit Stacheln\": healers attack from range."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/KillOrder.cs",
+   "file": "RotationSolver/Engine/Helpers/KillOrder.cs",
    "code": "([14556, 14555], 48214), // younger and elder tablitaur piece: Endless Slashes, then the arena is hit",
    "values": [
     "14556",
@@ -1476,7 +1476,7 @@
    "reason": "BNpcName rows of the younger and elder tablitaur piece (xivapi v2, 05.11.2026) and the Action row of Endless Slashes, the survivor's 9 s cast before a hit across the arena (Action 48214 Cast100ms 90; BossModReborn 27be42256: \"Enrage - if one dies before the other too early\"); identifiers of the game. Concept 01, K12."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/KillOrder.cs",
+   "file": "RotationSolver/Engine/Helpers/KillOrder.cs",
    "code": "([14661], 49287), // lamia piece: Raise on a dead one",
    "values": [
     "14661",
@@ -1487,7 +1487,7 @@
    "reason": "BNpcName row of the lamia piece and Action row of its Raise, a 10 s cast on a dead lamia (xivapi v2, 05.11.2026; BossModReborn 27be42256); identifiers of the game. Concept 01, K12."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/KillOrder.cs",
+   "file": "RotationSolver/Engine/Helpers/KillOrder.cs",
    "code": "(14656, 14655, true), // morpho piece while an abaddon piece lives: its death confuses you",
    "values": [
     "14656",
@@ -1498,7 +1498,7 @@
    "reason": "BNpcName rows of the morpho piece and the abaddon piece (xivapi v2, 05.11.2026); identifiers of the game. Concept 01, K12: a morpho's death confuses you while an abaddon lives (BossModReborn 27be42256, GluttonyCombo 1.0.4.305)."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/KillOrder.cs",
+   "file": "RotationSolver/Engine/Helpers/KillOrder.cs",
    "code": "(14655, 14656, false), // abaddon piece while a morpho piece lives: it must eat them first",
    "values": [
     "14655",
@@ -1509,7 +1509,7 @@
    "reason": "BNpcName rows of the abaddon piece and the morpho piece (xivapi v2, 05.11.2026); identifiers of the game. Concept 01, K12: the abaddon eats the morphos and must not fall before them."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/KillOrder.cs",
+   "file": "RotationSolver/Engine/Helpers/KillOrder.cs",
    "code": "private const uint MyconidPiece = 14634;",
    "values": [
     "14634"
@@ -1519,7 +1519,7 @@
    "reason": "BNpcName row of the myconid piece (xivapi v2, 05.11.2026); an identifier of the game. Concept 01, K12."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/KillOrder.cs",
+   "file": "RotationSolver/Engine/Helpers/KillOrder.cs",
    "code": "private const uint MindflayerPiece = 14633;",
    "values": [
     "14633"
@@ -1529,7 +1529,7 @@
    "reason": "BNpcName row of the mindflayer piece (BossModReborn 27be42256 NameID 14633u, the Second Master's Board); an identifier of the game. Concept 01, K12."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/KillOrder.cs",
+   "file": "RotationSolver/Engine/Helpers/KillOrder.cs",
    "code": "private const uint WaterPuddle = 2005400;",
    "values": [
     "2005400"
@@ -1539,7 +1539,7 @@
    "reason": "The event object of a Void Water III puddle (BossModReborn 27be42256: WaterPuddle = 0x1E9998, EventObj type); an identifier of the game. Concept 01, K12."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/KillOrder.cs",
+   "file": "RotationSolver/Engine/Helpers/KillOrder.cs",
    "code": "private const uint VoidWaterIII = 49200;",
    "values": [
     "49200"
@@ -1549,7 +1549,7 @@
    "reason": "Action row of Void Water III, whose EffectRange (8 y in the sheet, xivapi v2, 05.11.2026) is read at runtime as the puddle's radius; an identifier of the game. Concept 01, K12."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/KillOrder.cs",
+   "file": "RotationSolver/Engine/Helpers/KillOrder.cs",
    "code": "private const byte SpentPuddle = 7;",
    "values": [
     "7"
@@ -1559,7 +1559,7 @@
    "reason": "The event state of a spent water puddle, as BossModReborn 27be42256 filters it (MindFlayerPiece.GetVoidzones: EventState != 7); a value of the client no sheet states, taken from that tool source. Concept 01, K12."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/KillOrder.cs",
+   "file": "RotationSolver/Engine/Helpers/KillOrder.cs",
    "code": "private const float ReserveShareOfWindow = 0.5f;",
    "values": [
     "0.5f"
@@ -1569,7 +1569,7 @@
    "reason": "Share of the survivor's window kept as the reserve (concept 03, \"Tötungsregeln\", rule 2, A588): with the reserve at the stream times the whole window nothing is left for the way to the survivor after the first falls; with half, the other half holds the way and a stream that sinks at the end; less than half adds switches without making the end safer, which depends on the reserve alone. Not a figure of the game; derived in the loop of A588."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/ObjectHelper.Universal.cs",
+   "file": "RotationSolver/Engine/Helpers/ObjectHelper.Universal.cs",
    "code": "private const uint DisciplesOfWar = 30;",
    "values": [
     "30"
@@ -1579,7 +1579,7 @@
    "reason": "The ClassJobCategory row of the disciples of war in the game's ClassJob sheet (xivapi v2, 05.11.2026: PLD, MNK, BRD, DRK, VPR and the beastmaster BST carry 30); an identifier of the game, not a tuned value. Concept 03, \"Gegner mit Stacheln\": a disciple of war attacks physically."
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/NinjaRotation.cs",
+   "file": "RotationSolver/Rotations/Melee/Ninja/NinjaRotation.cs",
    "code": "TimeToKill = 10,",
    "values": [
     "10"
@@ -1589,7 +1589,7 @@
    "reason": "Upstream's time-to-kill threshold of Trick Attack (ModifyTrickAttackPvE), carried to Kunai's Bane, which replaces it from level 92 with the same 60 s recast and the same 10 % for 15 s (Action sheet 2258, 36958). One threshold for one role; a derivation of its own would part the two levels (A606)."
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Duties/DeepDungeonRotation.cs",
+   "file": "RotationSolver/Rotations/Duties/DeepDungeonRotation.cs",
    "code": "[DutyTerritory(561, 562, 563, 564, 565, 593, 594, 595, 596, 597, 598, 599, 600, 601, 602, 603, 604, 605, 606, 607,",
    "values": [
     "561",
@@ -1618,7 +1618,7 @@
    "reason": "Territory identities of the deep dungeons (TerritoryType rows with intended use 31: Palace of the Dead, Heaven-on-High, Eureka Orthos, Pilgrim's Traverse; xivapi 06.11.2026), the form every duty rotation names its territories in (DutyTerritoryAttribute); identities, not tunables (A614)."
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Duties/DeepDungeonRotation.cs",
+   "file": "RotationSolver/Rotations/Duties/DeepDungeonRotation.cs",
    "code": "770, 771, 772, 773, 774, 775, 782, 783, 784, 785,",
    "values": [
     "770",
@@ -1637,7 +1637,7 @@
    "reason": "Territory identities of the deep dungeons (TerritoryType rows with intended use 31: Palace of the Dead, Heaven-on-High, Eureka Orthos, Pilgrim's Traverse; xivapi 06.11.2026), the form every duty rotation names its territories in (DutyTerritoryAttribute); identities, not tunables (A614)."
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Duties/DeepDungeonRotation.cs",
+   "file": "RotationSolver/Rotations/Duties/DeepDungeonRotation.cs",
    "code": "1099, 1100, 1101, 1102, 1103, 1104, 1105, 1106, 1107, 1108,",
    "values": [
     "1099",
@@ -1656,7 +1656,7 @@
    "reason": "Territory identities of the deep dungeons (TerritoryType rows with intended use 31: Palace of the Dead, Heaven-on-High, Eureka Orthos, Pilgrim's Traverse; xivapi 06.11.2026), the form every duty rotation names its territories in (DutyTerritoryAttribute); identities, not tunables (A614)."
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Duties/DeepDungeonRotation.cs",
+   "file": "RotationSolver/Rotations/Duties/DeepDungeonRotation.cs",
    "code": "1281, 1282, 1283, 1284, 1285, 1286, 1287, 1288, 1289, 1290, 1311, 1333)]",
    "values": [
     "1281",
@@ -1677,7 +1677,7 @@
    "reason": "Territory identities of the deep dungeons (TerritoryType rows with intended use 31: Palace of the Dead, Heaven-on-High, Eureka Orthos, Pilgrim's Traverse; xivapi 06.11.2026), the form every duty rotation names its territories in (DutyTerritoryAttribute); identities, not tunables (A614)."
   },
   {
-   "file": "RotationSolver/Basic/Configuration/OtherConfiguration.cs",
+   "file": "RotationSolver/Configuration/OtherConfiguration.cs",
    "code": "new SetList(nameof(HostileCastingArea), [.. ActionLists.HostileCastingArea, .. CactbotCasts.HostileCastingArea], () => HostileCastingArea, v => HostileCastingArea = v, 41147, 41763),",
    "values": [
     "41147",
@@ -1688,7 +1688,7 @@
    "reason": "Upstream's own retired ids of its area list, unchanged; the line is the fork's only because it now ships cactbot's casts beside upstream's list. Action ids the game names, not quantities to derive."
   },
   {
-   "file": "RotationSolver/Basic/Data/ActionStatus.cs",
+   "file": "RotationSolver/Engine/Data/ActionStatus.cs",
    "code": "NotInLineOfSight = 562,",
    "values": [
     "562"
@@ -1698,7 +1698,7 @@
    "reason": "Row id of the game's LogMessage sheet that ActionManager.GetActionInRangeOrLoS returns when the target is not in sight (\"Target not in line of sight.\", xivapi v2, 06.11.2026), like the enum's other members: an answer of the game, not a quantity to derive."
   },
   {
-   "file": "RotationSolver/Basic/Data/ActionStatus.cs",
+   "file": "RotationSolver/Engine/Data/ActionStatus.cs",
    "code": "OutOfRange = 566,",
    "values": [
     "566"
@@ -1708,7 +1708,7 @@
    "reason": "Row id of the game's LogMessage sheet that ActionManager.GetActionInRangeOrLoS returns when the target is out of range (\"Target is not in range.\", xivapi v2, 06.11.2026); RSR then leaves the sight to its own ray."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/DeepDungeonPomanders.cs",
+   "file": "RotationSolver/Engine/Helpers/DeepDungeonPomanders.cs",
    "code": "if (member.EntityId is not 0 and not 0xE0000000)",
    "values": [
     "0xE0000000"
@@ -1718,7 +1718,7 @@
    "reason": "The game's id for no object, which an empty slot of the deep dungeon's party record carries; a sentinel, not a quantity of the game (Dalamud ObjectTable.SearchByEntityId and BuddyList.InvalidEntityId test the same value; BossModReborn sanitizes it to 0). No sheet states it."
   },
   {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_LimitBreak.cs",
+   "file": "RotationSolver/Rotations/Core/CustomRotation_LimitBreak.cs",
    "code": "private static readonly float[] LockBounds = [4.4f, 5.8f, 8.4f];",
    "values": [
     "4.4",
@@ -1730,7 +1730,7 @@
    "reason": "Upper bound of a Limit Break's animation lock per level until RSR has measured its own: no sheet states the lock (consolegameswiki: 'noticeable animation lock', no figures). Measured in the owner's 15 ACT logs of 25.10.-05.11.2026 on 70 Limit Breaks of other players as the shortest gap from the hit to the same player's next action, reaction included, so an upper bound: level 1 Braver 4.36, Skyshard 3.65; level 2 Starstorm 5.80, Desperado 4.76, Bladedance 4.37; level 3 Vermilion Scourge 8.39, Doom of the Living 4.23. The first own use replaces it."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/CrucibleRoute.cs",
+   "file": "RotationSolver/Engine/Helpers/CrucibleRoute.cs",
    "code": "Enemy = 2,",
    "values": [
     "2"
@@ -1740,7 +1740,7 @@
    "reason": "The kind of a Crucible board space as the client stores it in XBMContentStageEvent (1 start, 2 enemy, 3 elite, 4 boss, 5 shop, 6 campsite, 7 treasure, 8 random; Daedalus c4a788f CrucibleRoute.cs, read off the client 31.10.2026 and checked against two wiki board layouts). The game's own definition, not a tuned value."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/CrucibleRoute.cs",
+   "file": "RotationSolver/Engine/Helpers/CrucibleRoute.cs",
    "code": "Elite = 3,",
    "values": [
     "3"
@@ -1750,7 +1750,7 @@
    "reason": "The kind of a Crucible board space as the client stores it in XBMContentStageEvent (1 start, 2 enemy, 3 elite, 4 boss, 5 shop, 6 campsite, 7 treasure, 8 random; Daedalus c4a788f CrucibleRoute.cs, read off the client 31.10.2026 and checked against two wiki board layouts). The game's own definition, not a tuned value."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/CrucibleRoute.cs",
+   "file": "RotationSolver/Engine/Helpers/CrucibleRoute.cs",
    "code": "Boss = 4,",
    "values": [
     "4"
@@ -1760,7 +1760,7 @@
    "reason": "The kind of a Crucible board space as the client stores it in XBMContentStageEvent (1 start, 2 enemy, 3 elite, 4 boss, 5 shop, 6 campsite, 7 treasure, 8 random; Daedalus c4a788f CrucibleRoute.cs, read off the client 31.10.2026 and checked against two wiki board layouts). The game's own definition, not a tuned value."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/CrucibleRoute.cs",
+   "file": "RotationSolver/Engine/Helpers/CrucibleRoute.cs",
    "code": "Shop = 5,",
    "values": [
     "5"
@@ -1770,7 +1770,7 @@
    "reason": "The kind of a Crucible board space as the client stores it in XBMContentStageEvent (1 start, 2 enemy, 3 elite, 4 boss, 5 shop, 6 campsite, 7 treasure, 8 random; Daedalus c4a788f CrucibleRoute.cs, read off the client 31.10.2026 and checked against two wiki board layouts). The game's own definition, not a tuned value."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/CrucibleRoute.cs",
+   "file": "RotationSolver/Engine/Helpers/CrucibleRoute.cs",
    "code": "Campsite = 6,",
    "values": [
     "6"
@@ -1780,7 +1780,7 @@
    "reason": "The kind of a Crucible board space as the client stores it in XBMContentStageEvent (1 start, 2 enemy, 3 elite, 4 boss, 5 shop, 6 campsite, 7 treasure, 8 random; Daedalus c4a788f CrucibleRoute.cs, read off the client 31.10.2026 and checked against two wiki board layouts). The game's own definition, not a tuned value."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/CrucibleRoute.cs",
+   "file": "RotationSolver/Engine/Helpers/CrucibleRoute.cs",
    "code": "Treasure = 7,",
    "values": [
     "7"
@@ -1790,7 +1790,7 @@
    "reason": "The kind of a Crucible board space as the client stores it in XBMContentStageEvent (1 start, 2 enemy, 3 elite, 4 boss, 5 shop, 6 campsite, 7 treasure, 8 random; Daedalus c4a788f CrucibleRoute.cs, read off the client 31.10.2026 and checked against two wiki board layouts). The game's own definition, not a tuned value."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/CrucibleRoute.cs",
+   "file": "RotationSolver/Engine/Helpers/CrucibleRoute.cs",
    "code": "Random = 8,",
    "values": [
     "8"
@@ -1800,7 +1800,7 @@
    "reason": "The kind of a Crucible board space as the client stores it in XBMContentStageEvent (1 start, 2 enemy, 3 elite, 4 boss, 5 shop, 6 campsite, 7 treasure, 8 random; Daedalus c4a788f CrucibleRoute.cs, read off the client 31.10.2026 and checked against two wiki board layouts). The game's own definition, not a tuned value."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/CrucibleRoute.cs",
+   "file": "RotationSolver/Engine/Helpers/CrucibleRoute.cs",
    "code": "private const int MoveColumn = 0, KindColumn = 1, IndexColumn = 2;",
    "values": [
     "2"
@@ -1810,7 +1810,7 @@
    "reason": "Raw column of XBMContentStageEvent / XBMContentStageEventMap as Daedalus c4a788f reads them (CrucibleSheetReader; the sheets carry no column names, EXDSchema has no XBM schemas). The game's layout, not a tuned value."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/CrucibleRoute.cs",
+   "file": "RotationSolver/Engine/Helpers/CrucibleRoute.cs",
    "code": "private const int CellXColumn = 0, CellYColumn = 1, CellKindColumn = 2, CellNodeColumn = 3, CellNextColumn = 4;",
    "values": [
     "2",
@@ -1822,7 +1822,7 @@
    "reason": "Raw column of XBMContentStageEvent / XBMContentStageEventMap as Daedalus c4a788f reads them (CrucibleSheetReader; the sheets carry no column names, EXDSchema has no XBM schemas). The game's layout, not a tuned value."
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/BeastmasterCrucibleCamp.cs",
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BeastmasterCrucibleCamp.cs",
    "code": "internal const uint FeedBuyMode = 3;",
    "values": [
     "3"
@@ -1832,7 +1832,7 @@
    "reason": "The game's mode of AgentXBMPetParty while a familiar is fed (FFXIVClientStructs 0adb2e5: 3 buy feed, 5 feed detail); with either seen, mode 4 is the feed result and not a campsite, and RSR clicks nothing there. The game's own definition, not a tuned value."
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/BeastmasterCrucibleCamp.cs",
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BeastmasterCrucibleCamp.cs",
    "code": "internal const uint FeedDetailMode = 5;",
    "values": [
     "5"
@@ -1842,7 +1842,7 @@
    "reason": "The game's mode of AgentXBMPetParty while a familiar is fed (FFXIVClientStructs 0adb2e5: 3 buy feed, 5 feed detail); with either seen, mode 4 is the feed result and not a campsite, and RSR clicks nothing there. The game's own definition, not a tuned value."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/OwnHitWatch.cs",
+   "file": "RotationSolver/Engine/Helpers/OwnHitWatch.cs",
    "code": "private const float AssumedWeaknessFactor = 2f;",
    "values": [
     "2"
@@ -1882,7 +1882,7 @@
    "reason": "Longest text kept on one line, in windows and tooltips, in characters of the text itself: the upper end of the readable range (Ruder, Baymard: 50-75), so a text a little over 65 does not leave a few words on a second line. A rule of legibility, not a figure of the game (A654)."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/CrucibleBoard.cs",
+   "file": "RotationSolver/Engine/Helpers/CrucibleBoard.cs",
    "code": "internal const int PercentScale = 100;",
    "values": [
     "100"
@@ -1892,7 +1892,7 @@
    "reason": "Unit of the learned loads per Crucible fight (CrucibleFightLoads.json): whole percent of the player's maximum HP, the unit the windows show; a choice of unit, not a figure of the game (A661). Also the unit of the learned campsite rest per board (CrucibleCampPools.json, A667)."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/KillOrder.cs",
+   "file": "RotationSolver/Engine/Helpers/KillOrder.cs",
    "code": "private const uint FinalHourglass = 14689;",
    "values": [
     "14689"
@@ -1902,7 +1902,7 @@
    "reason": "BNpcName row of the final hourglass the King Ahriman piece's Roulette spawns (xivapi v2, 07.11.2026; GluttonyCombo cb5bf32 HourglassNameId); an identifier of the game. Concept 21, K12."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/KillOrder.cs",
+   "file": "RotationSolver/Engine/Helpers/KillOrder.cs",
    "code": "private const uint RouletteNeedle = 19738;",
    "values": [
     "19738"
@@ -1912,7 +1912,7 @@
    "reason": "BNpcBase of the Roulette's needle, a nameless actor whose rotation is Death's heading (GluttonyCombo cb5bf32 NeedleBaseId; Tekz RoulettePiece 19738); an identifier of the game. Concept 21, K12."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/KillOrder.cs",
+   "file": "RotationSolver/Engine/Helpers/KillOrder.cs",
    "code": "private const uint NeedleDeath = 49422;",
    "values": [
     "49422"
@@ -1922,7 +1922,7 @@
    "reason": "Action row of Death, the needle's cone (xivapi v2, 07.11.2026: CastType 13, EffectRange 23, read at runtime); an identifier of the game. Concept 21, K12."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/KillOrder.cs",
+   "file": "RotationSolver/Engine/Helpers/KillOrder.cs",
    "code": "private const uint DeathDoom = 5421;",
    "values": [
     "5421"
@@ -1932,7 +1932,7 @@
    "reason": "Status row of the Doom Death lays (xivapi v2, 07.11.2026: \"Certain death when counter reaches zero\", CanDispel false); its English name is read at runtime for the gear that resists it. Concept 21, K12."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/KillOrder.cs",
+   "file": "RotationSolver/Engine/Helpers/KillOrder.cs",
    "code": "private const double BeatFallback = 1.5605;",
    "values": [
     "1.5605"
@@ -1942,7 +1942,7 @@
    "reason": "The needle's beat until RSR has seen two turns: GluttonyCombo cb5bf32, 16 recorded Death casts one beat apart. Replaced by the beat measured between two turns. No sheet holds it. Concept 21, K12."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/KillOrder.cs",
+   "file": "RotationSolver/Engine/Helpers/KillOrder.cs",
    "code": "private const double BeatBeforeTurnFallback = 0.49;",
    "values": [
     "0.49"
@@ -1952,7 +1952,7 @@
    "reason": "How long before the needle's turn its beat falls, until RSR has seen a Death and the turn after it: GluttonyCombo cb5bf32 (the needle turns 0.49 s after each beat). Replaced by the measurement. No sheet holds it. Concept 21, K12."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/KillOrder.cs",
+   "file": "RotationSolver/Engine/Helpers/KillOrder.cs",
    "code": "private const int Quarters = 4;",
    "values": [
     "4"
@@ -1962,7 +1962,7 @@
    "reason": "The four axes the needle points along (GluttonyCombo: every recorded heading): geometry of the mechanic, not a tunable value. Concept 21, K12."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/KillOrder.cs",
+   "file": "RotationSolver/Engine/Helpers/KillOrder.cs",
    "code": "if (!PressAims(start + (Beat / 2d), lag, needle, player, reach))",
    "values": [
     "2"
@@ -1972,7 +1972,7 @@
    "reason": "The middle of a span of one beat in which the answer does not change: geometry of the search, not a claim about the game. Concept 21, K12."
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/BeastmasterCrucibleRoute.cs",
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BeastmasterCrucibleRoute.cs",
    "code": "private const int EnemySpacePoints = 250;",
    "values": [
     "250"
@@ -1982,7 +1982,7 @@
    "reason": "The board evaluation's score for clearing an enemy space; no client sheet carries it (XBMScoreBonus and XBMScoreRank hold names and conditions only, XBMContent the bonuses' points, not the spaces'; ffxiv-datamining 52a72b38a, A695), the game shows it only on the evaluation screen. Source: consolegameswiki, 'Crucible of the Unbroken', read 11.11.2026 (A689)."
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/BeastmasterCrucibleRoute.cs",
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BeastmasterCrucibleRoute.cs",
    "code": "private const int EliteSpacePoints = 800;",
    "values": [
     "800"
@@ -1992,7 +1992,7 @@
    "reason": "The board evaluation's score for clearing an elite space (625 before 7.57); no client sheet carries it (XBMScoreBonus and XBMScoreRank hold names and conditions only, XBMContent the bonuses' points, not the spaces'; ffxiv-datamining 52a72b38a, A695), the game shows it only on the evaluation screen. Source: consolegameswiki, 'Crucible of the Unbroken', read 11.11.2026 (A689)."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/CrucibleBoard.cs",
+   "file": "RotationSolver/Engine/Helpers/CrucibleBoard.cs",
    "code": "internal const uint FamiliarKeyStride = 1000;",
    "values": [
     "1000"
@@ -2002,7 +2002,7 @@
    "reason": "The stride that packs a fight's XBMBattleDetail row and a familiar's Pet row into one key of the learned file CrucibleFamiliarDps; the familiars' Pet rows lie below it (47 to 97). An encoding of the store, not a figure of the game (A692)."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/CrucibleBoard.cs",
+   "file": "RotationSolver/Engine/Helpers/CrucibleBoard.cs",
    "code": "SelfPreservation = 7,",
    "values": [
     "7"
@@ -2012,7 +2012,7 @@
    "reason": "Row id of XBMScoreBonus and index into XBMContent's BonusPoints (EXDSchema latest): a reference into the game's sheets, not a figure; the points themselves are read from XBMContent (A695)."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/CrucibleBoard.cs",
+   "file": "RotationSolver/Engine/Helpers/CrucibleBoard.cs",
    "code": "Selfless = 8,",
    "values": [
     "8"
@@ -2022,7 +2022,7 @@
    "reason": "Row id of XBMScoreBonus and index into XBMContent's BonusPoints (EXDSchema latest): a reference into the game's sheets, not a figure; the points themselves are read from XBMContent (A695)."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/CrucibleBoard.cs",
+   "file": "RotationSolver/Engine/Helpers/CrucibleBoard.cs",
    "code": "EconomicEthos = 15,",
    "values": [
     "15"
@@ -2032,7 +2032,7 @@
    "reason": "Row id of XBMScoreBonus and index into XBMContent's BonusPoints (EXDSchema latest): a reference into the game's sheets, not a figure; the points themselves are read from XBMContent (A695)."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/CrucibleBoard.cs",
+   "file": "RotationSolver/Engine/Helpers/CrucibleBoard.cs",
    "code": "HabitualHoarder = 16,",
    "values": [
     "16"
@@ -2042,7 +2042,7 @@
    "reason": "Row id of XBMScoreBonus and index into XBMContent's BonusPoints (EXDSchema latest): a reference into the game's sheets, not a figure; the points themselves are read from XBMContent (A695)."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/CrucibleBoard.cs",
+   "file": "RotationSolver/Engine/Helpers/CrucibleBoard.cs",
    "code": "SquadI = 4,",
    "values": [
     "4"
@@ -2052,7 +2052,7 @@
    "reason": "Row id of XBMScoreBonus and index into XBMContent's BonusPoints (EXDSchema latest): a reference into the game's sheets, not a figure; the team sizes are read from the row's condition text, the points from XBMContent (A698)."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/CrucibleBoard.cs",
+   "file": "RotationSolver/Engine/Helpers/CrucibleBoard.cs",
    "code": "SquadII = 5,",
    "values": [
     "5"
@@ -2062,7 +2062,7 @@
    "reason": "Row id of XBMScoreBonus and index into XBMContent's BonusPoints (EXDSchema latest): a reference into the game's sheets, not a figure; the team sizes are read from the row's condition text, the points from XBMContent (A698)."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/CrucibleBoard.cs",
+   "file": "RotationSolver/Engine/Helpers/CrucibleBoard.cs",
    "code": "SquadIII = 6,",
    "values": [
     "6"
@@ -2072,7 +2072,7 @@
    "reason": "Row id of XBMScoreBonus and index into XBMContent's BonusPoints (EXDSchema latest): a reference into the game's sheets, not a figure; the team sizes are read from the row's condition text, the points from XBMContent (A698)."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/CrucibleBoard.cs",
+   "file": "RotationSolver/Engine/Helpers/CrucibleBoard.cs",
    "code": "internal const uint RankStride = 32;",
    "values": [
     "32"
@@ -2082,7 +2082,7 @@
    "reason": "The stride of a rank in the Crucible stores by rank: a key of the store it extends times this stride plus the rank. XBMPetParamGrow holds 30 ranks per familiar, so every rank fits below it; with the two slots the largest extended key (a fight's use loss) stays within a uint up to fight row 67, XBMBattleDetail ends at 45. An encoding of the store, not a figure of the game (A729)."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/CrucibleBoard.cs",
+   "file": "RotationSolver/Engine/Helpers/CrucibleBoard.cs",
    "code": "private const int SpreadRuns = 2;",
    "values": [
     "2"
@@ -2092,7 +2092,7 @@
    "reason": "The fewest runs that show a spread: a Crucible value by rank stands only on as many runs at or below the team's rank, else the heaviest over all runs holds. The same threshold as for lowering a learned layer (concept 13, rule 5, A475); a count by definition, not a tuned value (A729)."
   },
   {
-   "file": "RotationSolver/Basic/Actions/BaseItem.cs",
+   "file": "RotationSolver/Engine/Actions/BaseItem.cs",
    "code": "var sent = InventoryManager.Instance()->GetInventoryItemCount(ID, true) > 0 ? ID + 1000000 : ID;",
    "values": [
     "1000000"
@@ -2102,7 +2102,7 @@
    "reason": "The client's offset for the high-quality form of an item id, as in PhoenixDownItem (A340) and upstream's BaseItem.UseItem: CanUse asks the game about the form UseItem sends. A convention of the game client, stated in no sheet (A730)."
   },
   {
-   "file": "RotationSolver/Basic/DataCenter.Universal.cs",
+   "file": "RotationSolver/Engine/State/DataCenter.Universal.cs",
    "code": "private const byte ConeFromCentreCastType = 13;",
    "values": [
     "13"
@@ -2112,7 +2112,7 @@
    "reason": "The game's cast type 13, a cone measured from the caster's centre, which the CastType enum does not name; its cones carry fan omens like type 3 (1,966 rows with a fan omen, ffxiv-datamining 52a72b3) and BossModReborn's analysis describes it as 'range X N-degree cone'. An id of the game's data (A731)."
   },
   {
-   "file": "RotationSolver/Basic/DataCenter.Universal.cs",
+   "file": "RotationSolver/Engine/State/DataCenter.Universal.cs",
    "code": "return MathF.Acos(cosine) <= float.DegreesToRadians(degrees / 2f) + allowance;",
    "values": [
     "2"
@@ -2122,7 +2122,7 @@
    "reason": "Half the cone's angle: the omen names the full angle (gl_fan060 = 60 degrees, BossModReborn AOEShapeCone(6.9, 30 degrees) for Wing Cutter), the test measures from the cone's axis. Geometry, not a tuned value (A731)."
   },
   {
-   "file": "RotationSolver/Basic/DataCenter.cs",
+   "file": "RotationSolver/Engine/State/DataCenter.BMR.cs",
    "code": "var half = digits.Length / 2;",
    "values": [
     "2"
@@ -2132,7 +2132,7 @@
    "reason": "A ring's omen figures are two numbers of equal length, outer then inner (gl_sircle_2010 = 20 and 10; BossModReborn's analysis reads two digits each). The split of the figures, not a tuned value (A731)."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/ObjectHelper.Universal.cs",
+   "file": "RotationSolver/Engine/Helpers/ObjectHelper.Universal.cs",
    "code": "Back = 2,",
    "values": [
     "2"
@@ -2142,7 +2142,7 @@
    "reason": "The bit of the back in the param of Directional Parry (status 680), as BossModReborn's Components/DirectionalParry decodes it (front 1, back 2, left 4, right 8; front seen as 01 in the owner's run of 11.11.2026). An encoding of the game's status, not a tuned value (A734)."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/ObjectHelper.Universal.cs",
+   "file": "RotationSolver/Engine/Helpers/ObjectHelper.Universal.cs",
    "code": "Left = 4,",
    "values": [
     "4"
@@ -2152,7 +2152,7 @@
    "reason": "The bit of the one flank in the param of Directional Parry (status 680), as BossModReborn's Components/DirectionalParry decodes it (front 1, back 2, left 4, right 8; front seen as 01 in the owner's run of 11.11.2026). An encoding of the game's status, not a tuned value (A734)."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/ObjectHelper.Universal.cs",
+   "file": "RotationSolver/Engine/Helpers/ObjectHelper.Universal.cs",
    "code": "Right = 8,",
    "values": [
     "8"
@@ -2162,7 +2162,7 @@
    "reason": "The bit of the the other flank in the param of Directional Parry (status 680), as BossModReborn's Components/DirectionalParry decodes it (front 1, back 2, left 4, right 8; front seen as 01 in the owner's run of 11.11.2026). An encoding of the game's status, not a tuned value (A734)."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/DeepDungeonStones.cs",
+   "file": "RotationSolver/Engine/Helpers/DeepDungeonStones.cs",
    "code": "2 => StoneSheet.Demiclone,",
    "values": [
     "2"
@@ -2172,7 +2172,7 @@
    "reason": "DeepDungeonType 2 (Eureka Orthos) of the DeepDungeon sheet, for which EXDSchema switches MagiciteSlot to DeepDungeonDemiclone. An id of the game's data (A737)."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/DeepDungeonStones.cs",
+   "file": "RotationSolver/Engine/Helpers/DeepDungeonStones.cs",
    "code": "3 when index < PilgrimsTraverseSheets.Length => PilgrimsTraverseSheets[index],",
    "values": [
     "3"
@@ -2182,7 +2182,7 @@
    "reason": "DeepDungeonType 3 (Pilgrim's Traverse) of the DeepDungeon sheet, for which EXDSchema names no sheet; the sheets per entry are measured (A737). An id of the game's data."
   },
   {
-   "file": "RotationSolver/Basic/Tweaks/AnimationLockTweak.cs",
+   "file": "RotationSolver/Engine/Tweaks/AnimationLockTweak.cs",
    "code": "&& (packetOriginalAnimLock % 0.01f) is <= 0.0005f or >= 0.0095f)",
    "values": [
     "0.01",
@@ -2194,7 +2194,7 @@
    "reason": "Upstream's packet check, from BossModReborn, its line reworded in A753 to add the game-lock condition: the server sends animation locks in steps of 10 ms, so a value off that grid was changed by another tool (NoClippy uses the same test to find XivAlexander). The format of the packet, not a game value the client could read elsewhere."
   },
   {
-   "file": "RotationSolver/Basic/Tweaks/AnimationLockTweak.Timing.cs",
+   "file": "RotationSolver/Engine/Tweaks/AnimationLockTweak.Timing.cs",
    "code": "if (_delayCount >= 2 && _lastReqInitialAnimLock > 0f)",
    "values": [
     "2"
@@ -2204,7 +2204,7 @@
    "reason": "The least number of answers a mean deviation can be taken from: with one answer the deviation is zero by definition, and the envelope (least delay less deviation) would cut the whole delay of a single sample. A condition of the statistics, not a game value."
   },
   {
-   "file": "RotationSolver/Basic/Tweaks/AnimationLockTweak.Timing.cs",
+   "file": "RotationSolver/Engine/Tweaks/AnimationLockTweak.Timing.cs",
    "code": "internal float KeptEstimate => ReductionAllowed && _delayCount >= 2",
    "values": [
     "2"
@@ -2214,7 +2214,7 @@
    "reason": "The least number of answers a mean deviation can be taken from: with one answer the deviation is zero by definition, and the envelope (least delay less deviation) would cut the whole delay of a single sample. A condition of the statistics, not a game value."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/ActionTooltip.cs",
+   "file": "RotationSolver/Engine/Helpers/ActionTooltip.cs",
    "code": "ratio = percent / 100f;",
    "values": [
     "100"
@@ -2224,7 +2224,7 @@
    "reason": "Percent to ratio: the unit of the stated figure (\"below 50%\"), not a value of the game or a threshold."
   },
   {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_Actions.cs",
+   "file": "RotationSolver/Rotations/Core/CustomRotation_Actions.cs",
    "code": "setting.ActionCheck = () => RecuperatePvPAllowed() && Player?.TimeAlive() > 5f;",
    "values": [
     "5"
@@ -2234,7 +2234,7 @@
    "reason": "Upstream's wait after a respawn before Recuperate, unchanged in A756 (only the healing and MP condition beside it changed). A respawn in PvP restores full HP, so the wait never holds a heal that is due; derived from no game figure, kept as upstream set it."
   },
   {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_GCD.cs",
+   "file": "RotationSolver/Rotations/Core/CustomRotation_GCD.cs",
    "code": "if (Player != null && DataCenter.IsPvP && Service.Config.PvpGcdLockControl && Player.GetEffectiveHpPercent() < 50f",
    "values": [
     "50"
@@ -2244,7 +2244,7 @@
    "reason": "The text of the setting \"Hold GCDs for heals below 50% HP\" names the figure, and the text binds (code.md, \"Kausalität\"). A756 changed only the MP condition beside it."
   },
   {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_OtherInfo.cs",
+   "file": "RotationSolver/Rotations/Core/CustomRotation_OtherInfo.cs",
    "code": "public static bool HasPVPGuard => StatusHelper.PlayerHasStatus(true, StatusHelper.PvPGuardStatuses) || (IsLastAction(ActionID.GuardPvP) && TimeSinceLastActionCapped < 0.5f);",
    "values": [
     "0.5"
@@ -2254,7 +2254,7 @@
    "reason": "Upstream's bridge between pressing Guard and its status arriving, unchanged in A756 (only the status list beside it changed). In the fight it holds actions half a second after the press; Guard holds them for its 4 s once it lands, so a longer bridge than the round trip costs nothing that Guard would not cost."
   },
   {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_LimitBreak.PvP.cs",
+   "file": "RotationSolver/Rotations/Core/CustomRotation_LimitBreak.PvP.cs",
    "code": "public const uint MarksmansSpite = 29415;",
    "values": [
     "29415"
@@ -2264,7 +2264,7 @@
    "reason": "A row number of the Action sheet (an identity, not a quantity), named as the job bases create these Limit Breaks: `(ActionID)<row>`, since the generated ActionID names none of them."
   },
   {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_LimitBreak.PvP.cs",
+   "file": "RotationSolver/Rotations/Core/CustomRotation_LimitBreak.PvP.cs",
    "code": "public const uint Meteodrive = 29485;",
    "values": [
     "29485"
@@ -2274,7 +2274,7 @@
    "reason": "A row number of the Action sheet (an identity, not a quantity), named as the job bases create these Limit Breaks: `(ActionID)<row>`, since the generated ActionID names none of them."
   },
   {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_LimitBreak.PvP.cs",
+   "file": "RotationSolver/Rotations/Core/CustomRotation_LimitBreak.PvP.cs",
    "code": "public const uint SeitonTenchu = 29515;",
    "values": [
     "29515"
@@ -2284,7 +2284,7 @@
    "reason": "A row number of the Action sheet (an identity, not a quantity), named as the job bases create these Limit Breaks: `(ActionID)<row>`, since the generated ActionID names none of them."
   },
   {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_LimitBreak.PvP.cs",
+   "file": "RotationSolver/Rotations/Core/CustomRotation_LimitBreak.PvP.cs",
    "code": "public const uint Zantetsuken = 29537;",
    "values": [
     "29537"
@@ -2294,7 +2294,7 @@
    "reason": "A row number of the Action sheet (an identity, not a quantity), named as the job bases create these Limit Breaks: `(ActionID)<row>`, since the generated ActionID names none of them."
   },
   {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_LimitBreak.PvP.cs",
+   "file": "RotationSolver/Rotations/Core/CustomRotation_LimitBreak.PvP.cs",
    "code": "public const uint Phalanx = 29069;",
    "values": [
     "29069"
@@ -2304,7 +2304,7 @@
    "reason": "A row number of the Action sheet (an identity, not a quantity), named as the job bases create these Limit Breaks: `(ActionID)<row>`, since the generated ActionID names none of them."
   },
   {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_LimitBreak.PvP.cs",
+   "file": "RotationSolver/Rotations/Core/CustomRotation_LimitBreak.PvP.cs",
    "code": "public const uint Mesotes = 29266;",
    "values": [
     "29266"
@@ -2314,7 +2314,7 @@
    "reason": "A row number of the Action sheet (an identity, not a quantity), named as the job bases create these Limit Breaks: `(ActionID)<row>`, since the generated ActionID names none of them."
   },
   {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_LimitBreak.PvP.cs",
+   "file": "RotationSolver/Rotations/Core/CustomRotation_LimitBreak.PvP.cs",
    "code": "public const uint SkyHigh = 29497;",
    "values": [
     "29497"
@@ -2324,7 +2324,7 @@
    "reason": "A row number of the Action sheet (an identity, not a quantity), named as the job bases create these Limit Breaks: `(ActionID)<row>`, since the generated ActionID names none of them."
   },
   {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_LimitBreak.PvP.cs",
+   "file": "RotationSolver/Rotations/Core/CustomRotation_LimitBreak.PvP.cs",
    "code": "public const uint SkyShatter = 29498;",
    "values": [
     "29498"
@@ -2334,7 +2334,7 @@
    "reason": "A row number of the Action sheet (an identity, not a quantity), named as the job bases create these Limit Breaks: `(ActionID)<row>`, since the generated ActionID names none of them."
   },
   {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_LimitBreak.PvP.cs",
+   "file": "RotationSolver/Rotations/Core/CustomRotation_LimitBreak.PvP.cs",
    "code": "public const uint Eventide = 29097;",
    "values": [
     "29097"
@@ -2344,7 +2344,7 @@
    "reason": "A row number of the Action sheet (an identity, not a quantity), named as the job bases create these Limit Breaks: `(ActionID)<row>`, since the generated ActionID names none of them."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/GazeWatch.cs",
+   "file": "RotationSolver/Engine/Helpers/GazeWatch.cs",
    "code": "private const float DangerHalfAngleDegrees = 45f;",
    "values": [
     "45"
@@ -2354,7 +2354,7 @@
    "reason": "Half width of the facing that looks into a gaze. The game data names no angle; BossMod uses 45 degrees for every gaze's forbidden direction (AIHintsBuilder, ForbiddenDirections), built from its recordings."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/GazeWatch.cs",
+   "file": "RotationSolver/Engine/Helpers/GazeWatch.cs",
    "code": "private const uint GazeCastVfx = 25;",
    "values": [
     "25"
@@ -2364,7 +2364,7 @@
    "reason": "A row of the ActionCastVFX sheet (an identity, not a quantity): the cast effect of a gaze, as BossMod and BossModReborn read it (Action.VFX == 25); 230 enemy actions carry it, no player action."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/GazeWatch.cs",
+   "file": "RotationSolver/Engine/Helpers/GazeWatch.cs",
    "code": "var middle = 0.5f * (end + next);",
    "values": [
     "0.5"
@@ -2374,7 +2374,7 @@
    "reason": "The middle of a safe gap between two forbidden arcs (geometry, not a quantity of the game): the facing furthest from both gazes, so a small turn or a late update of the caster's position does not tip it into either."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/GazeWatch.cs",
+   "file": "RotationSolver/Engine/Helpers/GazeWatch.cs",
    "code": "private const float CastHalfAngleDegrees = 75f;",
    "values": [
     "75"
@@ -2384,7 +2384,7 @@
    "reason": "How far a running cast's target may lie off the facing before the game has the spell. The game data names no angle; BossModReborn measured it (ActionManagerEx, \"empirical\") and turns casters within it. If it is too wide, the cast breaks, while the gaze still misses: the facing is safe either way."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/GazeWatch.cs",
+   "file": "RotationSolver/Engine/Helpers/GazeWatch.cs",
    "code": "private const float ActionHalfAngleDegrees = 45f;",
    "values": [
     "45"
@@ -2394,7 +2394,7 @@
    "reason": "How far an oriented action's target may lie off the facing for the action to go off. The game data names no angle; BossModReborn measured it (ActionManagerEx: \"target has to be within 45 degrees of character orientation\") and turns within it. If it is narrower, the action is refused and tried again, while the facing stays safe."
   },
   {
-   "file": "RotationSolver/Basic/Actions/MedicineItem.Tincture.cs",
+   "file": "RotationSolver/Engine/Actions/MedicineItem.Tincture.cs",
    "code": "private const int EffectSecondsColumn = 2;",
    "values": [
     "2"
@@ -2404,7 +2404,7 @@
    "reason": "A column of the ItemAction sheet (an identity, not a quantity): for the gemdraughts Data holds the status (49), its value and the seconds (xivapi v2, items 44157, 44162, 45995: [49, 644|662|686, 30]). The seconds themselves come from the sheet."
   },
   {
-   "file": "RotationSolver/Helpers/CrucibleWindowTrace.cs",
+   "file": "RotationSolver/Engine/Helpers/CrucibleWindowTrace.cs",
    "code": "private const int ResultCount = 72;",
    "values": [
     "72"
@@ -2414,7 +2414,7 @@
    "reason": "The result window XBMResult holds the number of the team's familiars at value 72 (the owner's DefenseTrace.log of 14.11.2026, board 2: the result window XBMResult with twelve familiars: uint 12). The game's layout of the window, not a tuned value; every reading is checked value by value and dropped whole when one fails."
   },
   {
-   "file": "RotationSolver/Helpers/CrucibleWindowTrace.cs",
+   "file": "RotationSolver/Engine/Helpers/CrucibleWindowTrace.cs",
    "code": "private const int ResultFirstIcon = 73;",
    "values": [
     "73"
@@ -2424,7 +2424,7 @@
    "reason": "The result window XBMResult lists the familiars' icons from value 73 (the owner's DefenseTrace.log of 14.11.2026, board 2: the result window XBMResult with twelve familiars: 242014 Puk, 242036 Gigantoad ...). The game's layout of the window, not a tuned value."
   },
   {
-   "file": "RotationSolver/Helpers/CrucibleWindowTrace.cs",
+   "file": "RotationSolver/Engine/Helpers/CrucibleWindowTrace.cs",
    "code": "private const int ResultBlock = 16;",
    "values": [
     "16"
@@ -2434,7 +2434,7 @@
    "reason": "The result window XBMResult keeps each list of the familiars in a block of 16 values - icons from 73, experience before from 89 and after from 105, rank before from 121 and after from 137 (the owner's DefenseTrace.log of 14.11.2026, board 2: the result window XBMResult with twelve familiars). The game's layout of the window, not a tuned value; a count above it is not read."
   },
   {
-   "file": "RotationSolver/Helpers/CrucibleWindowTrace.cs",
+   "file": "RotationSolver/Engine/Helpers/CrucibleWindowTrace.cs",
    "code": "private const int ResultRankBeforeBlock = 3;",
    "values": [
     "3"
@@ -2444,7 +2444,7 @@
    "reason": "The familiars' ranks before the run stand in the fourth block of XBMResult, from value 121 = 73 + 3 x 16 (the owner's DefenseTrace.log of 14.11.2026, board 2: the result window XBMResult with twelve familiars: 10, 10, 11, 11, 11 ...). The game's layout, not a tuned value."
   },
   {
-   "file": "RotationSolver/Helpers/CrucibleWindowTrace.cs",
+   "file": "RotationSolver/Engine/Helpers/CrucibleWindowTrace.cs",
    "code": "private const int ResultRankAfterBlock = 4;",
    "values": [
     "4"
@@ -2454,7 +2454,7 @@
    "reason": "The familiars' ranks after the run stand in the fifth block of XBMResult, from value 137 = 73 + 4 x 16 (the owner's DefenseTrace.log of 14.11.2026, board 2: the result window XBMResult with twelve familiars: 12, 11, 11, 11, 12 ... with experience falling where the rank rose). The game's layout, not a tuned value."
   },
   {
-   "file": "RotationSolver/Helpers/CrucibleWindowTrace.cs",
+   "file": "RotationSolver/Engine/Helpers/CrucibleWindowTrace.cs",
    "code": "private const int FamiliarIconBase = 242000;",
    "values": [
     "242000"
@@ -2464,7 +2464,7 @@
    "reason": "A familiar's icon is 242000 plus its Bestiary number (Daedalus 74659a6, CrucibleTeamScreen.IconBase, recorded 24.10.2026; the owner's DefenseTrace.log of 14.11.2026, board 2: the result window XBMResult with twelve familiars: 242014 for Puk, row 14). XBMPet has no icon column (EXDSchema); not a tuned value."
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/BeastmasterCrucibleShop.cs",
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BeastmasterCrucibleShop.cs",
    "code": "private const int ShopStockCountValue = 2;",
    "values": [
     "2"
@@ -2474,7 +2474,7 @@
    "reason": "The shop window XBMContentsItemShop as ECommons' ReaderXBMContentsItemShop reads it (StockCount at value 2, StockOffset 3, StockEntrySize 5; ECommons source, AtkReaderImplementations). The game's layout of the window, not a tuned value; RSR checks the values hold the rows before the reader reads them, so an unfilled window is skipped instead of throwing."
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/BeastmasterCrucibleShop.cs",
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BeastmasterCrucibleShop.cs",
    "code": "private const int ShopStockFirstValue = 3;",
    "values": [
     "3"
@@ -2484,7 +2484,7 @@
    "reason": "The shop window XBMContentsItemShop as ECommons' ReaderXBMContentsItemShop reads it (StockCount at value 2, StockOffset 3, StockEntrySize 5; ECommons source, AtkReaderImplementations). The game's layout of the window, not a tuned value; RSR checks the values hold the rows before the reader reads them, so an unfilled window is skipped instead of throwing."
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/BeastmasterCrucibleShop.cs",
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BeastmasterCrucibleShop.cs",
    "code": "private const int ShopStockRowValues = 5;",
    "values": [
     "5"
@@ -2494,7 +2494,7 @@
    "reason": "The shop window XBMContentsItemShop as ECommons' ReaderXBMContentsItemShop reads it (StockCount at value 2, StockOffset 3, StockEntrySize 5; ECommons source, AtkReaderImplementations). The game's layout of the window, not a tuned value; RSR checks the values hold the rows before the reader reads them, so an unfilled window is skipped instead of throwing."
   },
   {
-   "file": "RotationSolver/Helpers/CrucibleWindowTrace.cs",
+   "file": "RotationSolver/Engine/Helpers/CrucibleWindowTrace.cs",
    "code": "private const int HudGearFirst = 60;",
    "values": [
     "60"
@@ -2504,7 +2504,7 @@
    "reason": "The gear list of the Crucible's windows: ten places of five values (held, -, icon, XBMItem row, name), from value 60 in XBMContentsMainHUD, 75 in XBMContentsTreasure, 78 in XBMContentsBooty and 205 in XBMContentsItemShop - read in the owner's traces of 11 to 14.11.2026, the Sacrifice Ring (row 2) on place 1 of each; the shop's 205 and 5 match ECommons' ReaderXBMContentsItemShop (OwnedEntries). The game's layout of the windows, not a tuned value; a place that does not read as this layout says drops the whole reading."
   },
   {
-   "file": "RotationSolver/Helpers/CrucibleWindowTrace.cs",
+   "file": "RotationSolver/Engine/Helpers/CrucibleWindowTrace.cs",
    "code": "private const int TreasureGearFirst = 75;",
    "values": [
     "75"
@@ -2514,7 +2514,7 @@
    "reason": "The gear list of the Crucible's windows: ten places of five values (held, -, icon, XBMItem row, name), from value 60 in XBMContentsMainHUD, 75 in XBMContentsTreasure, 78 in XBMContentsBooty and 205 in XBMContentsItemShop - read in the owner's traces of 11 to 14.11.2026, the Sacrifice Ring (row 2) on place 1 of each; the shop's 205 and 5 match ECommons' ReaderXBMContentsItemShop (OwnedEntries). The game's layout of the windows, not a tuned value; a place that does not read as this layout says drops the whole reading."
   },
   {
-   "file": "RotationSolver/Helpers/CrucibleWindowTrace.cs",
+   "file": "RotationSolver/Engine/Helpers/CrucibleWindowTrace.cs",
    "code": "private const int BootyGearFirst = 78;",
    "values": [
     "78"
@@ -2524,7 +2524,7 @@
    "reason": "The gear list of the Crucible's windows: ten places of five values (held, -, icon, XBMItem row, name), from value 60 in XBMContentsMainHUD, 75 in XBMContentsTreasure, 78 in XBMContentsBooty and 205 in XBMContentsItemShop - read in the owner's traces of 11 to 14.11.2026, the Sacrifice Ring (row 2) on place 1 of each; the shop's 205 and 5 match ECommons' ReaderXBMContentsItemShop (OwnedEntries). The game's layout of the windows, not a tuned value; a place that does not read as this layout says drops the whole reading."
   },
   {
-   "file": "RotationSolver/Helpers/CrucibleWindowTrace.cs",
+   "file": "RotationSolver/Engine/Helpers/CrucibleWindowTrace.cs",
    "code": "private const int ShopGearFirst = 205;",
    "values": [
     "205"
@@ -2534,7 +2534,7 @@
    "reason": "The gear list of the Crucible's windows: ten places of five values (held, -, icon, XBMItem row, name), from value 60 in XBMContentsMainHUD, 75 in XBMContentsTreasure, 78 in XBMContentsBooty and 205 in XBMContentsItemShop - read in the owner's traces of 11 to 14.11.2026, the Sacrifice Ring (row 2) on place 1 of each; the shop's 205 and 5 match ECommons' ReaderXBMContentsItemShop (OwnedEntries). The game's layout of the windows, not a tuned value; a place that does not read as this layout says drops the whole reading."
   },
   {
-   "file": "RotationSolver/Helpers/CrucibleWindowTrace.cs",
+   "file": "RotationSolver/Engine/Helpers/CrucibleWindowTrace.cs",
    "code": "private const int GearPlaces = 10;",
    "values": [
     "10"
@@ -2544,7 +2544,7 @@
    "reason": "The gear list of the Crucible's windows: ten places of five values (held, -, icon, XBMItem row, name), from value 60 in XBMContentsMainHUD, 75 in XBMContentsTreasure, 78 in XBMContentsBooty and 205 in XBMContentsItemShop - read in the owner's traces of 11 to 14.11.2026, the Sacrifice Ring (row 2) on place 1 of each; the shop's 205 and 5 match ECommons' ReaderXBMContentsItemShop (OwnedEntries). The game's layout of the windows, not a tuned value; a place that does not read as this layout says drops the whole reading."
   },
   {
-   "file": "RotationSolver/Helpers/CrucibleWindowTrace.cs",
+   "file": "RotationSolver/Engine/Helpers/CrucibleWindowTrace.cs",
    "code": "private const int GearPlaceValues = 5;",
    "values": [
     "5"
@@ -2554,7 +2554,7 @@
    "reason": "The gear list of the Crucible's windows: ten places of five values (held, -, icon, XBMItem row, name), from value 60 in XBMContentsMainHUD, 75 in XBMContentsTreasure, 78 in XBMContentsBooty and 205 in XBMContentsItemShop - read in the owner's traces of 11 to 14.11.2026, the Sacrifice Ring (row 2) on place 1 of each; the shop's 205 and 5 match ECommons' ReaderXBMContentsItemShop (OwnedEntries). The game's layout of the windows, not a tuned value; a place that does not read as this layout says drops the whole reading."
   },
   {
-   "file": "RotationSolver/Helpers/CrucibleWindowTrace.cs",
+   "file": "RotationSolver/Engine/Helpers/CrucibleWindowTrace.cs",
    "code": "private const int GearRowValue = 3;",
    "values": [
     "3"

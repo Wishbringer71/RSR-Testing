@@ -1,6 +1,4 @@
 using Dalamud.Interface.Windowing;
-using RotationSolver.Basic.Configuration;
-
 namespace RotationSolver.UI;
 
 /// <summary>

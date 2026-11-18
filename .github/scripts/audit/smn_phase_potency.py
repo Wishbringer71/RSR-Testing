@@ -25,7 +25,7 @@ from the official job guide (na.finalfantasyxiv.com/jobguide/summoner,
 Action sheet (v2.xivapi.com, Cast100ms / Recast100ms / CooldownGroup,
 02.10.2026); they agree with the job guide.
 
-The phase composition is taken from RotationSolver/RebornRotations/Magical/
+The phase composition is taken from RotationSolver/Rotations/Magical/Summoner/
 SMN_Reborn.cs: the dispatch order in GeneralGCD (UseSummonsAndTrances ->
 UsePrimalFollowUps -> SummonPrimals -> UseFillers) and in AttackAbility.
 """

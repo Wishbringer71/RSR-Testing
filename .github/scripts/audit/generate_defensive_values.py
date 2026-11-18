@@ -32,14 +32,16 @@ Usage:
 import re
 import sys
 from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import layout  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[3]
 PROPERTIES = ROOT / "RotationSolver.SourceGenerators" / "Properties"
 SOURCES = [PROPERTIES / "ActionId.resx", PROPERTIES / "DutyAction.resx"]
-OUTPUT = ROOT / "RotationSolver" / "Basic" / "Data" / "DefensiveValues.g.cs"
+OUTPUT = layout.DATA / "DefensiveValues.g.cs"
 STATUS_SHEET = PROPERTIES / "Status.resx"
 TRAIT_DURATIONS = Path(__file__).resolve().with_name("trait_durations.json")
-ROTATION_SOURCES = ROOT / "RotationSolver" / "Basic" / "Rotations"
+# The base rotations, CustomRotation and the duties hold the Modify methods (A878: one folder per job since c170c9cd5).
 STATUS_ASSIGNMENT = re.compile(r"^(\w+)\s*=\s*(\d+),", re.M)
 MODIFY_BODY = re.compile(r"Modify(\w+PvE)\(ref ActionSetting setting\)\s*\{(.*?)\n\t\}", re.S)
 PROVIDE = re.compile(r"(Target)?StatusProvide\s*=\s*([^;]+);")
@@ -275,9 +277,9 @@ def provided_statuses():
     from overlapping) says what blocks the action, not what it grants, and is left out.
     """
     provided = {}
-    if not ROTATION_SOURCES.exists():
-        return provided
-    for path in sorted(ROTATION_SOURCES.rglob("*.cs")):
+    sources = sorted(layout.CORE.glob("*.cs")) + sorted(layout.DUTIES.glob("*.cs")) + layout.base_rotation_files()
+    assert sources, "no rotation source found - the layout moved again (layout.py)"
+    for path in sources:
         text = path.read_text(encoding="utf-8-sig", errors="replace")
         for match in MODIFY_BODY.finditer(text):
             identifier, body = match.group(1), match.group(2)
@@ -435,7 +437,7 @@ def render(table, durations, enmity=None, statuses=None, traits=None, trait_shar
         "//                          more than enough against a small hit, spent against a big one",
         "// </auto-generated>",
         "",
-        "namespace RotationSolver.Basic.Data;",
+        "namespace RotationSolver.Engine.Data;",
         "",
         "/// <summary>",
         "/// What one defensive action takes off an incoming hit, as stated in its own effect text.",

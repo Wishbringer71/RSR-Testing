@@ -25,8 +25,8 @@ from pathlib import Path
 SKIPPED = ('.github', 'bin', 'obj')
 TABLES = ('HostileCastingAreaPotential', 'TankbusterPotential')
 ALLOWED = {
-    Path('RotationSolver/Basic/Configuration/OtherConfiguration.cs'),
-    Path('RotationSolver/Basic/Configuration/OtherConfiguration.Revision.cs'),
+    Path('RotationSolver/Configuration/OtherConfiguration.cs'),
+    Path('RotationSolver/Configuration/OtherConfiguration.Revision.cs'),
 }
 NAMES = '|'.join(TABLES)
 # The table name as a whole word - TankbusterPotentialGate is the lock, not the table.

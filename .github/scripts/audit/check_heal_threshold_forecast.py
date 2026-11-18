@@ -17,7 +17,7 @@ thresholds on the party's average or minimum (Horoscope, Lady of Crowns, Holos, 
 emergency and Recitation, the downtime heal) read the level while their single-target neighbours read the
 forecast; `PartyMembersForecastAverHP` and `DataCenter.ForecastMinHp` are the forecast spellings. Mitigation thresholds (dying tank, Intervention, Cover,
 The Blackest Night) are not healing thresholds and are left alone, and so are the PvP rotations
-and the ones under ExtraRotations, which are not the fork's to edit. The duty rotations were left out
+and the third-party rotations (layout.is_third_party), which are not the fork's to edit. The duty rotations were left out
 as well until A519, as outside the owner's profile: Occult Crescent is in it, and the Phantom heals
 (Occult Potion, Occult Elixir, Occult Chakra, Occult Resuscitation, Blessing, Phantom Judgment) and
 the Mega Potion of the Monster Hunter rotation read the health shown now.
@@ -28,13 +28,18 @@ Fails on a finding. The self-test runs first.
 import re
 import sys
 from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import layout  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[3]
-SCAN = [
-    ROOT / "RotationSolver" / "RebornRotations",
-    ROOT / "RotationSolver" / "Basic" / "Rotations",
-]
-SKIP_PARTS = {"PVPRotations", "ExtraRotations"}
+# The shipped PvE rotations, the job base classes, CustomRotation and the duties; not PvP ones (their thresholds are a PvP
+# match's) and not third-party ones (A878: one folder per job since c170c9cd5, PvP told by the file name).
+PVP_NAME = re.compile(r"\.PvP\.cs$|PVP", re.IGNORECASE)
+
+
+def scan_files():
+    files = [p for p in layout.shipped_rotation_files() if not PVP_NAME.search(p.name)]
+    return files + layout.base_rotation_files() + sorted(layout.CORE.glob("*.cs")) + sorted(layout.DUTIES.glob("*.cs"))
 
 PARTY = r"\b(?:PartyMembersAverHP|PartyMembersMinHP|LowestPartyMembersAverHP|PartyMembersDifferHP)\b"
 PLAIN = re.compile(r"\.GetHealthRatio\(\)\s*(?:<=?|>=?)|(?:<=?|>=?)\s*[\w?.]*\.GetHealthRatio\(\)"
@@ -87,10 +92,12 @@ def self_test():
 def main():
     self_test()
     total = 0
-    for base in SCAN:
-        for path in sorted(base.rglob("*.cs")):
-            if SKIP_PARTS & set(path.relative_to(ROOT).parts):
-                continue
+    files = scan_files()
+    if not any(p.name == "WHM_Reborn.cs" for p in files):
+        print("no shipped rotation found - the layout moved again (layout.py); nothing would be checked")
+        return 1
+    for path in files:
+        if True:
             for number, line in findings_in(path.read_text(encoding="utf-8-sig")):
                 print(f"{path.relative_to(ROOT)}:{number}: {line}")
                 total += 1

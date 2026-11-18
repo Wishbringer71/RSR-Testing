@@ -11,7 +11,7 @@ there only while Brotherhood comes back within 3 s; it weaves Riddle of Fire in 
 Solar sequence raptor, coeurl, opo-opo regardless of potency. Does that cost a Masterful Blitz, a Reply or opo-opo
 weaponskills under Riddle of Fire and Brotherhood - the Monk's own damage?
 
-The choices of MNK_Reborn are mirrored by hand from RotationSolver/RebornRotations/Melee/MNK_Reborn.cs
+The choices of MNK_Reborn are mirrored by hand from RotationSolver/Rotations/Melee/Monk/MNK_Reborn.cs
 (EmergencyAbility, AttackAbility, GeneralGCD) and the action checks of MonkRotation: RSR as the rotation stands since
 A412, RSR_BEFORE as of c6ed70be4. A change there needs the same change here (TODO, technical debt). What the model found
 (A412): MNK_Reborn pressed the even window's Perfect Balance only while Brotherhood came back within 3 s, and pressed

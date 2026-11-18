@@ -3,7 +3,7 @@
 Je Eintrag: was im Kampf anders wäre, wo es sitzt, der nächste Schritt oder die Auflösungsbedingung, das Konzept.
 Begründungen, Messungen und die Geschichte stehen im Konzept und im Archiv (`AUDIT_LOG.md`), nicht hier. Ein
 abgeschlossener Punkt verschwindet aus dieser Datei; das Konzept nennt dann den geschlossenen Stand.
-Betroffene: **N** Endnutzer · **R** Autoren abgeleiteter Rotationen (Namensräume `RotationSolver.Basic`) · **U** Upstream-Pflege.
+Betroffene: **N** Endnutzer · **R** Autoren abgeleiteter Rotationen (öffentliche Schnittstelle von `Engine`, `Configuration` und den Basisklassen der Rotationen) · **U** Upstream-Pflege.
 
 ## Reihenfolge
 

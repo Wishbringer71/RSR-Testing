@@ -9,7 +9,7 @@ movement command unchecked; upstream added the type to three actions by hand in 
 
 This reads every action with `AffectsPosition` from xivapi v2, PvE and PvP, maps it to its identifier through
 `ActionId.resx`, and requires a moving `setting.SpecialType` in its `Modify<Name>PvE` or `Modify<Name>PvP` under
-`RotationSolver/Basic/Rotations/Basic` or `/Duties`. Until A756 PvP was left out as outside the owner's profile, and
+the job base classes (`layout.base_rotation_files`) or `RotationSolver/Rotations/Duties`. Until A756 PvP was left out as outside the owner's profile, and
 Onslaught, Plunge, Rough Divide and five more PvP jumps went out from 20 yalms unchecked (concept 25, "PvP: Bewegung"). Measured are every job action, the Blue Mage included, and every content action (Phantom jobs, Bozja, quest
 battles) that a rotation casts - a `<Name>.CanUse(` outside a comment; one nobody casts never moves the player through
 RSR. Until A519 the Blue Mage and all content actions were left out as outside the owner's profile, and J Kick, Flying
@@ -25,11 +25,11 @@ import pathlib
 import re
 import subprocess
 import sys
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+import layout  # noqa: E402
 
 ROOT = pathlib.Path(__file__).resolve().parents[3]
 RESX = ROOT / 'RotationSolver.SourceGenerators' / 'Properties' / 'ActionId.resx'
-BASIC = ROOT / 'RotationSolver' / 'Basic' / 'Rotations' / 'Basic'
-DUTIES = ROOT / 'RotationSolver' / 'Basic' / 'Rotations' / 'Duties'
 CODE = ROOT / 'RotationSolver'
 API = 'https://v2.xivapi.com/api'
 
@@ -192,7 +192,8 @@ def main():
         print('xivapi unreachable: the comparison against the Action sheet is skipped.')
         return 0
     ids = identifiers(RESX.read_text(encoding='utf-8-sig'))
-    bases = sorted(BASIC.glob('*.cs')) + sorted(DUTIES.glob('*.cs'))
+    bases = layout.base_rotation_files() + sorted(layout.DUTIES.glob('*.cs'))
+    assert bases, 'no base rotation found - the layout moved again (layout.py)'
     types = special_types(p.read_text(encoding='utf-8-sig') for p in bases)
     cast = cast_identifiers(p.read_text(encoding='utf-8-sig') for p in sorted(CODE.rglob('*.cs'))
                             if 'obj' not in p.parts and 'bin' not in p.parts)

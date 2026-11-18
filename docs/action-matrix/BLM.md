@@ -3,7 +3,7 @@
 Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-06; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `BlackMageRotation`
-- Rotation: `RotationSolver/RebornRotations/Magical/BLM_Default.cs`, `RotationSolver/RebornRotations/Magical/BLM_RP.cs`
+- Rotation: `RotationSolver/Rotations/Magical/BlackMage/BLM_Default.cs`, `RotationSolver/Rotations/Magical/BlackMage/BLM_RP.cs`
 - Matrix als Tabelle: `BLM.csv`
 
 ## Nutzung

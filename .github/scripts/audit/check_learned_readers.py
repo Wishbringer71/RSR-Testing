@@ -25,25 +25,25 @@ from pathlib import Path
 SKIPPED = ('.github', 'bin', 'obj')
 TABLE = re.compile(r'\b(?:HostileCastingAreaPotential|TankbusterPotential|AimedHitPotential)\b(?!Gate)')
 READING_FILES = {
-    'RotationSolver/Basic/Configuration/OtherConfiguration.cs',
-    'RotationSolver/Basic/Configuration/OtherConfiguration.Revision.cs',
-    'RotationSolver/Basic/Configuration/TankbusterReading.cs',
-    'RotationSolver/Basic/DataCenter.cs',
-    'RotationSolver/Basic/Helpers/TankbusterTable.cs',
-    'RotationSolver/Basic/Helpers/TankbusterForecast.cs',
-    'RotationSolver/Watcher.cs',
+    'RotationSolver/Configuration/OtherConfiguration.cs',
+    'RotationSolver/Configuration/OtherConfiguration.Revision.cs',
+    'RotationSolver/Configuration/TankbusterReading.cs',
+    'RotationSolver/Engine/State/DataCenter.cs',
+    'RotationSolver/Engine/Helpers/TankbusterTable.cs',
+    'RotationSolver/Engine/Helpers/TankbusterForecast.cs',
+    'RotationSolver/Engine/Watcher.cs',
     'RotationSolver/UI/DiagnosticsWindow.cs',
     'RotationSolver/UI/MainWindow/MainWindow_List.cs',
     'RotationSolver/UI/MainWindow/MainWindow_Learned.cs',
     'RotationSolver/UI/MainWindow/MainWindow_Debug.cs',
 }
 SAVERS = [  # (file, method name, token its body must hold)
-    ('RotationSolver/Basic/DataCenter.cs', 'AreaCastIsWorthMitigating', 'AreaShareConfirmed'),
-    ('RotationSolver/Basic/DataCenter.cs', 'BmrRaidwideIsSmallListedCast', 'AreaShareConfirmed'),
-    ('RotationSolver/Basic/DataCenter.cs', 'AnnouncedHitIsSmall', '_announcedAreaShareConfirmed'),
-    ('RotationSolver/Basic/Rotations/CustomRotation_Tankbuster.cs', 'HoldDefenceForTankbuster', 'Cast.Confirmed'),
-    ('RotationSolver/Basic/Helpers/TankbusterHelp.cs', 'MeasuredHitCallsForNoHelp', 'TankbusterConfirmed'),
-    ('RotationSolver/Basic/Helpers/TankbusterHelp.cs', 'AimedHitCallsForDefence', 'AimedHitConfirmed'),
+    ('RotationSolver/Engine/State/DataCenter.cs', 'AreaCastIsWorthMitigating', 'AreaShareConfirmed'),
+    ('RotationSolver/Engine/State/DataCenter.cs', 'BmrRaidwideIsSmallListedCast', 'AreaShareConfirmed'),
+    ('RotationSolver/Engine/State/DataCenter.cs', 'AnnouncedHitIsSmall', '_announcedAreaShareConfirmed'),
+    ('RotationSolver/Rotations/Core/CustomRotation_Tankbuster.cs', 'HoldDefenceForTankbuster', 'Cast.Confirmed'),
+    ('RotationSolver/Engine/Helpers/TankbusterHelp.cs', 'MeasuredHitCallsForNoHelp', 'TankbusterConfirmed'),
+    ('RotationSolver/Engine/Helpers/TankbusterHelp.cs', 'AimedHitCallsForDefence', 'AimedHitConfirmed'),
 ]
 COMMENT = re.compile(r'^\s*//')
 
@@ -118,14 +118,14 @@ def repository():
 
 def tree(**overrides):
     savers = {
-        'RotationSolver/Basic/DataCenter.cs': (
+        'RotationSolver/Engine/State/DataCenter.cs': (
             'private static bool AreaCastIsWorthMitigating(uint id, IBattleChara c)\n{\n if (!OtherConfiguration.AreaShareConfirmed(id)) { return true; }\n}\n'
             'internal static bool BmrRaidwideIsSmallListedCast(out float l, out uint a)\n{\n if (!OtherConfiguration.AreaShareConfirmed(a)) { return false; }\n}\n'
             'public static bool AnnouncedHitIsSmall\n{\n get { if (!_announcedAreaShareConfirmed) { return false; } return true; }\n}\n'
             'var x = OtherConfiguration.HostileCastingAreaPotential;\n'),
-        'RotationSolver/Basic/Rotations/CustomRotation_Tankbuster.cs':
+        'RotationSolver/Rotations/Core/CustomRotation_Tankbuster.cs':
             'private bool HoldDefenceForTankbuster()\n{\n if (!plan.Cast.Confirmed) { return false; }\n}\n',
-        'RotationSolver/Basic/Helpers/TankbusterHelp.cs':
+        'RotationSolver/Engine/Helpers/TankbusterHelp.cs':
             'private static bool MeasuredHitCallsForNoHelp(IBattleChara t)\n{\n if (!OtherConfiguration.TankbusterConfirmed(a)) { return false; }\n}\n'
             'internal static bool AimedHitCallsForDefence(IBattleChara m, out string w)\n{\n var c = OtherConfiguration.AimedHitConfirmed(a);\n}\n',
     }
@@ -136,25 +136,25 @@ def tree(**overrides):
 def self_test():
     assert check(tree()) == [], check(tree())
     # A saver moved into a partial part of its class is still found there, and the part reads as its class file (A740).
-    moved = tree(**{'RotationSolver/Basic/DataCenter.cs': 'var x = OtherConfiguration.HostileCastingAreaPotential;\n',
-                    'RotationSolver/Basic/DataCenter.AreaDamage.cs': tree()['RotationSolver/Basic/DataCenter.cs']})
+    moved = tree(**{'RotationSolver/Engine/State/DataCenter.cs': 'var x = OtherConfiguration.HostileCastingAreaPotential;\n',
+                    'RotationSolver/Engine/State/DataCenter.AreaDamage.cs': tree()['RotationSolver/Engine/State/DataCenter.cs']})
     assert check(moved) == [], check(moved)
     # A saver without its question is found.
-    bad = tree(**{'RotationSolver/Basic/Helpers/TankbusterHelp.cs':
+    bad = tree(**{'RotationSolver/Engine/Helpers/TankbusterHelp.cs':
                   'private static bool MeasuredHitCallsForNoHelp(IBattleChara t)\n{\n return share < line;\n}\n'})
     assert any('MeasuredHitCallsForNoHelp saves' in f for f in check(bad)), check(bad)
     # The question only in a comment does not count.
-    commented = tree(**{'RotationSolver/Basic/Rotations/CustomRotation_Tankbuster.cs':
+    commented = tree(**{'RotationSolver/Rotations/Core/CustomRotation_Tankbuster.cs':
                         'private bool HoldDefenceForTankbuster()\n{\n // plan.Cast.Confirmed\n return true;\n}\n'})
     assert any('HoldDefenceForTankbuster saves' in f for f in check(commented)), check(commented)
     # A reader in a new file is found; a mention in a comment is not; the lock is not the table.
-    new_file = tree(**{'RotationSolver/Basic/Helpers/NewRule.cs':
+    new_file = tree(**{'RotationSolver/Engine/Helpers/NewRule.cs':
                        '// HostileCastingAreaPotential\nlock (OtherConfiguration.TankbusterPotentialGate) { }\n'
                        'if (OtherConfiguration.TankbusterPotential.TryGetValue(id, out var r)) { }\n'})
     findings = check(new_file)
     assert len(findings) == 1 and 'NewRule.cs:3' in findings[0], findings
     # A renamed saver is found.
-    renamed = tree(**{'RotationSolver/Basic/DataCenter.cs': 'private static bool SizeRule(uint id) { return true; }\n'})
+    renamed = tree(**{'RotationSolver/Engine/State/DataCenter.cs': 'private static bool SizeRule(uint id) { return true; }\n'})
     assert sum('is not there' in f for f in check(renamed)) == 3, check(renamed)
     print('self-test ok: a saver without its question, a question only in a comment, a reader in a new file and a '
           'renamed saver are found; a comment and the lock are not')

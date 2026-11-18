@@ -19,7 +19,7 @@ import sys
 from pathlib import Path
 import classfile
 
-SOURCE = Path('RotationSolver/Basic/DataCenter.cs')
+SOURCE = Path('RotationSolver/Engine/State/DataCenter.cs')
 KINDS = {
     'tankbuster': ('TankbusterPaths',),
     'stack': ('MultiHitSharedPaths', 'SharedDamagePaths'),

@@ -1,12 +1,12 @@
 // The driver of run.sh: the runs of learned_store_model.py, played against the revision store's C# code (concept 13,
 // "Stufe 1"). The old file is handled as LearnedFile handles it - read with its backup, written as the highest valid value
 // merged with the file, copied as the backup after reading back -, and the checks read the revision file the store wrote.
-using RotationSolver.Basic.Configuration;
+using RotationSolver.Configuration;
 
 var runs = args.Length > 0 ? int.Parse(args[0]) : 300;
 return OtherConfiguration.RoundTrip() && OtherConfiguration.RunHarness(runs) == 0 && LockHarness.Run(runs) == 0 ? 0 : 1;
 
-namespace RotationSolver.Basic.Configuration
+namespace RotationSolver.Configuration
 {
 	internal partial class OtherConfiguration
 	{

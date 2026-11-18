@@ -69,7 +69,7 @@ Lage – mehr Tote in der Leichtgruppe oder mehr Zauber und Überheilung (Abschn
 
 Erhoben am 25.10.2026 am Zweig: 298 Einstellungen mit eigener Beschriftung in `Configs` und acht Heilschwellen je Job
 ohne eigene Beschriftung (in der Tabelle unter „Automatic healing thresholds"); in den 22 Standardrotationen seiner
-Jobs (PvE, `RebornRotations`) 243 Rotationseinstellungen, davon 151 Schalter, 74 Zahlen, 18 Auswahlen und Texte. Außerhalb seines
+Jobs (PvE, die mitgelieferten `<JOB>_Reborn`) 243 Rotationseinstellungen, davon 151 Schalter, 74 Zahlen, 18 Auswahlen und Texte. Außerhalb seines
 Profils erfasst, nicht bewertet: 19 PvP-Einstellungen, 13 der Maskerade, die Rotationen für PvP, Inhalte und
 begrenzte Jobs, die Zusatzrotationen.
 
@@ -437,7 +437,7 @@ RSR wirkt sichtbar schneller als ein Mensch – das ist die Abwägung, die der S
 - Die Grenze für Sprungangriffe sitzt bei den Aktionen, nicht in der Zielwahl. Eine neue Sprungaktion von Upstream ohne
   eigene Prüfung läse sie nicht; beim Abgleich eines Syncs ist jede neue Aktion vom Typ `HostileMovingAttack` darauf
   zu prüfen.
-- Die Zusatzrotationen (`ExtraRotations`) sind nicht angepasst: Wer dort Intervene nutzt, bekommt die Grenze über
+- Die fremden Rotationen (in den Jobordnern ohne Jobkürzel vor dem Namen) sind nicht angepasst: Wer dort Intervene nutzt, bekommt die Grenze über
   `PaladinRotation`; Forked Raiju in `BeirutaNIN` bleibt, wie diese Rotation es baut.
 - Seine Konfiguration ist nicht messbar. Eine Aussage über eine Voreinstellung sagt nichts über seinen Wert.
 - *Prüfgrad:* statisch am Code (jeder Leser der genannten Einstellungen), Versionsgeschichte für die Herkunft,

@@ -21,6 +21,8 @@ Exit code 1 when a concept states a default the code contradicts.
 import re
 import sys
 from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import layout  # noqa: E402
 
 CONCEPT_DIR = Path('docs/rotation-flow')
 
@@ -138,7 +140,8 @@ def code_defaults(dirs=SOURCE_DIRS, labels=None):
     """
     # The same property name occurs in several rotations - `AddCrimsonCyclone` is off in SMN_Reborn and
     # on in the third-party ChurinSMN. Taking whichever file came first scored a correct concept as
-    # wrong. The concepts describe the owner's rotations, so a definition outside ExtraRotations wins;
+    # wrong. The concepts describe the owner's rotations, so a definition outside a third-party rotation wins
+    # (layout.is_third_party: since c170c9cd5 they share the job folders, A878);
     # where the owner's own files still disagree, the name says nothing and is dropped.
     seen, seen_numbers = {}, {}
     methods = set()
@@ -147,7 +150,7 @@ def code_defaults(dirs=SOURCE_DIRS, labels=None):
             continue
         for path in directory.rglob('*.cs'):
             text = path.read_text(encoding='utf-8', errors='replace')
-            third_party = 'ExtraRotations' in path.parts
+            third_party = layout.is_third_party(path, text)
             for name, value in DEFINITION.findall(text):
                 seen.setdefault(name[0].upper() + name[1:], []).append((third_party, value))
             for name, value in NUMERIC_DEFINITION.findall(text):

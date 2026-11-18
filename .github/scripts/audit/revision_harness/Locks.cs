@@ -3,7 +3,7 @@
 // that damages every action with and without it, patches, unreadable versions, and saves and loads. The code under test is
 // LearnedLocks.cs as the plugin has it; the oracle restates concept 13 in its own words. Assumptions of the test, not
 // claims about the game: three kinds, two actions, versions only move forward.
-using RotationSolver.Basic.Configuration;
+using RotationSolver.Configuration;
 
 static class LockHarness
 {

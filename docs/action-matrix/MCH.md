@@ -3,7 +3,7 @@
 Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-07; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `MachinistRotation`
-- Rotation: `RotationSolver/RebornRotations/Ranged/MCH_Reborn.cs`
+- Rotation: `RotationSolver/Rotations/Ranged/Machinist/MCH_Reborn.cs`
 - Matrix als Tabelle: `MCH.csv`
 
 ## Nutzung

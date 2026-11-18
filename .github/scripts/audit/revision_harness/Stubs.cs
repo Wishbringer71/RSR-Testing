@@ -8,7 +8,7 @@ namespace ECommons.Logging
 	public static class PluginLog { public static void Warning(string s) => Harness.Log.Add("WARN " + s); }
 }
 
-namespace RotationSolver.Basic.Helpers
+namespace RotationSolver.Engine.Helpers
 {
 	public static class DefenseTrace { public static void Line(string s) => Harness.Log.Add(s); }
 }
@@ -20,21 +20,12 @@ public static class Harness
 	public static List<string> Log = [];
 }
 
-namespace RotationSolver.Basic.Configuration
+namespace RotationSolver.Configuration
 {
 	internal partial class OtherConfiguration
 	{
-		internal static Dictionary<uint, float> HostileCastingAreaPotential = [];
-		public static Dictionary<uint, TankbusterReading> TankbusterPotential = [];
-		public static readonly object TankbusterPotentialGate = new();
-
-		private static readonly RevisedStore<float> AreaRevision = new("HostileCastingAreaPotential", 1, Math.Max,
-			IsValidAreaShare, share => share, () => HostileCastingAreaPotential, null, "area table");
-
-		private static readonly RevisedStore<TankbusterReading> TankbusterRevision = new("TankbusterPotential", 1,
-			TankbusterReading.Higher, TankbusterReading.IsValid, reading => reading.Unmitigated > 0f ? reading.Unmitigated : null,
-			() => TankbusterPotential, TankbusterPotentialGate, "tankbuster table");
-
+		// The stores, their tables and gates come from OtherConfiguration.cs (prepare.py writes Stores.cs): a copy here
+		// missed the aimed hit store added on 05.11.2026, and the harness did not build until 18.11.2026 (A878).
 		internal static bool IsWithinWholeHealth(float share) => share <= 1f;
 
 		internal static Task SaveList(string name) => Task.CompletedTask;

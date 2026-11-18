@@ -41,7 +41,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-CONFIGS = 'RotationSolver/Basic/Configuration/Configs.cs'
+CONFIGS = 'RotationSolver/Configuration/Configs.CombatAndTarget.cs'
 
 # The member may be public, private, internal or protected. Requiring `public` is not a harmless
 # narrowing: DRK_Reborn carries RotationConfig on a private float, and a pattern that skips it

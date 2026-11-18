@@ -1,0 +1,893 @@
+﻿using ECommons.ExcelServices;
+using ECommons.DalamudServices;
+using ECommons.GameHelpers;
+using FFXIVClientStructs.FFXIV.Client.Game;
+using FFXIVClientStructs.FFXIV.Client.Game.UI;
+
+namespace RotationSolver.Engine.Actions;
+
+/// <summary>
+/// The action info for the <see cref="Lumina.Excel.Sheets.Action"/>.
+/// </summary>
+public readonly struct ActionBasicInfo
+{
+	internal static readonly uint[] ActionsNoNeedCasting =
+	[
+		5,
+		(uint)ActionID.PowerfulShotPvP,
+		(uint)ActionID.BlastChargePvP,
+	];
+
+	private readonly IBaseAction _action;
+
+	/// <summary>
+	/// Gets the name of the action.
+	/// </summary>
+	public string Name { get; }
+
+	/// <summary>
+	/// Gets the unique identifier of the action.
+	/// </summary>
+	public readonly uint ID => _action.Action.RowId;
+
+	/// <summary>
+	/// Gets the range of the action.
+	/// </summary>
+	public readonly sbyte Range => IsInstinctualAxe(ID) ? (sbyte)3 : (sbyte)ActionManager.GetActionRange(ID);
+
+	internal static bool IsInstinctualAxe(uint id)
+	{
+		return (ActionID)id is ActionID.AvalancheAxePvE or ActionID.SpinningAxePvE or ActionID.MistralAxePvE or ActionID.GaleAxePvE;
+	}
+
+	/// <summary>
+	/// Gets the effect range of the action.
+	/// </summary>
+	public readonly byte EffectRange => _action.Action.EffectRange;
+
+	/// <summary>
+	/// Gets the icon ID of the action.
+	/// </summary>
+	public readonly uint IconID => ID == (uint)ActionID.SprintPvE ? 104u : _action.Action.Icon;
+
+	/// <summary>
+	/// Gets the adjusted ID of the action, considering any modifications.
+	/// </summary>
+	public readonly uint AdjustedID => (uint)Service.GetAdjustedActionId((ActionID)ID);
+
+	/// <summary>
+	/// Gets the attack type of the action.
+	/// Returns <see cref="ActionSetting.AttackTypeOverride"/> when set; otherwise falls back to the game data value.
+	/// For multi-type actions use <see cref="AttackTypes"/> or <see cref="HasAttackType"/>.
+	/// </summary>
+	public AttackType AttackType => _action.Setting.AttackTypeOverride ?? (AttackType)(_action.Action.AttackType.RowId != 0 ? _action.Action.AttackType.RowId : byte.MaxValue);
+
+	/// <summary>
+	/// Gets all attack types for this action, including any additional types set via
+	/// <see cref="ActionSetting.AdditionalAttackTypes"/>.
+	/// </summary>
+	public IReadOnlyList<AttackType> AttackTypes
+	{
+		get
+		{
+			var additional = _action.Setting.AdditionalAttackTypes;
+			if (additional == null || additional.Length == 0)
+			{
+				return [AttackType];
+			}
+
+			var result = new AttackType[1 + additional.Length];
+			result[0] = AttackType;
+			additional.CopyTo(result, 1);
+			return result;
+		}
+	}
+
+	/// <summary>
+	/// Returns <see langword="true"/> if this action has the specified attack type,
+	/// accounting for all values in <see cref="AttackTypes"/>.
+	/// </summary>
+	public bool HasAttackType(AttackType attackType)
+	{
+		return AttackType == attackType || Array.IndexOf(_action.Setting.AdditionalAttackTypes ?? [], attackType) >= 0;
+	}
+
+	/// <summary>
+	/// Gets the aspect of the action.
+	/// Returns <see cref="ActionSetting.AspectOverride"/> when set; otherwise falls back to the game data value.
+	/// For multi-aspect actions use <see cref="Aspects"/> or <see cref="HasAspect"/>.
+	/// </summary>
+	public Aspect Aspect => _action.Setting.AspectOverride ?? (Aspect)_action.Action.Aspect;
+
+	/// <summary>
+	/// Gets all aspects for this action, including any additional aspects set via
+	/// <see cref="ActionSetting.AdditionalAspects"/>.
+	/// </summary>
+	public IReadOnlyList<Aspect> Aspects
+	{
+		get
+		{
+			var additional = _action.Setting.AdditionalAspects;
+			if (additional == null || additional.Length == 0)
+			{
+				return [Aspect];
+			}
+
+			var result = new Aspect[1 + additional.Length];
+			result[0] = Aspect;
+			additional.CopyTo(result, 1);
+			return result;
+		}
+	}
+
+	/// <summary>
+	/// Returns <see langword="true"/> if this action has the specified aspect,
+	/// accounting for all values in <see cref="Aspects"/>.
+	/// </summary>
+	public bool HasAspect(Aspect aspect)
+	{
+		return Aspect == aspect || Array.IndexOf(_action.Setting.AdditionalAspects ?? [], aspect) >= 0;
+	}
+
+	/// <summary>
+	/// Gets the level required to use the action.
+	/// </summary>
+	public readonly byte Level => _action.Action.ClassJobLevel;
+
+	/// <summary>
+	/// Gets the row ID of the unlock link associated with this action, used to check quest or unlock requirements.
+	/// </summary>
+	public readonly uint UnlockLink => _action.Action.UnlockLink.RowId;
+
+	/// <summary>
+	/// Determines whether the action has been unlocked by completing any associated quests or unlock links.
+	/// </summary>
+	public unsafe bool IsQuestUnlocked()
+	{
+		if (UnlockLink == 0 && _action.Setting.UnlockedByQuestID == 0)
+		{
+			return true;
+		}
+
+		if (UnlockLink != 0 && !UIState.Instance()->IsUnlockLinkUnlockedOrQuestCompleted(UnlockLink))
+		{
+			return false;
+		}
+
+		if (_action.Setting.UnlockedByQuestID != 0 && !UIState.Instance()->IsUnlockLinkUnlockedOrQuestCompleted(_action.Setting.UnlockedByQuestID))
+		{
+			return false;
+		}
+
+		return true;
+	}
+
+	/// <summary>
+	/// Determines whether the player's level is sufficient to use the action.
+	/// </summary>
+	public readonly bool EnoughLevel => DataCenter.PlayerSyncedLevel() >= Level;
+
+	/// <summary>
+	/// Determines whether the player meets both the level requirement and has unlocked this action via its associated quest.
+	/// </summary>
+	public bool EnoughLevelAndQuest()
+	{
+		if (EnoughLevel && IsQuestUnlocked())
+		{
+			return true;
+		}
+
+		return false;
+	}
+
+	/// <summary>
+	/// Gets a value indicating whether this action is a PvP action.
+	/// </summary>
+	public readonly bool IsPvP => _action.Action.IsPvP;
+
+	/// <summary>
+	/// Gets a value indicating whether this action can target the player themselves.
+	/// </summary>
+	public readonly bool CanTargetSelf => _action.Action.CanTargetSelf;
+
+	/// <summary>
+	/// Gets a value indicating whether this action can target party members.
+	/// </summary>
+	public readonly bool CanTargetParty => _action.Action.CanTargetParty;
+
+	/// <summary>
+	/// Gets a value indicating whether this action can target alliance members outside the player's party.
+	/// </summary>
+	public readonly bool CanTargetAlliance => _action.Action.CanTargetAlliance;
+
+	/// <summary>
+	/// Gets a value indicating whether this action can target hostile (enemy) entities.
+	/// </summary>
+	public readonly bool CanTargetHostile => _action.Action.CanTargetHostile;
+
+	/// <summary>
+	/// Gets a value indicating whether this action can target friendly (ally) entities.
+	/// </summary>
+	public readonly bool CanTargetAlly => _action.Action.CanTargetAlly;
+
+	/// <summary>
+	/// Gets a value indicating whether this action can target the player's own pet.
+	/// </summary>
+	public readonly bool CanTargetOwnPet => _action.Action.CanTargetOwnPet;
+
+	/// <summary>
+	/// Gets a value indicating whether this action can target a party member's pet.
+	/// </summary>
+	public readonly bool CanTargetPartyPet => _action.Action.CanTargetPartyPet;
+
+	/// <summary>
+	/// Gets a value indicating whether using this action will break an active combo chain.
+	/// </summary>
+	public readonly bool BreaksCombo => !_action.Action.PreservesCombo;
+
+	/// <summary>
+	/// Gets a value indicating whether this action targets a ground area rather than a specific entity.
+	/// </summary>
+	public readonly bool TargetAreaAction => _action.Action.TargetArea;
+
+	/// <summary>
+	/// Gets a value indicating whether this action requires an unobstructed line of sight to its target.
+	/// </summary>
+	public readonly bool RequiresLineOfSight => _action.Action.RequiresLineOfSight;
+
+	/// <summary>
+	/// Gets a value indicating whether the player must be facing the target to use this action.
+	/// </summary>
+	public readonly bool NeedToFaceTarget => _action.Action.NeedToFaceTarget;
+
+	/// <summary>
+	/// Determines if the action has the "Raise" behavior, which allows it to target dead allies for resurrection.
+	/// </summary>
+	public readonly bool RaiseAction => _action.Action.DeadTargetBehaviour == 1;
+
+	/// <summary>
+	/// Gets the cast type of the action.
+	/// </summary>
+	public readonly CastType CastType => (CastType)_action.Action.CastType;
+
+	/// <summary>
+	/// Gets the casting time of the action.
+	/// </summary>
+	public readonly float CastTime => ((ActionID)AdjustedID).GetCastTime();
+
+	/// <summary>
+	/// How long a status the action needs has to last from now: until the action goes off and its cast
+	/// ends. A GCD is chosen ahead of time (<see cref="DataCenter.CalculatedActionAhead"/>) and goes off
+	/// when the GCD rolls, so the time left on it counts; the cast time is the adjusted one, zero under
+	/// Swiftcast or Dualcast.
+	/// </summary>
+	public readonly float NeededStatusMargin => CastTime + (IsRealGCD ? DataCenter.DefaultGCDRemain : 0f);
+
+	/// <summary>
+	/// Gets the MP required to use the action.
+	/// </summary>
+	public readonly uint MPNeed
+	{
+		get
+		{
+			var mpOver = _action.Setting.MPOverride?.Invoke();
+			if (mpOver.HasValue)
+			{
+				return mpOver.Value;
+			}
+
+			var mp = (uint)ActionManager.GetActionCost(ActionType.Action, AdjustedID, 0, 0, 0, 0);
+			return mp < 100 ? 0 : mp;
+		}
+	}
+
+
+	/// <summary>
+	/// Whether the action manager says the current ability is ready and valid.
+	/// </summary>
+	public unsafe bool ActionManagerStatusValid()
+	{
+		return ActionManager.Instance() != null && ActionManager.Instance()->GetActionStatus(ActionType.Action, ID) == 0;
+	}
+
+	/// <summary>
+	/// Determines whether the action is on the player's hotbar or slot.
+	/// </summary>
+	public readonly bool IsOnSlot
+	{
+		get
+		{
+			if (_action.Setting.RequiredBluSlotActionId != 0)
+			{
+				foreach (var slotId in DataCenter.BluSlots)
+				{
+					if (slotId == _action.Setting.RequiredBluSlotActionId)
+					{
+						return true;
+					}
+				}
+				return false;
+			}
+
+			if (_action.Action.ClassJob.RowId == (uint)Job.BLU)
+			{
+				foreach (var slotId in DataCenter.BluSlots)
+				{
+					if (slotId == ID)
+					{
+						return true;
+					}
+				}
+				return false;
+			}
+
+			if (_action.Setting.IsQuestBattleAction)
+			{
+				return DataCenter.IsInQuestBattle;
+			}
+
+			if (IsDutyAction)
+			{
+				foreach (var actionId in DataCenter.DutyActions)
+				{
+					if (actionId == ID)
+					{
+						return true;
+					}
+				}
+				return false;
+			}
+
+			return IsPvP == DataCenter.IsPvP;
+		}
+	}
+
+	/// <summary>
+	/// Determines whether the action is a limit break action.
+	/// </summary>
+	public bool IsLimitBreak { get; }
+
+	/// <summary>
+	/// Determines whether the action is a PvP limit break action.
+	/// </summary>
+	public bool IsPvPLimitBreak { get; }
+
+	/// <summary>
+	/// Gets a value indicating whether this action is a mount action.
+	/// </summary>
+	public bool IsMountAction { get; }
+
+	/// <summary>
+	/// Gets a value indicating whether this action belongs to the Special action category.
+	/// </summary>
+	public bool IsSpecialAction { get; }
+
+	/// <summary>
+	/// Gets a value indicating whether this action belongs to a System action category.
+	/// </summary>
+	public bool IsSystemAction { get; }
+
+	/// <summary>
+	/// Gets a value indicating whether this action is an off-global-cooldown ability.
+	/// </summary>
+	public bool IsAbility { get; }
+
+	/// <summary>
+	/// Determines whether the action is a general global cooldown (GCD) action.
+	/// </summary>
+	public bool IsGeneralGCD { get; }
+
+	/// <summary>
+	/// Determines whether the action is a real global cooldown (GCD) action.
+	/// </summary>
+	public bool IsRealGCD { get; }
+
+	/// <summary>
+	/// Determines whether the action is a duty action.
+	/// </summary>
+	public bool IsDutyAction { get; }
+
+	/// <summary>
+	/// Initializes a new instance of the <see cref="ActionBasicInfo"/> struct.
+	/// </summary>
+	/// <param name="action">The base action.</param>
+	/// <param name="isDutyAction">Indicates whether the action is a duty action.</param>
+	public ActionBasicInfo(IBaseAction action, bool isDutyAction)
+	{
+		_action = action;
+		Name = _action.Action.Name.ExtractText();
+		IsGeneralGCD = _action.Action.IsGeneralGCD();
+		IsRealGCD = _action.Action.IsRealGCD();
+		IsLimitBreak = (ActionCate?)_action.Action.ActionCategory.Value.RowId
+			is ActionCate.LimitBreak;
+		IsPvPLimitBreak = (ActionCate?)_action.Action.ActionCategory.Value.RowId
+			is ActionCate.LimitBreak_15;
+		IsMountAction = (ActionCate?)_action.Action.ActionCategory.Value.RowId
+			is ActionCate.Mount;
+		IsSpecialAction = (ActionCate?)_action.Action.ActionCategory.Value.RowId
+			is ActionCate.Special;
+		IsAbility = (ActionCate?)_action.Action.ActionCategory.Value.RowId
+			is ActionCate.Ability;
+		IsSystemAction = (ActionCate?)_action.Action.ActionCategory.Value.RowId
+			is ActionCate.System or ActionCate.System_11;
+		IsDutyAction = isDutyAction;
+	}
+
+	internal readonly unsafe bool BasicCheck(bool skipStatusProvideCheck, bool skipStatusNeed, bool skipComboCheck, bool skipCastingCheck, bool checkActionManager = false, TargetType targetOverride = default)
+	{
+		if (Player.Object == null)
+		{
+			return false;
+		}
+
+		if (DataCenter.Orbonne && (_action.ID == 14415 || _action.ID == 14414) && IsActionCheckValid() && ActionManagerStatusValid())
+		{
+			return true;
+		}
+
+		// Concept 03, "Tiefe Gewölbe: Verwandlung" (A614): the attack of a form stands on no duty slot and carries no level
+		// or unlock of the job, so the checks below would refuse it; the game says whether the player's form has it now.
+		if (_action.Setting.IsTransformationAction)
+		{
+			return IsActionCheckValid() && ActionManagerStatusValid() && !NeedsCasting(skipCastingCheck);
+		}
+
+		if (!EnoughLevel)
+		{
+			return false;
+		}
+
+		var type = ActionHelper.GetActionCate(_action.Action);
+		if (!_action.Setting.IgnoresBadStatus)
+		{
+			if (type is ActionCate.Weaponskill)
+			{
+				if (StatusHelper.PlayerHasStatus(false, StatusID.Pacification_620))
+				{
+					return false;
+				}
+			}
+
+			if (type is ActionCate.Spell)
+			{
+				if (StatusHelper.PlayerHasStatus(false, StatusID.Silence))
+				{
+					return false;
+				}
+			}
+		}
+
+		if (IsLimitBreak && !IBaseAction.LimitBreakPathRunning)
+		{
+			return false;
+		}
+
+		if (!IsActionEnabled())
+		{
+			return false;
+		}
+
+		if (!IsOnSlot)
+		{
+			return false;
+		}
+
+		if (!HasEnoughMP())
+		{
+			return false;
+		}
+
+		if (!LeavesMpForRaise())
+		{
+			return false;
+		}
+
+		if (!IsQuestUnlocked())
+		{
+			BasicWarningHelper.AddSystemWarning($"Do your class quests, action not unlocked: {Name}");
+			return false;
+		}
+
+		if (!_action.Setting.IgnoresBadStatus && (IsRealGCD || IsAbility)
+			&& Array.IndexOf(ConfigurationHelper.BadStatusAction, (ActionStatus)ActionManager.Instance()->GetActionStatus(ActionType.Action, AdjustedID)) >= 0)
+		{
+			return false;
+		}
+
+		if (IsStatusNeeded(skipStatusNeed) || IsStatusProvided(skipStatusProvideCheck))
+		{
+			return false;
+		}
+
+		if (_action.Info.BreaksCombo && !IsComboValid(skipComboCheck))
+		{
+			return false;
+		}
+
+		if (!IsActionJobValid())
+		{
+			return false;
+		}
+
+		if (checkActionManager && !ActionManagerStatusValid())
+		{
+			return false;
+		}
+
+		return !NeedsCasting(skipCastingCheck) && (!IsGeneralGCD || !IsStatusProvidedDuringGCD()) && IsActionCheckValid() && IsRotationCheckValid()
+			// A channel that ends upon moving does not start where BossMod forbids the spot: its first step ends it (A651).
+			&& !MovementLock.ChannelStartBarred(AdjustedID);
+	}
+
+	/// <summary>
+	/// Whether a cast of this action could begin now as far as its cast time decides: the player is not walking without the
+	/// movement lock, no danger forbids the spot under it, BossMod's cast limit and a landing penalty allow it. For a rule
+	/// that asks before the action itself can be used (the Beastmaster's relief, concept 01, B6).
+	/// </summary>
+	internal bool CastCouldStartNow => !NeedsCasting(false);
+
+	private bool NeedsCasting(bool skipCastingCheck)
+	{
+		if (Player.Object == null)
+		{
+			return false;
+		}
+
+		if (CastTime <= 0f)
+		{
+			return false;
+		}
+
+		if (!Player.Object.WillStatusEnd(0, true, StatusHelper.SwiftcastStatus))
+		{
+			return false;
+		}
+
+		if (Array.IndexOf(ActionsNoNeedCasting, ID) >= 0)
+		{
+			return false;
+		}
+
+		if (CastStartBlockedNow(skipCastingCheck)
+			// A cast still under way when a status that damages every action lands kills (A439).
+			|| ActionPenaltyWatch.WouldMeetLanding(CastTime)
+			// BossMod must move the player before a longer cast could end; its own rotation skips such casts too (A649).
+			|| ExceedsBossModCastLimit(CastTime, Name)
+			// Under the movement lock RSR casts while the player walks and holds the player - not on a walk out of danger (A651).
+			|| (!DataCenter.NoPoslock && DataCenter.IsMoving && MovementLock.SpotInDanger(CastTime))
+			// A hit a step certainly avoids lands before the spell would end: the step breaks it, or the player stands in the
+			// hit (A652).
+			|| MovementLock.CertainDodgeableWithin(CastTime) is not null)
+		{
+			return true;
+		}
+
+		return false;
+	}
+
+	// The cast limit of the episode that has been traced; unlimited again once BossMod lifts it.
+	private static float _tracedCastLimit = float.MaxValue;
+
+	/// <summary>
+	/// Whether BossMod needs the player to move before a cast of this length could end (<c>Hints.MaxCastTime</c>: "maximal
+	/// time we can spend casting before we need to move"). It is set from the AI's leeway on its path by BossMod's movement
+	/// module, and to zero while a knockback is pending, while casts are held, or under an instants-only cast strategy; a
+	/// longer cast would be broken by the move, or, under the movement lock, hold the player past the leeway. While the
+	/// player holds a movement key, BossMod's zero only reflects that key, and the movement lock decides as the player set it
+	/// (concept 03, "Bewegungssperre beim Wirken und die KI von BossMod"). One trace line per episode.
+	/// </summary>
+	internal static bool ExceedsBossModCastLimit(float castTime, string name)
+	{
+		var limit = DataCenter.BMRMaxCastTime;
+		if (!BossModCastLimitRefuses(castTime))
+		{
+			if (limit == float.MaxValue)
+			{
+				_tracedCastLimit = float.MaxValue;
+			}
+
+			return false;
+		}
+
+		if (_tracedCastLimit == float.MaxValue)
+		{
+			_tracedCastLimit = limit;
+			DefenseTrace.Line($"BossMod's cast limit of {limit:F2} s holds longer casts; first held: {name}, {castTime:F2} s");
+		}
+
+		return true;
+	}
+
+	/// <summary>The test of <see cref="ExceedsBossModCastLimit"/>, without its trace line.</summary>
+	private static bool BossModCastLimitRefuses(float castTime)
+		=> castTime > DataCenter.BMRMaxCastTime && !DataCenter.BMRMoveRequested;
+
+	/// <summary>
+	/// Whether no spell of the current rotation can start now for a reason that depends on its cast time: the shortest cast
+	/// the job has now is longer than BossMod's cast limit, would still be under way when a status that damages every
+	/// action lands (A439), the player walks under the movement lock while danger reaches the spot before it ends (A651), or
+	/// a hit a step certainly avoids lands before it ends (A652).
+	/// Then no cast can start, as with <see cref="CastStartBlockedNow"/>, and a caster's instant GCD is due (concept 03,
+	/// "C6", A650).
+	/// </summary>
+	internal static bool NoCastFitsNow()
+	{
+		var limited = DataCenter.BMRMaxCastTime < float.MaxValue && !DataCenter.BMRMoveRequested;
+		var landing = ActionPenaltyWatch.LandsOnPlayerIn() < float.MaxValue;
+		var walkingLocked = !DataCenter.NoPoslock && DataCenter.IsMoving;
+		var certainHit = MovementLock.CertainDodgeableWithin(float.MaxValue);
+		if (!limited && !landing && !walkingLocked && certainHit is null)
+		{
+			return false;
+		}
+
+		var shortest = ShortestCastNow();
+		return shortest < float.MaxValue
+			&& ((limited && BossModCastLimitRefuses(shortest)) || (landing && ActionPenaltyWatch.WouldMeetLanding(shortest))
+				|| (walkingLocked && MovementLock.SpotInDanger(shortest)) || (certainHit is { } hit && shortest >= hit.LandsIn));
+	}
+
+	// The game frame ShortestCastNow last answered for, and its answer: CastStartBlocked is read several times a frame.
+	private static DateTime _shortestCastFrame;
+	private static float _shortestCast = float.MaxValue;
+
+	// The shortest cast time among the rotation's enabled GCDs at the player's level, as the game adjusts it now (a proc that
+	// makes a spell instant takes it out); float.MaxValue when the rotation has none. Once per game frame.
+	private static float ShortestCastNow()
+	{
+		var frame = Svc.Framework.LastUpdate;
+		if (frame == _shortestCastFrame)
+		{
+			return _shortestCast;
+		}
+
+		_shortestCastFrame = frame;
+		_shortestCast = float.MaxValue;
+		var actions = DataCenter.CurrentRotation?.AllBaseActions;
+		if (actions == null)
+		{
+			return _shortestCast;
+		}
+
+		var shortest = float.MaxValue;
+
+		foreach (var action in actions)
+		{
+			if (!action.Info.IsGeneralGCD || !action.EnoughLevel || !action.IsEnabled)
+			{
+				continue;
+			}
+
+			var cast = action.Info.CastTime;
+			if (cast > 0f && cast < shortest)
+			{
+				shortest = cast;
+			}
+		}
+
+		_shortestCast = shortest;
+		return shortest;
+	}
+
+	/// <summary>
+	/// Whether no spell with a cast time may start now, whatever the spell: no-casting is commanded, a knockback runs, the
+	/// player moves without the movement lock, or BossMod's AI moves or cancels. The Swiftcast-type statuses are checked by
+	/// the caller (concept 03, "C6").
+	/// </summary>
+	internal static bool CastStartBlockedNow(bool skipCastingCheck)
+		=> DataCenter.SpecialType == SpecialCommandType.NoCasting
+			|| (DateTime.Now > DataCenter.KnockbackStart && DateTime.Now < DataCenter.KnockbackFinished)
+			|| (DataCenter.NoPoslock && DataCenter.IsMoving && !skipCastingCheck)
+			|| DataCenter.BMRForceCancelCast || DataCenter.BMRIsMoving;
+
+	private bool IsActionEnabled()
+	{
+		return _action.Config?.IsEnabled ?? false;
+	}
+
+	/// <summary>
+	/// Whether this action leaves the MP a raise needs (concept 11, "Das Mana für die Wiederbelebung", A469): for a job that
+	/// raises, in combat and in a party, a hostile action that costs MP goes only while the raise's cost - or "Don't raise
+	/// below this MP" where that is higher - is left after it. Heals, the raise itself, actions without MP and a cast Thin
+	/// Air makes free are untouched. The dark knight's "Keep at least 3000 MP" (A406), carried over to the raise. A cleanse
+	/// counts as a heal only where it saves a life - its target bears a status that kills when it runs out -, else it keeps
+	/// the reserve like damage (concept 07, "Reinigung oder Heilung", A565).
+	/// </summary>
+	private bool LeavesMpForRaise()
+	{
+		if (!Service.Config.KeepMpForRaise || (_action.Setting.IsFriendly && !CleanseSavesNoLife()) || !DataCenter.InCombat
+			|| DataCenter.PartyMembers.Count <= 1)
+		{
+			return true;
+		}
+
+		var cost = MPNeed;
+		if (cost == 0 || DataCenter.CurrentRotation is not CustomRotation rotation || rotation.RaiseAction is not { } raise
+			|| !raise.EnoughLevel || raise.ID == ID)
+		{
+			return true;
+		}
+
+		if (Player.Job == Job.WHM
+			&& (StatusHelper.PlayerHasStatus(true, StatusID.ThinAir) || CustomRotation.IsLastAction(ActionID.ThinAirPvE)))
+		{
+			return true;
+		}
+
+		// Where only the duty's own raises bring anyone back, the job's raise lifts nobody, and its mana is kept for
+		// nothing (concept 11, "Tote, die nur die Wiederbelebung des Inhalts aufhebt", A616); those raises cost no mana.
+		if (ObjectHelper.DutyRestrictsResurrection)
+		{
+			return true;
+		}
+
+		var reserve = Math.Max(raise.Info.MPNeed, (uint)Math.Max(0, Service.Config.LessMPNoRaise));
+		return DataCenter.CurrentMp >= cost + reserve;
+	}
+
+	// A cleanse whose target - the one the dispel choice holds - bears no status that kills when it runs out.
+	private bool CleanseSavesNoLife()
+	{
+		if (_action.Setting.TargetType != TargetType.Dispel || DataCenter.DispelTarget?.StatusList is not { } statuses)
+		{
+			return false;
+		}
+
+		foreach (var status in statuses)
+		{
+			if (status != null && status.CanDispel() && StatusHelper.EndsInDeath((StatusID)status.StatusId))
+			{
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	/// <summary>
+	/// Determines whether the player has enough MP to use the action.
+	/// </summary>
+	public bool HasEnoughMP()
+	{
+		if (Player.Object == null)
+		{
+			return false;
+		}
+
+		if (DataCenter.CurrentMp >= MPNeed)
+		{
+			return true;
+		}
+
+		if (Player.Job == Job.WHM)
+		{
+			if (ID == (uint)ActionID.CureIiPvE && StatusHelper.PlayerHasStatus(true, StatusID.Freecure))
+			{
+				return true;
+			}
+
+			if (StatusHelper.PlayerHasStatus(true, StatusID.ThinAir) || CustomRotation.IsLastAction(ActionID.ThinAirPvE))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	private bool IsStatusNeeded(bool skipStatusNeed)
+	{
+		if (Player.Object == null)
+		{
+			return false;
+		}
+
+		// A needed status has to be there when the action goes off - for a cast, until the cast ends
+		// (NeededStatusMargin). StatusRefreshGcdCount is the horizon for reapplying a status the action
+		// provides ("Number of GCDs before the DOT/Status effect is reapplied"); read here it locked
+		// every consumer out of the last GCDs of its own window, and any "use it before it runs out"
+		// rule with it.
+		return Player.Object.StatusList != null && !skipStatusNeed && _action.Setting.StatusNeed != null && Player.Object.WillStatusEnd(NeededStatusMargin, _action.Setting.StatusFromSelf, _action.Setting.StatusNeed);
+	}
+
+	private bool IsStatusProvided(bool skipStatusProvideCheck)
+	{
+		if (Player.Object == null)
+		{
+			return false;
+		}
+
+		return !skipStatusProvideCheck && _action.Setting.StatusProvide != null && _action.Config.ShouldCheckStatus && !Player.Object.WillStatusEndGCD(_action.Config.StatusRefreshGcdCount, 0, _action.Setting.StatusFromSelf, _action.Setting.StatusProvide);
+	}
+
+	private bool IsComboValid(bool skipComboCheck)
+	{
+		return skipComboCheck || !IsGeneralGCD || CheckForCombo();
+	}
+
+	private bool IsActionJobValid()
+	{
+		if (_action.Action.ClassJobCategory.Value.DoesJobMatchCategory(DataCenter.Job) == true)
+		{
+			return true;
+		}
+
+		return false;
+	}
+
+	private bool IsRotationCheckValid()
+	{
+		return IBaseAction.ForceEnable || (_action.Setting.RotationCheck?.Invoke() ?? true);
+	}
+
+	private bool IsStatusProvidedDuringGCD()
+	{
+		return _action.Setting.StatusProvide?.Length > 0 && _action.Setting.IsFriendly && IActionHelper.IsLastGCD(true, _action) && DataCenter.TimeSinceLastAction.TotalSeconds < 3;
+	}
+
+	private bool IsActionCheckValid()
+	{
+		return _action.Setting.ActionCheck?.Invoke() ?? true;
+	}
+
+	private readonly bool CheckForCombo()
+	{
+		if (!_action.Config.ShouldCheckCombo)
+		{
+			return true;
+		}
+
+		if (_action.Setting.ComboIdsNot != null)
+		{
+			foreach (var comboIdNot in _action.Setting.ComboIdsNot)
+			{
+				if (comboIdNot == DataCenter.LastComboAction)
+				{
+					return false;
+				}
+			}
+		}
+
+		var comboActions = _action.Setting.ComboActionsCache;
+		if (comboActions == null)
+		{
+			ActionID[] baseCombo = _action.Action.ActionCombo.RowId != 0
+									? [(ActionID)_action.Action.ActionCombo.RowId]
+									: [];
+
+			comboActions = _action.Setting.ComboIds != null
+				? [.. baseCombo, .. _action.Setting.ComboIds]
+				: baseCombo;
+
+			_action.Setting.ComboActionsCache = comboActions;
+		}
+
+		if (comboActions.Length > 0)
+		{
+			var foundCombo = false;
+			foreach (var comboAction in comboActions)
+			{
+				if (comboAction == DataCenter.LastComboAction)
+				{
+					foundCombo = true;
+					break;
+				}
+			}
+
+			if (foundCombo)
+			{
+				if (DataCenter.ComboTime < DataCenter.DefaultGCDRemain)
+				{
+					return false;
+				}
+			}
+			else
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+}
+
+

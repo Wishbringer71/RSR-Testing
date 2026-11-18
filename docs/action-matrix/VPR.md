@@ -3,7 +3,7 @@
 Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-06; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `ViperRotation`
-- Rotation: `RotationSolver/RebornRotations/Melee/VPR_Reborn.cs`
+- Rotation: `RotationSolver/Rotations/Melee/Viper/VPR_Reborn.cs`
 - Matrix als Tabelle: `VPR.csv`
 
 ## Nutzung

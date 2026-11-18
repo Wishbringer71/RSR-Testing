@@ -10,647 +10,647 @@
    "member": "public static string CopyOfDefault(ITypeSymbol fieldType, string fieldTypeName, string variableName)"
   },
   {
-   "file": "RotationSolver/Basic/Actions/ActionBasicInfo.cs",
+   "file": "RotationSolver/Engine/Actions/ActionBasicInfo.cs",
    "member": "public readonly float NeededStatusMargin => CastTime + (IsRealGCD ? DataCenter.DefaultGCDRemain : 0f);"
   },
   {
-   "file": "RotationSolver/Basic/Actions/ActionBasicInfo.cs",
+   "file": "RotationSolver/Engine/Actions/ActionBasicInfo.cs",
    "member": "internal bool CastCouldStartNow => !NeedsCasting(false);"
   },
   {
-   "file": "RotationSolver/Basic/Actions/ActionBasicInfo.cs",
+   "file": "RotationSolver/Engine/Actions/ActionBasicInfo.cs",
    "member": "internal static bool ExceedsBossModCastLimit(float castTime, string name)"
   },
   {
-   "file": "RotationSolver/Basic/Actions/ActionBasicInfo.cs",
+   "file": "RotationSolver/Engine/Actions/ActionBasicInfo.cs",
    "member": "private static bool BossModCastLimitRefuses(float castTime)"
   },
   {
-   "file": "RotationSolver/Basic/Actions/ActionBasicInfo.cs",
+   "file": "RotationSolver/Engine/Actions/ActionBasicInfo.cs",
    "member": "internal static bool NoCastFitsNow()"
   },
   {
-   "file": "RotationSolver/Basic/Actions/ActionBasicInfo.cs",
+   "file": "RotationSolver/Engine/Actions/ActionBasicInfo.cs",
    "member": "private static DateTime _shortestCastFrame;"
   },
   {
-   "file": "RotationSolver/Basic/Actions/ActionBasicInfo.cs",
+   "file": "RotationSolver/Engine/Actions/ActionBasicInfo.cs",
    "member": "private static float ShortestCastNow()"
   },
   {
-   "file": "RotationSolver/Basic/Actions/ActionBasicInfo.cs",
+   "file": "RotationSolver/Engine/Actions/ActionBasicInfo.cs",
    "member": "internal static bool CastStartBlockedNow(bool skipCastingCheck)"
   },
   {
-   "file": "RotationSolver/Basic/Actions/ActionBasicInfo.cs",
+   "file": "RotationSolver/Engine/Actions/ActionBasicInfo.cs",
    "member": "private bool LeavesMpForRaise()"
   },
   {
-   "file": "RotationSolver/Basic/Actions/ActionBasicInfo.cs",
+   "file": "RotationSolver/Engine/Actions/ActionBasicInfo.cs",
    "member": "private bool CleanseSavesNoLife()"
   },
   {
-   "file": "RotationSolver/Basic/Actions/ActionSetting.cs",
+   "file": "RotationSolver/Engine/Actions/ActionSetting.cs",
    "member": "public bool IsTransformationAction { get; set; }"
   },
   {
-   "file": "RotationSolver/Basic/Actions/ActionSetting.cs",
+   "file": "RotationSolver/Engine/Actions/ActionSetting.cs",
    "member": "public float BackstepDistance { get; set; }"
   },
   {
-   "file": "RotationSolver/Basic/Actions/ActionSetting.cs",
+   "file": "RotationSolver/Engine/Actions/ActionSetting.cs",
    "member": "public bool HealsWithNextGcd { get; set; }"
   },
   {
-   "file": "RotationSolver/Basic/Actions/ActionTargetInfo.cs",
+   "file": "RotationSolver/Engine/Actions/ActionTargetInfo.cs",
    "member": "private readonly CastType? SelfAimedShape => action.Action.CastType == 1 && action.Action.EffectRange > 0"
   },
   {
-   "file": "RotationSolver/Basic/Actions/ActionTargetInfo.cs",
+   "file": "RotationSolver/Engine/Actions/ActionTargetInfo.cs",
    "member": "private readonly float HealRatio => IBaseAction.HealRatioOverride ?? action.Config.AutoHealRatio;"
   },
   {
-   "file": "RotationSolver/Basic/Actions/ActionTargetInfo.cs",
+   "file": "RotationSolver/Engine/Actions/ActionTargetInfo.cs",
    "member": "private readonly Comparison<IBattleChara>? DotSpreadOrder(bool skipStatusProvideCheck, TargetType targetOverride, TargetingType? commandTargeting)"
   },
   {
-   "file": "RotationSolver/Basic/Actions/ActionTargetInfo.cs",
+   "file": "RotationSolver/Engine/Actions/ActionTargetInfo.Result.cs",
    "member": "private readonly bool InstantHeal => !action.Info.IsRealGCD && !action.Setting.HealsWithNextGcd;"
   },
   {
-   "file": "RotationSolver/Basic/Actions/ActionTargetInfo.cs",
+   "file": "RotationSolver/Engine/Actions/ActionTargetInfo.Result.cs",
    "member": "internal static bool IsForwardMovingSpecialType(SpecialActionType type)"
   },
   {
-   "file": "RotationSolver/Basic/Actions/ActionTargetInfo.cs",
+   "file": "RotationSolver/Engine/Actions/ActionTargetInfo.Result.cs",
    "member": "internal readonly (bool Safe, string Reason, bool Measured) MovementSafety(Vector3 destination, IBattleChara? target = null)"
   },
   {
-   "file": "RotationSolver/Basic/Actions/ActionTargetInfo.cs",
+   "file": "RotationSolver/Engine/Actions/ActionTargetInfo.Filtering.cs",
    "member": "private readonly bool GrantsSingleHot()"
   },
   {
-   "file": "RotationSolver/Basic/Actions/ActionTargetInfo.cs",
+   "file": "RotationSolver/Engine/Actions/ActionTargetInfo.Filtering.cs",
    "member": "internal static bool StandsAtTarget(IBattleChara target) => target.DistanceToPlayer() <= 0;"
   },
   {
-   "file": "RotationSolver/Basic/Actions/ActionTargetInfo.cs",
+   "file": "RotationSolver/Engine/Actions/ActionTargetInfo.Filtering.cs",
    "member": "private readonly bool Refused(string why, bool measured = true)"
   },
   {
-   "file": "RotationSolver/Basic/Actions/ActionTargetInfo.cs",
+   "file": "RotationSolver/Engine/Actions/ActionTargetInfo.Result.cs",
    "member": "private readonly TargetResult? GroundAreaCoveringMost(float range, IEnumerable<IBattleChara> canAffects, IPlayerCharacter player)"
   },
   {
-   "file": "RotationSolver/Basic/Actions/ActionTargetInfo.cs",
+   "file": "RotationSolver/Engine/Actions/ActionTargetInfo.Result.cs",
    "member": "private readonly TargetResult? PlaceGroundAreaFriend(float range, IEnumerable<IBattleChara> canAffects, IPlayerCharacter player, TargetType targetOverride)"
   },
   {
-   "file": "RotationSolver/Basic/Actions/ActionTargetInfo.cs",
+   "file": "RotationSolver/Engine/Actions/ActionTargetInfo.Scoring.cs",
    "member": "private readonly bool HitsUntouchable(IBattleChara centre)"
   },
   {
-   "file": "RotationSolver/Basic/Actions/ActionTargetInfo.cs",
+   "file": "RotationSolver/Engine/Actions/ActionTargetInfo.Scoring.cs",
    "member": "private static bool InFacingCone(Vector3 faceVec, Vector3 toTargetUnit)"
   },
   {
-   "file": "RotationSolver/Basic/Actions/ActionTargetInfo.cs",
+   "file": "RotationSolver/Engine/Actions/ActionTargetInfo.Filtering.cs",
    "member": "internal static bool HostileInFacingCone(float range)"
   },
   {
-   "file": "RotationSolver/Basic/Actions/BaseAction.cs",
+   "file": "RotationSolver/Engine/Actions/BaseAction.cs",
    "member": "private ActionConfig? _defaultConfig;"
   },
   {
-   "file": "RotationSolver/Basic/Actions/BaseAction.cs",
+   "file": "RotationSolver/Engine/Actions/BaseAction.cs",
    "member": "private ActionConfig DefaultConfig => _defaultConfig ??= Setting.CreateConfig?.Invoke() ?? new ActionConfig();"
   },
   {
-   "file": "RotationSolver/Basic/Actions/BaseAction.cs",
+   "file": "RotationSolver/Engine/Actions/BaseAction.cs",
    "member": "private bool BackBefore(float due)"
   },
   {
-   "file": "RotationSolver/Basic/Actions/BaseAction.cs",
+   "file": "RotationSolver/Engine/Actions/BaseAction.cs",
    "member": "private static bool SafetyMayEndAChannel(uint id)"
   },
   {
-   "file": "RotationSolver/Basic/Actions/BaseItem.cs",
+   "file": "RotationSolver/Engine/Actions/BaseItem.cs",
    "member": "private unsafe bool UseItem()"
   },
   {
-   "file": "RotationSolver/Basic/Actions/HpPotionItem.cs",
+   "file": "RotationSolver/Engine/Actions/HpPotionItem.cs",
    "member": "public bool CanUseEmergency(out IAction item)"
   },
   {
-   "file": "RotationSolver/Basic/Actions/IBaseAction.cs",
+   "file": "RotationSolver/Engine/Actions/IBaseAction.cs",
    "member": "internal static float? HealRatioOverride { get; set; }"
   },
   {
-   "file": "RotationSolver/Basic/Actions/IBaseAction.cs",
+   "file": "RotationSolver/Engine/Actions/IBaseAction.cs",
    "member": "internal static bool? SelfProtectionHitsMe { get; set; }"
   },
   {
-   "file": "RotationSolver/Basic/Actions/IBaseAction.cs",
+   "file": "RotationSolver/Engine/Actions/IBaseAction.cs",
    "member": "internal static bool HoldDefenceOnSelf { get; set; }"
   },
   {
-   "file": "RotationSolver/Basic/Actions/IBaseAction.cs",
+   "file": "RotationSolver/Engine/Actions/IBaseAction.cs",
    "member": "internal static HashSet<uint>? AllowedDefenceOnSelf { get; set; }"
   },
   {
-   "file": "RotationSolver/Basic/Actions/IBaseAction.cs",
+   "file": "RotationSolver/Engine/Actions/IBaseAction.cs",
    "member": "internal static float? KeepDefenceForTankbusterIn { get; set; }"
   },
   {
-   "file": "RotationSolver/Basic/Actions/IBaseAction.cs",
+   "file": "RotationSolver/Engine/Actions/IBaseAction.cs",
    "member": "internal static bool AreaDefenceRunning { get; set; }"
   },
   {
-   "file": "RotationSolver/Basic/Actions/IBaseAction.cs",
+   "file": "RotationSolver/Engine/Actions/IBaseAction.cs",
    "member": "internal static bool HealPathRunning { get; set; }"
   },
   {
-   "file": "RotationSolver/Basic/Actions/IBaseAction.cs",
+   "file": "RotationSolver/Engine/Actions/IBaseAction.cs",
    "member": "internal static bool LimitBreakPathRunning { get; set; }"
   },
   {
-   "file": "RotationSolver/Basic/Actions/IBaseAction.cs",
+   "file": "RotationSolver/Engine/Actions/IBaseAction.cs",
    "member": "internal static bool CommandedDefenceRunning { get; set; }"
   },
   {
-   "file": "RotationSolver/Basic/Actions/IBaseAction.cs",
+   "file": "RotationSolver/Engine/Actions/IBaseAction.cs",
    "member": "internal static bool ProtectivePathRunning => HealPathRunning || AreaDefenceRunning"
   },
   {
-   "file": "RotationSolver/Basic/Actions/MedicineItem.cs",
+   "file": "RotationSolver/Engine/Actions/MedicineItem.cs",
    "member": "public override bool SwitchForAllJobs => true;"
   },
   {
-   "file": "RotationSolver/Basic/Actions/MpPotionItem.cs",
+   "file": "RotationSolver/Engine/Actions/MpPotionItem.cs",
    "member": "public override bool SwitchForAllJobs => true;"
   },
   {
-   "file": "RotationSolver/Basic/Configuration/OtherConfiguration.cs",
+   "file": "RotationSolver/Configuration/OtherConfiguration.cs",
    "member": "private sealed class LearnedFile<TValue>(string name, Func<Dictionary<uint, TValue>> copy,"
   },
   {
-   "file": "RotationSolver/Basic/Configuration/OtherConfiguration.cs",
+   "file": "RotationSolver/Configuration/OtherConfiguration.cs",
    "member": "private static Dictionary<uint, T> CopySleepStore<T>(Dictionary<uint, T> store)"
   },
   {
-   "file": "RotationSolver/Basic/Configuration/OtherConfiguration.cs",
+   "file": "RotationSolver/Configuration/OtherConfiguration.cs",
    "member": "private static Dictionary<uint, DotArea> CopyDotStore()"
   },
   {
-   "file": "RotationSolver/Basic/Configuration/OtherConfiguration.cs",
+   "file": "RotationSolver/Configuration/OtherConfiguration.cs",
    "member": "private static SleepLockMarks CopySleepLocks()"
   },
   {
-   "file": "RotationSolver/Basic/Configuration/OtherConfiguration.cs",
+   "file": "RotationSolver/Configuration/OtherConfiguration.cs",
    "member": "private static Dictionary<uint, PenaltySighting> CopyPenaltySightings()"
   },
   {
-   "file": "RotationSolver/Basic/Configuration/OtherConfiguration.cs",
+   "file": "RotationSolver/Configuration/OtherConfiguration.cs",
    "member": "private static Dictionary<uint, uint> CopyActionPenaltyCasts()"
   },
   {
-   "file": "RotationSolver/Basic/Configuration/OtherConfiguration.cs",
+   "file": "RotationSolver/Configuration/OtherConfiguration.cs",
    "member": "private static Dictionary<uint, int> CopyHitSeries()"
   },
   {
-   "file": "RotationSolver/Basic/Configuration/OtherConfiguration.cs",
+   "file": "RotationSolver/Configuration/OtherConfiguration.cs",
    "member": "private static Dictionary<uint, TankbusterReading> CopyTankbusterPotential()"
   },
   {
-   "file": "RotationSolver/Basic/Configuration/OtherConfiguration.cs",
+   "file": "RotationSolver/Configuration/OtherConfiguration.cs",
    "member": "private static Dictionary<uint, TankbusterReading> CopyAimedHitPotential()"
   },
   {
-   "file": "RotationSolver/Basic/Configuration/OtherConfiguration.cs",
+   "file": "RotationSolver/Configuration/OtherConfiguration.cs",
    "member": "internal static bool IsWithinWholeHealth(float share) => share <= 1f;"
   },
   {
-   "file": "RotationSolver/Basic/Configuration/OtherConfiguration.cs",
+   "file": "RotationSolver/Configuration/OtherConfiguration.cs",
    "member": "private static int DropBeyondWholeHealth(Dictionary<uint, float> table)"
   },
   {
-   "file": "RotationSolver/Basic/Configuration/OtherConfiguration.cs",
+   "file": "RotationSolver/Configuration/OtherConfiguration.cs",
    "member": "internal static Task SaveAreaPotentialUnmitigated() => SaveList(nameof(AreaPotentialUnmitigated));"
   },
   {
-   "file": "RotationSolver/Basic/Configuration/OtherConfiguration.cs",
+   "file": "RotationSolver/Configuration/OtherConfiguration.cs",
    "member": "internal static Task SaveAreaSeriesSpan() => SaveList(nameof(AreaSeriesSpan));"
   },
   {
-   "file": "RotationSolver/Basic/Configuration/OtherConfiguration.cs",
+   "file": "RotationSolver/Configuration/OtherConfiguration.cs",
    "member": "internal static Task SaveSleepOutcomes() => SaveList(nameof(SleepOutcomes));"
   },
   {
-   "file": "RotationSolver/Basic/Configuration/OtherConfiguration.cs",
+   "file": "RotationSolver/Configuration/OtherConfiguration.cs",
    "member": "internal static Task SaveSleepResistantKinds() => SaveList(nameof(SleepResistantKinds));"
   },
   {
-   "file": "RotationSolver/Basic/Configuration/OtherConfiguration.cs",
+   "file": "RotationSolver/Configuration/OtherConfiguration.cs",
    "member": "internal static Task SaveInterruptibleCasterKinds() => SaveList(nameof(InterruptibleCasterKinds));"
   },
   {
-   "file": "RotationSolver/Basic/Configuration/OtherConfiguration.cs",
+   "file": "RotationSolver/Configuration/OtherConfiguration.cs",
    "member": "private static Dictionary<uint, int> CopyInterruptibleKinds()"
   },
   {
-   "file": "RotationSolver/Basic/Configuration/OtherConfiguration.cs",
+   "file": "RotationSolver/Configuration/OtherConfiguration.cs",
    "member": "internal static Task SaveDangerousAreas() => SaveList(nameof(DangerousAreas));"
   },
   {
-   "file": "RotationSolver/Basic/Configuration/OtherConfiguration.cs",
+   "file": "RotationSolver/Configuration/OtherConfiguration.cs",
    "member": "internal static Task SaveCrucibleFightLoads() => SaveList(nameof(CrucibleFightLoads));"
   },
   {
-   "file": "RotationSolver/Basic/Configuration/OtherConfiguration.cs",
+   "file": "RotationSolver/Configuration/OtherConfiguration.cs",
    "member": "internal static Task SaveCrucibleCampPools() => SaveList(nameof(CrucibleCampPools));"
   },
   {
-   "file": "RotationSolver/Basic/Configuration/OtherConfiguration.cs",
+   "file": "RotationSolver/Configuration/OtherConfiguration.cs",
    "member": "internal static Task SaveCrucibleFamiliarHits() => SaveList(nameof(CrucibleFamiliarHits));"
   },
   {
-   "file": "RotationSolver/Basic/Configuration/OtherConfiguration.cs",
+   "file": "RotationSolver/Configuration/OtherConfiguration.cs",
    "member": "private static Dictionary<uint, int> CopyCrucibleFamiliarHits()"
   },
   {
-   "file": "RotationSolver/Basic/Configuration/OtherConfiguration.cs",
+   "file": "RotationSolver/Configuration/OtherConfiguration.cs",
    "member": "internal static Task SaveCrucibleFamiliarLoss() => SaveList(nameof(CrucibleFamiliarLoss));"
   },
   {
-   "file": "RotationSolver/Basic/Configuration/OtherConfiguration.cs",
+   "file": "RotationSolver/Configuration/OtherConfiguration.cs",
    "member": "private static Dictionary<uint, int> CopyCrucibleFamiliarLoss()"
   },
   {
-   "file": "RotationSolver/Basic/Configuration/OtherConfiguration.cs",
+   "file": "RotationSolver/Configuration/OtherConfiguration.cs",
    "member": "internal static Task SaveCrucibleFightNet() => SaveList(nameof(CrucibleFightNet));"
   },
   {
-   "file": "RotationSolver/Basic/Configuration/OtherConfiguration.cs",
+   "file": "RotationSolver/Configuration/OtherConfiguration.cs",
    "member": "private static Dictionary<uint, int> CopyCrucibleFightNet()"
   },
   {
-   "file": "RotationSolver/Basic/Configuration/OtherConfiguration.cs",
+   "file": "RotationSolver/Configuration/OtherConfiguration.cs",
    "member": "internal static Task SaveHitSeriesGapOnPlayer() => SaveList(nameof(HitSeriesGapOnPlayer));"
   },
   {
-   "file": "RotationSolver/Basic/Configuration/OtherConfiguration.cs",
+   "file": "RotationSolver/Configuration/OtherConfiguration.cs",
    "member": "internal static Task SaveCrucibleFightLoadsByRank() => SaveList(nameof(CrucibleFightLoadsByRank));"
   },
   {
-   "file": "RotationSolver/Basic/Configuration/OtherConfiguration.cs",
+   "file": "RotationSolver/Configuration/OtherConfiguration.cs",
    "member": "internal static Task SaveCrucibleFightNetByRank() => SaveList(nameof(CrucibleFightNetByRank));"
   },
   {
-   "file": "RotationSolver/Basic/Configuration/OtherConfiguration.cs",
+   "file": "RotationSolver/Configuration/OtherConfiguration.cs",
    "member": "internal static Task SaveCrucibleFamiliarLossByRank() => SaveList(nameof(CrucibleFamiliarLossByRank));"
   },
   {
-   "file": "RotationSolver/Basic/Configuration/OtherConfiguration.cs",
+   "file": "RotationSolver/Configuration/OtherConfiguration.cs",
    "member": "internal static Task SaveCrucibleFamiliarHitsByRank() => SaveList(nameof(CrucibleFamiliarHitsByRank));"
   },
   {
-   "file": "RotationSolver/Basic/Configuration/OtherConfiguration.cs",
+   "file": "RotationSolver/Configuration/OtherConfiguration.cs",
    "member": "private static Dictionary<uint, int> CopyUnder(object gate, Dictionary<uint, int> store)"
   },
   {
-   "file": "RotationSolver/Basic/Configuration/OtherConfiguration.cs",
+   "file": "RotationSolver/Configuration/OtherConfiguration.cs",
    "member": "private static Dictionary<uint, int> CopyCrucibleCampPools()"
   },
   {
-   "file": "RotationSolver/Basic/Configuration/OtherConfiguration.cs",
+   "file": "RotationSolver/Configuration/OtherConfiguration.cs",
    "member": "private static Dictionary<uint, int> CopyCrucibleFightLoads()"
   },
   {
-   "file": "RotationSolver/Basic/Configuration/OtherConfiguration.cs",
+   "file": "RotationSolver/Configuration/OtherConfiguration.cs",
    "member": "private static Dictionary<uint, int> CopyDangerousAreas()"
   },
   {
-   "file": "RotationSolver/Basic/Configuration/OtherConfiguration.cs",
+   "file": "RotationSolver/Configuration/OtherConfiguration.cs",
    "member": "internal static Task SaveSleepDiminishing() => SaveList(nameof(SleepDiminishing));"
   },
   {
-   "file": "RotationSolver/Basic/Configuration/OtherConfiguration.cs",
+   "file": "RotationSolver/Configuration/OtherConfiguration.cs",
    "member": "internal static Task SaveHitSeriesOnPlayer() => SaveList(nameof(HitSeriesOnPlayer));"
   },
   {
-   "file": "RotationSolver/Basic/Configuration/OtherConfiguration.cs",
+   "file": "RotationSolver/Configuration/OtherConfiguration.cs",
    "member": "internal static Task SaveDotOnParty() => SaveList(nameof(DotOnParty));"
   },
   {
-   "file": "RotationSolver/Basic/Configuration/OtherConfiguration.cs",
+   "file": "RotationSolver/Configuration/OtherConfiguration.cs",
    "member": "internal static Task SaveActionPenaltyCasts() => SaveList(nameof(ActionPenaltyCasts));"
   },
   {
-   "file": "RotationSolver/Basic/Configuration/OtherConfiguration.cs",
+   "file": "RotationSolver/Configuration/OtherConfiguration.cs",
    "member": "internal static Task SaveSleepLocks() => SaveList(nameof(SleepLocks));"
   },
   {
-   "file": "RotationSolver/Basic/Configuration/OtherConfiguration.cs",
+   "file": "RotationSolver/Configuration/OtherConfiguration.cs",
    "member": "internal static Task SaveActionPenaltySightings() => SaveList(nameof(ActionPenaltySightings));"
   },
   {
-   "file": "RotationSolver/Basic/Configuration/OtherConfiguration.cs",
+   "file": "RotationSolver/Configuration/OtherConfiguration.cs",
    "member": "private static void SaveTracked<T>(Dictionary<uint, T> snapshot, string name, Func<T, T, T> higher,"
   },
   {
-   "file": "RotationSolver/Basic/Configuration/OtherConfiguration.cs",
+   "file": "RotationSolver/Configuration/OtherConfiguration.cs",
    "member": "private static bool TryReadEntriesOnDisk<T>(string name, out Dictionary<uint, T>? entries)"
   },
   {
-   "file": "RotationSolver/Basic/Configuration/OtherConfiguration.cs",
+   "file": "RotationSolver/Configuration/OtherConfiguration.cs",
    "member": "private static int CountEntriesOnDisk<T>(string name)"
   },
   {
-   "file": "RotationSolver/Basic/Configuration/OtherConfiguration.cs",
+   "file": "RotationSolver/Configuration/OtherConfiguration.cs",
    "member": "public static Task SaveTankbusterMarkerWithoutHit()"
   },
   {
-   "file": "RotationSolver/Basic/Configuration/OtherConfiguration.cs",
+   "file": "RotationSolver/Configuration/OtherConfiguration.cs",
    "member": "public static Task SaveTankbusterMarkerHits() => SaveList(nameof(TankbusterMarkerHits));"
   },
   {
-   "file": "RotationSolver/Basic/Configuration/OtherConfiguration.cs",
+   "file": "RotationSolver/Configuration/OtherConfiguration.cs",
    "member": "private static bool WasLoaded(string name)"
   },
   {
-   "file": "RotationSolver/Basic/Configuration/OtherConfiguration.cs",
+   "file": "RotationSolver/Configuration/OtherConfiguration.cs",
    "member": "private static void MarkLoaded(string name)"
   },
   {
-   "file": "RotationSolver/Basic/Data/AttackType.cs",
+   "file": "RotationSolver/Engine/Data/AttackType.cs",
    "member": "internal static bool IsPhysical(uint attackType)"
   },
   {
-   "file": "RotationSolver/Basic/Data/AttackType.cs",
+   "file": "RotationSolver/Engine/Data/AttackType.cs",
    "member": "internal static bool IsMagic(uint attackType)"
   },
   {
-   "file": "RotationSolver/Basic/DataCenter.cs",
+   "file": "RotationSolver/Engine/State/DataCenter.JobAndGcd.cs",
    "member": "public static bool AnyLivingHealer(bool excludeSelf)"
   },
   {
-   "file": "RotationSolver/Basic/DataCenter.cs",
+   "file": "RotationSolver/Engine/State/DataCenter.Combat.cs",
    "member": "internal static bool IsTankbusterMarkerPath(string path)"
   },
   {
-   "file": "RotationSolver/Basic/DataCenter.cs",
+   "file": "RotationSolver/Engine/State/DataCenter.BMR.cs",
    "member": "internal static bool MarkerLockHolds(string key, bool trace = true)"
   },
   {
-   "file": "RotationSolver/Basic/DataCenter.cs",
+   "file": "RotationSolver/Engine/State/DataCenter.BMR.cs",
    "member": "private static bool HitDropsBelow(float share, float threshold, bool unprotectedOnly, bool needsRoom, out string who)"
   },
   {
-   "file": "RotationSolver/Basic/DataCenter.cs",
+   "file": "RotationSolver/Engine/State/DataCenter.BMR.cs",
    "member": "private static void RecordAnnouncedAreaShare(uint actionId, IBattleChara caster)"
   },
   {
-   "file": "RotationSolver/Basic/DataCenter.cs",
+   "file": "RotationSolver/Engine/State/DataCenter.BMR.cs",
    "member": "internal static (float Degrees, float Inner) OmenShape(Action act)"
   },
   {
-   "file": "RotationSolver/Basic/DataCenter.cs",
+   "file": "RotationSolver/Engine/State/DataCenter.BMR.cs",
    "member": "private static bool DigitsAfter(string path, string key, out int number)"
   },
   {
-   "file": "RotationSolver/Basic/DataCenter.cs",
+   "file": "RotationSolver/Engine/State/DataCenter.BMR.cs",
    "member": "private static float HorizontalDistance(Vector3 a, Vector3 b)"
   },
   {
-   "file": "RotationSolver/Basic/DataCenter.cs",
+   "file": "RotationSolver/Engine/State/DataCenter.BMR.cs",
    "member": "internal static string DescribeDefenseSources()"
   },
   {
-   "file": "RotationSolver/Basic/DataCenter.cs",
+   "file": "RotationSolver/Engine/State/DataCenter.BMR.cs",
    "member": "private static bool IsOwnPartyMarker(ulong objectId)"
   },
   {
-   "file": "RotationSolver/Basic/DataCenter.cs",
+   "file": "RotationSolver/Engine/State/DataCenter.BMR.cs",
    "member": "private static bool IsAnyHostileCastingKnockback()"
   },
   {
-   "file": "RotationSolver/Basic/Helpers/ActionHelper.cs",
+   "file": "RotationSolver/Engine/Helpers/ActionHelper.cs",
    "member": "private const float CastUnitsPerSecond = 10f;"
   },
   {
-   "file": "RotationSolver/Basic/Helpers/ActionHelper.cs",
+   "file": "RotationSolver/Engine/Helpers/ActionHelper.cs",
    "member": "internal static float CastSeconds(this Action action) => action.Cast100ms / CastUnitsPerSecond;"
   },
   {
-   "file": "RotationSolver/Basic/Helpers/ActionManagerHelper.cs",
+   "file": "RotationSolver/Engine/Helpers/ActionManagerHelper.cs",
    "member": "public static float GetDefaultAdjustedRecastTime()"
   },
   {
-   "file": "RotationSolver/Basic/Helpers/IActionHelper.cs",
+   "file": "RotationSolver/Engine/Helpers/IActionHelper.cs",
    "member": "internal static bool LastActionMovedForward()"
   },
   {
-   "file": "RotationSolver/Basic/Helpers/MaskedCarnivaleHelper.cs",
+   "file": "RotationSolver/Engine/Helpers/MaskedCarnivaleHelper.cs",
    "member": "public static MobResistance ResistanceTo(IBattleChara? target, IBaseAction? action)"
   },
   {
-   "file": "RotationSolver/Basic/Helpers/MaskedCarnivaleHelper.cs",
+   "file": "RotationSolver/Engine/Helpers/MaskedCarnivaleHelper.cs",
    "member": "public static MobResistance ResistanceTo(uint nameId, Lumina.Excel.Sheets.Action action)"
   },
   {
-   "file": "RotationSolver/Basic/Helpers/ObjectHelper.cs",
+   "file": "RotationSolver/Engine/Helpers/ObjectHelper.CombatAndGeometry.cs",
    "member": "private static bool TakesEnemyFromCoTank(IBattleChara enemy)"
   },
   {
-   "file": "RotationSolver/Basic/Helpers/StatusHelper.cs",
+   "file": "RotationSolver/Engine/Helpers/StatusHelper.Tables.cs",
    "member": "private static bool HasStatusEndedByFullHealing(IBattleChara character)"
   },
   {
-   "file": "RotationSolver/Basic/Helpers/StatusHelper.cs",
+   "file": "RotationSolver/Engine/Helpers/StatusHelper.cs",
    "member": "internal static void NoteOwnedObjects()"
   },
   {
-   "file": "RotationSolver/Basic/Helpers/TargetFilter.cs",
+   "file": "RotationSolver/Engine/Helpers/TargetFilter.cs",
    "member": "private static readonly Dictionary<ulong, (DateTime Since, string Reason)> _deathNotes = [];"
   },
   {
-   "file": "RotationSolver/Basic/Helpers/TargetFilter.cs",
+   "file": "RotationSolver/Engine/Helpers/TargetFilter.cs",
    "member": "private static void NoteDeath(IBattleChara item, string reason)"
   },
   {
-   "file": "RotationSolver/Basic/Helpers/TimeToKillTracker.cs",
+   "file": "RotationSolver/Engine/Helpers/TimeToKillTracker.cs",
    "member": "internal static float AreaFall(float span)"
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/AstrologianRotation.cs",
+   "file": "RotationSolver/Rotations/Healer/Astrologian/AstrologianRotation.cs",
    "member": "protected override bool HotAgainstDotByJob(out IAction? act)"
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/AstrologianRotation.cs",
+   "file": "RotationSolver/Rotations/Healer/Astrologian/AstrologianRotation.cs",
    "member": "internal override bool HasGroupHealOverTime => AspectedHeliosPvE.EnoughLevel || HeliosConjunctionPvE.EnoughLevel;"
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/BardRotation.cs",
+   "file": "RotationSolver/Rotations/Ranged/Bard/BardRotation.cs",
    "member": "protected static float SongDuration(IBaseAction song)"
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/BeastmasterRotation.cs",
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BeastmasterRotation.cs",
    "member": "private static unsafe FFXIVClientStructs.FFXIV.Client.Game.Gauge.BeastmasterGauge* Gauge => &FFXIVClientStructs.FFXIV.Client.Game.JobGaugeManager.Instance()->Beastmaster;"
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/BeastmasterRotation.cs",
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BeastmasterRotation.cs",
    "member": "private const uint AwayCommand = 1;"
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/BeastmasterRotation.cs",
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BeastmasterRotation.cs",
    "member": "internal static unsafe uint AwayStatus => ActionManager.Instance() is var manager && manager != null"
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/BeastmasterRotation.cs",
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BeastmasterRotation.cs",
    "member": "internal static unsafe bool SendAway() => ActionManager.Instance() is var manager && manager != null"
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/BlackMageRotation.cs",
+   "file": "RotationSolver/Rotations/Magical/BlackMage/BlackMageRotation.cs",
    "member": "protected bool PolyglotWhileCastBlocked(out IAction? act)"
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/DarkKnightRotation.cs",
+   "file": "RotationSolver/Rotations/Tank/DarkKnight/DarkKnightRotation.cs",
    "member": "protected override IBaseAction? Invulnerability => LivingDeadPvE;"
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/GunbreakerRotation.cs",
+   "file": "RotationSolver/Rotations/Tank/Gunbreaker/GunbreakerRotation.cs",
    "member": "protected override IBaseAction? Invulnerability => SuperbolidePvE;"
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/MachinistRotation.cs",
+   "file": "RotationSolver/Rotations/Ranged/Machinist/MachinistRotation.cs",
    "member": "private int _crossbowTracedLevel = -1;"
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/MonkRotation.cs",
+   "file": "RotationSolver/Rotations/Melee/Monk/MonkRotation.cs",
    "member": "public static byte PerfectBalanceMaxStacks => _perfectBalanceMaxStacks ??="
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/MonkRotation.cs",
+   "file": "RotationSolver/Rotations/Melee/Monk/MonkRotation.cs",
    "member": "private static byte? _perfectBalanceMaxStacks;"
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/MonkRotation.cs",
+   "file": "RotationSolver/Rotations/Melee/Monk/MonkRotation.cs",
    "member": "public bool RiddleOfFireDueWithinPerfectBalance"
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/NinjaRotation.cs",
+   "file": "RotationSolver/Rotations/Melee/Ninja/NinjaRotation.cs",
    "member": "protected bool HellfrogOutdamagesBhavacakra(int targets)"
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/NinjaRotation.cs",
+   "file": "RotationSolver/Rotations/Melee/Ninja/NinjaRotation.cs",
    "member": "protected bool GokaOutdamagesHyosho(bool fallback)"
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/NinjaRotation.cs",
+   "file": "RotationSolver/Rotations/Melee/Ninja/NinjaRotation.cs",
    "member": "protected bool DotonOutlived => !DataCenter.IsPackTimeToKillKnown"
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/PaladinRotation.cs",
+   "file": "RotationSolver/Rotations/Tank/Paladin/PaladinRotation.cs",
    "member": "protected override IBaseAction? Invulnerability => HallowedGroundPvE;"
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/ReaperRotation.cs",
+   "file": "RotationSolver/Rotations/Melee/Reaper/ReaperRotation.cs",
    "member": "protected static bool SoulsowFitsThePause => InCombatPause"
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/SageRotation.cs",
+   "file": "RotationSolver/Rotations/Healer/Sage/SageRotation.cs",
    "member": "internal override bool HasGroupHealOverTime => PhysisPvE.EnoughLevel || PhysisIiPvE.EnoughLevel;"
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/SageRotation.cs",
+   "file": "RotationSolver/Rotations/Healer/Sage/SageRotation.cs",
    "member": "private static (ulong Tank, DateTime Since) _kardiaAggro;"
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/SageRotation.cs",
+   "file": "RotationSolver/Rotations/Healer/Sage/SageRotation.cs",
    "member": "private static bool KardiaDue()"
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/ScholarRotation.cs",
+   "file": "RotationSolver/Rotations/Healer/Scholar/ScholarRotation.cs",
    "member": "internal override bool HasGroupHealOverTime => WhisperingDawnPvE.EnoughLevel && DataCenter.HasPet();"
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/SummonerRotation.cs",
+   "file": "RotationSolver/Rotations/Magical/Summoner/SummonerRotation.cs",
    "member": "private readonly bool[] _searingPhaseSeen = new bool[Enum.GetValues<SearingPhase>().Length];"
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/SummonerRotation.cs",
+   "file": "RotationSolver/Rotations/Magical/Summoner/SummonerRotation.cs",
    "member": "private readonly bool[] _searingPhaseHeld = new bool[Enum.GetValues<SearingPhase>().Length];"
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/SummonerRotation.cs",
+   "file": "RotationSolver/Rotations/Magical/Summoner/SummonerRotation.cs",
    "member": "private SearingPhase _lastSearingPhase = SearingPhase.None;"
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/SummonerRotation.cs",
+   "file": "RotationSolver/Rotations/Magical/Summoner/SummonerRotation.cs",
    "member": "protected bool NextBigSummonIsBurst"
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/SummonerRotation.cs",
+   "file": "RotationSolver/Rotations/Magical/Summoner/SummonerRotation.cs",
    "member": "private SearingPhase _lastBigSummon = SearingPhase.None;"
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/SummonerRotation.cs",
+   "file": "RotationSolver/Rotations/Magical/Summoner/SummonerRotation.cs",
    "member": "private SearingPhase _gaugeNamed = SearingPhase.None;"
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/SummonerRotation.cs",
+   "file": "RotationSolver/Rotations/Magical/Summoner/SummonerRotation.cs",
    "member": "private SearingPhase _buttonNamed = SearingPhase.None;"
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/WarriorRotation.cs",
+   "file": "RotationSolver/Rotations/Tank/Warrior/WarriorRotation.cs",
    "member": "protected override IBaseAction? Invulnerability => HolmgangPvE;"
   },
   {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_Ability.cs",
+   "file": "RotationSolver/Rotations/Core/CustomRotation_Ability.cs",
    "member": "private static bool TraceEmergencyHeal(IBaseAction? heal, IBattleChara critical, IAction nextGCD, string? potions = null)"
   },
   {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_Actions.cs",
+   "file": "RotationSolver/Rotations/Core/CustomRotation_Actions.cs",
    "member": "static partial void ModifyReprisalPvE(ref ActionSetting setting)"
   },
   {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_Actions.cs",
+   "file": "RotationSolver/Rotations/Core/CustomRotation_Actions.cs",
    "member": "internal IBaseAction? RaiseAction => Raise;"
   },
   {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_BasicInfo.cs",
+   "file": "RotationSolver/Rotations/Core/CustomRotation_BasicInfo.cs",
    "member": "protected virtual void UpdateServices() { }"
   },
   {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_BasicInfo.cs",
+   "file": "RotationSolver/Rotations/Core/CustomRotation_BasicInfo.cs",
    "member": "private bool _servicesFailed;"
   },
   {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_BasicInfo.cs",
+   "file": "RotationSolver/Rotations/Core/CustomRotation_BasicInfo.cs",
    "member": "internal void InvokeServices()"
   },
   {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_GCD.cs",
+   "file": "RotationSolver/Rotations/Core/CustomRotation_GCD.cs",
    "member": "private static bool AnyOtherLivingRaiser()"
   },
   {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_GCD.cs",
+   "file": "RotationSolver/Rotations/Core/CustomRotation_GCD.cs",
    "member": "private readonly List<SleepLockKey> _sleepTries = [];"
   },
   {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_Items.cs",
+   "file": "RotationSolver/Rotations/Core/CustomRotation_Items.cs",
    "member": "private static bool PlayerRegenerates()"
   },
   {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_Items.cs",
+   "file": "RotationSolver/Rotations/Core/CustomRotation_Items.cs",
    "member": "private string DescribeHpPotionsHeld()"
   },
   {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_OtherInfo.cs",
+   "file": "RotationSolver/Rotations/Core/CustomRotation_OtherInfo.cs",
    "member": "public static bool IsTimeToKillMeasured(IBattleChara? target)"
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Duties/DutyRotation.cs",
+   "file": "RotationSolver/Rotations/Duties/DutyRotation.cs",
    "member": "public static float PartyMembersForecastAverHP(bool instant = false) => CustomRotation.PartyMembersForecastAverHP(instant);"
   },
   {
@@ -682,519 +682,519 @@
    "member": "private static uint _offByDeathTerritory;"
   },
   {
-   "file": "RotationSolver/Helpers/NoCastingStatusHelper.cs",
+   "file": "RotationSolver/Engine/Helpers/NoCastingStatusHelper.cs",
    "member": "internal static bool DamagesEveryAction(uint statusId)"
   },
   {
-   "file": "RotationSolver/IPC/BMRInfo_IPCSubscriber.cs",
+   "file": "RotationSolver/Integrations/IPC/BMRInfo_IPCSubscriber.cs",
    "member": "internal static readonly Func<float>? MaxCastTime;"
   },
   {
-   "file": "RotationSolver/IPC/BMRInfo_IPCSubscriber.cs",
+   "file": "RotationSolver/Integrations/IPC/BMRInfo_IPCSubscriber.cs",
    "member": "internal static readonly Func<bool>? IsMoveRequested;"
   },
   {
-   "file": "RotationSolver/IPC/BMRInfo_IPCSubscriber.cs",
+   "file": "RotationSolver/Integrations/IPC/BMRInfo_IPCSubscriber.cs",
    "member": "internal static readonly Func<float>? ForbiddenZonesNextActivation;"
   },
   {
-   "file": "RotationSolver/IPC/BMRInfo_IPCSubscriber.cs",
+   "file": "RotationSolver/Integrations/IPC/BMRInfo_IPCSubscriber.cs",
    "member": "internal static readonly Func<Vector3?>? NaviTargetPos;"
   },
   {
-   "file": "RotationSolver/IPC/BMRInfo_IPCSubscriber.cs",
+   "file": "RotationSolver/Integrations/IPC/BMRInfo_IPCSubscriber.cs",
    "member": "internal static readonly Func<float>? PlayerSpeed;"
   },
   {
-   "file": "RotationSolver/RebornRotations/Duty/PhantomDefault.cs",
+   "file": "RotationSolver/Rotations/Duties/PhantomDefault.cs",
    "member": "private bool UseUtility(out IAction? act)"
   },
   {
-   "file": "RotationSolver/RebornRotations/Duty/PhantomDefault.cs",
+   "file": "RotationSolver/Rotations/Duties/PhantomDefault.cs",
    "member": "private bool UseNecromancer(out IAction? act)"
   },
   {
-   "file": "RotationSolver/RebornRotations/Duty/PhantomDefault.cs",
+   "file": "RotationSolver/Rotations/Duties/PhantomDefault.cs",
    "member": "private bool UseRedMage(out IAction? act)"
   },
   {
-   "file": "RotationSolver/RebornRotations/Duty/PhantomDefault.cs",
+   "file": "RotationSolver/Rotations/Duties/PhantomDefault.cs",
    "member": "private bool UseBlueMage(out IAction? act)"
   },
   {
-   "file": "RotationSolver/RebornRotations/Duty/PhantomDefault.cs",
+   "file": "RotationSolver/Rotations/Duties/PhantomDefault.cs",
    "member": "private bool UseSummoner(out IAction? act)"
   },
   {
-   "file": "RotationSolver/RebornRotations/Duty/PhantomDefault.cs",
+   "file": "RotationSolver/Rotations/Duties/PhantomDefault.cs",
    "member": "private bool UseBlackMage(out IAction? act)"
   },
   {
-   "file": "RotationSolver/RebornRotations/Duty/PhantomDefault.cs",
+   "file": "RotationSolver/Rotations/Duties/PhantomDefault.cs",
    "member": "private bool UseOtherPhantomJobs(out IAction? act)"
   },
   {
-   "file": "RotationSolver/RebornRotations/Healer/AST_Reborn.cs",
+   "file": "RotationSolver/Rotations/Healer/Astrologian/AST_Reborn.cs",
    "member": "Tooltip = \"With the limit to multihit party stacks on, Macrocosmos also goes before an announced area hit that, by its \""
   },
   {
-   "file": "RotationSolver/RebornRotations/Healer/AST_Reborn.cs",
+   "file": "RotationSolver/Rotations/Healer/Astrologian/AST_Reborn.cs",
    "member": "Tooltip = \"With the limit to multihit party stacks on, Macrocosmos also goes into an enemy attack that has been seen to \""
   },
   {
-   "file": "RotationSolver/RebornRotations/Healer/AST_Reborn.cs",
+   "file": "RotationSolver/Rotations/Healer/Astrologian/AST_Reborn.cs",
    "member": "Tooltip = \"Off: while another healer is alive your GCD heals are left to them and you deal damage instead, with \""
   },
   {
-   "file": "RotationSolver/RebornRotations/Healer/AST_Reborn.cs",
+   "file": "RotationSolver/Rotations/Healer/Astrologian/AST_Reborn.cs",
    "member": "Tooltip = \"Aspected Benefic goes on the tank as they close in on a group, and is refreshed for \""
   },
   {
-   "file": "RotationSolver/RebornRotations/Healer/AST_Reborn.cs",
+   "file": "RotationSolver/Rotations/Healer/Astrologian/AST_Reborn.cs",
    "member": "Tooltip = \"How many enemies have to stand within gap-closer range of the tank, before combat \""
   },
   {
-   "file": "RotationSolver/RebornRotations/Healer/AST_Reborn.cs",
+   "file": "RotationSolver/Rotations/Healer/Astrologian/AST_Reborn.cs",
    "member": "Tooltip = \"The same count, but during combat: how many enemies have to remain around the tank \""
   },
   {
-   "file": "RotationSolver/RebornRotations/Healer/AST_Reborn.cs",
+   "file": "RotationSolver/Rotations/Healer/Astrologian/AST_Reborn.cs",
    "member": "Tooltip = \"The last charge of Essential Dignity needs a reason beyond low health: the target is being attacked or cast at, an area cast is announced, \""
   },
   {
-   "file": "RotationSolver/RebornRotations/Healer/SCH_Reborn.cs",
+   "file": "RotationSolver/Rotations/Healer/Scholar/SCH_Reborn.cs",
    "member": "Tooltip = \"With the limit to multihit party stacks on, Seraphism also goes before an announced area hit that, by its \""
   },
   {
-   "file": "RotationSolver/RebornRotations/Healer/SCH_Reborn.cs",
+   "file": "RotationSolver/Rotations/Healer/Scholar/SCH_Reborn.cs",
    "member": "Tooltip = \"With the limit to multihit party stacks on, Seraphism also goes into an enemy attack that has been seen to \""
   },
   {
-   "file": "RotationSolver/RebornRotations/Healer/SCH_Reborn.cs",
+   "file": "RotationSolver/Rotations/Healer/Scholar/SCH_Reborn.cs",
    "member": "Tooltip = \"Excogitation needs a reason beyond low health: the target is being attacked or cast at, an area cast is announced, \""
   },
   {
-   "file": "RotationSolver/RebornRotations/Healer/SCH_Reborn.cs",
+   "file": "RotationSolver/Rotations/Healer/Scholar/SCH_Reborn.cs",
    "member": "Tooltip = \"Off: while another healer is alive your GCD heals are left to them and you deal damage instead, with \""
   },
   {
-   "file": "RotationSolver/RebornRotations/Healer/SCH_Reborn.cs",
+   "file": "RotationSolver/Rotations/Healer/Scholar/SCH_Reborn.cs",
    "member": "Tooltip = \"In a fight: until a time to kill is measured for the enemy, Bio waits while the enemy has less health than the party would deal in 12 seconds at the percentage set above; once one is measured, the action's own time to kill decides. Off: Bio goes by the action's time to kill alone.\")]"
   },
   {
-   "file": "RotationSolver/RebornRotations/Healer/SGE_Reborn.cs",
+   "file": "RotationSolver/Rotations/Healer/Sage/SGE_Reborn.cs",
    "member": "Tooltip = \"With the limit to multihit party stacks on, Panhaima also goes before an announced area hit that, by its \""
   },
   {
-   "file": "RotationSolver/RebornRotations/Healer/SGE_Reborn.cs",
+   "file": "RotationSolver/Rotations/Healer/Sage/SGE_Reborn.cs",
    "member": "Tooltip = \"With the limit to multihit party stacks on, Panhaima also goes into an enemy attack that has been seen to \""
   },
   {
-   "file": "RotationSolver/RebornRotations/Healer/SGE_Reborn.cs",
+   "file": "RotationSolver/Rotations/Healer/Sage/SGE_Reborn.cs",
    "member": "Tooltip = \"Off: while another healer is alive your GCD heals are left to them and you deal damage instead, with \""
   },
   {
-   "file": "RotationSolver/RebornRotations/Healer/SGE_Reborn.cs",
+   "file": "RotationSolver/Rotations/Healer/Sage/SGE_Reborn.cs",
    "member": "Tooltip = \"Taurochole needs a reason beyond low health: the target is being attacked or cast at, an area cast is announced, \""
   },
   {
-   "file": "RotationSolver/RebornRotations/Healer/SGE_Reborn.cs",
+   "file": "RotationSolver/Rotations/Healer/Sage/SGE_Reborn.cs",
    "member": "Tooltip = \"Eukrasian Diagnosis goes on the tank as they close in on a group and is renewed for as long \""
   },
   {
-   "file": "RotationSolver/RebornRotations/Healer/SGE_Reborn.cs",
+   "file": "RotationSolver/Rotations/Healer/Sage/SGE_Reborn.cs",
    "member": "Tooltip = \"How many enemies have to stand within gap-closer range of the tank, before combat \""
   },
   {
-   "file": "RotationSolver/RebornRotations/Healer/SGE_Reborn.cs",
+   "file": "RotationSolver/Rotations/Healer/Sage/SGE_Reborn.cs",
    "member": "Tooltip = \"The same count, but during combat: how many enemies have to remain around the tank \""
   },
   {
-   "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
+   "file": "RotationSolver/Rotations/Healer/WhiteMage/WHM_Reborn.cs",
    "member": "Tooltip = \"With the limit to multihit party stacks on, the bell also goes before an announced area hit that, by its \""
   },
   {
-   "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
+   "file": "RotationSolver/Rotations/Healer/WhiteMage/WHM_Reborn.cs",
    "member": "Tooltip = \"With the limit to multihit party stacks on, the bell also goes out at the first hit of an enemy attack \""
   },
   {
-   "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
+   "file": "RotationSolver/Rotations/Healer/WhiteMage/WHM_Reborn.cs",
    "member": "Tooltip = \"While the bell still holds stacks, its second press heals with every stack left at once; otherwise \""
   },
   {
-   "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
+   "file": "RotationSolver/Rotations/Healer/WhiteMage/WHM_Reborn.cs",
    "member": "Tooltip = \"Off: while another healer is alive your GCD heals are left to them and you deal damage instead, with \""
   },
   {
-   "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
+   "file": "RotationSolver/Rotations/Healer/WhiteMage/WHM_Reborn.cs",
    "member": "Tooltip = \"Regen goes on the tank at five seconds on the pull countdown, again as they close in \""
   },
   {
-   "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
+   "file": "RotationSolver/Rotations/Healer/WhiteMage/WHM_Reborn.cs",
    "member": "Tooltip = \"How many enemies have to stand within gap-closer range of the tank, before combat \""
   },
   {
-   "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
+   "file": "RotationSolver/Rotations/Healer/WhiteMage/WHM_Reborn.cs",
    "member": "Tooltip = \"The same count, but during combat: how many enemies have to remain around the tank \""
   },
   {
-   "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
+   "file": "RotationSolver/Rotations/Healer/WhiteMage/WHM_Reborn.cs",
    "member": "Tooltip = \"Benediction needs a reason beyond low health: the target is being attacked or cast \""
   },
   {
-   "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
+   "file": "RotationSolver/Rotations/Healer/WhiteMage/WHM_Reborn.cs",
    "member": "Tooltip = \"Below this health a member gets Cure II or Cure instead of Regen: they heal more at once.\\n\""
   },
   {
-   "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
+   "file": "RotationSolver/Rotations/Healer/WhiteMage/WHM_Reborn.cs",
    "member": "Tooltip = \"Thin Air is only spent on an expensive spell while MP has actually fallen to where \""
   },
   {
-   "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
+   "file": "RotationSolver/Rotations/Healer/WhiteMage/WHM_Reborn.cs",
    "member": "Tooltip = \"Right after Holy (Sanctus), the next GCD goes to another spell while Holy's stun would \""
   },
   {
-   "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
+   "file": "RotationSolver/Rotations/Healer/WhiteMage/WHM_Reborn.cs",
    "member": "Tooltip = \"On a group pull, Holy (Sanctus) is held back while a tank carries the barrier from \""
   },
   {
-   "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
+   "file": "RotationSolver/Rotations/Healer/WhiteMage/WHM_Reborn.cs",
    "member": "Tooltip = \"How many enemies have to be in range before Holy (Sanctus) may be held back for \""
   },
   {
-   "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
+   "file": "RotationSolver/Rotations/Healer/WhiteMage/WHM_Reborn.cs",
    "member": "Tooltip = \"Holy (Sanctus) is held back while the pack is already slowed, typically by the \""
   },
   {
-   "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
+   "file": "RotationSolver/Rotations/Healer/WhiteMage/WHM_Reborn.cs",
    "member": "Tooltip = \"How many enemies in Holy's radius have to carry the Slow before the hold applies. \""
   },
   {
-   "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
+   "file": "RotationSolver/Rotations/Healer/WhiteMage/WHM_Reborn.cs",
    "member": "Tooltip = \"An optional second condition on the hold above: it only applies while the summed \""
   },
   {
-   "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
+   "file": "RotationSolver/Rotations/Healer/WhiteMage/WHM_Reborn.cs",
    "member": "private string _lastStretchTrace = string.Empty;"
   },
   {
-   "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
+   "file": "RotationSolver/Rotations/Healer/WhiteMage/WHM_Reborn.cs",
    "member": "private DateTime _lastStretchTraceAt = DateTime.MinValue;"
   },
   {
-   "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
+   "file": "RotationSolver/Rotations/Healer/WhiteMage/WHM_Reborn.cs",
    "member": "private string _holySlowHold = \"no decision yet\";"
   },
   {
-   "file": "RotationSolver/RebornRotations/Magical/PCT_Reborn.cs",
+   "file": "RotationSolver/Rotations/Magical/Pictomancer/PCT_Reborn.cs",
    "member": "Tooltip = \"Holds Tempera Coat, Tempera Grassa and Addle while your burst runs, even when an area hit or a tankbuster is announced.\\n\""
   },
   {
-   "file": "RotationSolver/RebornRotations/Magical/PCT_Reborn.cs",
+   "file": "RotationSolver/Rotations/Magical/Pictomancer/PCT_Reborn.cs",
    "member": "private bool UseOpenerAndPriority(out IAction? act)"
   },
   {
-   "file": "RotationSolver/RebornRotations/Magical/PCT_Reborn.cs",
+   "file": "RotationSolver/Rotations/Magical/Pictomancer/PCT_Reborn.cs",
    "member": "private bool DrawMotifs(out IAction? act)"
   },
   {
-   "file": "RotationSolver/RebornRotations/Magical/PCT_Reborn.cs",
+   "file": "RotationSolver/Rotations/Magical/Pictomancer/PCT_Reborn.cs",
    "member": "private bool PaintWhileMoving(out IAction? act)"
   },
   {
-   "file": "RotationSolver/RebornRotations/Magical/PCT_Reborn.cs",
+   "file": "RotationSolver/Rotations/Magical/Pictomancer/PCT_Reborn.cs",
    "member": "private bool DrawMotifWithSwiftcast(out IAction? act)"
   },
   {
-   "file": "RotationSolver/RebornRotations/Magical/PCT_Reborn.cs",
+   "file": "RotationSolver/Rotations/Magical/Pictomancer/PCT_Reborn.cs",
    "member": "private bool SpendPaint(out IAction? act)"
   },
   {
-   "file": "RotationSolver/RebornRotations/Magical/PCT_Reborn.cs",
+   "file": "RotationSolver/Rotations/Magical/Pictomancer/PCT_Reborn.cs",
    "member": "private bool RefreshMotifsAsFallback(out IAction? act)"
   },
   {
-   "file": "RotationSolver/RebornRotations/Magical/RDM_Reborn.cs",
+   "file": "RotationSolver/Rotations/Magical/RedMage/RDM_Reborn.cs",
    "member": "Tooltip = \"Off: your GCD heals go only when no healer is alive, or while a party member is in the critical class, \""
   },
   {
-   "file": "RotationSolver/RebornRotations/Magical/RDM_Reborn.cs",
+   "file": "RotationSolver/Rotations/Magical/RedMage/RDM_Reborn.cs",
    "member": "Tooltip = \"Holds Vercure while Manafication, Embolden or the melee combo and its finishers run - unless no \""
   },
   {
-   "file": "RotationSolver/RebornRotations/Magical/RDM_Reborn.cs",
+   "file": "RotationSolver/Rotations/Magical/RedMage/RDM_Reborn.cs",
    "member": "Tooltip = \"Holds Verraise while Manafication, Embolden or the melee combo and its finishers run.\\n\""
   },
   {
-   "file": "RotationSolver/RebornRotations/Magical/RDM_Reborn.cs",
+   "file": "RotationSolver/Rotations/Magical/RedMage/RDM_Reborn.cs",
    "member": "Tooltip = \"Off: while Verraise is learned and \\\"Raise with Swiftcast or Dualcast\\\" is on, Swiftcast stays ready for \""
   },
   {
-   "file": "RotationSolver/RebornRotations/Magical/SMN_Reborn.cs",
+   "file": "RotationSolver/Rotations/Magical/Summoner/SMN_Reborn.cs",
    "member": "Tooltip = \"Off: your GCD heals go only when no healer is alive, or while a party member is in the critical class, \""
   },
   {
-   "file": "RotationSolver/RebornRotations/Magical/SMN_Reborn.cs",
+   "file": "RotationSolver/Rotations/Magical/Summoner/SMN_Reborn.cs",
    "member": "Tooltip = \"While you are moving, Titan is summoned ahead of the configured order.\\n\""
   },
   {
-   "file": "RotationSolver/RebornRotations/Magical/SMN_Reborn.cs",
+   "file": "RotationSolver/Rotations/Magical/Summoner/SMN_Reborn.cs",
    "member": "Tooltip = \"While you stand within your Crimson Cyclone distance, Ifrit is summoned ahead of the configured order.\\n\""
   },
   {
-   "file": "RotationSolver/RebornRotations/Magical/SMN_Reborn.cs",
+   "file": "RotationSolver/Rotations/Magical/Summoner/SMN_Reborn.cs",
    "member": "private static string SearingLightAgainstSummon()"
   },
   {
-   "file": "RotationSolver/RebornRotations/Magical/SMN_Reborn.cs",
+   "file": "RotationSolver/Rotations/Magical/Summoner/SMN_Reborn.cs",
    "member": "private string _summonHeldFor = string.Empty;"
   },
   {
-   "file": "RotationSolver/RebornRotations/Magical/SMN_Reborn.cs",
+   "file": "RotationSolver/Rotations/Magical/Summoner/SMN_Reborn.cs",
    "member": "private DateTime _summonHeldSince = DateTime.MinValue;"
   },
   {
-   "file": "RotationSolver/RebornRotations/Magical/SMN_Reborn.cs",
+   "file": "RotationSolver/Rotations/Magical/Summoner/SMN_Reborn.cs",
    "member": "private void NoteSummonHold(string reason)"
   },
   {
-   "file": "RotationSolver/RebornRotations/Magical/SMN_Reborn.cs",
+   "file": "RotationSolver/Rotations/Magical/Summoner/SMN_Reborn.cs",
    "member": "private bool TryRekindle(out IAction? act)"
   },
   {
-   "file": "RotationSolver/RebornRotations/Magical/SMN_Reborn.cs",
+   "file": "RotationSolver/Rotations/Magical/Summoner/SMN_Reborn.cs",
    "member": "private string _luxWhy = \"not asked yet\";"
   },
   {
-   "file": "RotationSolver/RebornRotations/Magical/SMN_Reborn.cs",
+   "file": "RotationSolver/Rotations/Magical/Summoner/SMN_Reborn.cs",
    "member": "private string _luxLastChoice = \"none yet\";"
   },
   {
-   "file": "RotationSolver/RebornRotations/Magical/SMN_Reborn.cs",
+   "file": "RotationSolver/Rotations/Magical/Summoner/SMN_Reborn.cs",
    "member": "private bool TryLuxSolaris(bool manual, out IAction? act)"
   },
   {
-   "file": "RotationSolver/RebornRotations/Magical/SMN_Reborn.cs",
+   "file": "RotationSolver/Rotations/Magical/Summoner/SMN_Reborn.cs",
    "member": "private bool LuxSolarisDecision(bool manual, out string why)"
   },
   {
-   "file": "RotationSolver/RebornRotations/Magical/SMN_Reborn.cs",
+   "file": "RotationSolver/Rotations/Magical/Summoner/SMN_Reborn.cs",
    "member": "private bool UseSummonsAndTrances(out IAction? act)"
   },
   {
-   "file": "RotationSolver/RebornRotations/Magical/SMN_Reborn.cs",
+   "file": "RotationSolver/Rotations/Magical/Summoner/SMN_Reborn.cs",
    "member": "private bool UsePrimalFollowUps(out IAction? act)"
   },
   {
-   "file": "RotationSolver/RebornRotations/Magical/SMN_Reborn.cs",
+   "file": "RotationSolver/Rotations/Magical/Summoner/SMN_Reborn.cs",
    "member": "private bool SummonPrimals(out IAction? act)"
   },
   {
-   "file": "RotationSolver/RebornRotations/Magical/SMN_Reborn.cs",
+   "file": "RotationSolver/Rotations/Magical/Summoner/SMN_Reborn.cs",
    "member": "private bool UseFillers(out IAction? act)"
   },
   {
-   "file": "RotationSolver/RebornRotations/Melee/DRG_Reborn.cs",
+   "file": "RotationSolver/Rotations/Melee/Dragoon/DRG_Reborn.cs",
    "member": "protected override IAction? CountDownAction(float remainTime)"
   },
   {
-   "file": "RotationSolver/RebornRotations/Melee/DRG_Reborn.cs",
+   "file": "RotationSolver/Rotations/Melee/Dragoon/DRG_Reborn.cs",
    "member": "protected override bool HealSingleAbility(IAction nextGCD, out IAction? act)"
   },
   {
-   "file": "RotationSolver/RebornRotations/Melee/DRG_Reborn.cs",
+   "file": "RotationSolver/Rotations/Melee/Dragoon/DRG_Reborn.cs",
    "member": "protected sealed override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)"
   },
   {
-   "file": "RotationSolver/RebornRotations/Melee/MNK_Reborn.cs",
+   "file": "RotationSolver/Rotations/Melee/Monk/MNK_Reborn.cs",
    "member": "public bool SixSidedStarLast { get; set; } = true;"
   },
   {
-   "file": "RotationSolver/RebornRotations/Melee/MNK_Reborn.cs",
+   "file": "RotationSolver/Rotations/Melee/Monk/MNK_Reborn.cs",
    "member": "protected override bool HealSingleAbility(IAction nextGCD, out IAction? act)"
   },
   {
-   "file": "RotationSolver/RebornRotations/Melee/NIN_Reborn.cs",
+   "file": "RotationSolver/Rotations/Melee/Ninja/NIN_Reborn.cs",
    "member": "protected override bool HealSingleAbility(IAction nextGCD, out IAction? act)"
   },
   {
-   "file": "RotationSolver/RebornRotations/Melee/RPR_Reborn.cs",
+   "file": "RotationSolver/Rotations/Melee/Reaper/RPR_Reborn.cs",
    "member": "private const string ComboHoldRule = \"Reaper: Soul Reaver, Enshroud or Executioner running\";"
   },
   {
-   "file": "RotationSolver/RebornRotations/Melee/RPR_Reborn.cs",
+   "file": "RotationSolver/Rotations/Melee/Reaper/RPR_Reborn.cs",
    "member": "private const string ResourceSlotHoldRule = \"Reaper: Gluttony or Enshroud ready\";"
   },
   {
-   "file": "RotationSolver/RebornRotations/Melee/RPR_Reborn.cs",
+   "file": "RotationSolver/Rotations/Melee/Reaper/RPR_Reborn.cs",
    "member": "protected override bool HasOwnAntiKnockbackGate => true;"
   },
   {
-   "file": "RotationSolver/RebornRotations/Melee/RPR_Reborn.cs",
+   "file": "RotationSolver/Rotations/Melee/Reaper/RPR_Reborn.cs",
    "member": "protected override bool HasOwnInterruptGate => true;"
   },
   {
-   "file": "RotationSolver/RebornRotations/Melee/SAM_Reborn.cs",
+   "file": "RotationSolver/Rotations/Melee/Samurai/SAM_Reborn.cs",
    "member": "private const string ZanshinHoldRule = \"Samurai: Zanshin ready\";"
   },
   {
-   "file": "RotationSolver/RebornRotations/Melee/SAM_Reborn.cs",
+   "file": "RotationSolver/Rotations/Melee/Samurai/SAM_Reborn.cs",
    "member": "private bool UseOgiAndHiganbana(out IAction? act)"
   },
   {
-   "file": "RotationSolver/RebornRotations/Melee/SAM_Reborn.cs",
+   "file": "RotationSolver/Rotations/Melee/Samurai/SAM_Reborn.cs",
    "member": "private bool UseAoeFinishers(out IAction? act)"
   },
   {
-   "file": "RotationSolver/RebornRotations/Melee/SAM_Reborn.cs",
+   "file": "RotationSolver/Rotations/Melee/Samurai/SAM_Reborn.cs",
    "member": "private bool UseAoeCombo(out IAction? act)"
   },
   {
-   "file": "RotationSolver/RebornRotations/Melee/SAM_Reborn.cs",
+   "file": "RotationSolver/Rotations/Melee/Samurai/SAM_Reborn.cs",
    "member": "private bool UseSetsugekka(out IAction? act)"
   },
   {
-   "file": "RotationSolver/RebornRotations/Melee/SAM_Reborn.cs",
+   "file": "RotationSolver/Rotations/Melee/Samurai/SAM_Reborn.cs",
    "member": "private bool UseSingleTargetFinishers(out IAction? act)"
   },
   {
-   "file": "RotationSolver/RebornRotations/Melee/SAM_Reborn.cs",
+   "file": "RotationSolver/Rotations/Melee/Samurai/SAM_Reborn.cs",
    "member": "private bool UseSingleTargetBuffs(out IAction? act)"
   },
   {
-   "file": "RotationSolver/RebornRotations/Melee/SAM_Reborn.cs",
+   "file": "RotationSolver/Rotations/Melee/Samurai/SAM_Reborn.cs",
    "member": "private bool UseComboStarters(out IAction? act)"
   },
   {
-   "file": "RotationSolver/RebornRotations/Melee/VPR_Reborn.cs",
+   "file": "RotationSolver/Rotations/Melee/Viper/VPR_Reborn.cs",
    "member": "private const string FollowUpHoldRule = \"Viper: a follow-up ability is ready\";"
   },
   {
-   "file": "RotationSolver/RebornRotations/Ranged/BRD_Reborn.cs",
+   "file": "RotationSolver/Rotations/Ranged/Bard/BRD_Reborn.cs",
    "member": "Tooltip = \"Holds Troubadour while your burst runs, even when an area hit or a tankbuster is announced.\\n\""
   },
   {
-   "file": "RotationSolver/RebornRotations/Ranged/BRD_Reborn.cs",
+   "file": "RotationSolver/Rotations/Ranged/Bard/BRD_Reborn.cs",
    "member": "protected override bool MoveBackAbility(IAction nextGCD, out IAction? act)"
   },
   {
-   "file": "RotationSolver/RebornRotations/Ranged/BRD_Reborn.cs",
+   "file": "RotationSolver/Rotations/Ranged/Bard/BRD_Reborn.cs",
    "member": "protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)"
   },
   {
-   "file": "RotationSolver/RebornRotations/Ranged/DNC_Reborn.cs",
+   "file": "RotationSolver/Rotations/Ranged/Dancer/DNC_Reborn.cs",
    "member": "Tooltip = \"Holds Shield Samba while your burst runs, even when an area hit or a tankbuster is announced.\\n\""
   },
   {
-   "file": "RotationSolver/RebornRotations/Ranged/DNC_Reborn.cs",
+   "file": "RotationSolver/Rotations/Ranged/Dancer/DNC_Reborn.cs",
    "member": "protected override bool HealSingleAbility(IAction nextGCD, out IAction? act)"
   },
   {
-   "file": "RotationSolver/RebornRotations/Ranged/DNC_Reborn.cs",
+   "file": "RotationSolver/Rotations/Ranged/Dancer/DNC_Reborn.cs",
    "member": "protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)"
   },
   {
-   "file": "RotationSolver/RebornRotations/Ranged/MCH_Reborn.cs",
+   "file": "RotationSolver/Rotations/Ranged/Machinist/MCH_Reborn.cs",
    "member": "public bool UseFlamethrower { get; set; } = true;"
   },
   {
-   "file": "RotationSolver/RebornRotations/Ranged/MCH_Reborn.cs",
+   "file": "RotationSolver/Rotations/Ranged/Machinist/MCH_Reborn.cs",
    "member": "private bool BurstWeaveSlotContested =>"
   },
   {
-   "file": "RotationSolver/RebornRotations/Ranged/MCH_Reborn.cs",
+   "file": "RotationSolver/Rotations/Ranged/Machinist/MCH_Reborn.cs",
    "member": "protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)"
   },
   {
-   "file": "RotationSolver/RebornRotations/Ranged/MCH_Reborn.cs",
+   "file": "RotationSolver/Rotations/Ranged/Machinist/MCH_Reborn.cs",
    "member": "protected override bool HealSingleAbility(IAction nextGCD, out IAction? act)"
   },
   {
-   "file": "RotationSolver/RebornRotations/Tank/DRK_Reborn.cs",
+   "file": "RotationSolver/Rotations/Tank/DarkKnight/DRK_Reborn.cs",
    "member": "Tooltip = \"The Blackest Night goes on the member a tankbuster is aimed at - a tankbuster marker on them, or an \""
   },
   {
-   "file": "RotationSolver/RebornRotations/Tank/DRK_Reborn.cs",
+   "file": "RotationSolver/Rotations/Tank/DarkKnight/DRK_Reborn.cs",
    "member": "Tooltip = \"The Blackest Night costs 3000 MP and only pays it back as Dark Arts if the barrier \""
   },
   {
-   "file": "RotationSolver/RebornRotations/Tank/DRK_Reborn.cs",
+   "file": "RotationSolver/Rotations/Tank/DarkKnight/DRK_Reborn.cs",
    "member": "Tooltip = \"How many enemies have to be in range before a pull counts as big enough to spend the \""
   },
   {
-   "file": "RotationSolver/RebornRotations/Tank/DRK_Reborn.cs",
+   "file": "RotationSolver/Rotations/Tank/DarkKnight/DRK_Reborn.cs",
    "member": "Tooltip = \"Arm's Length is used on a group pull for its Slow, not only as knockback \""
   },
   {
-   "file": "RotationSolver/RebornRotations/Tank/DRK_Reborn.cs",
+   "file": "RotationSolver/Rotations/Tank/DarkKnight/DRK_Reborn.cs",
    "member": "Tooltip = \"The barrier pays its 3000 MP back as Dark Arts only when it is absorbed in full within its \""
   },
   {
-   "file": "RotationSolver/RebornRotations/Tank/DRK_Reborn.cs",
+   "file": "RotationSolver/Rotations/Tank/DarkKnight/DRK_Reborn.cs",
    "member": "Tooltip = \"Only used by the last option of the Blackest Night setting above: below this share \""
   },
   {
-   "file": "RotationSolver/RebornRotations/Tank/DRK_Reborn.cs",
+   "file": "RotationSolver/Rotations/Tank/DarkKnight/DRK_Reborn.cs",
    "member": "private static bool GroupStunRunning()"
   },
   {
-   "file": "RotationSolver/RebornRotations/Tank/DRK_Reborn.cs",
+   "file": "RotationSolver/Rotations/Tank/DarkKnight/DRK_Reborn.cs",
    "member": "private static bool AreaStunBeingCastOnPack(int inRange)"
   },
   {
-   "file": "RotationSolver/RebornRotations/Tank/DRK_Reborn.cs",
+   "file": "RotationSolver/Rotations/Tank/DarkKnight/DRK_Reborn.cs",
    "member": "private static bool StunsAroundCaster(Lumina.Excel.Sheets.Action action)"
   },
   {
-   "file": "RotationSolver/RebornRotations/Tank/DRK_Reborn.cs",
+   "file": "RotationSolver/Rotations/Tank/DarkKnight/DRK_Reborn.cs",
    "member": "private bool BarrierWaitsToBeSpent()"
   },
   {
-   "file": "RotationSolver/RebornRotations/Tank/DRK_Reborn.cs",
+   "file": "RotationSolver/Rotations/Tank/DarkKnight/DRK_Reborn.cs",
    "member": "private const byte BloodPoolLimit = 70;"
   },
   {
-   "file": "RotationSolver/RebornRotations/Tank/GNB_Reborn.cs",
+   "file": "RotationSolver/Rotations/Tank/Gunbreaker/GNB_Reborn.cs",
    "member": "Tooltip = \"Arm's Length is used on a group pull for its Slow, not only as knockback \""
   },
   {
-   "file": "RotationSolver/RebornRotations/Tank/PLD_Reborn.cs",
+   "file": "RotationSolver/Rotations/Tank/Paladin/PLD_Reborn.cs",
    "member": "Tooltip = \"Arm's Length is used on a group pull for its Slow, not only as knockback \""
   },
   {
-   "file": "RotationSolver/RebornRotations/Tank/PLD_Reborn.cs",
+   "file": "RotationSolver/Rotations/Tank/Paladin/PLD_Reborn.cs",
    "member": "protected override bool HasOwnArmsLengthPullRule => true;"
   },
   {
-   "file": "RotationSolver/RebornRotations/Tank/PLD_Reborn.cs",
+   "file": "RotationSolver/Rotations/Tank/Paladin/PLD_Reborn.cs",
    "member": "Tooltip = \"Off: your GCD heals go only when no healer is alive, or while a party member is in the critical class, \""
   },
   {
-   "file": "RotationSolver/RebornRotations/Tank/PLD_Reborn.cs",
+   "file": "RotationSolver/Rotations/Tank/Paladin/PLD_Reborn.cs",
    "member": "Tooltip = \"Intervention goes on the other tank when a tankbuster is aimed at him: a tankbuster marker on him, \""
   },
   {
-   "file": "RotationSolver/RebornRotations/Tank/WAR_Reborn.cs",
+   "file": "RotationSolver/Rotations/Tank/Warrior/WAR_Reborn.cs",
    "member": "Tooltip = \"Nascent Flash on someone else puts Bloodwhetting on its cooldown too. With this on, it \""
   },
   {
-   "file": "RotationSolver/RebornRotations/Tank/WAR_Reborn.cs",
+   "file": "RotationSolver/Rotations/Tank/Warrior/WAR_Reborn.cs",
    "member": "Tooltip = \"Nascent Flash goes on the member a tankbuster is aimed at - a tankbuster marker on them, or an enemy \""
   },
   {
-   "file": "RotationSolver/RebornRotations/Tank/WAR_Reborn.cs",
+   "file": "RotationSolver/Rotations/Tank/Warrior/WAR_Reborn.cs",
    "member": "Tooltip = \"Arm's Length is used on a group pull for its Slow, not only as knockback \""
   },
   {
-   "file": "RotationSolver/RebornRotations/Tank/WAR_Reborn.cs",
+   "file": "RotationSolver/Rotations/Tank/Warrior/WAR_Reborn.cs",
    "member": "Tooltip = \"The single-target defence casts Bloodwhetting (Raw Intuition before level 82) also \""
   },
   {
-   "file": "RotationSolver/RebornRotations/Tank/WAR_Reborn.cs",
+   "file": "RotationSolver/Rotations/Tank/Warrior/WAR_Reborn.cs",
    "member": "Tooltip = \"Thrill of Battle goes out when a tankbuster on you lands within its duration, \""
   },
   {
-   "file": "RotationSolver/RebornRotations/Tank/WAR_Reborn.cs",
+   "file": "RotationSolver/Rotations/Tank/Warrior/WAR_Reborn.cs",
    "member": "Tooltip = \"Thrill of Battle goes out as soon as your health, falling at the rate measured over the \""
   },
   {
@@ -1238,12 +1238,564 @@
    "member": "private static void TraceDutyOnlyRaise()"
   },
   {
-   "file": "RotationSolver/Watcher.cs",
+   "file": "RotationSolver/Engine/Watcher.cs",
    "member": "private const uint HotTickCategory = 0x604;"
   },
   {
-   "file": "RotationSolver/Watcher.cs",
+   "file": "RotationSolver/Engine/Watcher.cs",
    "member": "private static void TraceHitFromUnreadSource(ActionEffectSet set, IBattleChara player)"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private const string LaggingSettingBefore = \"PreferLaggingFamiliars\";"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private static uint _familiarLargestHit;"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private static ulong _familiarWatched;"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private static uint _snarlForArrival;"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private static uint _familiarLargestHitOnBoard;"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private static uint _familiarLastHp;"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private static uint _familiarHeldLoss;"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private static float _familiarHeldSeconds;"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private static uint _playerHeldLoss;"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private static float _playerHeldSeconds;"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private static uint _playerLastHp;"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private static uint _useStartHp;"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private static uint _useLastHp;"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private static bool _useFell;"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private static uint _largestLossPerUse;"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private static uint _petSeenArea;"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private static void FollowFamiliarHits(bool leaving)"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private static unsafe void CloseFamiliarUse()"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private static unsafe uint? AgentHealth(BeastmasterPet pet)"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private bool FamiliarLeaving"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private static (uint Fight, BeastmasterPet Pet) _sparedForFinal;"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private static bool PlayerHeldByEnemies()"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private static float HoldingRate(uint loss, float seconds)"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private static uint FamiliarLossAhead(IBattleChara? familiar)"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private bool CallNextHorn(out IAction? act)"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "protected override bool InterruptAbility(IAction nextGCD, out IAction? act)"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private bool CompassAxe(out IAction? act)"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private bool Finisher(bool skipStatusNeed, out IAction? act)"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private static int Reached(IBaseAction action)"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private List<HornOrder> ConfiguredHornOrder()"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private void AddHorn(HornOrder horn)"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private readonly List<HornOrder> _hornOrder = [];"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private static bool WaitsForNature(OneWithNatureOrder nature)"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private bool TemperedReleaseNow(out IAction? act)"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private OneWithNatureOrder EffectiveNature(HornOrder horn)"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private bool TrickHealsOnHorn(HornOrder horn)"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private bool _healerHoldTraced;"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private bool HealerFamiliarHolds()"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private static float SecondsToFallUnhealed(out float rate)"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private HornOrder? HealingHornWhileFalling(out float fallsIn)"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private bool SafeHornReadyWithin(float seconds)"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private bool HornIsSafe(HornOrder horn)"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private bool SafeBy(FamiliarProfile familiar, OneWithNatureOrder nature, bool stops, bool releaseComes, bool borrowComes)"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private HornOrder? FirstPackStopperReadyHorn()"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private HornOrder? FirstSafeReadyHorn()"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private HornOrder? FirstHornForEnemiesThatCame()"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private bool SituationalHorn(out IAction? act)"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private const string DangerReason = \"you are in danger, it heals, protects or stops your attackers\";"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private static float _leaveSeconds;"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private static bool _wasLeaving;"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private void FollowRelief()"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private bool ReliefCanFollow()"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private static void TraceHorn(string line)"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private static bool _coverHoldTraced;"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private static ulong _captureTracedId;"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private readonly record struct BeastmasterState(BeastmasterPet First, BeastmasterPet Second, BeastmasterPet Third,"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private static BeastmasterState? _lastState;"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private void TraceState()"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "protected override void UpdateInfo()"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private static bool _awayFailed;"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private byte _awayHorn;"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private DateTime _awaySentAt;"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private void RetreatBeforeNextFight()"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "protected override void UpdateServices()"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private uint _area;"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private bool _fighting;"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private int _fightPeak;"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private int _lastPeak;"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private int _waitingPeak;"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private bool _dangerInArea;"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private bool _dangerRecorded;"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private bool _dangerKnownChecked;"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private bool _heldByHand;"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private byte[] _slotsSeen = [];"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private byte[]? _hornsBeforeBoard;"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private bool _wasInCrucible;"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private HornPlanKey? _planKey;"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private string _planTraced = string.Empty;"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private readonly List<BeastmasterPet> _candidates = [];"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private readonly record struct HornPlanKey(uint Area, int Level, bool Boss, int Required, int Pack,"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private readonly record struct HornOption(BeastmasterPet Pet, bool Safe, bool Fitting, float Damage, bool TrickHeals,"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private readonly record struct HornPlanScore(int Required, int Fitting, float Damage, int SafeAfterDanger, int Kept,"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private void RecordFight()"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private readonly Dictionary<ActionID, int> _fightUses = [];"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private DateTime _lastUseSeen;"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private DateTime _lastCount;"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private float _chargeIdle;"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private bool _counting;"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private string _chargeHeld = string.Empty;"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private void WatchChargeHeld()"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private void CountFight()"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private void WatchHand()"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private bool HornAvailable(HornOrder horn) => horn switch"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private void AssignBetweenFights()"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private static bool OpenToStop(FamiliarProfile familiar, CrucibleBoard.Enemy[]? battle) => OpenTo(battle, StopOf(familiar));"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private static bool OpenTo(CrucibleBoard.Enemy[]? battle, CrucibleBoard.Ailment ailment)"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private HornOption Option(BeastmasterPet pet, HornOrder horn, bool boss, int pack, CrucibleBoard.Enemy[]? battle = null)"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private bool _hornScreenHeldByHand;"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private int _hornScreenClicks;"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private DateTime _hornScreenClickAt;"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private string _hornScreenSelection = string.Empty;"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private string _hornScreenTraced = string.Empty;"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private bool _hornScreenOpen;"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private bool _hornScreenReady;"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private const uint StageEntriesBuilt = 2;"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private unsafe void SetHornsOnHornScreen()"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private unsafe List<(BeastmasterPet Pet, int Position, uint Hp, uint Full, int Rank)> BoardCandidates("
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private HornOption BoardOption(BeastmasterPet pet, HornOrder horn, bool boss, int pack, CrucibleBoard.Enemy[] enemies,"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private static float ExpectedPerPotency(BeastmasterPet pet, CrucibleBoard.Enemy[] enemies)"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private bool PlanFinal(uint board, List<(BeastmasterPet Pet, int Position, uint Hp, uint Full, int Rank)> candidates, HornOption none)"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private int _finalPlanKey;"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private unsafe void RefreshFinalPlan()"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private HornOption[] BestPlan(List<HornOption>[] options, BeastmasterPet[] currentPets, int required, HornOption none)"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private (BeastmasterPet Pet, uint Hp)? SoleInterrupterAhead(uint board,"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private static uint LossPerUse(uint battle) => CrucibleBoard.UseLossIn(battle) ?? _largestLossPerUse;"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private HashSet<BeastmasterPet> HeldForFinal(uint board, List<(BeastmasterPet Pet, int Position, uint Hp, uint Full, int Rank)> candidates,"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private static int Hits(float radius, bool boss, int pack)"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
+   "member": "private HornPlanScore Score(HornOption a, HornOption b, HornOption c, BeastmasterPet[] current, int required)"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/BlueMage/BLU_Reborn.cs",
+   "member": "Tooltip = \"In a fight: Moon Flute goes when the burst it lifts gains more than Waning Nocturne costs - Waning allows no action at all, no heal, no mitigation, no raise. On: it also waits while you are under tank or healer mimicry, while a party member is in danger or an announced area cast would put one there, while your own health, carried forward over the window, would fall that low, and while BossModReborn announces a raidwide or a tankbuster on you within it. Without BossModReborn's timeline only what is cast or measured counts. Off: only the value decides.\")]"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/BlueMage/BLU_Reborn.cs",
+   "member": "Tooltip = \"In a fight: RSR casts only spells in your active set, so with this on more of your learned spells come into play. Out of combat, without a target: RSR adds Sonic Boom where it is missing, the partners of the spell chains one part of which is in your set, and damage spells with a recast from recast groups your set lacks. It takes only free slots and fillers it does not cast at your level - damage cooldowns, heals, defence, movement, mimicry, raises, interrupts and every spell with an additional effect stay, and a slot is changed only while its spell is ready. Once you change your set yourself, or inside the Masked Carnivale, RSR leaves it alone for the rest of the session. Your saved sets and hotbars stay as they are. Off: your set stays as you made it.\")]"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/BlueMage/BLU_Reborn.cs",
+   "member": "protected override void UpdateServices()"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/BlueMage/BLU_Reborn.cs",
+   "member": "private bool UseUtilityAndDebuffs(out IAction? act)"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/BlueMage/BLU_Reborn.cs",
+   "member": "private bool MaintainDoTs(out IAction? act)"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/BlueMage/BLU_Reborn.cs",
+   "member": "private bool SpendCooldowns(out IAction? act)"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/BlueMage/BLU_Reborn.cs",
+   "member": "private bool UseSituational(out IAction? act)"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/BlueMage/BLU_Reborn.cs",
+   "member": "private bool UseFiller(out IAction? act)"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/BlueMage/BLU_Reborn.cs",
+   "member": "private FrameCached<bool>? _moonFluteComing;"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/BlueMage/BLU_Reborn.cs",
+   "member": "private string _moonFluteHeldFor = string.Empty;"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/BlueMage/BLU_Reborn.cs",
+   "member": "private bool _moonFluteWasComing;"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/BlueMage/BLU_Reborn.cs",
+   "member": "private DateTime _moonFluteComingSince = DateTime.MinValue;"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/BlueMage/BLU_Reborn.cs",
+   "member": "private float _moonFluteNet;"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/BlueMage/BLU_Reborn.cs",
+   "member": "private bool BurstWaits => MoonFluteComing && !BurstWaitCostsUse();"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/BlueMage/BLU_Reborn.cs",
+   "member": "private bool MoonFluteComing => (_moonFluteComing ??= new(DecideMoonFlute, DataCenter.FrameCacheMs)).Value;"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/BlueMage/BLU_Reborn.cs",
+   "member": "private bool DecideMoonFlute()"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/BlueMage/BLU_Reborn.cs",
+   "member": "private bool TridentInWaxing"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/BlueMage/BLU_Reborn.cs",
+   "member": "private bool BurstWaitCostsUse()"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/BlueMage/BLU_Reborn.cs",
+   "member": "private bool KnifeCanFollow(IBaseAction stun, IBaseAction knife)"
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/BlueMage/BLU_Reborn.cs",
+   "member": "private bool KnightsTourCanBegin(IBaseAction opener, IBaseAction payoff)"
   }
  ]
 }

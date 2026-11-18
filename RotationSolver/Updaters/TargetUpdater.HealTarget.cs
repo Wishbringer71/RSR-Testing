@@ -3,8 +3,6 @@ using ECommons.ExcelServices;
 using ECommons.GameFunctions;
 using ECommons.GameHelpers;
 using ECommons.Logging;
-using RotationSolver.Basic.Configuration;
-
 namespace RotationSolver.Updaters;
 
 internal static partial class TargetUpdater
@@ -20,7 +18,7 @@ internal static partial class TargetUpdater
 	private static IBattleChara? HealerDispelTarget(List<IBattleChara> candidates, bool nothingAsked)
 	{
 		var spreadDotsWait = DataCenter.HasHostilesInRange
-			&& DataCenter.CurrentRotation is RotationSolver.Basic.Rotations.CustomRotation { HasGroupHealOverTime: true };
+			&& DataCenter.CurrentRotation is RotationSolver.Rotations.CustomRotation { HasGroupHealOverTime: true };
 		_dotBearers.Clear();
 		if (spreadDotsWait)
 		{

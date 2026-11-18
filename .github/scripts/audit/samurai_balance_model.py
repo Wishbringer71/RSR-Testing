@@ -9,7 +9,7 @@ SAM_Reborn does the opposite: it keeps Meikyo back while Higanbana runs out with
 Higanbana only without Meikyo stacks. Does that cost Higanbana time on the target, Meikyo charges or Sen - damage of
 the Samurai's own, not only the alignment with other players' buffs, which the owner's rule does not count?
 
-The GCD choice of SAM_Reborn is mirrored by hand from RotationSolver/RebornRotations/Melee/SAM_Reborn.cs (GeneralGCD
+The GCD choice of SAM_Reborn is mirrored by hand from RotationSolver/Rotations/Melee/Samurai/SAM_Reborn.cs (GeneralGCD
 and the Meikyo Shisui branch of AttackAbility, as of 7e6a428a9); a change there needs the same change here (TODO,
 technical debt). Figures: job guide, patch 7.5 (na.finalfantasyxiv.com/jobguide/samurai, read 26.10.2026) - Higanbana
 200 and 50 every 3 s for 60 s, Meikyo Shisui 3 weaponskills in 20 s, recast 55 s, 2 charges, Tendo 30 s, Fugetsu and

@@ -23,7 +23,7 @@ run over `check_*.py` alone misses the scans and model scripts the workflow also
 | `scan4.py` | `[Range]` attribute versus declared default, duplicate config property names | A10: none open; the class had a real hit in A8 |
 | `scan5.py` | Fork behaviour changes sitting in a dispatch path that has no switch of its own | A16: six lines, all covered by an option or already logged |
 | `scan6.py` | Enum members whose ordinal moved, split by whether the enum is bound - by stored configuration, or by a cast from a foreign int | A16: none persisted; `SpecialMode` is bound over IPC, aligned in `8dc2bd658` and marked known |
-| `scan7.py` | Public and protected members of `RotationSolver.Basic` removed or re-signed since a release, keyed by declaring type, interface members included | A16: `HasHostileCountAoeMitigation`, `ShouldCheckTargetStatus` |
+| `scan7.py` | Public and protected members of the former `RotationSolver.Basic` (now `Engine`, `Configuration`, the rotations' base classes) removed or re-signed since the last fork release, keyed by declaring type, interface members included | A16: `HasHostileCountAoeMitigation`, `ShouldCheckTargetStatus` |
 
 `stun_coverage.py` is the odd one out: not a scanner but a model calculator for the
 concept in `docs/rotation-flow/08-mitigation-synergy.md`. It simulates a stun-insertion

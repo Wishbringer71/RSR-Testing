@@ -1,8 +1,6 @@
 using Dalamud.Interface.Colors;
 using Dalamud.Interface.Windowing;
-using RotationSolver.Basic.Configuration;
-using RotationSolver.UI.ExtraWindows;
-
+using RotationSolver.UI.Windows;
 namespace RotationSolver.UI;
 
 /// <summary>

@@ -3,7 +3,7 @@
 Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-11; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `WhiteMageRotation`
-- Rotation: `RotationSolver/RebornRotations/Healer/WHM_Reborn.cs`
+- Rotation: `RotationSolver/Rotations/Healer/WhiteMage/WHM_Reborn.cs`
 - Matrix als Tabelle: `WHM.csv`
 
 ## Nutzung

@@ -3,7 +3,7 @@
 Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-07; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `DancerRotation`
-- Rotation: `RotationSolver/RebornRotations/Ranged/DNC_Reborn.cs`
+- Rotation: `RotationSolver/Rotations/Ranged/Dancer/DNC_Reborn.cs`
 - Matrix als Tabelle: `DNC.csv`
 
 ## Nutzung

@@ -26,11 +26,11 @@ import re
 import sys
 from pathlib import Path
 
-WHM = Path('RotationSolver/RebornRotations/Healer/WHM_Reborn.cs')
-HELPER = Path('RotationSolver/Basic/Helpers/ObjectHelper.cs')
+WHM = Path('RotationSolver/Rotations/Healer/WhiteMage/WHM_Reborn.cs')
+HELPER = Path('RotationSolver/Engine/Helpers/ObjectHelper.cs')
 UPDATER = Path('RotationSolver/Updaters/TargetUpdater.cs')
-CENTER = Path('RotationSolver/Basic/DataCenter.cs')
-CONFIGS = Path('RotationSolver/Basic/Configuration/Configs.cs')
+CENTER = Path('RotationSolver/Engine/State/DataCenter.cs')
+CONFIGS = Path('RotationSolver/Configuration/Configs.CombatAndTarget.cs')
 WINDOW = Path('RotationSolver/UI/MainWindow/MainWindow_List.cs')
 
 BENEDICTION_BRANCH = re.compile(

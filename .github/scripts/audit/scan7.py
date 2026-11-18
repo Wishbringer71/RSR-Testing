@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Phase 7: public surface of RotationSolver.Basic removed or changed since a base revision.
+"""Phase 7: public surface of the former RotationSolver.Basic removed or changed since a base revision.
 
 Authors of derived rotations compile against the public and protected members of the
 RotationSolver.Basic namespaces. Until upstream's UI rework (merged 04.10.2026) it shipped as a NuGet
@@ -22,10 +22,20 @@ import re
 import subprocess
 import sys
 
-# Where the project's sources live: since upstream 7.5.7.11 in the plugin project, before as a project of its own. A
-# base revision from before the move holds them under the old path, and the key below names type and member, not the
-# file, so a member keeps its key across the move.
-PROJECTS = ('RotationSolver/Basic/', 'RotationSolver.Basic/')
+# Where the project's sources live: since upstream c170c9cd5 (18.11.2026) in RotationSolver/Engine,
+# RotationSolver/Configuration and RotationSolver/Rotations (Core, Duties and each job folder's base class); from upstream
+# 7.5.7.11 until then under RotationSolver/Basic in the plugin project, before as a project of its own. A base revision
+# holds them under its own path, and the key below names type and member, not the file, so a member keeps its key across
+# each move. The rotations shipped in the job folders were never part of it: a file there with a [Rotation(...)]
+# attribute is a rotation, not a base class, and is left out (rotation_file).
+PROJECTS = ('RotationSolver/Engine/', 'RotationSolver/Configuration/', 'RotationSolver/Rotations/',
+            'RotationSolver/Basic/', 'RotationSolver.Basic/')
+ROTATION_ATTRIBUTE = re.compile(r'^\s*\[Rotation\(', re.M)
+
+
+def rotation_file(path, text):
+    """A rotation in a job folder (shipped or third-party), not part of the surface derived rotations compile against."""
+    return path.startswith('RotationSolver/Rotations/') and bool(ROTATION_ATTRIBUTE.search(text))
 
 # Public surface: a member declared public or protected. "protected" counts because derived rotations
 # inherit CustomRotation and call into exactly those members.
@@ -97,46 +107,71 @@ def surface(revision=None):
             if got.returncode:
                 continue
             text = got.stdout
-        in_interface = False
-        depth = 0
-        # The declaring type is part of the key: two same-named members in different types are two
-        # contracts, and keying on the bare name would let the removal of one hide behind the other.
-        # A partial type keeps one name across its files, which is what a consumer sees.
-        owner = '?'
-        for raw in text.split('\n'):
-            # Strip line comments before looking for a type: a prose sentence mentioning "struct" or
-            # "class" would otherwise be read as a declaration and mis-own every member below it,
-            # and a comment added on one side of the comparison alone turns that into 55 phantom
-            # removals - which is how this was found.
-            code = _code_only(raw)
-            line = raw.split('//', 1)[0] if raw.lstrip().startswith('//') else raw
-            named = TYPE_NAME.search(code)
-            if named:
-                owner = named.group(1)
-            if in_interface:
-                depth += line.count('{') - line.count('}')
-                if depth <= 0:
-                    in_interface = False
-                m = IFACE_MEMBER.match(line)
-                if (m and m.group('name') not in NOT_A_MEMBER and not TYPE_DECL.search(code)
-                        and not IFACE_NOT_PUBLIC.match(line)):
-                    found.setdefault(f'{owner}.{_key(m.group("name"), m.group("tail"), line)}',
-                                     (path, line.strip()))
-                continue
-            if IFACE_DECL.search(line):
-                in_interface = True
-                depth = line.count('{') - line.count('}')
-                continue
-            m = MEMBER.match(line)
-            if not m or m.group('name') in NOT_A_MEMBER or TYPE_DECL.search(code):
-                continue
-            found.setdefault(f'{owner}.{_key(m.group("name"), m.group("tail"), line)}',
-                             (path, line.strip()))
+        if rotation_file(path, text):
+            continue
+        found.update((k, v) for k, v in members(path, text).items() if k not in found)
+    return found
+
+
+def members(path, text):
+    """{"Owner.name/arity": (path, declaring line)} for one file's public and protected members."""
+    found = {}
+    in_interface = False
+    depth = 0
+    # The declaring type is part of the key: two same-named members in different types are two
+    # contracts, and keying on the bare name would let the removal of one hide behind the other.
+    # A partial type keeps one name across its files, which is what a consumer sees. A nested type owns
+    # only the members inside its braces: the owner is a stack by brace depth, since the members after a
+    # nested type's end were read as its own - OtherConfiguration's OrderList took 33 members of the class,
+    # reported as removed against a base without it (A878).
+    owners = []  # (name, depth outside it, opened)
+    level = 0
+    for raw in text.split('\n'):
+        # Strip line comments before looking for a type: a prose sentence mentioning "struct" or
+        # "class" would otherwise be read as a declaration and mis-own every member below it,
+        # and a comment added on one side of the comparison alone turns that into 55 phantom
+        # removals - which is how this was found.
+        code = _code_only(raw)
+        line = raw.split('//', 1)[0] if raw.lstrip().startswith('//') else raw
+        named = TYPE_NAME.search(code)
+        if named:
+            owners.append([named.group(1), level, False])
+        owner = owners[-1][0] if owners else '?'
+        opens, closes = code.count('{'), code.count('}')
+        if owners and not owners[-1][2]:
+            if opens:
+                owners[-1][2] = True
+            elif code.rstrip().endswith(';'):
+                owners.pop()  # a declaration without a body (record struct X(int A);)
+        level += opens - closes
+        while owners and owners[-1][2] and level <= owners[-1][1]:
+            owners.pop()
+        if in_interface:
+            depth += line.count('{') - line.count('}')
+            if depth <= 0:
+                in_interface = False
+            m = IFACE_MEMBER.match(line)
+            if (m and m.group('name') not in NOT_A_MEMBER and not TYPE_DECL.search(code)
+                    and not IFACE_NOT_PUBLIC.match(line)):
+                found.setdefault(f'{owner}.{_key(m.group("name"), m.group("tail"), line)}',
+                                 (path, line.strip()))
+            continue
+        if IFACE_DECL.search(line):
+            in_interface = True
+            depth = line.count('{') - line.count('}')
+            continue
+        m = MEMBER.match(line)
+        if not m or m.group('name') in NOT_A_MEMBER or TYPE_DECL.search(code):
+            continue
+        found.setdefault(f'{owner}.{_key(m.group("name"), m.group("tail"), line)}',
+                         (path, line.strip()))
     return found
 
 
 def newest_tag():
-    out = subprocess.run(['git', 'tag', '--sort=-v:refname'],
+    """The newest fork release (<upstream>+wsh<n>), the base the docstring names: the newest tag of all was upstream's own
+    release 7.5.8.5 on 18.11.2026 and measured the fork against upstream instead of against its last release (A878)."""
+    out = subprocess.run(['git', 'tag', '--sort=-v:refname', '--list', '*+wsh*'],
                          capture_output=True, text=True, check=True).stdout.split()
     return out[0] if out else 'upstream/main'
 
@@ -191,6 +226,13 @@ def self_test():
     named = TYPE_NAME.search(_code_only('internal partial class Configs : IPluginConfiguration // record'))
     assert named and named.group(1) == 'Configs', 'a declaration with a trailing comment is still read'
 
+    # A nested type owns only its own members: after its closing brace the outer class owns again.
+    nested = members('X.cs', '\n'.join([
+        'internal static partial class Outer', '{', '\tprivate sealed class Inner(string name)', '\t{',
+        '\t\tpublic void Own() { }', '\t}', '', '\tpublic static void AfterInner() { }',
+        '\tpublic readonly record struct Pair(int A, int B);', '\tpublic static int AfterRecord => 1;', '}']))
+    assert set(nested) == {'Inner.Own/0', 'Outer.AfterInner/0', 'Outer.AfterRecord'}, sorted(nested)
+
     try:
         live = surface()
     except (subprocess.CalledProcessError, RuntimeError):
@@ -198,7 +240,7 @@ def self_test():
     if live is not None:
         assert len(live) > 200, f'working tree yielded only {len(live)} members'
     print('self-test ok: arity kept, private members and type declarations excluded, literals and '
-          'comments declare no type\n')
+          'comments declare no type, a nested type owns only its own members\n')
 
 
 if __name__ == '__main__':
