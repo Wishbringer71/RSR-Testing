@@ -34,11 +34,6 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
 
 ## Offene Arbeit
 
-Sein Auftrag vom 18.11.2026, in dieser Reihenfolge, jeder Punkt im vollen Loop mit den Konzepten: „daedalus änderungen und
-den erfolgten einbau in fork auf synergieeffekte prüfen. danach die chains prüfen, ob sie situationsbezogen dynamisiert
-werden können … synergieeffekte von kombinationen und aufbau einer richtigen umfassenden schadensrotation so wie bei
-anderen jobs. umgekehrt prüfung, ob von den neuen ideen aus daedalus auch alle anderen jobs profitieren könnten."
-
 - Keine offene Arbeit.
 
 ## Technische Schuld
@@ -109,6 +104,14 @@ Reborn"); beides kostet im Spiel, solange nicht beide Installationen gebraucht w
 nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigter Name bleibt.
 
 ## Warten auf Daten oder Fremde
+
+- **Beastmaster, Crucible: „Level“ füllt jeden Platz, bis zur Mindestgrenze des nächsten Bretts** (seine Vorgabe vom
+  18.11.2026). *Heute:* Unter „Level“ kommen nur Begleiter unter der Levelgrenze mit, über ihr nur gegen Gefährdung.
+  Die übrigen Plätze bleiben leer, und diese Begleiter bekommen keine Erfahrung. *Künftig:* Jeder Platz geht an einen
+  Begleiter, der noch Erfahrung bekommt, der rangniedrigste zuerst, bis zur Mindestgrenze des nächsten Bretts. *Ort:*
+  `BeastmasterCrucibleTeam.cs`, `LevelTeam` und `LevelLimit`. *Auflösung:* sein nächster Beastmaster-Upload (seine
+  Vorgabe: „abarbeiten, sobald neue logs für beastmaster da sind“). Dann der Loop mit den zwei offenen Fragen aus
+  Konzept 21. Konzept 21, K7, „Leveln“.
 
 - **Nebenprojekt: Charakterwerte, Stufen und Materia-Empfehlung** (A874, A875). Konzept 26 steht; seine Angabe
   (17.11.2026): „nebenthema zuende. wird irgendwann von mir neu angesprochen“. Auflösung: sein neuer Auftrag.

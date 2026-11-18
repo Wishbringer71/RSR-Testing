@@ -2392,6 +2392,22 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
     Plätze bleiben leer (sie bringen In Unterzahl, wo die Größe eine Stufe trifft). Ist auch ein voller Kader unter dem Cap
     gefährdet, tritt der rangniedrigste am oder über dem Cap an die Stelle des schwächsten, der weder heilt noch schützt
     noch unterbricht, bis er es nicht mehr ist.
+  - *Offen, seine Vorgabe vom 18.11.2026 (noch nicht umgesetzt):* „auswahl "leveln" fügt keine weiteren begleiter
+    hinzu, nur die, die bis zur brettgrenze leveln sollen. das ist suboptimal. alle hinzugefügten begleiter bekommen
+    erfahrung, also widerspricht eine begrenzung der anzahl dem zweck des levelns. ausserdem sollte gelevelt werden bis
+    zur mindestgrenze des nächsten brettes. immer mit vorrang der begleiter mit geringstem level. abarbeiten, sobald
+    neue logs für beastmaster da sind und ausgewertet werden können.“ *Einordnung:* Vorgabe; sie ersetzt in „Über dem
+    Cap nur gegen Gefährdung“ das Füllen nur gegen Gefährdung und die leeren Plätze. Künftig füllt „Level“ jeden Platz bis
+    zur Größe des Bretts mit Begleitern, die noch Erfahrung bekommen, und zwar die rangniedrigsten zuerst. Die Grenze ist
+    die Mindestgrenze des nächsten Bretts. Den Satz „alle hinzugefügten begleiter bekommen erfahrung“ belegt sein
+    Hinweis vom 14.11.2026 (oben). Er deckt sich mit „Größe gegen Punkte“ unten: Ein Begleiter mehr bringt mehr, als
+    eine Stufe In Unterzahl kostet. *Im Loop zu klären, an seinen neuen Logs:*
+    - ob „Mindestgrenze des nächsten Brettes“ dasselbe ist wie die heutige Grenze aus A822 (der empfohlene Rang des
+      nächsten Bretts, wo er über dem Cap liegt) oder eine andere Spalte von `XBMContent`;
+    - was die Abrechnung (`XBMResult`) bei vollem gegenüber verkleinertem Kader an Erfahrung je Begleiter zeigt.
+      *Gegenposition:* Die Erfahrung folgt der Punktzahl, höchstens 255 je Begleiter und Brett. Füllt der volle Kader
+      die Grenze nicht und kostet In Unterzahl Punkte, verliert jeder einzelne Begleiter Erfahrung, auch wenn die Summe
+      über alle steigt.
   *Im Kampf (sein Bild vom 14.11.2026, Brett 2, Build vor A805):* zehn Begleiter ab Rang 10 im Kern, Salamander und Worm
   (Rang 6) auf den zwei übrigen Plätzen, obwohl 42 zurücklagen; er wählte danach selbst zwölf niedrige und schaffte das
   Brett (die Abrechnung hob sie auf Rang 8). *Gegenthese (schwächer im Kampf):* durch seinen Lauf widerlegt; die
