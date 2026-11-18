@@ -285,7 +285,8 @@ internal static class MovementLock
 
 	// Seconds until a BossMod zone on the player's spot turns active - from BossMod's zone list, else the earliest zone
 	// anywhere while the spot is forbidden; float.MaxValue when the spot is free.
-	private static float SpotDangerIn()
+	/// <summary>Seconds until BossMod's zone on the player's spot activates; float.MaxValue when the spot is safe.</summary>
+	internal static float SpotDangerIn()
 		=> SpotZoneActivation() ?? (BossModSpotSafe() ? float.MaxValue : DataCenter.BMRForbiddenZonesNextActivation);
 
 	private static bool Danger(float window, out string reason)

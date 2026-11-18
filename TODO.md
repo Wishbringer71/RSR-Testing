@@ -19,8 +19,7 @@ auswahl und das timing der beschwörung" – je Kampf aller fünf Bretter (Gegne
 BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Zeitpunkt ihres Aufrufs im Loop prüfen
 (Beispiel seiner Beobachtung: der Raptor gegen Feuer, bevor feueranfällige Gegner da waren; A581).
 
-Zuerst die Zauber vor dem Loslaufen (Sicherheit vor Schaden, seine Vorgabe vom 18.11.2026), dann die Tinktur des
-Schnitters; was auf Daten oder auf ihn wartet, steht unten.
+Zuerst die Tinktur des Schnitters; was auf Daten oder auf ihn wartet, steht unten.
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -31,12 +30,7 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
 
 ## Defekte
 
-- **Zauber beginnen, kurz bevor er losläuft** (A877). Im Kampf: Am 17.11.2026 brachen 113 Zauber ab, 69,4 s Wirkzeit
-  (Weißmagier 38,8 s, Schnitter 11,9 s, Beschwörer 7,9 s), in der Zeit hätte ein Sofortzauber gelegen; 16 davon (7,0 s)
-  als neuer Start binnen 3 s nach einem Abbruch, 30 in den ersten 0,25 s. Ort: `ActionBasicInfo.CastStartBlockedNow`.
-  Nächster Schritt: Loop in Konzept 03, „Bewegungssperre beim Wirken und die KI von BossMod“ – eine Wartezeit nach
-  einem eigenen Abbruch durch Bewegung (BossMod hält dafür fest 0,5 s, `CastSettleHold`), gelernt statt fest, und ob
-  die Bewegungseingabe vor der Fahrt der Figur lesbar ist. **N**. Konzept 03.
+- Keine offenen Defekte.
 
 ## Offene Arbeit
 

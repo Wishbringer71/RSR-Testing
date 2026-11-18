@@ -25720,6 +25720,33 @@ eigenständiger angriff auf nicht im kampf begriffene gegner erfolgt (no-tank)�
   nächsten Fall wie dem vom 17.11. keine Zeile „pull: RSR opened“ vor „combat started“, drückte nicht RSR.
 - Konzept 03, „Den Kampf eröffnen: Bereitschaftsanfrage und Countdown“.
 
+### A880 · Zauberbeginn vor dem eigenen Gehen: gelernter Vorlauf, gelernte Pause, Bewegungseingabe (18.11.2026)
+
+TODO-Punkt aus A877 im vollen Loop; dazu seine Vorgabe (18.11.2026): „wenn ich aus schadensflächen laufe, dann warte ich
+nicht bis zum letzten augenblick, ob ein cast noch durchgeht. ebenso muss man für wechsel shinryu, herz und schwanz, für
+das weggehen vor eispfeilen oder das sammeln im wasser oder das verteilen bei blitz sich halt bewegen. da ist sicherheit
+wichtiger als dmg.“
+
+- *Messung (Mitschnitt 17.11.2026):* 108 eigene Abbrüche „Cancelled“ (dazu 5 Unterbrechungen), 58,3 s im Zauber, 26 in
+  den ersten 0,25 s. Vorlauf in den 4 s davor: gegnerischer Zauberbeginn 34 (19,0 s), Wechsel der Anvisierbarkeit 25
+  (12,4 s, zum Teil Begleiter), eigener Abbruch 18 (8,9 s), Kopfmarker 6 (4,5 s), nichts 25 (13,5 s); darunter zwei
+  Wiederbelebungen. Die Ortszeilen (261) kommen rund einmal je Sekunde und taugen nicht für den Gehbeginn – deshalb
+  lernt die Regel im Spiel.
+- *Am Code:* Der Zauberbeginn hielt nur bei einem sicheren Treffer vor dem Ende des eigenen Zaubers, BossMods
+  Wurfzeitgrenze und sichtbarer Bewegung; die Bewegungseingabe (`BMRMoveRequested`) las er nicht.
+- *Gebaut:* `MoveForecast` (je Frame aus `MovingUpdater.UpdateCanMove`): Vorlauf vor der Landung eines Treffers, der ihn
+  erreicht (RSRs Erkennung oder BossMods Fläche auf seinem Ort), und Pause nach einem durch Gehen gebrochenen Zauber,
+  je als Median der Sitzung; der Zauberbeginn und C6 („kein Zauber passt") lesen ihn ohne Sperre. Die Bewegungseingabe
+  sperrt den Zauberbeginn ohne Sperre. Spurzeilen „cast broken by moving“ und „move forecast“.
+- *Verworfen:* feste Wartezeiten (BossMods 0,5 s), eine Erkennung je Mechanik und Kampf (die Pause deckt Wechsel ohne
+  Erkennung).
+- *Prüfgrad:* Compile; Laufzeit nicht beobachtet. Tragende Annahmen: Er geht vor einer erkannten Fläche mit ähnlichem
+  Vorlauf (der Median trägt Ausreißer); ein Abbruch ohne Antwort des Spiels bei Bewegung ist ein Bruch durch Gehen (eine
+  gegnerische Unterbrechung im Gehen zählte mit, selten).
+- *Vorhersage:* `move-forecast-line-form`, `move-forecast-learns` (predictions/2026-11-18.json); weniger gebrochene
+  Zauber je Kampf als am 17.11. in vergleichbaren Inhalten.
+- Konzept 03, „Zauberbeginn vor dem eigenen Gehen“.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

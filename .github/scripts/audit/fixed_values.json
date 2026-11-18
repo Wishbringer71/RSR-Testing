@@ -2662,6 +2662,27 @@
    "status": "exception",
    "loop": "A872",
    "reason": "Offset of a high quality meal in the status parameter of Well Fed (ItemFood row + 10000), measured in his ACT logs (0x2966 = row 598, HQ); no sheet states it (A872)."
+  },
+  {
+   "file": "RotationSolver/Engine/Helpers/MoveForecast.cs",
+   "code": "var mid = sorted.Length / 2;",
+   "values": [
+    "2"
+   ],
+   "status": "exception",
+   "loop": "A880",
+   "reason": "Definition of the median of the measured samples (middle element, or the mean of the two middle ones): arithmetic of the statistic, not a figure of the game (concept 03, A880)."
+  },
+  {
+   "file": "RotationSolver/Engine/Helpers/MoveForecast.cs",
+   "code": "return sorted.Length % 2 == 1 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2f;",
+   "values": [
+    "2",
+    "2"
+   ],
+   "status": "exception",
+   "loop": "A880",
+   "reason": "Definition of the median of the measured samples (middle element, or the mean of the two middle ones): arithmetic of the statistic, not a figure of the game (concept 03, A880)."
   }
  ]
 }

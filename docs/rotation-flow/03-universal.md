@@ -2380,6 +2380,49 @@ party member in danger before an announced hit." Die Entscheidung fällt je Bild
 - *Spurzeilen:* je Freigabe eine (Grund, Aktion, Restzeit, Ort sicher), und je Episode eine, ob die Figur ging, während die
   Sperre hielt und BossMod gehen wollte – zugleich die Messung, nach der sich der Kanalbeginn richtet.
 
+### Zauberbeginn vor dem eigenen Gehen: gelernter Vorlauf und Pause
+
+*Was gilt (A880):* Ohne Bewegungssperre beginnt RSR keinen Zauber, der noch liefe, wenn du nach deinem eigenen Maß losgehst:
+- *Vorlauf:* Erreicht dich ein Treffer, dem ein Schritt entgeht (RSRs Erkennung, `MovementLock.CertainDodgeableWithin`),
+  oder liegt eine Fläche von BossMod auf deinem Ort (`MovementLock.SpotDangerIn`), misst RSR, wie viele Sekunden vor der
+  Landung du losgehst; ein Zauber beginnt nur, wenn er vor „Landung minus dein Vorlauf" endet (Median deiner Messungen
+  dieser Sitzung; ohne Messung „vor der Landung", wie bisher).
+- *Pause:* Bricht dein Gehen einen Zauber, beginnt bis zum nächsten vollständigen Zauber keiner, bevor du so lange
+  stehst, wie du in solchen Phasen sonst stehst, ehe du wieder gehst (Median der Pausen unter einem GCD; ohne Messung
+  keine Wartezeit). BossMods KI hält dafür fest 0,5 s (`CastSettleHold`); hier ist es dein gemessenes Maß.
+- *Eingabe:* Drückst du eine Bewegungstaste, sieht BossMod das vor der Bewegung der Figur (`Movement.IsMoveRequested`);
+  ohne Sperre beginnt dann kein Zauber.
+Passt so kein Zauber, gehen die Sofortzauber (C6). Je gebrochenem Zauber eine Spurzeile „cast broken by moving“ mit
+Aktion, Zeit im Zauber, gelerntem Vorlauf und gelernter Pause; je neuem Lernwert „move forecast“.
+
+*Seine Vorgabe (18.11.2026):* „wenn ich aus schadensflächen laufe, dann warte ich nicht bis zum letzten augenblick, ob ein
+cast noch durchgeht. ebenso muss man für wechsel shinryu, herz und schwanz, für das weggehen vor eispfeilen oder das
+sammeln im wasser oder das verteilen bei blitz sich halt bewegen. da ist sicherheit wichtiger als dmg.“ Daraus: RSR richtet
+den Zauberbeginn nach seinem Gehen, nicht sein Gehen nach dem Zauber.
+
+*Messung (Mitschnitt 17.11.2026, 108 eigene Abbrüche „Cancelled“, 58,3 s im Zauber, 26 in den ersten 0,25 s):* in den
+4 s davor ein gegnerischer Zauberbeginn 34 (19,0 s), ein Wechsel der Anvisierbarkeit 25 (12,4 s; zum Teil nur ein
+neu beschworener Begleiter), ein eigener Abbruch 18 (8,9 s), ein Kopfmarker 6 (4,5 s), nichts davon 25 (13,5 s). Darunter
+zwei Wiederbelebungen (1,2 und 1,7 s) und eine Heilung.
+
+*Am Code:* Der Zauberbeginn hielt nur bei einem sicheren Treffer, der vor dem Ende des eigenen Zaubers landet, bei BossMods
+Wurfzeitgrenze und bei sichtbarer Bewegung (`Player.IsMoving` erst, wenn sich der Ort geändert hat). Wer früh geht, bricht
+damit jeden Zauber, der zwischen Ankündigung und Landung beginnt.
+
+*Optionen:* (0) nichts – 58 s im Zauber verloren, darunter Wiederbelebungen. (1) feste Wartezeiten wie BossMod – feste
+Werte, und sie passen nicht zu seinem Maß. (2) gelernter Vorlauf, gelernte Pause, Eingabe – gewählt. (3) Zauber an
+Mechanik-Erkennung je Kampf (Marker, Phasenwechsel) – je Inhalt gebaut, und die Pause deckt den Wechsel ohne Erkennung.
+*SWOT (2):* Stärke – weniger gebrochene Zauber, Sofortzauber statt verlorener Wirkzeit, sein Gehen bleibt ungehindert.
+Schwäche – ein Zauber wartet, wo er ihn hätte zu Ende stehen können; die Pause kostet nach einem echten Halt einmal sein
+Maß. Chance – lernt sich pro Spieler und Sitzung. Bedrohung – ein ungewöhnlich frühes Gehen verschiebt den Median kaum;
+ohne Treffererkennung oder BossMod-Fläche (unbekannte Mechanik) greift nur die Pause.
+*Gegenthesen:* (a) kein Defekt – Abbrüche sind der Preis seiner Spielweise: widerlegt, der Preis fällt in der Wirkzeit an,
+die ein Sofortzauber gefüllt hätte. (b) Option falsch – der Vorlauf sperrt Heilungen in Not: Ein Heiler wirkt in Not
+weiter Sofortheilungen (C6), und eine gebrochene Heilung heilt gar nicht. (c) Ausgeliefert, und nichts ändert sich – die
+Abbrüche ohne erkannten Treffer: Für sie greift die Pause; die Zeile „cast broken by moving“ zeigt den Rest.
+*Vorhersage:* weniger Zeilen „cast broken by moving“ je Kampf als Abbrüche im Mitschnitt vom 17.11. bei vergleichbaren
+Inhalten; jede solche Zeile trägt den gelernten Vorlauf.
+
 Einen laufenden Zauber bricht BossMod selbst nur bei Blick- und Pyretisch-Mechaniken ab (`ForceCancelCastMechanic`,
 `Plugin.cs` mit `CancelCastTweak`); der zweite Abbruchweg in `CancelCastUpdater` hängt an „Use BossModReborn's timeline
 for proactive mitigation" (Upstream f72a0a93e).

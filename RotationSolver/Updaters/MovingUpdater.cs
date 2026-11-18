@@ -19,6 +19,9 @@ internal static class MovingUpdater
 			return;
 		}
 
+		// Concept 03, A880: the player's walking and spells, measured every frame for the spell start.
+		MoveForecast.Observe();
+
 		if (Svc.Condition?[ConditionFlag.OccupiedInEvent] == true)
 		{
 			Service.CanMove = true;

@@ -12,5 +12,19 @@
   "kind": "each",
   "situation": "pull: held",
   "match": "pull: held - ready check open, [0-9]+ not answered yet, no countdown; .+ is not fighting$"
+ },
+ {
+  "id": "move-forecast-line-form",
+  "archive": "A880",
+  "kind": "each",
+  "situation": "cast broken by moving: ",
+  "match": "cast broken by moving: #[0-9]+ [0-9.,]+ s in \\| lead [0-9.,]+ s \\([0-9]+\\) \\| pause [0-9.,]+ s \\([0-9]+\\)$"
+ },
+ {
+  "id": "move-forecast-learns",
+  "archive": "A880",
+  "kind": "present",
+  "situation": "cast broken by moving: ",
+  "match": "move forecast: (lead before a hit|pause in a walking phase) [0-9.,]+ s, median [0-9.,]+ s from [0-9]+$"
  }
 ]

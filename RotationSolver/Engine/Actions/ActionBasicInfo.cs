@@ -569,7 +569,10 @@ public readonly partial struct ActionBasicInfo
 			|| (!DataCenter.NoPoslock && DataCenter.IsMoving && MovementLock.SpotInDanger(CastTime))
 			// A hit a step certainly avoids lands before the spell would end: the step breaks it, or the player stands in the
 			// hit (A652).
-			|| MovementLock.CertainDodgeableWithin(CastTime) is not null)
+			|| MovementLock.CertainDodgeableWithin(CastTime) is not null
+			// Without the lock: the spell would still run when the player steps off by his measured lead, or he stands in a
+			// pause after a broken spell shorter than his measured one (concept 03, A880).
+			|| (DataCenter.NoPoslock && MoveForecast.Refuses(CastTime)))
 		{
 			return true;
 		}

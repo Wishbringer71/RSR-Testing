@@ -71,15 +71,18 @@ public readonly partial struct ActionBasicInfo
 		var landing = ActionPenaltyWatch.LandsOnPlayerIn() < float.MaxValue;
 		var walkingLocked = !DataCenter.NoPoslock && DataCenter.IsMoving;
 		var certainHit = MovementLock.CertainDodgeableWithin(float.MaxValue);
-		if (!limited && !landing && !walkingLocked && certainHit is null)
+		var shortest = ShortestCastNow();
+		// Concept 03, A880: no spell fits before the player steps off by his measured lead, or in his pause.
+		var forecast = DataCenter.NoPoslock && shortest < float.MaxValue && MoveForecast.Refuses(shortest);
+		if (!limited && !landing && !walkingLocked && certainHit is null && !forecast)
 		{
 			return false;
 		}
 
-		var shortest = ShortestCastNow();
 		return shortest < float.MaxValue
 			&& ((limited && BossModCastLimitRefuses(shortest)) || (landing && ActionPenaltyWatch.WouldMeetLanding(shortest))
-				|| (walkingLocked && MovementLock.SpotInDanger(shortest)) || (certainHit is { } hit && shortest >= hit.LandsIn));
+				|| (walkingLocked && MovementLock.SpotInDanger(shortest)) || (certainHit is { } hit && shortest >= hit.LandsIn)
+				|| forecast);
 	}
 
 	// The game frame ShortestCastNow last answered for, and its answer: CastStartBlocked is read several times a frame.
@@ -131,7 +134,7 @@ public readonly partial struct ActionBasicInfo
 	internal static bool CastStartBlockedNow(bool skipCastingCheck)
 		=> DataCenter.SpecialType == SpecialCommandType.NoCasting
 			|| (DateTime.Now > DataCenter.KnockbackStart && DateTime.Now < DataCenter.KnockbackFinished)
-			|| (DataCenter.NoPoslock && DataCenter.IsMoving && !skipCastingCheck)
+			|| (DataCenter.NoPoslock && (DataCenter.IsMoving || DataCenter.BMRMoveRequested) && !skipCastingCheck)
 			|| DataCenter.BMRForceCancelCast || DataCenter.BMRIsMoving;
 
 	/// <summary>
