@@ -471,7 +471,12 @@ bevor RSR neu erscheint; dasselbe gilt heute schon für jeden der übrigen Clien
   `fork_placement.json`; die Liste wird nur kürzer, weil ein Member beim nächsten Eingriff in seine Teildatei zieht.
   Ausgenommen: fremde Rotationen und die `Configs`-Dateien (`Configs.cs`, `.CombatAndTarget.cs`, `.DutiesAndPvP.cs` seit
   Upstreams Aufteilung c170c9cd5; alle Einstellungen in einer Klasse, das Muster von Upstream, das der Source Generator
-  liest).
+  liest). Stehen bleiben nach den beiden Grenzen der zweiten Runde auch Einstellungen (`RotationConfig`, `UI`) und
+  Felder und Eigenschaften mit Startwert; die Deklaration eines Members ist seine eigene Zeile hinter allen Attributen,
+  auch hinter deren Fortsetzungszeilen. Bis A891 galt der Tooltip einer mehrzeiligen Einstellung als ihre Deklaration:
+  Neun Einstellungen von Upstream mit neuem Fork-Tooltip galten als Fork-Member, und Fork-Einstellungen in Dateien, deren
+  Upstream-Fassung irgendeine `Tooltip`-Zeile trägt, sah die Prüfung gar nicht (die Signatur „Tooltip“ war bekannt). Die
+  Liste fiel dadurch von 411 auf 310 Einträge, alle 101 Einstellungen oder Startwerte.
 
 - Der Plugin-Build der CI behandelt CS8600 bis CS8604 als Fehler (`build.yaml`, mit Gegenprobe; A878). Wogegen: einen
   Startwert, der ein noch nicht belegtes statisches Mitglied liest (Grenze unter „Fork-Code in eigenen Teildateien");

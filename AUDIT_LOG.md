@@ -25980,6 +25980,40 @@ TODO-Punkt „Daedalus-Ideen für alle Jobs" (sein Auftrag vom 18.11.2026).
 - *Vorhersage:* `predictions/2026-11-18.json`, `phantom-attacks-hold-line-form`.
 - *Prüfgrad:* Compile, Prüfskripte; Laufzeit nicht beobachtet.
 
+### A891 · Tooltips kurz und verständlich, nach dem Verhalten im Spiel (18.11.2026)
+
+TODO-Punkt „Tooltips kürzer und verständlich" (sein Auftrag vom 18.11.2026).
+- *Gemessen vorher:* 117 Einstellungen des Forks (`check_setting_tooltips.py`), im Median 559 Zeichen, 93 über 400, die
+  längste 2.524 (HoldMitigationUnderInvulnerability). *Maßstab:* Windows UX Guide, „Tooltips and Infotips" („Use 25 words
+  or less", „Avoid large infotips", nach Zeilen gliedern; gelesen über Microsoft Learn, 18.11.2026).
+- *Gebaut:* alle 117 neu – höchstens drei Zeilen zu höchstens 25 Wörtern (das Zeilenzeichen „In a fight:", „Off:",
+  „Lower:" nicht gezählt): was RSR im Kampf tut, die eine Grenze, was „Off" oder ein Wert tut. Die Herleitung steht in
+  den Konzepten und in `fork-changes-in-play.md`. Jeder Text gegen den alten Inhalt geprüft, damit nichts versprochen
+  wird, was der Code nicht tut. Ersetzt mit einem Werkzeug, das die Prüfung selbst zum Finden nutzt; die Rücklesung
+  ergab je Text den neuen Wortlaut.
+- *Nachher:* Median 194 Zeichen, längster 277. `check_setting_tooltips.py` hält die Grenze (`too_long`, Selbsttest: drei
+  Zeilen und 25 Wörter gehen durch, eine vierte Zeile und 26 Wörter nicht); gegen die alten Texte schlägt sie bei 116
+  von 117 an.
+- *Prüfmittel-Defekt nebenbei:* Die Prüfung las von den Teildateien der Einstellungen nur `Configs.CombatAndTarget.cs`
+  (seit Upstreams Aufteilung c170c9cd5); die zwei Einstellungen in `Configs.cs` sah sie nicht. Jetzt liest sie jede
+  Teildatei (`is_configs`, Selbsttest mit Nachbardatei und Unterordner); beide sind Upstreams und ohne Befund.
+- *Zweiter Prüfmittel-Defekt:* `check_fork_placement.py` nahm bei einer Einstellung mit mehrzeiligem Attribut die
+  Tooltip-Zeile als Deklaration. Mit den neuen Texten meldete es 57 Einstellungen als neue Fork-Member, darunter neun von
+  Upstream (`GCDHeal` bei sieben Jobs, `UsePreRegen`, `RegenHeal`). Zugleich sah es Fork-Einstellungen in Dateien nicht,
+  deren Upstream-Fassung irgendeine `Tooltip`-Zeile trägt: Die Signatur „Tooltip“ galt als Upstreams, bei
+  `BST_Reborn.cs` zehn. Ich habe die Einstellungen zuerst in Teildateien verschoben, gegen Konzept 24 („keine
+  Einstellung …, weil das Einstellungsfenster sie in der Reihenfolge ihrer Deklaration zeigt“): Kind-Optionen wie
+  „Also before a hit that would put a party member in danger“ wären im Fenster von ihrer Elternoption abgerückt.
+  Zurückgenommen ist das vollständig; die Gegenprobe gegen HEAD ergibt außerhalb der Attribute keine Abweichung.
+  *Behoben an der Prüfung:* Die Deklaration ist die eigene Zeile hinter allen Attributen samt Fortsetzungen.
+  Einstellungen (`RotationConfig`, `UI`) und Felder und Eigenschaften mit Startwert bleiben stehen, wie Konzept 24 es
+  festlegt; das schrieb die Prüfung bisher nur für statische vor, `code.md` ebenso und ist jetzt angeglichen.
+  Selbsttest: Ein Tooltip an Upstreams Einstellung ohne jede Tooltip-Zeile in Upstreams Fassung bleibt Upstreams.
+  Die alte Prüfung meldet diesen Fall, die neue nicht. Eine neue Einstellung und ein Instanzfeld mit Startwert bleiben,
+  ein Feld ohne Startwert, ein Ausdruckskörper und eine Methode ziehen um. `fork_placement.json` 411 → 310; die
+  entfernten 101 sind 63 Einstellungen und 38 Startwerte.
+- *Prüfgrad:* Prüfskripte und Compile; das Fensterbild nicht gemessen (die Texte umbrechen nach `ReadableText`).
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

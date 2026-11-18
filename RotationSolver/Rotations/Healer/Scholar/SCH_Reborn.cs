@@ -11,17 +11,13 @@ public sealed partial class SCH_Reborn : ScholarRotation
 
 	// The bell's two cases for every healer with such a limit (concept 08, "Glockenspiel", A468).
 	[RotationConfig(CombatType.PvE, Name = "Also before a hit that would put a party member in danger", Parent = nameof(MultiHitRestrict),
-		Tooltip = "With the limit to multihit party stacks on, Seraphism also goes before an announced area hit that, by its "
-			+ "measured size, would leave an unprotected member in the critical class and that reaches you.\n"
-			+ "In a fight: the party is healed over the twenty seconds after that hit, and Adloquium and Concitation "
-			+ "become instant heals for them.")]
+		Tooltip = "In a fight: Seraphism also goes before an announced area hit that would leave an unprotected "
+			+ "member in danger, healing the party over the next twenty seconds.")]
 	public bool SeraphismBeforeDanger { get; set; } = true;
 
 	[RotationConfig(CombatType.PvE, Name = "Also into an enemy attack that hits in a series", Parent = nameof(MultiHitRestrict),
-		Tooltip = "With the limit to multihit party stacks on, Seraphism also goes into an enemy attack that has been seen to "
-			+ "hit you and the party several times in a row, or just before its first hit when an enemy cast of it lands "
-			+ "within the next GCD. Learned per enemy action over every session; the first time an attack is met it teaches.\n"
-			+ "In a fight: the party is healed between the hits of the series, instead of Seraphism staying unused.")]
+		Tooltip = "In a fight: Seraphism also goes into an attack learned to hit the party several times in a "
+			+ "row, healing between its hits.")]
 	public bool SeraphismOnSeries { get; set; } = true;
 
 	[Range(0, 1, ConfigUnitType.Percent)]
@@ -36,12 +32,8 @@ public sealed partial class SCH_Reborn : ScholarRotation
 	// where there is danger, otherwise a HoT and the smaller heals are enough. Every healer carries one,
 	// so the rule reads the same shared check (ObjectHelper.IsUnderThreat) on each.
 	[RotationConfig(CombatType.PvE, Name = "Excogitation as a heal only on a target in danger",
-		Tooltip = "Excogitation needs a reason beyond low health: the target is being attacked or cast at, an area cast is announced, "
-			+ "or their health is measurably falling.\n"
-			+ "In a fight: a player who was just raised holds a few percent and is taking no damage - without this "
-			+ "he reads as the most urgent member while nothing is happening to him, and Excogitation is gone when the tank "
-			+ "needs it. With this on he gets the smaller heals instead.\n"
-			+ "Off: the health threshold alone decides.")]
+		Tooltip = "In a fight: Excogitation heals only a member who is attacked, cast at, under an announced "
+			+ "area cast or measurably falling, so the tank keeps it.\nOff: the health threshold alone decides.")]
 	public bool ExcogitationNeedsThreat { get; set; } = true;
 
 	[Range(0, 0.5f, ConfigUnitType.Percent)]
@@ -88,10 +80,8 @@ public sealed partial class SCH_Reborn : ScholarRotation
 	public bool SwiftLogic { get; set; } = true;
 
 	[RotationConfig(CombatType.PvE, Name = "Use GCDs to heal. (Ignored if you are the only healer in party, or while a party member is about to fall)",
-		Tooltip = "Off: while another healer is alive your GCD heals are left to them and you deal damage instead, with "
-		+ "your abilities still healing - except while a party member is in the critical class, about to fall by the "
-		+ "time a heal lands, when your GCD heals go anyway. On: GCD heals whenever the healing thresholds call for them.\n"
-		+ "In a fight: off, a member about to fall still gets your GCD heal, whatever the other healer does.")]
+		Tooltip = "In a fight: on, your GCD heals follow the healing thresholds. Off, they are left to a living "
+			+ "second healer while you deal damage.\nA member about to fall still gets your GCD heal either way.")]
 	public bool GCDHeal { get; set; } = true;
 
 	[RotationConfig(CombatType.PvE, Name = "Use Recitation during the countdown opener")]

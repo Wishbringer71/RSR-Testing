@@ -11,9 +11,8 @@ namespace RotationSolver.Rotations.Limited.Beastmaster;
 public sealed partial class BST_Reborn
 {
 	[RotationConfig(CombatType.PvE, Name = "Keep Rally and Rallying Cheer to carry a combo chain on",
-		Tooltip = "In a fight: outside a chain, Rally and Rallying Cheer wait while their stacks can still grow. In a chain, when neither "
-			+ "Trick nor an axe could follow in time, the one whose skill can then follow refills, so that skill completes "
-			+ "the next combo, which deals more the later it comes in the chain. Off: both refill whenever their TP fit.")]
+		Tooltip = "In a fight: outside a chain, Rally and Rallying Cheer wait while their stacks can grow; in a "
+			+ "chain they refill the side completing the next combo.\nOff: both refill whenever their TP fit.")]
 	public bool KeepRefillsForChains { get; set; } = true;
 
 	/// <summary>
@@ -66,9 +65,8 @@ public sealed partial class BST_Reborn
 	}
 
 	[RotationConfig(CombatType.PvE, Name = "Hold the axes for a finisher on a pack while it is worth more",
-		Tooltip = "In a fight: on a pack that lives long enough for your TP to reach 250, the axes wait and Brutal Rage or "
-			+ "its kin hits every enemy around your target, when that is worth more than the axes and their combos - "
-			+ "weighed with your measured combo damage. Off: an axe goes whenever 100 TP stand.")]
+		Tooltip = "In a fight: on a pack that lives long enough, the axes wait for 250 TP, and a finisher hits "
+			+ "every enemy around your target where worth more.\nOff: an axe goes at 100 TP.")]
 	public bool HoldAxesForFinisher { get; set; } = true;
 
 	// Concept 01, "Die Rotation als Ganzes" (A889): the combos, whose texts state no potency - their worth is measured.

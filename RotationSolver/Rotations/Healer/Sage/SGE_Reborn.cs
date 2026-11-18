@@ -23,23 +23,18 @@ public sealed partial class SGE_Reborn : SageRotation
 
 	// The bell's two cases for every healer with such a limit (concept 08, "Glockenspiel", A468).
 	[RotationConfig(CombatType.PvE, Name = "Also before a hit that would put a party member in danger", Parent = nameof(MultiHitRestrict),
-		Tooltip = "With the limit to multihit party stacks on, Panhaima also goes before an announced area hit that, by its "
-			+ "measured size, would leave an unprotected member in the critical class and that reaches you.\n"
-			+ "In a fight: the barrier takes part of that hit and heals with its remaining stacks when it ends.")]
+		Tooltip = "In a fight: Panhaima also goes before an announced area hit that would leave an unprotected "
+			+ "member in danger; its barrier takes part of the hit.")]
 	public bool PanhaimaBeforeDanger { get; set; } = true;
 
 	[RotationConfig(CombatType.PvE, Name = "Also into an enemy attack that hits in a series", Parent = nameof(MultiHitRestrict),
-		Tooltip = "With the limit to multihit party stacks on, Panhaima also goes into an enemy attack that has been seen to "
-			+ "hit you and the party several times in a row, or just before its first hit when an enemy cast of it lands "
-			+ "within the next GCD. Learned per enemy action over every session; the first time an attack is met it teaches.\n"
-			+ "In a fight: the barrier forms anew after each hit, up to five times, instead of Panhaima staying unused.")]
+		Tooltip = "In a fight: Panhaima also goes into an attack learned to hit the party several times in a "
+			+ "row; its barrier forms anew after each hit.")]
 	public bool PanhaimaOnSeries { get; set; } = true;
 
 	[RotationConfig(CombatType.PvE, Name = "Use GCDs to heal. (Ignored if you are the only healer in party, or while a party member is about to fall)",
-		Tooltip = "Off: while another healer is alive your GCD heals are left to them and you deal damage instead, with "
-		+ "your abilities still healing - except while a party member is in the critical class, about to fall by the "
-		+ "time a heal lands, when your GCD heals go anyway. On: GCD heals whenever the healing thresholds call for them.\n"
-		+ "In a fight: off, a member about to fall still gets your GCD heal, whatever the other healer does.")]
+		Tooltip = "In a fight: on, your GCD heals follow the healing thresholds. Off, they are left to a living "
+			+ "second healer while you deal damage.\nA member about to fall still gets your GCD heal either way.")]
 	public bool GCDHeal { get; set; } = false;
 
 	[RotationConfig(CombatType.PvE, Name = "Enable Swiftcast Restriction Logic to attempt to prevent actions other than Raise when you have swiftcast")]
@@ -49,12 +44,8 @@ public sealed partial class SGE_Reborn : SageRotation
 	// where there is danger, otherwise a HoT and the smaller heals are enough. Every healer carries one,
 	// so the rule reads the same shared check (ObjectHelper.IsUnderThreat) on each.
 	[RotationConfig(CombatType.PvE, Name = "Taurochole as a heal only on a target in danger",
-		Tooltip = "Taurochole needs a reason beyond low health: the target is being attacked or cast at, an area cast is announced, "
-			+ "or their health is measurably falling.\n"
-			+ "In a fight: a player who was just raised holds a few percent and is taking no damage - without this "
-			+ "he reads as the most urgent member while nothing is happening to him, and Taurochole is gone when the tank "
-			+ "needs it. With this on he gets the smaller heals instead.\n"
-			+ "Off: the health threshold alone decides.")]
+		Tooltip = "In a fight: Taurochole heals only a member who is attacked, cast at, under an announced area "
+			+ "cast or measurably falling, so the tank keeps it.\nOff: the health threshold alone decides.")]
 	public bool TaurocholeNeedsThreat { get; set; } = true;
 
 	// The owner's rule for shield healers (concept 15, V1): the same pull upkeep as the white mage's
@@ -64,37 +55,23 @@ public sealed partial class SGE_Reborn : SageRotation
 	// on every break is what 5755ad5b removed on 05.09.2026 as a barrier kept up without a request; his rule
 	// is that request (A251).
 	[RotationConfig(CombatType.PvE, Name = "Keep Eukrasian Diagnosis on the tank through a pull",
-		Tooltip = "Eukrasian Diagnosis goes on the tank as they close in on a group and is renewed for as long "
-			+ "as the pull lasts - whenever the barrier runs out or has been used up.\n"
-			+ "In a fight: the tank takes the first hits behind a barrier, and every broken barrier is replaced "
-			+ "with the next GCDs. Eukrasia and Eukrasian Diagnosis are both instant, so they can be cast while "
-			+ "running. Each renewal costs Eukrasia's one second and a GCD that would otherwise be Dosis, and "
-			+ "Eukrasian Diagnosis's MP; in a large pull the barrier can break within a few hits, and then most of the "
-			+ "sage's GCDs go to it. It stops while the MP left would no longer cover Egeiro. Not placed while "
-			+ "the tank already carries a barrier it cannot stack with (Galvanize, Eukrasian Prognosis).\n"
-			+ "Dungeons only: in Trials and Raids the rule does not apply, because there the damage is scripted "
-			+ "rather than a stream.")]
+		Tooltip = "In a fight: in dungeons, Eukrasian Diagnosis goes on the tank as he closes in and is renewed "
+			+ "whenever its barrier breaks, at the cost of Dosis GCDs.\nIt stops while your MP would not cover "
+			+ "Egeiro.")]
 	public bool UsePreEukrasianDiagnosis { get; set; } = true;
 
 	[Range(1, 8, ConfigUnitType.None, 1)]
 	[RotationConfig(CombatType.PvE, Name = "Enemies near the tank before the pull", Parent = nameof(UsePreEukrasianDiagnosis),
-		Tooltip = "How many enemies have to stand within gap-closer range of the tank, before combat "
-			+ "starts, for the barrier above to go out.\n"
-			+ "Lower: it also goes up for a single stray enemy, which costs a GCD you would rather "
-			+ "spend on damage. Higher: the tank pulls a small group without it and the first hits land "
-			+ "on a tank without a barrier.")]
+		Tooltip = "In a fight: Eukrasian Diagnosis goes on the tank as he closes in only when at least this many "
+			+ "enemies stand within gap-closer range of him.\nLower: also for a single stray. Higher: small pulls "
+			+ "start without it.")]
 	public int PreEukrasianDiagnosisMinHostiles { get; set; } = 2;
 
 	[Range(1, 12, ConfigUnitType.None, 1)]
 	[RotationConfig(CombatType.PvE, Name = "Enemies still around the tank during the pull", Parent = nameof(UsePreEukrasianDiagnosis),
-		Tooltip = "The same count, but during combat: how many enemies have to remain around the tank "
-			+ "for the barrier to keep being renewed. Once the pull thins out below this number, "
-			+ "healing falls back to reacting to health thresholds.\n"
-			+ "Lower: the upkeep runs to the end of the pull, so GCDs keep going to the barrier while "
-			+ "the last two enemies are dying and the damage no longer warrants it.\n"
-			+ "Higher: the upkeep stops early and the tail of the pull is healed reactively, which "
-			+ "frees those GCDs for damage but leaves the tank without a barrier if the pull is "
-			+ "re-engaged.")]
+		Tooltip = "In a fight: Eukrasian Diagnosis on the tank is renewed during a pull only while at least this "
+			+ "many enemies remain around him.\nLower: upkeep to the end of the pull. Higher: it stops early, "
+			+ "freeing GCDs for damage.")]
 	public int PreEukrasianDiagnosisMinWallToWallHostiles { get; set; } = 3;
 
 	[Range(0, 1, ConfigUnitType.Percent)]

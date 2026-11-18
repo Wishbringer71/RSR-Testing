@@ -28,37 +28,19 @@ public sealed partial class WAR_Reborn : WarriorRotation
 	}
 
 	[RotationConfig(CombatType.PvE, Name = "Keep Bloodwhetting for yourself when you need it",
-		Tooltip = "Nascent Flash on someone else puts Bloodwhetting on its cooldown too. With this on, it "
-			+ "is not given away while you need Bloodwhetting yourself: a tankbuster on you comes before "
-			+ "the cooldown is back and Bloodwhetting would be used for it, or you are about to die.\n"
-			+ "In a fight: the member still gets it when they are about to die and win the triage - a "
-			+ "healer always, another tank unless you are about to die too; a damage dealer does not. "
-			+ "You heal yourself the same either way: Nascent Flash heals you with every weaponskill as "
-			+ "Bloodwhetting does. What you keep is its damage reduction and barrier.")]
+		Tooltip = "In a fight: Nascent Flash is not given away while you need Bloodwhetting yourself, for a "
+			+ "coming tankbuster or when you are about to die.\nA healer about to die still gets it.")]
 	public bool HoldNascentFlashForOwnNeed { get; set; } = true;
 
 	[RotationConfig(CombatType.PvE, Name = "Use Nascent Flash on another party member a tankbuster is aimed at",
-		Tooltip = "Nascent Flash goes on the member a tankbuster is aimed at - a tankbuster marker on them, or an enemy "
-			+ "casting a tankbuster at them -, most often the other tank.\n"
-			+ "In a fight: they take the tankbuster with its damage reduction and barrier, and you heal yourself with "
-			+ "your weaponskills as with Bloodwhetting. It shares its cooldown with Bloodwhetting, so Bloodwhetting for "
-			+ "yourself goes first; with \"Keep Bloodwhetting for yourself when you need it\" on, it is not given away "
-			+ "while you need Bloodwhetting yourself, unless they win the triage. \"Only use Nascent Flash if Tank "
-			+ "Stance is off\" holds here too.")]
+		Tooltip = "In a fight: Nascent Flash goes on the member a tankbuster is aimed at, most often the other "
+			+ "tank, after your own Bloodwhetting needs.\nOff: it stays for the usual heal rules.")]
 	public bool NascentFlashOnTankbusterTarget { get; set; } = true;
 
 	[RotationConfig(CombatType.PvE, Name = "Use Arm's Length on a pull for its Slow",
-		Tooltip = "Arm's Length is used on a group pull for its Slow, not only as knockback "
-			+ "protection.\n"
-			+ "In a fight: the Slow +20% lands on every enemy that strikes you and delays "
-			+ "auto-attacks as well as casts, so in a standing pack it throttles the whole incoming "
-			+ "stream for fifteen seconds. It costs nothing but its own cooldown. A pull is as many "
-			+ "enemies in reach as the global \"Use tank mitigation when this many enemies target you\" for defensive abilities, bosses not "
-			+ "counted - Arm's Length does not soften the hit that strikes you, so a boss's tankbuster "
-			+ "gains nothing from it; a pack "
-			+ "that is already slowed is left alone.\n"
-			+ "Not while BossModReborn announces a knockback that lands after the barrier has run out "
-			+ "and before Arm's Length is ready again - the action is kept for it.")]
+		Tooltip = "In a fight: on a pack attacking you, bosses not counted, Arm's Length goes for its Slow, "
+			+ "delaying every attacker's swings and casts for fifteen seconds.\nNot when BossModReborn announces "
+			+ "a knockback it must be kept for.")]
 	public bool UseArmsLengthOnPull { get; set; } = true;
 
 	[RotationConfig(CombatType.PvE, Name = "Use Bloodwhetting/Raw intuition on single enemies",
@@ -97,24 +79,14 @@ public sealed partial class WAR_Reborn : WarriorRotation
 	public float FlashHeal { get; set; } = 0.6f;
 
 	[RotationConfig(CombatType.PvE, Name = "Use Thrill of Battle before a tankbuster on you",
-		Tooltip = "Thrill of Battle goes out when a tankbuster on you lands within its duration, "
-			+ "not only as a heal at low health.\n"
-			+ "In a fight: your maximum HP rise by 20% and are filled, so the hit takes a smaller share "
-			+ "of your health, and healing on you is 20% stronger while it lasts - the healers' answer "
-			+ "to the hit included. It stacks with Bloodwhetting, Rampart or Damnation. The price is its "
-			+ "90-second cooldown: it is not there as an emergency heal until then.\n"
-			+ "The tankbuster is the one BossModReborn announces for you, or a listed tankbuster cast or "
-			+ "tankbuster marker on you; not while an invulnerability covers you.")]
+		Tooltip = "In a fight: Thrill of Battle goes before a tankbuster on you lands, raising your HP and the "
+			+ "healing on you by 20%.\nNot under an invulnerability; it is then missing as an emergency heal for "
+			+ "90 s.")]
 	public bool UseThrillForTankbuster { get; set; } = true;
 
 	[RotationConfig(CombatType.PvE, Name = "Use Thrill of Battle when your health will fall below its threshold within its duration",
-		Tooltip = "Thrill of Battle goes out as soon as your health, falling at the rate measured over the "
-			+ "last seconds, would pass \"Thrill Of Battle Heal Threshold\" within the ten seconds Thrill of "
-			+ "Battle lasts - not only once it has passed it.\n"
-			+ "In a fight: on a heavy pull the 20% extra health and the 20% stronger healing are there "
-			+ "while the pack is at full strength, and they carry Bloodwhetting's and Equilibrium's heals "
-			+ "with them. Where the healers hold your health steady it does not fire. The price is the "
-			+ "90-second cooldown: it may be spent on a pull that would have stayed above the threshold.")]
+		Tooltip = "In a fight: Thrill of Battle goes once your falling HP would pass its heal threshold within "
+			+ "its ten seconds, not only after.\nIt may be spent on a pull that would have stayed above.")]
 	public bool UseThrillAheadOfFallingHealth { get; set; } = true;
 
 	[Range(0, 1, ConfigUnitType.Percent)]

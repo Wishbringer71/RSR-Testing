@@ -10,7 +10,10 @@ What stays in upstream's file, and is accepted here:
 - changes inside upstream's own members (their declaration line is upstream's);
 - static fields and properties with an initializer, and static constructors: the order of static initializers
   across partial parts is unspecified (C# specification, "Static field initialization"), so they stay beside the
-  initializers they may depend on;
+  initializers they may depend on; instance fields and properties with an initializer stay for the same reason
+  (concept 24, "Kein Startwert wandert, auch kein Instanzfeld");
+- settings (`[RotationConfig]`, `[UI]`): the settings window shows them in the order they are declared, so a moved
+  setting would leave its group and its parent (concept 24, second round, A746; A891);
 - the members listed in `fork_placement.json`, which stood there before this check (A742); a listed member that is
   no longer there is reported, so the list only shrinks.
 
@@ -36,6 +39,7 @@ SKIPPED_PARTS = ('bin', 'obj')
 SKIPPED_FILES = {'RotationSolver/Configuration/Configs.cs', 'RotationSolver/Configuration/Configs.CombatAndTarget.cs',
                  'RotationSolver/Configuration/Configs.DutiesAndPvP.cs'}
 TYPE_DECL = re.compile(r'\b(class|struct|record|interface)\s+\w+')
+SETTING = re.compile(r'^\s*\[(?:RotationConfig|UI)\s*\(', re.M)
 STRING = re.compile(r'\$?@"(?:""|[^"])*"|\$?"(?:\\.|[^"\\])*"' + r"|'(?:\\.|[^'\\])'")
 
 
@@ -87,10 +91,17 @@ def member_level(stack):
 
 
 def declaration(lines, first, last):
+    """The member's own first line: past comments and attributes, an attribute's continuation lines included - a
+    setting's tooltip spans several lines, and its text is no declaration (A891: nine upstream settings whose tooltip
+    the fork rewrote counted as the fork's members)."""
+    depth = 0
     for number in range(first, last + 1):
         stripped = lines[number - 1].strip()
-        if stripped and not stripped.startswith('//') and not stripped.startswith('['):
+        if depth == 0 and stripped and not stripped.startswith('//') and not stripped.startswith('['):
             return ' '.join(stripped.split())
+        if depth > 0 or stripped.startswith('['):
+            code = code_of(stripped)
+            depth += code.count('[') - code.count(']')
     return ''
 
 
@@ -107,13 +118,17 @@ def name_of(decl):
 
 
 def must_stay(lines, first, last, decl):
-    """Static fields and properties with an initializer, and static constructors, stay where they are."""
-    if not re.search(r'\bstatic\b', decl):
-        return False
+    """Settings, fields and properties with an initializer, and static constructors, stay where they are."""
+    body = '\n'.join(lines[first - 1:last])
+    if SETTING.search(body):
+        return True                       # the window's order
     head = decl.split('=>', 1)[0]
+    if not re.search(r'\bstatic\b', decl):
+        # An instance field or property with an initializer (not a method, not an expression body).
+        sig = head.split('=', 1)[0]
+        return '(' not in sig and (bool(re.search(r'(?<![=!<>])=(?![=>])', head)) or bool(re.search(r'\}\s*=(?!>)', body)))
     if re.match(r'(?:(?:private|internal|public|protected)\s+)*static\s+\w+\s*\(\s*\)', decl):
         return True                       # static constructor
-    body = '\n'.join(lines[first - 1:last])
     if '(' in head.split('=', 1)[0] and not re.search(r'\{\s*get', body):
         return False                      # a method
     if '=>' in decl and not re.search(r'(?<![=!<>])=(?![=>])', head):
@@ -176,13 +191,30 @@ def self_test():
     assert fork_members('Foo.cs', widened, [upstream]) == [], 'a changed signature of upstream\'s member stays'
     region = upstream.replace('\tprivate static int _x;\n', '\t#region Fork\n\tprivate static int _x;\n\t#endregion\n')
     assert fork_members('Foo.cs', region, [upstream]) == [], 'a region line belongs to no member'
+    setting = ('namespace A;\n\ninternal class Rot\n{\n\t[RotationConfig(Name = "Old",\n\t\tTooltip = "Old text, "\n'
+               '\t\t\t+ "on two lines.")]\n\tpublic bool Old { get; set; } = true;\n}\n')
+    retold = setting.replace('Old text, ', 'New text [in brackets], ')
+    assert fork_members('Rot.cs', retold, [setting]) == [], 'a new tooltip on upstream\'s setting is upstream\'s member changed'
+    bare = 'namespace A;\n\ninternal class Rot\n{\n\t[RotationConfig(Name = "Old")]\n\tpublic bool Old { get; set; } = true;\n}\n'
+    tipped = bare.replace('(Name = "Old")]', '(Name = "Old",\n\t\tTooltip = "A tooltip the fork wrote.")]')
+    assert fork_members('Rot.cs', tipped, [bare]) == [], 'a tooltip added to upstream\'s setting, upstream without any (A891)'
+    added = setting.replace('\n}\n', '\n\n\t[RotationConfig(Name = "New",\n\t\tTooltip = "Its text.")]\n'
+                            '\tpublic bool New { get; set; } = true;\n}\n')
+    assert fork_members('Rot.cs', added, [setting]) == [], 'a new setting stays in the window\'s order'
+    unset = setting.replace('\n}\n', '\n\n\t[UI("New", Filter = X)]\n\tpublic bool New { get; set; }\n}\n')
+    assert fork_members('Rot.cs', unset, [setting]) == [], 'a setting without initializer stays too'
+    plain = setting.replace('\n}\n', '\n\n\t// A comment [in brackets].\n\tprivate bool _seen;\n\n'
+                            '\tprivate readonly List<int> _list = [];\n\n\tprivate int Count { get; set; } = 2;\n\n'
+                            '\tprivate bool Ready => _seen;\n\n\tprivate void Note(int a = 1)\n\t{\n\t}\n}\n')
+    assert fork_members('Rot.cs', plain, [setting]) == ['private bool _seen;', 'private bool Ready => _seen;',
+                                                       'private void Note(int a = 1)'], fork_members('Rot.cs', plain, [setting])
     findings = check({'Foo.cs': ['internal static bool New(int a)']}, set())
     assert findings and 'move it to Foo.<Topic>.cs' in findings[0], findings
     assert check({'Foo.cs': ['internal static bool New(int a)']}, {('Foo.cs', 'internal static bool New(int a)')}) == []
     stale = check({}, {('Foo.cs', 'gone()')})
     assert stale and 'no longer there' in stale[0], stale
     print('self-test ok: a new member in upstream\'s file is found, in a block namespace and as a nested type too; a '
-          'change inside upstream\'s member or its signature, a static initializer and a region line are left alone; a listed member '
+          'change inside upstream\'s member, its signature or its attribute, a setting, an initializer and a region line are left alone; a listed member '
           'passes, a stale entry is reported')
 
 

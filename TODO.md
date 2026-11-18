@@ -39,12 +39,7 @@ den erfolgten einbau in fork auf synergieeffekte prüfen. danach die chains prü
 werden können … synergieeffekte von kombinationen und aufbau einer richtigen umfassenden schadensrotation so wie bei
 anderen jobs. umgekehrt prüfung, ob von den neuen ideen aus daedalus auch alle anderen jobs profitieren könnten."
 
-- **Tooltips kürzer und verständlich** (sein Auftrag vom 18.11.2026: „einige tooltips sind im branch wirklich sehr lang.
-  wie können sie anhand ingameverhalten besser und kürzer aber verständlich formuliert werden? im loop prüfen“). Im Kampf:
-  Lange Texte erklären die Regel, aber man liest sie beim Einstellen nicht ganz; was die Einstellung im Spiel ändert,
-  geht darin unter. Ort: `RotationConfig`-Tooltips der Fork-Einstellungen, `Configs`. Nächster Schritt: Längen messen,
-  je Tooltip die Wirkung im Kampf in einem Satz und den Preis der Abwahl, Loop mit `check_setting_tooltips.py` und den
-  Regeln zur Lesbarkeit (Konzept 03, „Hilfsfenster“). **N**. Konzept 03.
+- Keine offene Arbeit.
 
 ## Technische Schuld
 

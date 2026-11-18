@@ -65,8 +65,10 @@ Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
   Zustand ersetzen kann – kein Abschluss je Aufruf; LINQ ist gesperrt (`BannedSymbols.txt`). Grund: Jede Anlage kostet
   Speicherbereinigung im Spielthread.
 - Ein Member, den der Fork einer Klasse von Upstream hinzufügt, steht in ihrer Teildatei `Name.Thema.cs` (Thema: das
-  Konzept, das ihn trägt); in Upstreams Datei nur Änderungen an Upstreams Membern sowie statische Felder mit Startwert
-  und statische Konstruktoren, deren Reihenfolge über Teildateien nicht festgelegt ist. Ändere ich einen Member, den
+  Konzept, das ihn trägt); in Upstreams Datei nur Änderungen an Upstreams Membern, Felder und Eigenschaften mit
+  Startwert und statische Konstruktoren, deren Reihenfolge über Teildateien nicht festgelegt ist, und Einstellungen
+  (`RotationConfig`, `UI`), weil das Fenster sie in der Reihenfolge ihrer Deklaration zeigt (Konzept 24, A891: ein
+  Umzug trennt eine Option von ihrer Gruppe und ihrer Elternoption). Ändere ich einen Member, den
   `fork_placement.json` noch in Upstreams Datei führt, zieht er im selben Zug um. `check_fork_placement.py` hält das
   in der CI. Grund: Jede Fork-Zeile in Upstreams Datei ist Merge-Logistik (Skill `upstream-sync`).
 

@@ -1958,6 +1958,18 @@ allgemeinen Regeln, nicht die Vorgaben einer Bibliothek:
   Beschreibungen hatten Zeilen über 170 Zeichen, die längste 2239, und ihr Rest lag außerhalb (A654, A655). Das gilt für jeden
   Tooltip, der über `ImguiTooltips` läuft, auch für die von RebornMaterial (`M3Tooltip.Handler`), für die Beschreibungen
   der Optionen und die der Rotationen. Die Regel sitzt einmal (`ReadableText`), Fenster und Tooltips lesen sie.
+- *Inhalt der Tooltips* (A891; sein Auftrag vom 18.11.2026: „einige tooltips sind im branch wirklich sehr lang. wie
+  können sie anhand ingameverhalten besser und kürzer aber verständlich formuliert werden?“). *Gemessen* (18.11.2026,
+  `check_setting_tooltips.py`): 117 Einstellungen des Forks, im Median 559 Zeichen, 93 über 400, die längste 2.524 – sie
+  erklärten die ganze Regel samt Ausnahmen und Herleitung. *Maßstab* (Windows UX Guide, „Tooltips and Infotips“, gelesen
+  18.11.2026): „Be concise. Use 25 words or less. Longer infotips discourage reading“, „Avoid large infotips“, „Format
+  infotips to make their content easier to read and scan“; ein Tooltip ist Ergänzung, die man nicht lesen muss.
+  *Was gilt:* Höchstens drei Zeilen zu je höchstens 25 Wörtern, jede ein Satz über das Spielgeschehen: (1) „In a fight:“
+  was RSR tut und wann, (2) die eine Grenze oder Ausnahme, die man beim Einstellen kennen muss, (3) „Off:“ (oder „Lower:“
+  und „Higher:“ für einen Wert) was ohne sie geschieht. Herleitung, Messungen und die übrigen Ausnahmen stehen im
+  Konzept und in `fork-changes-in-play.md`, nicht im Tooltip. Der Text bleibt wahr gegen den Code (der Text bindet,
+  `code.md`); gekürzt wird, was er erklärt, nicht was er verspricht. `check_setting_tooltips.py` hält die Grenze für die
+  Einstellungen des Forks.
 - *Gespeicherte Größe.* Eine Breite unter der Mindestbreite kann unter diesen Regeln nicht entstehen; findet das Fenster
   beim ersten Bild einer Sitzung eine, stammt sie aus dem früheren Auto-Größenmodus (im Modell 116 px, A654), und es nimmt die
   Startbreite. Die Position bleibt.

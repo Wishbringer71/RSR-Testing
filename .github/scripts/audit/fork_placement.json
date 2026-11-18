@@ -295,10 +295,6 @@
   },
   {
    "file": "RotationSolver/Engine/Helpers/ActionHelper.cs",
-   "member": "private const float CastUnitsPerSecond = 10f;"
-  },
-  {
-   "file": "RotationSolver/Engine/Helpers/ActionHelper.cs",
    "member": "internal static float CastSeconds(this Action action) => action.Cast100ms / CastUnitsPerSecond;"
   },
   {
@@ -351,10 +347,6 @@
   },
   {
    "file": "RotationSolver/Rotations/Limited/Beastmaster/BeastmasterRotation.cs",
-   "member": "private const uint AwayCommand = 1;"
-  },
-  {
-   "file": "RotationSolver/Rotations/Limited/Beastmaster/BeastmasterRotation.cs",
    "member": "internal static unsafe uint AwayStatus => ActionManager.Instance() is var manager && manager != null"
   },
   {
@@ -372,10 +364,6 @@
   {
    "file": "RotationSolver/Rotations/Tank/Gunbreaker/GunbreakerRotation.cs",
    "member": "protected override IBaseAction? Invulnerability => SuperbolidePvE;"
-  },
-  {
-   "file": "RotationSolver/Rotations/Ranged/Machinist/MachinistRotation.cs",
-   "member": "private int _crossbowTracedLevel = -1;"
   },
   {
    "file": "RotationSolver/Rotations/Melee/Monk/MonkRotation.cs",
@@ -427,31 +415,7 @@
   },
   {
    "file": "RotationSolver/Rotations/Magical/Summoner/SummonerRotation.cs",
-   "member": "private readonly bool[] _searingPhaseSeen = new bool[Enum.GetValues<SearingPhase>().Length];"
-  },
-  {
-   "file": "RotationSolver/Rotations/Magical/Summoner/SummonerRotation.cs",
-   "member": "private readonly bool[] _searingPhaseHeld = new bool[Enum.GetValues<SearingPhase>().Length];"
-  },
-  {
-   "file": "RotationSolver/Rotations/Magical/Summoner/SummonerRotation.cs",
-   "member": "private SearingPhase _lastSearingPhase = SearingPhase.None;"
-  },
-  {
-   "file": "RotationSolver/Rotations/Magical/Summoner/SummonerRotation.cs",
    "member": "protected bool NextBigSummonIsBurst"
-  },
-  {
-   "file": "RotationSolver/Rotations/Magical/Summoner/SummonerRotation.cs",
-   "member": "private SearingPhase _lastBigSummon = SearingPhase.None;"
-  },
-  {
-   "file": "RotationSolver/Rotations/Magical/Summoner/SummonerRotation.cs",
-   "member": "private SearingPhase _gaugeNamed = SearingPhase.None;"
-  },
-  {
-   "file": "RotationSolver/Rotations/Magical/Summoner/SummonerRotation.cs",
-   "member": "private SearingPhase _buttonNamed = SearingPhase.None;"
   },
   {
    "file": "RotationSolver/Rotations/Tank/Warrior/WarriorRotation.cs",
@@ -484,10 +448,6 @@
   {
    "file": "RotationSolver/Rotations/Core/CustomRotation_GCD.cs",
    "member": "private static bool AnyOtherLivingRaiser()"
-  },
-  {
-   "file": "RotationSolver/Rotations/Core/CustomRotation_GCD.cs",
-   "member": "private readonly List<SleepLockKey> _sleepTries = [];"
   },
   {
    "file": "RotationSolver/Rotations/Core/CustomRotation_Items.cs",
@@ -582,162 +542,6 @@
    "member": "private bool UseOtherPhantomJobs(out IAction? act)"
   },
   {
-   "file": "RotationSolver/Rotations/Healer/Astrologian/AST_Reborn.cs",
-   "member": "Tooltip = \"With the limit to multihit party stacks on, Macrocosmos also goes before an announced area hit that, by its \""
-  },
-  {
-   "file": "RotationSolver/Rotations/Healer/Astrologian/AST_Reborn.cs",
-   "member": "Tooltip = \"With the limit to multihit party stacks on, Macrocosmos also goes into an enemy attack that has been seen to \""
-  },
-  {
-   "file": "RotationSolver/Rotations/Healer/Astrologian/AST_Reborn.cs",
-   "member": "Tooltip = \"Off: while another healer is alive your GCD heals are left to them and you deal damage instead, with \""
-  },
-  {
-   "file": "RotationSolver/Rotations/Healer/Astrologian/AST_Reborn.cs",
-   "member": "Tooltip = \"Aspected Benefic goes on the tank as they close in on a group, and is refreshed for \""
-  },
-  {
-   "file": "RotationSolver/Rotations/Healer/Astrologian/AST_Reborn.cs",
-   "member": "Tooltip = \"How many enemies have to stand within gap-closer range of the tank, before combat \""
-  },
-  {
-   "file": "RotationSolver/Rotations/Healer/Astrologian/AST_Reborn.cs",
-   "member": "Tooltip = \"The same count, but during combat: how many enemies have to remain around the tank \""
-  },
-  {
-   "file": "RotationSolver/Rotations/Healer/Astrologian/AST_Reborn.cs",
-   "member": "Tooltip = \"The last charge of Essential Dignity needs a reason beyond low health: the target is being attacked or cast at, an area cast is announced, \""
-  },
-  {
-   "file": "RotationSolver/Rotations/Healer/Scholar/SCH_Reborn.cs",
-   "member": "Tooltip = \"With the limit to multihit party stacks on, Seraphism also goes before an announced area hit that, by its \""
-  },
-  {
-   "file": "RotationSolver/Rotations/Healer/Scholar/SCH_Reborn.cs",
-   "member": "Tooltip = \"With the limit to multihit party stacks on, Seraphism also goes into an enemy attack that has been seen to \""
-  },
-  {
-   "file": "RotationSolver/Rotations/Healer/Scholar/SCH_Reborn.cs",
-   "member": "Tooltip = \"Excogitation needs a reason beyond low health: the target is being attacked or cast at, an area cast is announced, \""
-  },
-  {
-   "file": "RotationSolver/Rotations/Healer/Scholar/SCH_Reborn.cs",
-   "member": "Tooltip = \"Off: while another healer is alive your GCD heals are left to them and you deal damage instead, with \""
-  },
-  {
-   "file": "RotationSolver/Rotations/Healer/Scholar/SCH_Reborn.cs",
-   "member": "Tooltip = \"In a fight: until a time to kill is measured for the enemy, Bio waits while the enemy has less health than the party would deal in 12 seconds at the percentage set above; once one is measured, the action's own time to kill decides. Off: Bio goes by the action's time to kill alone.\")]"
-  },
-  {
-   "file": "RotationSolver/Rotations/Healer/Sage/SGE_Reborn.cs",
-   "member": "Tooltip = \"With the limit to multihit party stacks on, Panhaima also goes before an announced area hit that, by its \""
-  },
-  {
-   "file": "RotationSolver/Rotations/Healer/Sage/SGE_Reborn.cs",
-   "member": "Tooltip = \"With the limit to multihit party stacks on, Panhaima also goes into an enemy attack that has been seen to \""
-  },
-  {
-   "file": "RotationSolver/Rotations/Healer/Sage/SGE_Reborn.cs",
-   "member": "Tooltip = \"Off: while another healer is alive your GCD heals are left to them and you deal damage instead, with \""
-  },
-  {
-   "file": "RotationSolver/Rotations/Healer/Sage/SGE_Reborn.cs",
-   "member": "Tooltip = \"Taurochole needs a reason beyond low health: the target is being attacked or cast at, an area cast is announced, \""
-  },
-  {
-   "file": "RotationSolver/Rotations/Healer/Sage/SGE_Reborn.cs",
-   "member": "Tooltip = \"Eukrasian Diagnosis goes on the tank as they close in on a group and is renewed for as long \""
-  },
-  {
-   "file": "RotationSolver/Rotations/Healer/Sage/SGE_Reborn.cs",
-   "member": "Tooltip = \"How many enemies have to stand within gap-closer range of the tank, before combat \""
-  },
-  {
-   "file": "RotationSolver/Rotations/Healer/Sage/SGE_Reborn.cs",
-   "member": "Tooltip = \"The same count, but during combat: how many enemies have to remain around the tank \""
-  },
-  {
-   "file": "RotationSolver/Rotations/Healer/WhiteMage/WHM_Reborn.cs",
-   "member": "Tooltip = \"With the limit to multihit party stacks on, the bell also goes before an announced area hit that, by its \""
-  },
-  {
-   "file": "RotationSolver/Rotations/Healer/WhiteMage/WHM_Reborn.cs",
-   "member": "Tooltip = \"With the limit to multihit party stacks on, the bell also goes out at the first hit of an enemy attack \""
-  },
-  {
-   "file": "RotationSolver/Rotations/Healer/WhiteMage/WHM_Reborn.cs",
-   "member": "Tooltip = \"While the bell still holds stacks, its second press heals with every stack left at once; otherwise \""
-  },
-  {
-   "file": "RotationSolver/Rotations/Healer/WhiteMage/WHM_Reborn.cs",
-   "member": "Tooltip = \"Off: while another healer is alive your GCD heals are left to them and you deal damage instead, with \""
-  },
-  {
-   "file": "RotationSolver/Rotations/Healer/WhiteMage/WHM_Reborn.cs",
-   "member": "Tooltip = \"Regen goes on the tank at five seconds on the pull countdown, again as they close in \""
-  },
-  {
-   "file": "RotationSolver/Rotations/Healer/WhiteMage/WHM_Reborn.cs",
-   "member": "Tooltip = \"How many enemies have to stand within gap-closer range of the tank, before combat \""
-  },
-  {
-   "file": "RotationSolver/Rotations/Healer/WhiteMage/WHM_Reborn.cs",
-   "member": "Tooltip = \"The same count, but during combat: how many enemies have to remain around the tank \""
-  },
-  {
-   "file": "RotationSolver/Rotations/Healer/WhiteMage/WHM_Reborn.cs",
-   "member": "Tooltip = \"Benediction needs a reason beyond low health: the target is being attacked or cast \""
-  },
-  {
-   "file": "RotationSolver/Rotations/Healer/WhiteMage/WHM_Reborn.cs",
-   "member": "Tooltip = \"Below this health a member gets Cure II or Cure instead of Regen: they heal more at once.\\n\""
-  },
-  {
-   "file": "RotationSolver/Rotations/Healer/WhiteMage/WHM_Reborn.cs",
-   "member": "Tooltip = \"Thin Air is only spent on an expensive spell while MP has actually fallen to where \""
-  },
-  {
-   "file": "RotationSolver/Rotations/Healer/WhiteMage/WHM_Reborn.cs",
-   "member": "Tooltip = \"Right after Holy (Sanctus), the next GCD goes to another spell while Holy's stun would \""
-  },
-  {
-   "file": "RotationSolver/Rotations/Healer/WhiteMage/WHM_Reborn.cs",
-   "member": "Tooltip = \"On a group pull, Holy (Sanctus) is held back while a tank carries the barrier from \""
-  },
-  {
-   "file": "RotationSolver/Rotations/Healer/WhiteMage/WHM_Reborn.cs",
-   "member": "Tooltip = \"How many enemies have to be in range before Holy (Sanctus) may be held back for \""
-  },
-  {
-   "file": "RotationSolver/Rotations/Healer/WhiteMage/WHM_Reborn.cs",
-   "member": "Tooltip = \"Holy (Sanctus) is held back while the pack is already slowed, typically by the \""
-  },
-  {
-   "file": "RotationSolver/Rotations/Healer/WhiteMage/WHM_Reborn.cs",
-   "member": "Tooltip = \"How many enemies in Holy's radius have to carry the Slow before the hold applies. \""
-  },
-  {
-   "file": "RotationSolver/Rotations/Healer/WhiteMage/WHM_Reborn.cs",
-   "member": "Tooltip = \"An optional second condition on the hold above: it only applies while the summed \""
-  },
-  {
-   "file": "RotationSolver/Rotations/Healer/WhiteMage/WHM_Reborn.cs",
-   "member": "private string _lastStretchTrace = string.Empty;"
-  },
-  {
-   "file": "RotationSolver/Rotations/Healer/WhiteMage/WHM_Reborn.cs",
-   "member": "private DateTime _lastStretchTraceAt = DateTime.MinValue;"
-  },
-  {
-   "file": "RotationSolver/Rotations/Healer/WhiteMage/WHM_Reborn.cs",
-   "member": "private string _holySlowHold = \"no decision yet\";"
-  },
-  {
-   "file": "RotationSolver/Rotations/Magical/Pictomancer/PCT_Reborn.cs",
-   "member": "Tooltip = \"Holds Tempera Coat, Tempera Grassa and Addle while your burst runs, even when an area hit or a tankbuster is announced.\\n\""
-  },
-  {
    "file": "RotationSolver/Rotations/Magical/Pictomancer/PCT_Reborn.cs",
    "member": "private bool UseOpenerAndPriority(out IAction? act)"
   },
@@ -762,44 +566,8 @@
    "member": "private bool RefreshMotifsAsFallback(out IAction? act)"
   },
   {
-   "file": "RotationSolver/Rotations/Magical/RedMage/RDM_Reborn.cs",
-   "member": "Tooltip = \"Off: your GCD heals go only when no healer is alive, or while a party member is in the critical class, \""
-  },
-  {
-   "file": "RotationSolver/Rotations/Magical/RedMage/RDM_Reborn.cs",
-   "member": "Tooltip = \"Holds Vercure while Manafication, Embolden or the melee combo and its finishers run - unless no \""
-  },
-  {
-   "file": "RotationSolver/Rotations/Magical/RedMage/RDM_Reborn.cs",
-   "member": "Tooltip = \"Holds Verraise while Manafication, Embolden or the melee combo and its finishers run.\\n\""
-  },
-  {
-   "file": "RotationSolver/Rotations/Magical/RedMage/RDM_Reborn.cs",
-   "member": "Tooltip = \"Off: while Verraise is learned and \\\"Raise with Swiftcast or Dualcast\\\" is on, Swiftcast stays ready for \""
-  },
-  {
-   "file": "RotationSolver/Rotations/Magical/Summoner/SMN_Reborn.cs",
-   "member": "Tooltip = \"Off: your GCD heals go only when no healer is alive, or while a party member is in the critical class, \""
-  },
-  {
-   "file": "RotationSolver/Rotations/Magical/Summoner/SMN_Reborn.cs",
-   "member": "Tooltip = \"While you are moving, Titan is summoned ahead of the configured order.\\n\""
-  },
-  {
-   "file": "RotationSolver/Rotations/Magical/Summoner/SMN_Reborn.cs",
-   "member": "Tooltip = \"While you stand within your Crimson Cyclone distance, Ifrit is summoned ahead of the configured order.\\n\""
-  },
-  {
    "file": "RotationSolver/Rotations/Magical/Summoner/SMN_Reborn.cs",
    "member": "private static string SearingLightAgainstSummon()"
-  },
-  {
-   "file": "RotationSolver/Rotations/Magical/Summoner/SMN_Reborn.cs",
-   "member": "private string _summonHeldFor = string.Empty;"
-  },
-  {
-   "file": "RotationSolver/Rotations/Magical/Summoner/SMN_Reborn.cs",
-   "member": "private DateTime _summonHeldSince = DateTime.MinValue;"
   },
   {
    "file": "RotationSolver/Rotations/Magical/Summoner/SMN_Reborn.cs",
@@ -808,14 +576,6 @@
   {
    "file": "RotationSolver/Rotations/Magical/Summoner/SMN_Reborn.cs",
    "member": "private bool TryRekindle(out IAction? act)"
-  },
-  {
-   "file": "RotationSolver/Rotations/Magical/Summoner/SMN_Reborn.cs",
-   "member": "private string _luxWhy = \"not asked yet\";"
-  },
-  {
-   "file": "RotationSolver/Rotations/Magical/Summoner/SMN_Reborn.cs",
-   "member": "private string _luxLastChoice = \"none yet\";"
   },
   {
    "file": "RotationSolver/Rotations/Magical/Summoner/SMN_Reborn.cs",
@@ -855,10 +615,6 @@
   },
   {
    "file": "RotationSolver/Rotations/Melee/Monk/MNK_Reborn.cs",
-   "member": "public bool SixSidedStarLast { get; set; } = true;"
-  },
-  {
-   "file": "RotationSolver/Rotations/Melee/Monk/MNK_Reborn.cs",
    "member": "protected override bool HealSingleAbility(IAction nextGCD, out IAction? act)"
   },
   {
@@ -867,23 +623,11 @@
   },
   {
    "file": "RotationSolver/Rotations/Melee/Reaper/RPR_Reborn.cs",
-   "member": "private const string ComboHoldRule = \"Reaper: Soul Reaver, Enshroud or Executioner running\";"
-  },
-  {
-   "file": "RotationSolver/Rotations/Melee/Reaper/RPR_Reborn.cs",
-   "member": "private const string ResourceSlotHoldRule = \"Reaper: Gluttony or Enshroud ready\";"
-  },
-  {
-   "file": "RotationSolver/Rotations/Melee/Reaper/RPR_Reborn.cs",
    "member": "protected override bool HasOwnAntiKnockbackGate => true;"
   },
   {
    "file": "RotationSolver/Rotations/Melee/Reaper/RPR_Reborn.cs",
    "member": "protected override bool HasOwnInterruptGate => true;"
-  },
-  {
-   "file": "RotationSolver/Rotations/Melee/Samurai/SAM_Reborn.cs",
-   "member": "private const string ZanshinHoldRule = \"Samurai: Zanshin ready\";"
   },
   {
    "file": "RotationSolver/Rotations/Melee/Samurai/SAM_Reborn.cs",
@@ -914,14 +658,6 @@
    "member": "private bool UseComboStarters(out IAction? act)"
   },
   {
-   "file": "RotationSolver/Rotations/Melee/Viper/VPR_Reborn.cs",
-   "member": "private const string FollowUpHoldRule = \"Viper: a follow-up ability is ready\";"
-  },
-  {
-   "file": "RotationSolver/Rotations/Ranged/Bard/BRD_Reborn.cs",
-   "member": "Tooltip = \"Holds Troubadour while your burst runs, even when an area hit or a tankbuster is announced.\\n\""
-  },
-  {
    "file": "RotationSolver/Rotations/Ranged/Bard/BRD_Reborn.cs",
    "member": "protected override bool MoveBackAbility(IAction nextGCD, out IAction? act)"
   },
@@ -931,19 +667,11 @@
   },
   {
    "file": "RotationSolver/Rotations/Ranged/Dancer/DNC_Reborn.cs",
-   "member": "Tooltip = \"Holds Shield Samba while your burst runs, even when an area hit or a tankbuster is announced.\\n\""
-  },
-  {
-   "file": "RotationSolver/Rotations/Ranged/Dancer/DNC_Reborn.cs",
    "member": "protected override bool HealSingleAbility(IAction nextGCD, out IAction? act)"
   },
   {
    "file": "RotationSolver/Rotations/Ranged/Dancer/DNC_Reborn.cs",
    "member": "protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)"
-  },
-  {
-   "file": "RotationSolver/Rotations/Ranged/Machinist/MCH_Reborn.cs",
-   "member": "public bool UseFlamethrower { get; set; } = true;"
   },
   {
    "file": "RotationSolver/Rotations/Ranged/Machinist/MCH_Reborn.cs",
@@ -956,30 +684,6 @@
   {
    "file": "RotationSolver/Rotations/Ranged/Machinist/MCH_Reborn.cs",
    "member": "protected override bool HealSingleAbility(IAction nextGCD, out IAction? act)"
-  },
-  {
-   "file": "RotationSolver/Rotations/Tank/DarkKnight/DRK_Reborn.cs",
-   "member": "Tooltip = \"The Blackest Night goes on the member a tankbuster is aimed at - a tankbuster marker on them, or an \""
-  },
-  {
-   "file": "RotationSolver/Rotations/Tank/DarkKnight/DRK_Reborn.cs",
-   "member": "Tooltip = \"The Blackest Night costs 3000 MP and only pays it back as Dark Arts if the barrier \""
-  },
-  {
-   "file": "RotationSolver/Rotations/Tank/DarkKnight/DRK_Reborn.cs",
-   "member": "Tooltip = \"How many enemies have to be in range before a pull counts as big enough to spend the \""
-  },
-  {
-   "file": "RotationSolver/Rotations/Tank/DarkKnight/DRK_Reborn.cs",
-   "member": "Tooltip = \"Arm's Length is used on a group pull for its Slow, not only as knockback \""
-  },
-  {
-   "file": "RotationSolver/Rotations/Tank/DarkKnight/DRK_Reborn.cs",
-   "member": "Tooltip = \"The barrier pays its 3000 MP back as Dark Arts only when it is absorbed in full within its \""
-  },
-  {
-   "file": "RotationSolver/Rotations/Tank/DarkKnight/DRK_Reborn.cs",
-   "member": "Tooltip = \"Only used by the last option of the Blackest Night setting above: below this share \""
   },
   {
    "file": "RotationSolver/Rotations/Tank/DarkKnight/DRK_Reborn.cs",
@@ -998,52 +702,8 @@
    "member": "private bool BarrierWaitsToBeSpent()"
   },
   {
-   "file": "RotationSolver/Rotations/Tank/DarkKnight/DRK_Reborn.cs",
-   "member": "private const byte BloodPoolLimit = 70;"
-  },
-  {
-   "file": "RotationSolver/Rotations/Tank/Gunbreaker/GNB_Reborn.cs",
-   "member": "Tooltip = \"Arm's Length is used on a group pull for its Slow, not only as knockback \""
-  },
-  {
-   "file": "RotationSolver/Rotations/Tank/Paladin/PLD_Reborn.cs",
-   "member": "Tooltip = \"Arm's Length is used on a group pull for its Slow, not only as knockback \""
-  },
-  {
    "file": "RotationSolver/Rotations/Tank/Paladin/PLD_Reborn.cs",
    "member": "protected override bool HasOwnArmsLengthPullRule => true;"
-  },
-  {
-   "file": "RotationSolver/Rotations/Tank/Paladin/PLD_Reborn.cs",
-   "member": "Tooltip = \"Off: your GCD heals go only when no healer is alive, or while a party member is in the critical class, \""
-  },
-  {
-   "file": "RotationSolver/Rotations/Tank/Paladin/PLD_Reborn.cs",
-   "member": "Tooltip = \"Intervention goes on the other tank when a tankbuster is aimed at him: a tankbuster marker on him, \""
-  },
-  {
-   "file": "RotationSolver/Rotations/Tank/Warrior/WAR_Reborn.cs",
-   "member": "Tooltip = \"Nascent Flash on someone else puts Bloodwhetting on its cooldown too. With this on, it \""
-  },
-  {
-   "file": "RotationSolver/Rotations/Tank/Warrior/WAR_Reborn.cs",
-   "member": "Tooltip = \"Nascent Flash goes on the member a tankbuster is aimed at - a tankbuster marker on them, or an enemy \""
-  },
-  {
-   "file": "RotationSolver/Rotations/Tank/Warrior/WAR_Reborn.cs",
-   "member": "Tooltip = \"Arm's Length is used on a group pull for its Slow, not only as knockback \""
-  },
-  {
-   "file": "RotationSolver/Rotations/Tank/Warrior/WAR_Reborn.cs",
-   "member": "Tooltip = \"The single-target defence casts Bloodwhetting (Raw Intuition before level 82) also \""
-  },
-  {
-   "file": "RotationSolver/Rotations/Tank/Warrior/WAR_Reborn.cs",
-   "member": "Tooltip = \"Thrill of Battle goes out when a tankbuster on you lands within its duration, \""
-  },
-  {
-   "file": "RotationSolver/Rotations/Tank/Warrior/WAR_Reborn.cs",
-   "member": "Tooltip = \"Thrill of Battle goes out as soon as your health, falling at the rate measured over the \""
   },
   {
    "file": "RotationSolver/UI/SearchableConfigs/Searchable.cs",
@@ -1087,15 +747,7 @@
   },
   {
    "file": "RotationSolver/Engine/Watcher.cs",
-   "member": "private const uint HotTickCategory = 0x604;"
-  },
-  {
-   "file": "RotationSolver/Engine/Watcher.cs",
    "member": "private static void TraceHitFromUnreadSource(ActionEffectSet set, IBattleChara player)"
-  },
-  {
-   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
-   "member": "private const string LaggingSettingBefore = \"PreferLaggingFamiliars\";"
   },
   {
    "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
@@ -1219,10 +871,6 @@
   },
   {
    "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
-   "member": "private readonly List<HornOrder> _hornOrder = [];"
-  },
-  {
-   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
    "member": "private static bool WaitsForNature(OneWithNatureOrder nature)"
   },
   {
@@ -1280,10 +928,6 @@
   {
    "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
    "member": "private bool SituationalHorn(out IAction? act)"
-  },
-  {
-   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
-   "member": "private const string DangerReason = \"you are in danger, it heals, protects or stops your attackers\";"
   },
   {
    "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
@@ -1387,10 +1031,6 @@
   },
   {
    "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
-   "member": "private byte[] _slotsSeen = [];"
-  },
-  {
-   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
    "member": "private byte[]? _hornsBeforeBoard;"
   },
   {
@@ -1400,14 +1040,6 @@
   {
    "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
    "member": "private HornPlanKey? _planKey;"
-  },
-  {
-   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
-   "member": "private string _planTraced = string.Empty;"
-  },
-  {
-   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
-   "member": "private readonly List<BeastmasterPet> _candidates = [];"
   },
   {
    "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
@@ -1427,10 +1059,6 @@
   },
   {
    "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
-   "member": "private readonly Dictionary<ActionID, int> _fightUses = [];"
-  },
-  {
-   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
    "member": "private DateTime _lastUseSeen;"
   },
   {
@@ -1444,10 +1072,6 @@
   {
    "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
    "member": "private bool _counting;"
-  },
-  {
-   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
-   "member": "private string _chargeHeld = string.Empty;"
   },
   {
    "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
@@ -1495,23 +1119,11 @@
   },
   {
    "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
-   "member": "private string _hornScreenSelection = string.Empty;"
-  },
-  {
-   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
-   "member": "private string _hornScreenTraced = string.Empty;"
-  },
-  {
-   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
    "member": "private bool _hornScreenOpen;"
   },
   {
    "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
    "member": "private bool _hornScreenReady;"
-  },
-  {
-   "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
-   "member": "private const uint StageEntriesBuilt = 2;"
   },
   {
    "file": "RotationSolver/Rotations/Limited/Beastmaster/BST_Reborn.cs",
@@ -1567,14 +1179,6 @@
   },
   {
    "file": "RotationSolver/Rotations/Limited/BlueMage/BLU_Reborn.cs",
-   "member": "Tooltip = \"In a fight: Moon Flute goes when the burst it lifts gains more than Waning Nocturne costs - Waning allows no action at all, no heal, no mitigation, no raise. On: it also waits while you are under tank or healer mimicry, while a party member is in danger or an announced area cast would put one there, while your own health, carried forward over the window, would fall that low, and while BossModReborn announces a raidwide or a tankbuster on you within it. Without BossModReborn's timeline only what is cast or measured counts. Off: only the value decides.\")]"
-  },
-  {
-   "file": "RotationSolver/Rotations/Limited/BlueMage/BLU_Reborn.cs",
-   "member": "Tooltip = \"In a fight: RSR casts only spells in your active set, so with this on more of your learned spells come into play. Out of combat, without a target: RSR adds Sonic Boom where it is missing, the partners of the spell chains one part of which is in your set, and damage spells with a recast from recast groups your set lacks. It takes only free slots and fillers it does not cast at your level - damage cooldowns, heals, defence, movement, mimicry, raises, interrupts and every spell with an additional effect stay, and a slot is changed only while its spell is ready. Once you change your set yourself, or inside the Masked Carnivale, RSR leaves it alone for the rest of the session. Your saved sets and hotbars stay as they are. Off: your set stays as you made it.\")]"
-  },
-  {
-   "file": "RotationSolver/Rotations/Limited/BlueMage/BLU_Reborn.cs",
    "member": "protected override void UpdateServices()"
   },
   {
@@ -1603,15 +1207,7 @@
   },
   {
    "file": "RotationSolver/Rotations/Limited/BlueMage/BLU_Reborn.cs",
-   "member": "private string _moonFluteHeldFor = string.Empty;"
-  },
-  {
-   "file": "RotationSolver/Rotations/Limited/BlueMage/BLU_Reborn.cs",
    "member": "private bool _moonFluteWasComing;"
-  },
-  {
-   "file": "RotationSolver/Rotations/Limited/BlueMage/BLU_Reborn.cs",
-   "member": "private DateTime _moonFluteComingSince = DateTime.MinValue;"
   },
   {
    "file": "RotationSolver/Rotations/Limited/BlueMage/BLU_Reborn.cs",

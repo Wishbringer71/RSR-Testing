@@ -155,29 +155,20 @@ internal partial class Configs
 	private static readonly bool _elementalWeaknessTracking = false;
 
 	[ConditionBool, UI("Deep dungeons: heals that also deal damage don't pull new enemies",
-	Description = "In a fight: in a deep dungeon, a party heal that also deals damage to enemies - Assize, Macrocosmos, Pneuma - "
-		+ "waits while it would reach an enemy that is not fighting yet (no target, not in combat), so the heal does not wake "
-		+ "the next group. Healing alone pulls nobody; its damage does. It does not wait while a party member is about to die. "
-		+ "Outside deep dungeons \"Don't pull new enemies with AoE\" decides, as before.",
+	Description = "In a fight: in a deep dungeon, Assize, Macrocosmos and Pneuma wait while their damage would reach "
+		+ "an enemy not fighting yet, unless someone is dying.\nOff: \"Don't pull new enemies with AoE\" decides.",
 	Filter = DutySpecificDeepDungeon)]
 	private static readonly bool _deepDungeonNoPullHeals = true;
 
 	[ConditionBool, UI("Deep dungeons: damage doesn't pull new enemies",
-	Description = "In a fight: in a deep dungeon, no attack of yours reaches an enemy that is not fighting yet - an area waits "
-		+ "while one stands in it, the caster's Sleep too, which pulls an enemy as damage does, and during a fight RSR picks no "
-		+ "such enemy as a new target, so no add joins. The enemy you pull "
-		+ "yourself stays your target. Outside deep dungeons \"Don't pull new enemies with AoE\" decides, as before.",
+	Description = "In a fight: in a deep dungeon, no attack of yours reaches an enemy not fighting yet, and RSR "
+		+ "picks none as a new target.\nOff: \"Don't pull new enemies with AoE\" decides.",
 	Filter = DutySpecificDeepDungeon)]
 	private static readonly bool _deepDungeonNoPullDamage = true;
 
 	[ConditionBool, UI("Deep dungeons: put further enemies that attack your party to sleep",
-	Description = "In a fight: in a deep dungeon, a healer or caster whose party two or more awake enemies attack puts the ones "
-		+ "not fought - not your target, not a party tank's - to sleep with Repose or Sleep: not one about to die, not one taking "
-		+ "damage over time, not a boss, not a kind that resists. A sleep about to run out is renewed while an awake enemy is "
-		+ "fought. Your areas spare every sleeping enemy, whoever put it to sleep, and RSR attacks it only when no awake enemy is "
-		+ "left, so the party fights one at a time. Costs a cast per sleep; not while a party member is about to die or Swiftcast "
-		+ "stands. The caster's Sleep reaches 5 yalms around its target and may put a fought enemy to sleep too; it stays the "
-		+ "target and the next attack wakes it. A kind that resisted a sleep is learned and not tried again.",
+	Description = "In a fight: in a deep dungeon, a healer or caster sleeps the enemies nobody fights when two or "
+		+ "more attack the party, and renews the sleep.\nYour areas spare sleepers; they are fought one at a time.",
 	Filter = DutySpecificDeepDungeon)]
 	private static readonly bool _deepDungeonSleepAdds = true;
 
@@ -249,7 +240,8 @@ internal partial class Configs
 	// Concept 01, K12 (A572): Daedalus 74659a6 in the field - every egg broken before it hatches makes the Zu stronger, and a
 	// run died after three were broken.
 	[ConditionBool, UI("Crucible of the Unbroken - Zu logic",
-	Description = "Never hit a zu egg while a zu piece lives: every egg broken before it hatches makes the Zu stronger. Eggs are no target, and an area attack that would catch one finds another centre or waits.\nOff: eggs are enemies like any other, and area attacks catch them.",
+	Description = "In a fight: no zu egg is hit while a zu piece lives, since each egg broken before hatching "
+		+ "strengthens the Zu; areas find another centre or wait.\nOff: eggs are enemies like any other.",
 	Filter = DutySpecificCrucibleOfTheUnbroken)]
 	private static readonly bool _crucibleZu = true;
 	#endregion

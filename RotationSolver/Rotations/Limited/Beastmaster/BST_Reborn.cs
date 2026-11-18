@@ -27,152 +27,68 @@ public sealed partial class BST_Reborn : BeastmasterRotation
 	// Concept 01, "Begleiter nach Lage" (A485): which ready horn to call is the one lever over the familiars; what each
 	// horn spends One with Nature on stays the setting above. On by default: a new rule is to be tested.
 	[RotationConfig(CombatType.PvE, Name = "Choose the battlehorn by the situation",
-		Tooltip = "Among the ready horns, the familiar called first is the one whose Trick brings least against the enemies "
-			+ "around your target, so the one that does most - an area Trick on a pack - is called last and stays until a "
-			+ "horn is back. At equal damage the one that heals or protects you stays. When your HP is falling below the line "
-			+ "at which RSR heals you with abilities, a familiar that heals or protects you (its Trick, or what its horn "
-			+ "spends One with Nature on) is called first, one that does neither leaves by Parting Blow for it, one whose "
-			+ "Trick heals you is not sent off while the danger lasts, and Scaleskin goes up at once. With no tank beside you, "
-			+ "a familiar whose Tempered Release stops a whole pack fighting you comes first. In the Crucible, a familiar that "
-			+ "hits only the weakness of enemies still to come in this fight waits for them while another horn is ready, and "
-			+ "comes first once they appear. Only what you have at your level counts.\n"
-			+ "In a fight: on a pack the area familiar keeps the long stint, and when you are losing health the healing "
-			+ "familiar comes at once instead of at its turn.\n"
-			+ "Off: the horn order above.")]
+		Tooltip = "In a fight: the familiar that brings least now is called first, so an area Trick on a pack "
+			+ "stays longest.\nWhile you lose health, a healing familiar comes at once.\nOff: the horn order above.")]
 	private bool HornBySituation { get; set; } = true;
 
 	// Concept 01, B5 (A522): his proposal of 04.11.2026 - out of combat, the familiars for the next fight. On by default:
 	// a new rule is to be tested.
 	[RotationConfig(CombatType.PvE, Name = "Set the battlehorns between fights for the next one",
-		Tooltip = "Out of combat - the only time the server takes it - RSR puts on your horns the familiars you have that suit "
-			+ "the next fight. Before a pack: the most damage against it, a Trick or Tempered Release on an area counted "
-			+ "by the enemies it reaches. Before a boss - the nearest enemy you have not fought yet carries a boss icon: "
-			+ "two familiars that heal or protect you, one whose Trick heals among them, then the most damage. Once you "
-			+ "were in danger in this area, one more that heals or protects, before every fight here. At equal value "
-			+ "your familiars stay; the horn whose familiar is out stays as it is. What each horn spends One with Nature "
-			+ "on stays your setting. Changed by hand, your horns stay until the next fight ends; nothing changes while "
-			+ "the Bestiary is open.\n"
-			+ "On a Crucible board the game asks for the horns before each battle: on that screen RSR picks from your team "
-			+ "the same way for the battle about to start - the final fight counts as a boss, the pack is the battle's enemies, "
-			+ "a familiar weak spot counts the measured weakness bonus, and among equals the one with more HP left - and "
-			+ "clicks them in, one at a time. Picked by hand there, your horns stay; you start the battle.\n"
-			+ "In a fight: a pack meets the familiars that hit or stop all of it; at a boss the familiars that heal or "
-			+ "protect you are on the horns when the danger comes.\n"
-			+ "Off: RSR never changes your horns.")]
+		Tooltip = "In a fight: out of combat, RSR puts familiars suiting the next fight on your horns: most "
+			+ "damage before a pack, healers and protectors before a boss.\nOn a board's horn screen it clicks "
+			+ "them in.\nOff: RSR never changes your horns.")]
 	private bool HornsBetweenFights { get; set; } = true;
 
 	[RotationConfig(CombatType.PvE, Name = "Capture familiars you do not have yet",
-		Tooltip = "When an enemy you can befriend as a familiar, one you do not have yet and not above your level, is about to "
-			+ "fall, Capture comes first and marks it with the last weaponskill whose mark is sure to arrive before it falls: "
-			+ "as soon as waiting one more weaponskill could let it fall first - by the largest fall it has taken within "
-			+ "that time since its full health, by the largest fall any enemy in this area took within it, killing blows "
-			+ "included, or by its time to kill. Trash that falls that fast is marked with the pull, on the enemy you "
-			+ "attack anyway. No pact if it falls before the mark arrives; the lower its HP when marked, the likelier the "
-			+ "pact, so the mark comes no earlier than that. Capture shares the weaponskill timer, so it costs one "
-			+ "weaponskill per attempt, and none once you have that familiar.\n"
-			+ "Off: Capture is never used.")]
+		Tooltip = "In a fight: an enemy you can befriend and do not have yet gets Capture with the last "
+			+ "weaponskill whose mark lands before it falls.\nIt costs one weaponskill per attempt.\nOff: Capture "
+			+ "is never used.")]
 	private bool CaptureFamiliars { get; set; } = true;
 
 	// K8 of the Crucible (concept 21, A551 to A555): the board's items that keep you and your familiar alive, and its damage
 	// items.
 	[RotationConfig(CombatType.PvE, Name = "Use the board's items that keep you and your familiar alive (Crucible only)",
-		Tooltip = "On a Crucible board RSR uses, one at a time: when your HP fall below 'Use HP potions below this HP' in combat, "
-			+ "the Beast Potion or Crucible Ash that lifts you back to that line with the least, or the largest when none does "
-			+ "(the board locks normal potions); an antidote or eye drops against poison or blindness on you; a Beastmaster "
-			+ "Reraiser while no Reraise stands, the stronger first - only against a boss once Reraise was seen to go without a "
-			+ "fall; Temporal Sand out of combat while no Sandstill stands; a Beast Potion Kit against a boss while no "
-			+ "Auto-potion stands; against an announced hit on you the Tome of the Impervious (physical), the Tome of "
-			+ "Reflection (magic) or Crucible Tannin - in the final fight also while an enemy attacks you; for your familiar, when "
-			+ "it holds no more HP than the largest hit it took this fight (before its first, the largest hit a familiar took on "
-			+ "this board; before any, below 'Use HP potions below this HP'), the Beast Potion that lifts it above that with the least - never your last healing item, which stays for "
-			+ "you - and then the same protection when the hit could fell it; against the dangerous statuses the fight's enemies inflict (they take "
-			+ "control from you or end in death) the soul serum that names one, else a Beast Remedy Kit; against a hit on you "
-			+ "whose cast carries an element, the weakener of that element; a Crucible Needle for your petrified familiar; "
-			+ "against a boss a Potion of Tempered Constitution.\n"
-			+ "Off: RSR uses none of these.")]
+		Tooltip = "In a fight: on a board, RSR uses the potions, cures, reraisers and protective items that keep "
+			+ "you and your familiar alive, when needed.\nYour last healing item stays for you.\nOff: RSR uses "
+			+ "none of these.")]
 	private bool UseCrucibleSafetyItems { get; set; } = true;
 
 	[RotationConfig(CombatType.PvE, Name = "Use the board's damage items and buffs: damage on a pack once a fight, all of them in the final fight (Crucible only)",
-		Tooltip = "On a Crucible board RSR throws a fang or Celestial Sand on your target: in the final fight - the board's items "
-			+ "are lost after the run - every one, the most worth first; in any other fight one, once it hits more enemies than "
-			+ "your target. Worth is its potency times the enemies it hits, an enemy weak to its element counting the measured "
-			+ "weakness bonus more; at equal worth the one without knockback. One whose element only hits enemies still to come "
-			+ "waits for them. In the final fight it first uses on you every potion or item that grants you a status (strength, "
-			+ "magic, intensity, evasion, haste, TP, Life Siphon) while that status does not stand - a magic damage increase "
-			+ "also raises the fangs; never one that inflicts a status on you.\n"
-			+ "Off: RSR uses none of these.")]
+		Tooltip = "In a fight: on a board, a fang or Celestial Sand goes on a pack once a fight, and every "
+			+ "damage item and buff in the final fight.\nOff: RSR uses none of these.")]
 	private bool UseCrucibleDamageItems { get; set; } = true;
 
 	// K10 of the Crucible (concept 21, Campsite, A564): who rests with you; resting stays your click.
 	[RotationConfig(CombatType.PvE, Name = "Pick who rests with you at a Crucible campsite (Crucible only)",
-		Tooltip = "With the campsite window open RSR selects who rests with you; resting or leaving stays your click. A rest "
-			+ "shares its healing (alone you recover 90% of your HP, with one familiar each 45%, with two each 30%), so "
-			+ "familiars rest with you only when you still come out at full HP - never worse than resting alone. Then as many "
-			+ "as bring them the most HP, up to what the campsite allows: the familiars not fallen, not at full HP and not fed "
-			+ "(resting ends a feed) with the smallest share of their HP. RSR reads the share from the game's prompt once it "
-			+ "is open and counts with it from then on. A selection you change by hand stays for that campsite.\n"
-			+ "Off: RSR selects nobody at a campsite.")]
+		Tooltip = "In a fight: at a campsite, RSR selects the familiars that rest with you only while you still "
+			+ "come out at full HP, the most wounded first.\nResting stays your click.\nOff: RSR selects nobody.")]
 	private bool PickCampsiteRest { get; set; } = true;
 
 	// K10 of the Crucible (concept 21, Laden, A569): what to buy in a shop; buying stays your click.
 	[RotationConfig(CombatType.PvE, Name = "Recommend what to buy in a Crucible shop (Crucible only)",
-		Tooltip = "While a shop on a board is open RSR shows a window with what to buy and why, safety first, as far as your "
-			+ "tokens and slots go: a second life while you hold none; cover against each status of the board's fights that ends "
-			+ "in death; protective and healing gear, the choice that leaves you the most HP after a stretch of fights between "
-			+ "campsites ending with the heaviest - measured from your fights: the damage you took by kind, your own healing, the "
-			+ "fights between campsites; before your first fight one fight counts as a full HP bar -, then the most effective HP; "
-			+ "cover against the board's other statuses that cost safety (control, actions prevented, damage over time); healing "
-			+ "items; protective items. Never feed, never gear that inflicts a status on you, nothing for damage. A piece that "
-			+ "slows you says so. \"Buy\" in that window buys the list row by row; when the game asks, your answer decides. "
-			+ "Without the click RSR buys nothing.\n"
-			+ "Off: no window, RSR buys nothing.")]
+		Tooltip = "In a fight: nothing. In a board's shop, a window lists what to buy for safety first, as far "
+			+ "as your tokens go; \"Buy\" buys it.\nOff: no window, RSR buys nothing.")]
 	private bool RecommendCrucibleShop { get; set; } = true;
 
 	// K13 (concept 21, "K13 – Schatz", A578): his report of 05.11.2026, no recommendation at a treasure.
 	[RotationConfig(CombatType.PvE, Name = "Recommend what to take from a Crucible treasure",
-		Tooltip = "While a treasure on a Crucible board is open, a window names the offer to take and why, in the order the "
-			+ "shop recommendation uses with no price: a second life while none is held; cover against a status of the board's "
-			+ "fights that ends in death; the gear that leaves you the most HP after a stretch of fights, then the most effective "
-			+ "HP; cover against the board's other statuses that cost safety; healing items; protective items. When none adds "
-			+ "safety, a damage item or a buff (spent in the final fight), else gear that does not harm you; never gear that "
-			+ "inflicts a status on you. The gear you hold is what the last shop on the board showed, and what RSR took. \"Take\" "
-			+ "in that window takes it; with a Thief's Knife the window stays open for the second pick.\n"
-			+ "In a fight: nothing - a treasure is opened between fights.\n"
-			+ "Off: no window, RSR takes nothing.")]
+		Tooltip = "In a fight: nothing. At a board's treasure, a window names the offer that adds the most "
+			+ "safety, else damage; \"Take\" takes it.\nOff: no window, RSR takes nothing.")]
 	private bool RecommendCrucibleTreasure { get; set; } = true;
 
 	// K10 "Weg" (concept 21, A632): his rule of 06.11.2026 - route hints for the next step, from the run's progress.
 	[RotationConfig(CombatType.PvE, Name = "Recommend which way to take on a Crucible board",
-		Tooltip = "Between fights on a Crucible board, at the next fork a window shows each way: where the fights up to the "
-			+ "final one, included, leave you and the healers of the final fight's plan - each fight with what RSR measured "
-			+ "it to cost you, your healing items and what a campsite restores; whether that is safe (you live through "
-			+ "every fight on it with the items you hold, and the weakest final healer outlasts one use or is full); and "
-			+ "recommends one - among safe ways the one that scores more points, then the one with more items, else the one "
-			+ "that leaves you the most HP. Computed again on every space.\n"
-			+ "In a fight: nothing.\n"
-			+ "Off: no window.")]
+		Tooltip = "In a fight: nothing. Between fights, at each fork, a window shows where every way leaves you "
+			+ "and recommends the safe one that scores most.\nOff: no window.")]
 	private bool RecommendCrucibleRoute { get; set; } = true;
 
 	// K7, "Ziel des Laufs" (concept 21, A804, A806): his proposal of 14.11.2026 - three goals, chosen in the team window; the
 	// team follows them, the board plays safe, then for the highest score, under each. It replaces "Prefer familiars that lag
 	// behind in rank" (A579, A796), whose "off" carries over as Score.
 	[RotationConfig(CombatType.PvE, Name = "Goal of a Crucible run (also the three buttons of the team window)",
-		Tooltip = "The goals differ in the team alone. Every goal first takes two familiars that heal or protect for the boss, while "
-			+ "any is left, and an interrupter where enemies cast interruptibly. A team is endangered when the familiars the "
-			+ "horn choice sends in do not carry the losses measured on this board at their rank with one in reserve.\n"
-			+ "Level: every place to a familiar below the board's cap (its sync rank), the lowest in true rank first, in turns - "
-			+ "every familiar in the team earns experience, on a horn or not. With too few below the cap, the lowest at or above "
-			+ "it fill while the team is endangered (unmeasured counts as endangered); a full team below the cap that is "
-			+ "measured endangered takes, for its weakest place, the lowest that fights stronger - below the cap first; a place "
-			+ "that heals, protects or interrupts only goes to one that does the same. "
-			+ "Once none lags behind, as Score.\n"
-			+ "Safe win: the full team, the lowest in true rank, as long as passing is safe; while the team is endangered or "
-			+ "unmeasured, the lowest outside that fights stronger takes its weakest place, a role only for the same role.\n"
-			+ "Score: the strongest, as few as are not endangered (unmeasured: the full team); a team of one kin where it holds "
-			+ "the same and scores more.\n"
-			+ "On the board, under every goal: safe first, then the highest score - an item, purchase, rest or feed that would "
-			+ "cost a bonus goes only where the way is not safe without it.\n"
-			+ "In a fight: a familiar below the recommended rank goes on a horn only when fewer others live than horns.")]
+		Tooltip = "In a fight: Level gives familiars below the board's cap the places, Safe win the full team "
+			+ "that passes safely, Score the strongest few that are safe.\nUnder every goal, safety comes before "
+			+ "points.")]
 	private CrucibleGoal CrucibleGoal { get; set; } = CrucibleGoal.Level;
 
 	// A804: "Prefer familiars that lag behind in rank" set off carries over as the goal Score, once.

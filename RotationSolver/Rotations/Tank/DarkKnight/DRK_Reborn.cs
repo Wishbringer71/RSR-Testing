@@ -20,11 +20,8 @@ public sealed partial class DRK_Reborn : DarkKnightRotation
 	private float BlackLanternRatio { get; set; } = 0.5f;
 
 	[RotationConfig(CombatType.PvE, Name = "Use The Blackest Night on another party member a tankbuster is aimed at",
-		Tooltip = "The Blackest Night goes on the member a tankbuster is aimed at - a tankbuster marker on them, or an "
-			+ "enemy casting a tankbuster at them -, most often the other tank.\n"
-			+ "In a fight: the barrier takes a quarter of their maximum HP off the tankbuster. A tankbuster nearly "
-			+ "always breaks it, and a broken barrier returns its 3000 MP as Dark Arts. Your own setting for The "
-			+ "Blackest Night on yourself goes first.")]
+		Tooltip = "In a fight: The Blackest Night goes on the member a tankbuster is aimed at, mostly the other "
+			+ "tank; the hit breaks it and returns its MP.\nYour own barrier goes first.")]
 	public bool BlackestNightOnTankbusterTarget { get; set; } = true;
 
 	[RotationConfig(CombatType.PvE, Name = "Use Oblation on lowest HP party member during AOE scenarios")]
@@ -38,67 +35,35 @@ public sealed partial class DRK_Reborn : DarkKnightRotation
 	private float OblationLanternRatio { get; set; } = 0.5f;
 
 	[RotationConfig(CombatType.PvE, Name = "When to use The Blackest Night on yourself",
-		Tooltip = "The Blackest Night costs 3000 MP and only pays it back as Dark Arts if the barrier "
-			+ "is absorbed in full. The trigger that opens the defensive path is much weaker than that "
-			+ "- two enemies in melee range, or any uninterruptible cast aimed at you - so on the "
-			+ "default setting the barrier often goes up where nothing is about to spend it.\n"
-			+ "Whenever single-target defences open: the old behaviour, barrier on every opening.\n"
-			+ "Tankbuster or a big pull with no other mitigation: only where the hit is actually large, "
-			+ "or where the stream is unthrottled and will spend the barrier. A big mitigation running, "
-			+ "a stun chain, a slowed pack or a spent Reprisal all block it, because each of them drops "
-			+ "the stream below the rate that spends the barrier.\n"
-			+ "As above, plus below the health threshold: adds an emergency case that deliberately "
-			+ "ignores those conditions.\n"
-			+ "In a fight: on the narrower options you go into small and already-mitigated pulls "
-			+ "without the barrier and keep the 3000 MP, and the barrier is there with its Dark Arts "
-			+ "return for the hits that would otherwise land unabsorbed.\n"
-			+ "The two values below belong to this setting: the enemy count applies to both of the "
-			+ "narrower options, the health threshold only to the last one.")]
+		Tooltip = "In a fight: the narrower options keep The Blackest Night for tankbusters and big unmitigated "
+			+ "pulls that break it, so its 3000 MP return as Dark Arts.\nThe first option puts it up on every "
+			+ "defensive opening.")]
 	public BlackestNightStrategy BlackestNightUsage { get; set; } = BlackestNightStrategy.TankbusterHeavyPullOrLowHealth;
 
 	[Range(1, 8, ConfigUnitType.None, 1)]
 	[RotationConfig(CombatType.PvE, Name = "Hostiles that make a pull big enough for The Blackest Night",
-		Tooltip = "How many enemies have to be in range before a pull counts as big enough to spend the "
-			+ "barrier on. Applies to both of the narrower options of the setting above, and to neither "
-			+ "on the default one.\n"
-			+ "In a fight: the barrier is worth its 3000 MP when enough enemies are hitting you to "
-			+ "absorb it in full within its duration. Lower: the barrier goes up on small groups that "
-			+ "cannot spend it, and the MP is gone without the Dark Arts return. Higher: you tank a "
-			+ "mid-sized pack without it, relying on Rampart and Reprisal instead.")]
+		Tooltip = "In a fight: with the narrower Blackest Night options, a pull counts as big enough for the "
+			+ "barrier from this many enemies in range.\nLower: small groups get it without breaking it. Higher: "
+			+ "mid-sized packs go without it.")]
 	private int BlackestNightMinHostiles { get; set; } = 4;
 
 	[RotationConfig(CombatType.PvE, Name = "Use Arm's Length on a pull for its Slow",
-		Tooltip = "Arm's Length is used on a group pull for its Slow, not only as knockback "
-			+ "protection - which was the only way the plugin ever used it.\n"
-			+ "In a fight: the Slow +20% lands on every enemy that strikes you and delays "
-			+ "auto-attacks as well as casts, so in a standing pack it throttles the whole incoming "
-			+ "stream for fifteen seconds. It costs nothing but its own cooldown. Bosses do not count "
-			+ "towards the pull - Arm's Length does not soften the hit that strikes you, so a boss's "
-			+ "tankbuster gains nothing from it.\n"
-			+ "Not while BossModReborn announces a knockback that lands after the barrier has run out "
-			+ "and before Arm's Length is ready again - the action is kept for it.\n"
-			+ "It also feeds the decision above: a pull already throttled by this Slow no longer counts "
-			+ "as unmitigated, so The Blackest Night is not spent into a stream that has been thinned.")]
+		Tooltip = "In a fight: on a pack attacking you, bosses not counted, Arm's Length goes for its Slow, "
+			+ "delaying every attacker's swings and casts for fifteen seconds.\nNot when BossModReborn announces "
+			+ "a knockback it must be kept for.")]
 	private bool UseArmsLengthOnPull { get; set; } = true;
 
 	[RotationConfig(CombatType.PvE, Name = "In a pull, use The Blackest Night only once the damage you take would break it",
-		Tooltip = "The barrier pays its 3000 MP back as Dark Arts only when it is absorbed in full within its "
-			+ "duration - its effect text gives the share of your maximum HP and the seconds. In a pull the barrier "
-			+ "now also waits until the damage you took over that many seconds, after the mitigation that stood, "
-			+ "reached that share. Tankbusters and the low-health case are not affected.\n"
-			+ "In a fight: a pack that hits too softly to break the barrier no longer gets it, and keeps the MP for "
-			+ "Edge of Shadow; a pack that does hit that hard gets it as before, a few seconds into the pull.")]
+		Tooltip = "In a fight: in a pull, The Blackest Night waits until the damage you take would break it "
+			+ "within its duration, keeping the MP against soft packs.\nTankbusters and low health are not "
+			+ "affected.")]
 	private bool BlackestNightWaitsForStream { get; set; } = true;
 
 	[Range(0, 1, ConfigUnitType.Percent)]
 	[RotationConfig(CombatType.PvE, Name = "Health threshold for The Blackest Night",
-		Tooltip = "Only used by the last option of the Blackest Night setting above: below this share "
-			+ "of your health the barrier goes up as an emergency, skipping every condition about pull "
-			+ "size and running mitigation.\n"
-			+ "In a fight: this is the case where the barrier is not an investment but a stopgap - it "
-			+ "absorbs the next hits whether or not the MP is ever repaid. Higher: it fires earlier and "
-			+ "more often, and the Dark Arts return becomes less likely. Lower: it is kept for genuine "
-			+ "emergencies, at the risk of arriving after the hit that mattered.")]
+		Tooltip = "In a fight: with the last Blackest Night option, the barrier goes up as an emergency below "
+			+ "this share of your health, whatever the pull.\nLower: only in real emergencies. Higher: earlier "
+			+ "and more often, rarely paying back its MP.")]
 	private float BlackestNightHealthRatio { get; set; } = 0.6f;
 
 	[RotationConfig(CombatType.PvE, Name = "Opener action")]

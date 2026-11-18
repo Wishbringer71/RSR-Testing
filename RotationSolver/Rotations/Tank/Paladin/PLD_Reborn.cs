@@ -7,26 +7,17 @@ public sealed class PLD_Reborn : PaladinRotation
 {
 	#region Config Options
 	[RotationConfig(CombatType.PvE, Name = "Use Arm's Length on a pull for its Slow",
-		Tooltip = "Arm's Length is used on a group pull for its Slow, not only as knockback "
-			+ "protection.\n"
-			+ "In a fight: the Slow +20% lands on every enemy that strikes you and delays "
-			+ "auto-attacks as well as casts, so in a standing pack it throttles the whole incoming "
-			+ "stream for fifteen seconds. It costs nothing but its own cooldown. A pull is as many "
-			+ "enemies in reach as the global \"Use tank mitigation when this many enemies target you\" for defensive abilities, bosses not "
-			+ "counted - Arm's Length does not soften the hit that strikes you, so a boss's tankbuster "
-			+ "gains nothing from it; a pack "
-			+ "that is already slowed is left alone.\n"
-			+ "Not while BossModReborn announces a knockback that lands after the barrier has run out "
-			+ "and before Arm's Length is ready again - the action is kept for it.")]
+		Tooltip = "In a fight: on a pack attacking you, bosses not counted, Arm's Length goes for its Slow, "
+			+ "delaying every attacker's swings and casts for fifteen seconds.\nNot when BossModReborn announces "
+			+ "a knockback it must be kept for.")]
 	public bool UseArmsLengthOnPull { get; set; } = true;
 
 	protected override bool HasOwnArmsLengthPullRule => true;
 
 
 	[RotationConfig(CombatType.PvE, Name = "Use GCDs to heal. (Ignored if there are no healers alive in party, or while a party member is about to fall)",
-		Tooltip = "Off: your GCD heals go only when no healer is alive, or while a party member is in the critical class, "
-		+ "about to fall by the time a heal lands. On: whenever the healing thresholds call for them.\n"
-		+ "In a fight: off, you keep attacking while the healers keep up; a member about to fall still gets your heal.")]
+		Tooltip = "In a fight: on, your GCD heals follow the healing thresholds. Off, they go only when no "
+			+ "healer is alive.\nA member about to fall still gets your heal either way.")]
 	public bool GCDHeal { get; set; } = false;
 
 	[RotationConfig(CombatType.PvE, Name = "Use Divine Veil during countdown")]

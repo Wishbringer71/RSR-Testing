@@ -7,9 +7,8 @@ public sealed partial class RDM_Reborn : RedMageRotation
 {
 	#region Config Options
 	[RotationConfig(CombatType.PvE, Name = "Use GCDs to heal. (Ignored if there are no healers alive in party, or while a party member is about to fall)",
-		Tooltip = "Off: your GCD heals go only when no healer is alive, or while a party member is in the critical class, "
-		+ "about to fall by the time a heal lands. On: whenever the healing thresholds call for them.\n"
-		+ "In a fight: off, you keep attacking while the healers keep up; a member about to fall still gets your heal.")]
+		Tooltip = "In a fight: on, your GCD heals follow the healing thresholds. Off, they go only when no "
+			+ "healer is alive.\nA member about to fall still gets your heal either way.")]
 	public bool GCDHeal { get; set; } = false;
 
 	[RotationConfig(CombatType.PvE, Name = "Attempt to pool Black and White Mana for burst (Experimental)")]
@@ -31,12 +30,9 @@ public sealed partial class RDM_Reborn : RedMageRotation
 
 	// The owner's rule (03.11.2026): Swiftcast stays ready for the raise unless the player chooses otherwise (A503).
 	[RotationConfig(CombatType.PvE, Name = "Use Swiftcast for damage",
-		Tooltip = "Off: while Verraise is learned and \"Raise with Swiftcast or Dualcast\" is on, Swiftcast stays ready for "
-			+ "Verraise; below that level or with that setting off it goes to damage either way. On: Swiftcast also turns "
-			+ "a hard-cast Jolt into an instant Verthunder or Veraero.\n"
-			+ "In a fight: off, Swiftcast is there when someone dies, and Verraise needs no cast, moving or not. On, a "
-			+ "little more damage of your own, and Verraise comes with Dualcast: at once or one GCD later standing, not "
-			+ "while you keep moving.")]
+		Tooltip = "In a fight: on, Swiftcast also turns a hard-cast Jolt into an instant Verthunder or Veraero. "
+			+ "Off, it stays ready for Verraise while that is learned.\nOff costs a little damage; on makes "
+			+ "Verraise wait for Dualcast.")]
 	public bool SwiftcastDamage { get; set; } = false;
 
 	[RotationConfig(CombatType.PvE, Name = "Use Vercure for Dualcast when out of combat.")]

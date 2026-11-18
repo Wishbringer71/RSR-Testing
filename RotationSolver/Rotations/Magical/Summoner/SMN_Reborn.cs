@@ -19,9 +19,8 @@ public sealed partial class SMN_Reborn : SummonerRotation
 	}
 
 	[RotationConfig(CombatType.PvE, Name = "Use GCDs to heal. (Ignored if there are no healers alive in party, or while a party member is about to fall)",
-		Tooltip = "Off: your GCD heals go only when no healer is alive, or while a party member is in the critical class, "
-		+ "about to fall by the time a heal lands. On: whenever the healing thresholds call for them.\n"
-		+ "In a fight: off, you keep attacking while the healers keep up; a member about to fall still gets your heal.")]
+		Tooltip = "In a fight: on, your GCD heals follow the healing thresholds. Off, they go only when no "
+			+ "healer is alive.\nA member about to fall still gets your heal either way.")]
 	public bool GCDHeal { get; set; } = false;
 
 	[RotationConfig(CombatType.PvE, Name = "Use Crimson Cyclone at any range, regardless of saftey use with caution (Enabling this ignores the below distance setting).")]
@@ -53,22 +52,14 @@ public sealed partial class SMN_Reborn : SummonerRotation
 	public SummonOrderType SummonOrder { get; set; } = SummonOrderType.TopazEmeraldRuby;
 
 	[RotationConfig(CombatType.PvE, Name = "Prefer Titan while moving",
-		Tooltip = "While you are moving, Titan is summoned ahead of the configured order.\n"
-			+ "In a fight: Topaz Rite and its follow-ups are instant-cast, so a Titan phase runs at full "
-			+ "output while you are dodging. Garuda and Ifrit need you standing still - taken during "
-			+ "movement, their casts are interrupted or simply do not go out, and the phase loses GCDs.\n"
-			+ "Titan is only brought forward: whenever Titan is not available at that moment, your "
-			+ "configured summon order applies unchanged.")]
+		Tooltip = "In a fight: while you move, Titan is summoned first, since his casts are instant and Garuda's "
+			+ "and Ifrit's need you standing.\nWhen Titan is not available, your summon order applies unchanged.")]
 	public bool PreferTitanWhileMoving { get; set; } = true;
 
 	[RotationConfig(CombatType.PvE, Name = "Summon Ifrit first while Crimson Cyclone can follow",
-		Tooltip = "While you stand within your Crimson Cyclone distance, Ifrit is summoned ahead of the configured order.\n"
-			+ "In a fight: Ifrit's Favor ends with the next summon. As the last primal, Ifrit often lost Crimson Cyclone "
-			+ "and Crimson Strike to the demi-summon; summoned while the Cyclone may go, both go out at once. Garuda then "
-			+ "comes last, where Slipstream is lost to the demi-summon a little more often.\n"
-			+ "Not while Searing Light runs (Titan's instant casts keep the weaves free), not while you move unless "
-			+ "\"Use Crimson Cyclone when moving\" is on, and not with \"Use Crimson Cyclone at any range\" on. The "
-			+ "Cyclone never goes beyond your distance setting.")]
+		Tooltip = "In a fight: within your Crimson Cyclone distance, Ifrit is summoned first, so Crimson Cyclone "
+			+ "and Crimson Strike both go before the demi-summon.\nNot under Searing Light, nor while you move "
+			+ "unless Cyclone may then.")]
 	public bool PreferIfritWhileCycloneCanFollow { get; set; } = true;
 
 	[RotationConfig(CombatType.PvE, Name = "Use Physick above level 30")]

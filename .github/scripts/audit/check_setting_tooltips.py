@@ -43,6 +43,11 @@ from pathlib import Path
 
 CONFIGS = 'RotationSolver/Configuration/Configs.CombatAndTarget.cs'
 
+
+def is_configs(path):
+    """Configs.cs and every part file of it: a setting moved into Configs.<Topic>.cs is still a setting (A890)."""
+    return path.startswith('RotationSolver/Configuration/Configs') and path.endswith('.cs') and '/' not in path[len('RotationSolver/Configuration/'):]
+
 # The member may be public, private, internal or protected. Requiring `public` is not a harmless
 # narrowing: DRK_Reborn carries RotationConfig on a private float, and a pattern that skips it
 # attaches that attribute to the NEXT public member, reporting one setting's label under another
@@ -157,7 +162,7 @@ def collect(ref=None):
 
     for path in paths:
         text = read_at(path, ref) if ref else Path(path).read_text(encoding='utf-8')
-        if path == CONFIGS:
+        if is_configs(path):
             for prop, value in ui_settings(text).items():
                 out[(path, prop)] = value
         if '[RotationConfig(' in text:
@@ -184,10 +189,38 @@ def judge(label, explanation):
     label_words = set(re.findall(r'\w+', label.lower()))
     if label_words and set(tail) <= label_words:
         return 'the explanation only restates the label'
+    return too_long(explanation)
+
+
+# A891 (concept 03, "Inhalt der Tooltips"): Windows UX Guide, "Tooltips and Infotips" - "Be concise. Use 25 words
+# or less", "Format infotips to make their content easier to read and scan". At most three lines - what RSR does
+# in a fight, the one limit to know, what Off or a value does -, each at most 25 words besides its marker.
+MAX_LINES = 3
+MAX_WORDS = 25
+LINE_MARK = re.compile(r'^\s*(?:In a fight|Off|On|Lower|Higher|Raising|Lowering|0)\s*:\s*', re.IGNORECASE)
+
+
+def too_long(explanation):
+    lines = [line for line in explanation.split('\n') if line.strip()]
+    if len(lines) > MAX_LINES:
+        return f'{len(lines)} lines - at most {MAX_LINES}: what changes in a fight, the one limit, what Off does'
+    for line in lines:
+        words = len(LINE_MARK.sub('', line).split())
+        if words > MAX_WORDS:
+            return f'a line of {words} words - at most {MAX_WORDS} (Windows UX Guide, infotips): "{line[:50]}..."'
     return None
 
 
 def self_test():
+    short = 'In a fight: RSR does one thing.\nNot while you are in danger.\nOff: it does not.'
+    assert too_long(short) is None, 'three short lines pass'
+    assert too_long(short + '\nA fourth line.') is not None, 'a fourth line is caught'
+    assert too_long('In a fight: ' + ' '.join(['word'] * 25)) is None, 'twenty-five words besides the marker pass'
+    assert too_long('In a fight: ' + ' '.join(['word'] * 26)) is not None, 'twenty-six words are caught'
+    assert is_configs('RotationSolver/Configuration/Configs.cs') and is_configs('RotationSolver/Configuration/Configs.DutiesAndPvP.cs'), \
+        'every part file of Configs is read'
+    assert not is_configs('RotationSolver/Configuration/OtherConfiguration.cs') and not is_configs('RotationSolver/Configuration/Sub/Configs.cs'), \
+        'a neighbour and a nested file are not Configs'
     good_rot = '''
         [Range(2, 8, ConfigUnitType.None, 1)]
         [RotationConfig(CombatType.PvE, Name = "Slowed enemies before holding",

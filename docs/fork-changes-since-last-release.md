@@ -18,3 +18,9 @@ What this release changes in the fight. For the whole distance from upstream, se
   and each combo is weighed with the damage your own combos dealt. Trick waits with the axes outside a chain, so it pairs
   with the finisher. In your runs no finisher came at all. Setting: "Hold the axes for a finisher on a pack while it is
   worth more", on by default. The trace writes "bst finisher: axes held ...".
+
+## Settings
+
+- **Shorter explanations.** Every setting this fork adds now explains itself in at most three short lines: what RSR does
+  in a fight, the one limit to know, and what Off or a value does. They were up to 2,500 characters long; the full
+  reasoning stays in the documentation.

@@ -27,11 +27,14 @@ public sealed class BLU_Reborn : BlueMageRotation
 	public bool LowChance { get; set; } = false;
 
 	[RotationConfig(CombatType.PvE, Name = "Moon Flute only when it is safe: not as tank or healer, no member in danger, no raidwide or tankbuster on you announced within its window",
-		Tooltip = "In a fight: Moon Flute goes when the burst it lifts gains more than Waning Nocturne costs - Waning allows no action at all, no heal, no mitigation, no raise. On: it also waits while you are under tank or healer mimicry, while a party member is in danger or an announced area cast would put one there, while your own health, carried forward over the window, would fall that low, and while BossModReborn announces a raidwide or a tankbuster on you within it. Without BossModReborn's timeline only what is cast or measured counts. Off: only the value decides.")]
+		Tooltip = "In a fight: Moon Flute also waits under tank or healer mimicry, while a member is or would be "
+			+ "in danger, and before an announced raidwide or tankbuster.\nOff: only its damage value decides.")]
 	public bool MoonFluteOnlyWhenSafe { get; set; } = true;
 
 	[RotationConfig(CombatType.PvE, Name = "Improve the Blue Mage set from your learned spells",
-		Tooltip = "In a fight: RSR casts only spells in your active set, so with this on more of your learned spells come into play. Out of combat, without a target: RSR adds Sonic Boom where it is missing, the partners of the spell chains one part of which is in your set, and damage spells with a recast from recast groups your set lacks. It takes only free slots and fillers it does not cast at your level - damage cooldowns, heals, defence, movement, mimicry, raises, interrupts and every spell with an additional effect stay, and a slot is changed only while its spell is ready. Once you change your set yourself, or inside the Masked Carnivale, RSR leaves it alone for the rest of the session. Your saved sets and hotbars stay as they are. Off: your set stays as you made it.")]
+		Tooltip = "In a fight: out of combat, RSR fills free slots and unused fillers of your active set with "
+			+ "learned spells it can cast, like Sonic Boom.\nOnce you change the set yourself, RSR leaves it "
+			+ "alone.\nOff: your set stays as you made it.")]
 	public bool ImproveBlueMageSet { get; set; } = true;
 
 	[Range(0, 1, ConfigUnitType.Percent)]

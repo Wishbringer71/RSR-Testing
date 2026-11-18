@@ -7,17 +7,9 @@ public sealed partial class GNB_Reborn : GunbreakerRotation
 {
 	#region Config Options
 	[RotationConfig(CombatType.PvE, Name = "Use Arm's Length on a pull for its Slow",
-		Tooltip = "Arm's Length is used on a group pull for its Slow, not only as knockback "
-			+ "protection.\n"
-			+ "In a fight: the Slow +20% lands on every enemy that strikes you and delays "
-			+ "auto-attacks as well as casts, so in a standing pack it throttles the whole incoming "
-			+ "stream for fifteen seconds. It costs nothing but its own cooldown. A pull is as many "
-			+ "enemies in reach as the global \"Use tank mitigation when this many enemies target you\" for defensive abilities, bosses not "
-			+ "counted - Arm's Length does not soften the hit that strikes you, so a boss's tankbuster "
-			+ "gains nothing from it; a pack "
-			+ "that is already slowed is left alone.\n"
-			+ "Not while BossModReborn announces a knockback that lands after the barrier has run out "
-			+ "and before Arm's Length is ready again - the action is kept for it.")]
+		Tooltip = "In a fight: on a pack attacking you, bosses not counted, Arm's Length goes for its Slow, "
+			+ "delaying every attacker's swings and casts for fifteen seconds.\nNot when BossModReborn announces "
+			+ "a knockback it must be kept for.")]
 	public bool UseArmsLengthOnPull { get; set; } = true;
 
 	[RotationConfig(CombatType.PvE, Name = "How to use Aurora")]

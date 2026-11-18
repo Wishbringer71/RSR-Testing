@@ -17,7 +17,9 @@ internal partial class Configs
 	private static readonly bool _bmrSafetyCheckIntercept = false;
 
 	[ConditionBool, UI("Intercept your action presses",
-	Description = "Actions you press are queued, and RSR uses them at the right moment in its rotation.\nIn a fight: a job action you press goes at the next fitting moment, in PvE and PvP; in PvP Guard, Purify, Recuperate, the Elixir and Sprint go at once, as pressed.",
+	Description = "In a fight: a job action you press goes at the next fitting moment of the rotation, in PvE and "
+		+ "PvP.\nIn PvP, Guard, Purify, Recuperate, the Elixir and Sprint go at once.\nOff: pressed actions go as "
+		+ "the game takes them.",
 	Filter = AutoIntercept)]
 	private static readonly bool _interceptAction3 = true;
 
@@ -106,10 +108,9 @@ internal partial class Configs
 	private static readonly bool _autoOffWhenDead = true;
 
 	[ConditionBool, UI("Turn back on when you are raised in combat",
-		Description = "When \"Turn off when you die\" turned RSR off in a fight and you are raised while it goes on, RSR "
-			+ "comes back on as it was - Auto, Manual or targeting only. Not after you switched it yourself, changed zones "
-			+ "or the fight ended. AutoDuty and other plugins that set the state keep it.\nIn a fight: you act again as soon "
-			+ "as you stand up, instead of standing idle until you notice.",
+		Description = "In a fight: when \"Turn off when you die\" turned RSR off, it comes back on as it was once you "
+			+ "are raised.\nNot after you switched it yourself, changed zones or the fight ended.\nOff: RSR stays "
+			+ "off until you turn it on.",
 		Parent = nameof(AutoOffWhenDead))]
 	private static readonly bool _autoOnWhenRaised = true;
 
@@ -160,32 +161,33 @@ internal partial class Configs
 	public bool PosImprovisation { get; set; } = true;
 
 	[UI("", Action = ActionID.CollectiveUnconsciousPvE,
-		Description = "Holds you still while Collective Unconscious runs, so a step does not end it - another action still does. It lets go when danger reaches your spot before the channel ends - BossMod forbids the spot, or RSR sees a hit only a "
-		+ "step avoids. BossMod's AI walking only for position does not end it.\nIn a fight: the ring keeps renewing its regen on the party standing in it instead of breaking at BossMod's first positioning step. Its damage reduction stays either way.",
+		Description = "In a fight: you stand still while Collective Unconscious runs, so its ring keeps renewing the "
+			+ "regen on the party in it.\nDanger on your spot lets you go.",
 		Parent = nameof(PoslockCasting))]
 	public bool PosCollectiveUnconscious { get; set; } = true;
 
 	[UI("", Action = ActionID.MeditatePvE,
-		Description = "Holds you still while Meditate runs, so a step does not end it - but only against BossMod's AI, and only while BossMod's timeline shows the pause lasting longer than the AI's walk to its destination. "
-		+ "Your own movement always ends it, and without the AI it does not hold. It lets go when danger reaches your spot.\nIn a fight: the Kenki Gauge keeps filling through a pause, and the Samurai still arrives when the fight goes on.",
+		Description = "In a fight: you stand still for Meditate against BossMod's AI walking while the pause "
+			+ "outlasts the walk, so the Kenki Gauge keeps filling.\nYour own movement always ends it; danger "
+			+ "lets you go.",
 		Parent = nameof(PoslockCasting))]
 	public bool PosMeditate { get; set; } = true;
 
 	[UI("", Action = ActionID.PhantomFlurryPvE,
-		Description = "Holds you still while Phantom Flurry runs, so a step does not end it - another action still does. It lets go when danger reaches your spot before the channel ends - BossMod forbids the spot, or RSR sees a hit only a "
-		+ "step avoids. BossMod's AI walking only for position does not end it.\nIn a fight: the flurry keeps hitting up to its finishing blow instead of breaking at BossMod's first positioning step.",
+		Description = "In a fight: you stand still while Phantom Flurry runs, so it keeps hitting up to its "
+			+ "finishing blow.\nDanger on your spot lets you go; another action still ends it.",
 		Parent = nameof(PoslockCasting))]
 	public bool PosPhantomFlurry { get; set; } = true;
 
 	[UI("", Action = ActionID.ApokalypsisPvE,
-		Description = "Holds you still while Apokalypsis runs, so a step does not end it - another action still does. It lets go when danger reaches your spot before the channel ends - BossMod forbids the spot, or RSR sees a hit only a "
-		+ "step avoids. BossMod's AI walking only for position does not end it.\nIn a fight: the beam keeps hitting the enemies before you instead of breaking at BossMod's first positioning step.",
+		Description = "In a fight: you stand still while Apokalypsis runs, so a positioning step does not end its "
+			+ "beam early.\nDanger on your spot lets you go; another action still ends it.",
 		Parent = nameof(PoslockCasting))]
 	public bool PosApokalypsis { get; set; } = true;
 
 	[UI("", Action = ActionID.ChelonianGatePvE,
-		Description = "Holds you still while Chelonian Gate runs, so a step does not end it - another action still does. It lets go when danger reaches your spot before the channel ends - BossMod forbids the spot, or RSR sees a hit only a "
-		+ "step avoids. BossMod's AI walking only for position does not end it.\nIn a fight: the gate keeps your damage taken lower and can still turn into Auspicious Trance instead of breaking at BossMod's first positioning step.",
+		Description = "In a fight: you stand still while Chelonian Gate runs, so it keeps lowering your damage taken "
+			+ "and can turn into Auspicious Trance.\nDanger on your spot lets you go.",
 		Parent = nameof(PoslockCasting))]
 	public bool PosChelonianGate { get; set; } = true;
 
@@ -216,10 +218,9 @@ internal partial class Configs
 
 	// Damage against healing and mana is each player's own choice; off is the owner's rule, safety first (A502).
 	[JobConfig, UI("Hold HP and MP potions for the tincture",
-	Description = "On: where this job drinks tinctures (Tincture usage) and one is in your inventory, HP and MP potions "
-		+ "wait, because each one blocks the next tincture for its recast. An HP potion against a tankbuster on you still goes.\n"
-		+ "In a fight: off, a potion goes at its threshold, even if the tincture then misses its burst. On, the tincture "
-		+ "comes in its burst, and below the threshold you rely on your healers.",
+	Description = "In a fight: where your job drinks tinctures and holds one, HP and MP potions wait, so their "
+		+ "recast does not keep the tincture from its burst.\nAn HP potion against a tankbuster on you still "
+		+ "goes.\nOff: potions go at their threshold.",
 	Filter = AutoActionUsage, Section = 5, PvPFilter = JobFilterType.NoJob)]
 	private static readonly bool _holdPotionsForTincture = false;
 
@@ -260,31 +261,20 @@ internal partial class Configs
 	private static readonly bool _usePhoenixDownHealerLogic = true;
 
 	[ConditionBool, UI("Use the deep dungeon's pomanders against bosses and in danger when alone",
-	Description = "In a fight: alone in a deep dungeon, every job uses against a boss Steel, Strength and Haste while they are held and "
-		+ "not active, so the boss hits less and falls sooner - before the pull once the boss stands in sight, so their lock costs "
-		+ "no attack in the fight; when you are about to die, Raising while it is not active, so the fall does not end the run, "
-		+ "then Witching on an enemy that attacks you within its radius. Never in a party, since the inventory is shared. "
-		+ "Floor-wide and map pomanders stay with you.",
+	Description = "In a fight: alone in a deep dungeon, Steel, Strength and Haste go against a boss, and Raising, "
+		+ "then Witching, when you are about to die.\nNever in a party, where the inventory is shared.",
 	Filter = AutoActionUsage, Section = 5)]
 	private static readonly bool _useDeepDungeonPomanders = true;
 
 	[ConditionBool, UI("Use the deep dungeon's magicite, demiclones and incense against bosses and in danger when alone",
-	Description = "In a fight: alone in a deep dungeon, every job uses when you are about to die a stone that kills the floor's "
-		+ "enemies and makes you invulnerable for 10 s (Inferno, Crag or Vortex Magicite; Poisonfruit Incense off a boss floor), so "
-		+ "the fall does not end the run; against a boss in combat Elder Magicite or a demiclone (Unei, Onion Knight, Doga); against "
-		+ "a boss Barkbalm Incense, before the pull once the boss stands in sight, so you enter the fight with double HP. Never "
-		+ "Mazeroot, never in a party, after the pomanders. Which stone a slot holds is read from the dungeon's status data, "
-		+ "else from the sheets; a slot neither names is left alone.",
+	Description = "In a fight: alone in a deep dungeon, a magicite or incense that clears the floor saves you from "
+		+ "dying; Elder Magicite, demiclones and Barkbalm go against bosses.\nNever in a party.",
 	Filter = AutoActionUsage, Section = 5)]
 	private static readonly bool _useDeepDungeonStones = true;
 
 	[ConditionBool, UI("Use the Limit Break when no other player is in the party",
-	Description = "In a fight: with only NPC companions (Duty Support, Trust), you use the job's Limit Break of the full bar, so the "
-		+ "bar no longer stands full for the rest of the duty. A damage dealer uses it while no announced hit on you lands within "
-		+ "its cast and animation lock; a tank against an announced hit on the party or on him, or once the pull rule calls for "
-		+ "defence; a healer when more than one member is about to die, or at level 3 to raise the dead, after any instant "
-		+ "emergency heal. Never while BossMod would have to move you within its cast and lock, nor while a tank or damage "
-		+ "dealer is about to die. With another player in the party the bar stays theirs too.",
+	Description = "In a fight: with only NPC companions, you use your full Limit Break: a damage dealer when safe, a "
+		+ "tank against big hits, a healer when several die.\nWith another player the bar stays theirs too.",
 	Filter = AutoActionUsage, Section = 5)]
 	private static readonly bool _useLimitBreakWhenAlone = true;
 
@@ -353,12 +343,9 @@ internal partial class Configs
 	private static readonly bool _useHealWhenNotAHealer = true;
 
 	[ConditionBool, UI("Heal and protect yourself while the raise protection lasts",
-		Description = "After a raise you are invulnerable to most damage for 5 s, until you begin any action. When an enemy "
-			+ "cast at you or reaching you lands only after that, or a party member is about to die, RSR heals and protects "
-			+ "during those seconds - heals, defences, an HP potion; no damage, no buffs, no raise. It waits as before while "
-			+ "any announced hit, a marker on you or a BossModReborn prediction could land within them.\nIn a fight: up to "
-			+ "5 s more to heal up before the hit that comes right after; the protection is lost against a hit nobody "
-			+ "announced in the rest of those seconds.",
+		Description = "In a fight: in the 5 s of protection after a raise, RSR heals and protects you when the next "
+			+ "hit lands only after them.\nNo damage, no buffs, no raise in that time.\nOff: you act as usual "
+			+ "right away.",
 		Filter = HealingActionCondition, Section = 4)]
 	private static readonly bool _spendRaiseProtection = true;
 
@@ -369,7 +356,9 @@ internal partial class Configs
 	private static readonly bool _interruptibleMoreCheck = true;
 
 	[ConditionBool, UI("Stop an enemy's cast with the job's stun or a sleep (experimental)",
-		Description = "As a healer or a caster, who have no interrupt: when an enemy that is not a boss casts an area attack that reaches you or two party members, or - while that enemy is fighting - a cast the game marks interruptible - what a melee would stop with Leg Sweep -, and enough of its cast is left to land in time - the own cast time, the GCD still running, the measured time to the effect and what a cast has to have left when the status lands -, RSR stops it. A White Mage uses Holy when the enemy stands in its radius and can still be stunned, which stuns every enemy around; otherwise Repose or Sleep goes on the enemy. Swiftcast is not spent on it, Dualcast and Triplecast are. A healer does not use it while a party member is about to die. With \"Don't pull new enemies with AoE\" on, no area stop reaches an enemy that is not fighting yet. What sleeps show is kept over every session: enemy kinds that resist a sleep, how many sleeps a kind takes in a fight before it resists, and per enemy action whether a sleep stops it and how early it has to land - so an enemy or an attack it does not work on is not tried again. Every attempt and what came of it is written to DefenseTrace.log.\nIn a fight: an enemy's attack can stop before it lands, for one GCD of yours; the enemy wakes at the next hit. Bosses and many elite enemies resist.",
+		Description = "In a fight: as a healer or caster, RSR stops a non-boss enemy's area or interruptible cast "
+			+ "with a stun or sleep when it lands in time.\nResisting kinds and attacks are learned and not tried "
+			+ "again.\nOff: such casts go off.",
 		Filter = AutoActionUsage, Section = 3,
 		PvEFilter = JobFilterType.Sleep,
 		PvPFilter = JobFilterType.NoJob)]
@@ -442,7 +431,8 @@ internal partial class Configs
 	private static readonly bool _showInterceptedActionWindow = false;
 
 	[ConditionBool, UI("Show Diagnostics Window",
-		Description = "A small window that stays open in combat and shows why RSR does what it does: the current rotation's status lines, the AoE damage table's store and last rated hit, and why an enabled HP potion is or is not used.\nIn a fight: nothing RSR does changes. You can see during the pull whether a rule fired or what held it back, instead of opening the settings afterwards.",
+		Description = "In a fight: a small window shows why RSR does what it does - the rotation's status lines, the "
+			+ "area damage table, the HP potion.\nNothing RSR does changes.",
 		Filter = UiWindows)]
 	private static readonly bool _showDiagnosticsWindow = false;
 
@@ -539,7 +529,9 @@ internal partial class Configs
 	private static readonly bool _showToastsAboutDoAction = false;
 
 	[ConditionBool, UI("Turn away from gaze attacks",
-		Description = "While an enemy casts a gaze that reaches you, RSR turns you away just before it lands and holds actions that would turn you back into it. It knows a gaze from the game data, from BossModReborn's fight modules, by name, and from markers and statuses that tell you to look at or away from someone, without BossModReborn running.\nIn a fight: you keep attacking the caster until just before the gaze, then face away from it; an inverted gaze turns you to face it. If you already face a safe way with your target in front, nothing turns and you keep attacking: just before a gaze, RSR replaces the game's \"Auto face target\" with a safe facing that still reaches the target. A spell on the caster keeps casting: RSR turns you only as far as the spell still lands. Only an action whose target sits right behind the eye waits - pressed by RSR, queued by the game or pressed by you, it does not go while it would still face the eye when the gaze lands - and while the game or another tool keeps undoing RSR's turn, every action that faces waits until the gaze resolves. This covers actions the game runs from its queue and the ones you press yourself while RSR is on. If a gaze hits you despite RSR's facing, RSR stops turning for that gaze until it is loaded again: it still holds actions that would face into it unless the hit showed that RSR placed the eye or its sense wrong, and after a second hit it leaves the gaze to you; DefenseTrace.log notes each case. BossModReborn, where it knows the gaze, also pauses RSR for about two seconds around it. Off: actions that turn you into the gaze are held for the whole cast, and you turn yourself.",
+		Description = "In a fight: RSR turns you away from a gaze that reaches you just before it lands, and keeps "
+			+ "actions that would face it waiting.\nAfter a gaze still hits you twice, RSR leaves that gaze to "
+			+ "you.\nOff: such actions wait for the whole cast; you turn yourself.",
 		Filter = AutoActionUsage, Section = 3)]
 	private static readonly bool _turnAwayFromGazes = true;
 
@@ -576,7 +568,8 @@ internal partial class Configs
 	// The owner's note, 25.10.2026: a melee belongs in reach of its target. The Balance's Viper opener dashes at -0.5 s;
 	// upstream's Monk did so whatever the distance. Off for a pull that has him wait away from the boss (A347).
 	[ConditionBool, UI("Dash to the target at the end of the countdown when out of melee range",
-		Description = "Monk, Viper and Dragoon use their dash in the last half second of a countdown when their target stands beyond melee range, and only to that target. In range, they don't.\nIn a fight: the first weaponskill lands at the pull instead of after the walk to the boss, up to three seconds later. Off: you walk in yourself.",
+		Description = "In a fight: Monk, Viper and Dragoon dash to a target beyond melee range as the countdown "
+			+ "ends, so the first weaponskill lands at the pull.\nOff: you walk in yourself.",
 		Filter = AutoActionUsage, PvEFilter = JobFilterType.Melee)]
 	private static readonly bool _pullGapCloser = true;
 
@@ -585,7 +578,9 @@ internal partial class Configs
 	// pick up the next group and waits for his area attack before he moves on. A GCD in the area as the sign of a stop
 	// is a derivation, not shown in play yet, hence the switch (concept 04, A350-A353).
 	[ConditionBool, UI("Lay damage areas only where the enemies stay",
-		Description = "Salted Earth, Doton and Slipstream's windstorm stay where they are laid. They go out once at least one enemy has been in their radius for a GCD and no fewer are in it than were at the start of that GCD, the dead left out; enemies moving about inside it, one pushing in for another at its edge and one arriving count as staying. Not while an enemy not yet in combat stands in the area or, in a duty, within a tank's reach, and not within a GCD after one there came into combat: that is a group the tank is picking up, and he moves on with it. Doton gives way to Katon meanwhile, and Slipstream goes at the latest when the Emerald Rites are spent.\nIn a fight: in a wall-to-wall pull the area lands where the pack has gathered, not where the tank paused or stopped to pull the next group, and it does not go out onto a group nobody has pulled yet. Off: it goes out as soon as you stand.",
+		Description = "In a fight: Salted Earth, Doton and Slipstream go down once the pack has stood in their "
+			+ "radius for a GCD.\nNot onto a group the tank is still pulling.\nOff: they go out as soon as you "
+			+ "stand.",
 		Filter = AutoActionUsage)]
 	private static readonly bool _damageAreasWhereEnemiesStay = true;
 
@@ -647,16 +642,9 @@ internal partial class Configs
 	// 60 s / 30 s stagger, had the fewest deaths and the least time under 30 % in every case, the opening of a big pull
 	// no worse than before (A359). On by default: the owner's rule for new rules (29.09.2026).
 	[ConditionBool, UI("Hold the big mitigation and Rampart in a pull until your health needs them",
-		Description = "In a pull - the defence opened by the number of enemies on you, with no tankbuster or listed cast "
-			+ "aimed at a tank and no BossModReborn tankbuster announced - your short mitigation, Arm's Length and Reprisal "
-			+ "still go at once. The big mitigation (Guardian, Damnation, Shadowed Vigil, Great Nebula and their lower "
-			+ "versions) and Rampart wait until your health, at the rate measured net of every heal and mitigation, would "
-			+ "fall below the health set below within their own duration; the first seconds of a pull, before there is a "
-			+ "rate, they wait too. Each then goes as soon as it is needed, no longer spaced by fixed times; they still "
-			+ "never run together. Not while you or a tank is in danger.\n"
-			+ "In a fight: a pack your healer holds you through costs no big cooldown, so it is ready for the pull that "
-			+ "needs it; a pull that takes you down fast gets it as soon as the fall shows. Off: they go at the start of "
-			+ "every pull of enough enemies, the big one and Rampart spaced 60 and 30 s apart, as before.",
+		Description = "In a fight: in a pull, the big mitigation and Rampart wait until your falling HP needs them; "
+			+ "short mitigation and Reprisal go at once.\nNot while you or a tank is in danger.\nOff: they go at "
+			+ "the start of every big pull, 60 and 30 s apart.",
 		Parent = nameof(UseDefenseAbility), PvEFilter = JobFilterType.Tank)]
 	private static readonly bool _holdBigTankMitigationInPull = true;
 
@@ -672,16 +660,9 @@ internal partial class Configs
 	// against one without (A361). Every role, as the rule holds for whoever is attacked. On by default: the owner's rule
 	// for new rules (29.09.2026).
 	[ConditionBool, UI("Without a living healer, spend your defence to stay alive longer",
-		Description = "When no healer in the party is alive, your single-target defence opens while an enemy attacks you - holds you as its target and has hit you in this fight, which a training dummy never does -, "
-			+ "not only for a tankbuster or a pull. A mitigation on yourself then goes as soon as it will be ready again "
-			+ "before the next tankbuster on you is due - by BossModReborn's prediction, otherwise by the spacing of the "
-			+ "tankbusters on you in this fight; with none seen yet, at once. As a tank, the big mitigation and Rampart no "
-			+ "longer wait for your health in a pull nor for the fixed spacing, and against a tankbuster everything ready "
-			+ "goes on it, not only the cheapest set that survives it. A living raiser does not change this: whether and "
-			+ "when he raises is up to him.\n"
-			+ "In a fight: after your healer falls you stay alive longer - the time a Phoenix Down or a raise needs -, and a "
-			+ "tankbuster still finds your mitigation ready. If your healer dies before the first tankbuster of a boss and "
-			+ "no BossModReborn module predicts it, the first one can find less ready.",
+		Description = "In a fight: with no living healer, your defence opens whenever an enemy attacks you, and each "
+			+ "mitigation goes once it will be back before the next tankbuster.\nOff: your defence keeps waiting "
+			+ "for tankbusters and pulls.",
 		Parent = nameof(UseDefenseAbility))]
 	private static readonly bool _spendDefenceWithoutHealer = true;
 
@@ -694,32 +675,44 @@ internal partial class Configs
 	private static readonly bool _autoProvokeForTank = true;
 
 	[ConditionBool, UI("Take the enemy from a co-tank in danger",
-		Description = "With another tank in the party, RSR provokes an enemy attacking the co-tank when\n- his HP with shield are at or below the HP you set for a tank to use invulnerability;\n- BossModReborn announces its next tankbuster and he would take it still vulnerable, or would not survive it by his HP trend - at once, because a cast already aimed at him or a marker on him can no longer be turned away;\n- he shirks to you: he does not want the next hit.\nNot while you are in danger or vulnerable yourself, not while he is impervious, not when the announced tankbuster hits you anyway, and on an announcement not again for an enemy whose tankbuster still hit him after a take-over. Your tank stance goes on first if it is off.\nIn a fight: the next tankbuster lands on you instead of the endangered co-tank. Off: he is left to his healers and his own cooldowns.",
+		Description = "In a fight: you provoke an enemy off the co-tank when he is low, would take its announced "
+			+ "tankbuster unsafe, or shirks to you.\nNot while you are in danger yourself.\nOff: he is left to his "
+			+ "healers and cooldowns.",
 		Parent = nameof(UseAbility), PvEFilter = JobFilterType.Tank)]
 	private static readonly bool _takeEnemyFromCoTankInDanger = true;
 
 	[ConditionBool, UI("Shirk the co-tank after a tankbuster that leaves you in danger",
-		Description = "With another tank in the party: after a tankbuster on you, if it left you with a vulnerability debuff or so low that a repeat of the hardest one measured would kill you, and your invulnerability is not ready, Shirk goes to the other tank - but only when the party's enmity on the enemy shows it will then attack that tank, because below that Shirk moves nothing, and never to a tank who is in danger himself. With several, the one fewest enemies are attacking, then the one with most HP. Once the co-tank has taken the enemy's next tankbuster, your debuff has run out, you could survive the buster again and your invulnerability is ready, RSR provokes the enemy back.\nIn a fight: the next hit goes to the co-tank instead of killing you, and you take the enemy back when you are safe. Off: you keep the enemy unless your co-tank provokes it.",
+		Description = "In a fight: when a tankbuster leaves you in danger without your invulnerability, Shirk hands "
+			+ "the enemy to the co-tank, and you provoke it back once safe.\nOff: you keep the enemy unless your "
+			+ "co-tank provokes it.",
 		Parent = nameof(UseAbility), PvEFilter = JobFilterType.Tank)]
 	private static readonly bool _shirkToSwapAfterTankbuster = true;
 
 	[ConditionBool, UI("Use the invulnerability before a tankbuster nothing less survives",
-		Description = "When a tankbuster is cast at you that the learned tankbuster table has measured, and no set of your own mitigations that is ready by the hit would let you survive it - at your HP now, with only what still stands when it lands, a co-tank's Reprisal or a healer's barrier included -, your invulnerability goes out before it lands, no earlier than its own duration less one GCD before the hit. With \"Spend only the mitigation a measured tankbuster needs\" off, nothing presses such a set for you, so only what already stands or has gone out counts. It needs the invulnerability enabled, learned and off cooldown, not the dying-tank threshold. A tankbuster marker with no cast counts once the same marker in the same area has been followed by a hit the table measured: that hit is taken as coming, timed from the marker. A BossModReborn prediction, an action not yet measured and a marker seen for the first time get nothing: none of them names a measured action. Living Dead included: after the hit, the healers have to restore your full HP within Walking Dead, or you fall.\nIn a fight: you survive a hit that no mitigation of yours would have let you survive, instead of the invulnerability firing only once your HP is already under the threshold - and it is not spent where mitigation does the job.",
+		Description = "In a fight: before a measured tankbuster that none of your ready mitigations would let you "
+			+ "survive, your invulnerability goes, timed so it lasts through the hit.\nAn unmeasured cast or a "
+			+ "first-seen marker gets nothing.\nOff: the invulnerability waits for the HP threshold.",
 		Parent = nameof(UseAbility), PvEFilter = JobFilterType.Tank)]
 	private static readonly bool _invulnerabilityBeforeLethalTankbuster = true;
 
 	[ConditionBool, UI("Use the invulnerability when damage already reported would kill you",
-		Description = "The game reports a hit some tenths of a second before it takes the HP (0.58 s in the median in the owner's logs). When the damage reported on you and not yet taken reaches your HP and barrier, your invulnerability - Holmgang, Living Dead, Hallowed Ground, Superbolide - goes out at once, ahead of every other emergency action, whatever your HP threshold. Heals on their way are not counted: whether they land before the hit is not known.\nIn a fight: a wave of hits from a pull that would take you from 25 % to nothing is caught in the moment between its report and its damage, instead of the invulnerability waiting for an HP under the threshold that never shows. Price: where a heal does land first, the invulnerability is spent and missing for the next tankbuster.",
+		Description = "In a fight: when damage the game has already reported on you would kill you, your "
+			+ "invulnerability goes at once, whatever your HP threshold.\nHeals on their way are not counted, so "
+			+ "it can be spent where a heal would have saved you.\nOff: only the HP threshold fires it.",
 		Parent = nameof(UseAbility), PvEFilter = JobFilterType.Tank)]
 	private static readonly bool _invulnerabilityAgainstReportedDeath = true;
 
 	[ConditionBool, UI("Spread Reprisal and the party mitigation over a run of area attacks",
-		Description = "As a tank: after Reprisal or your party mitigation - Divine Veil, Passage of Arms, Shake It Off, Dark Missionary, Heart of Light -, the other waits while the first still works, a barrier until it is used up, so the next area attack gets one as well. Both go together when a party member is in danger, or the announced area attack, as measured, would put an unprotected member there.\nIn a fight: two area attacks in a row each get a tool instead of the first getting both and the second none; a big one still gets both.",
+		Description = "In a fight: after Reprisal or your party mitigation, the other waits while the first still "
+			+ "works, so two area attacks in a row each get one.\nA big hit or a member in danger gets both.\nOff: "
+			+ "both can go on the first.",
 		Parent = nameof(UseAbility), PvEFilter = JobFilterType.Tank)]
 	private static readonly bool _spreadTankAreaDefense = true;
 
 	[ConditionBool, UI("Spend only the mitigation a measured tankbuster needs",
-		Description = "As a tank: against a tankbuster the table has measured, RSR spends the cheapest set of your own mitigations - by their cooldown - that lets you survive it at your HP now, with only what still stands when it lands; several at once if one is not enough, none if the hit is survivable as it stands. While that tankbuster is the only one known to be coming at you, every other mitigation, barrier or Reprisal aimed at yourself is held for the next one, from any part of the rotation; help for another member, heals and area defence that reaches beyond you stay. Party tools such as Shake It Off or Divine Veil stay with the area defence. Only when nothing survives it and the invulnerability is not there to use - on cooldown, switched off, or refused with no retry left before the last GCD before the hit - does everything go, never on top of the invulnerability. If a planned mitigation has not gone out by the last GCD before the hit, the hold opens. Against a tankbuster marker with no cast, met with the hit measured after the same marker before, nothing else is held except under a planned invulnerability: the marker may announce another hit this time. The same goes for a cast neither the tankbuster list nor a marker on you names, which the table knows only from that enemy casting it at its target before: its plan still spends what it needs, but in a pull it can come from one of many enemies, and the rest is for their blows. Under Hallowed Ground or Superbolide past the hit nothing aimed at you is spent. As a healer, and for a tank's help on another member (Intervention, Nascent Flash, The Blackest Night, Heart of Corundum): no single-target mitigation onto a tank who stands under Hallowed Ground or Superbolide past his tankbuster, nor onto one whose measured tankbuster takes less than a large shield absorbs and leaves him, with what stands when it lands, at or above your HP threshold for single-target healing GCDs; a BossModReborn prediction still opens the defence, but not onto him. Reprisal and party mitigation in the single defence stay back as well while such tankbusters are the only ones coming, none reaches you and BossModReborn predicts none. A single defence you command is not held for the size of the hit.\nIn a fight: a tankbuster that needs two mitigations gets both, one that needs one gets one, and Rampart, Vengeance and the like stay ready for the next; a healer keeps Aquaveil or Exaltation for the tankbuster that needs it instead of spending it on one the tank takes at full health.",
+		Description = "In a fight: against a measured tankbuster, RSR spends the cheapest set of your mitigations "
+			+ "that lets you survive it and keeps the rest for the next.\nHealers keep single-target mitigation "
+			+ "off a tank who takes the hit safely.\nOff: mitigation is not chosen by the size of the hit.",
 		Parent = nameof(UseAbility))]
 	private static readonly bool _holdMitigationUnderInvulnerability = true;
 
@@ -752,7 +745,8 @@ internal partial class Configs
 	// The usual placement takes the arena centre, the boss or a point by the attacked member and asks only that one
 	// member stands in it; with the party stacked away from that point the area covered almost nobody (A398).
 	[JobConfig, UI("Place them where they cover the most party members",
-		Description = "When the usual placement - a stored point, the arena centre, the boss, a point by the tank - covers fewer party members than a spot at one of them would, the area goes to that spot.\nIn a fight: the party stacks at the south edge, 20 yalms from the boss, for a marker and the raidwide follows; Sacred Soil, Asylum or Earthly Star lands on the stack instead of the empty middle. Off: the usual placement alone.",
+		Description = "In a fight: Sacred Soil, Asylum, Earthly Star and similar areas land where they cover the "
+			+ "most party members, not on an empty usual spot.\nOff: the usual placement alone.",
 		Parent = nameof(UseGroundBeneficialAbility))]
 	private static readonly bool _groundBeneficialCoverMost = true;
 
@@ -887,15 +881,9 @@ internal partial class Configs
 	// not wanted at all. Holding the heal is right where the death was the plan. Whoever knows that
 	// for their group turns this on.
 	[UI("Withhold healing under Living Dead",
-		Description = "On: a dark knight under Living Dead is left at 1 HP instead of being healed up, "
-			+ "so the killing blow lands and converts the effect into Walking Dead. From that moment "
-			+ "healing totalling his maximum HP has to go in within ten seconds or he is KO'd for real - "
-			+ "he contributes to that himself with every spell and weaponskill, and a Benediction covers "
-			+ "the rest on its own.\n"
-			+ "Off: he is healed normally, the death never happens, and Living Dead runs out without "
-			+ "turning into Walking Dead.\n"
-			+ "Only switch this on if your group plays it that way. RSR also fires Living Dead by itself "
-			+ "as a last-ditch save on a dying tank, and in that use the death is not wanted at all.",
+		Description = "In a fight: a dark knight under Living Dead is left at 1 HP, so the killing blow turns it "
+			+ "into Walking Dead.\nThen healing worth his maximum HP must land within ten seconds.\nOff: he is "
+			+ "healed normally, as when RSR fires Living Dead to save a dying tank.",
 		Filter = HealingActionCondition, Section = 1)]
 	public bool WithholdHealingForLivingDead { get; set; } = false;
 
@@ -919,16 +907,9 @@ internal partial class Configs
 	// get tested (29.09.2026). The effect is not proven in play; with the health held steady it is
 	// exactly the old behaviour.
 	[UI("Heal ahead of incoming damage",
-		Description = "Every healing threshold and the heal target choice read the health a member is "
-			+ "heading for by the time a heal started now would land, instead of the health shown right "
-			+ "now.\n"
-			+ "In a fight: a tank dropping fast gets his heal about one GCD earlier, and someone falling "
-			+ "quickly is picked ahead of someone sitting lower but steady - the case where a cast used "
-			+ "to go out after the death.\n"
-			+ "While a party is held steady it changes nothing. The trend is measured net of every "
-			+ "mitigation, barrier and outside heal, so health that is not falling on balance produces "
-			+ "no look-ahead at all; it appears when the net trend turns downward and grows as it "
-			+ "steepens.",
+		Description = "In a fight: heal thresholds read the HP a member will have when a heal started now lands, so "
+			+ "a falling tank is healed a GCD earlier.\nWhile HP holds steady, nothing changes.\nOff: thresholds "
+			+ "read the HP shown now.",
 		Filter = HealingActionCondition, Section = 1)]
 	public bool HealAheadOfDamage { get; set; } = true;
 
@@ -936,15 +917,9 @@ internal partial class Configs
 	// by default: his rule that a default is the value that plays better, so a new rule is tested (29.09.2026); its gain
 	// rests on the model, not on a fight measured with it.
 	[UI("Heal over time against an enemy's damage over time",
-		Description = "As a White Mage or an Astrologian: when an enemy's damage over time alone will take a party member "
-			+ "below the single-target heal threshold before a heal over time laid now would run out, the heal over time "
-			+ "goes on him now - Regen or Aspected Benefic, and Medica III or Helios Conjunction, below their level Medica II "
-			+ "or Aspected Helios, when more than one member needs it. Each tick of damage and heal over time is measured; the strength of each damage over time and, "
-			+ "where its status states no end, how long it lasts are learned per area and kept over every session, so from "
-			+ "the second hit on the heal over time goes on when the status lands. Lilies, the other heals and the "
-			+ "thresholds stay as they are. Each decision is written to DefenseTrace.log.\n"
-			+ "In a fight: against a strong damage over time the heal over time ticks with it from the start instead of "
-			+ "after the member has already dropped; a weak one that would not take him below the threshold costs no GCD.",
+		Description = "In a fight: as White Mage or Astrologian, a heal over time goes on whoever an enemy's damage "
+			+ "over time would take below the heal threshold.\nThe strength of each damage over time is learned "
+			+ "per area.\nOff: heals over time follow the thresholds alone.",
 		Filter = HealingActionCondition, Section = 1)]
 	public bool HotAgainstDot { get; set; } = true;
 
@@ -954,14 +929,9 @@ internal partial class Configs
 	// ratio and look at nobody else. On by default - the owner's rule for defaults (29.09.2026), and
 	// his own order of who is healed first; that it keeps more people alive is not shown in play.
 	[UI("Choose the heal target by danger",
-		Description = "Below a member who is about to fall, heal first a healer or tank who is under their "
-			+ "role threshold AND being attacked, together with any healer or tank being attacked who stands as "
-			+ "low or lower - lowest health first, a healer before a tank at equal health. Everyone else after that: while an area cast is announced, the one with the fewest "
-			+ "hit points left first, because the hit takes the same number from everybody; otherwise the "
-			+ "lowest percentage.\n"
-			+ "In a fight: when the healer holds aggro and the tank does not, the healer comes first; a tank "
-			+ "under his threshold but not being hit no longer jumps ahead of a damage dealer who is lower.\n"
-			+ "Off: the role thresholds decide outright, as before.",
+		Description = "In a fight: a healer or tank under their threshold and being attacked is healed first, the "
+			+ "lowest HP first.\nDuring an announced area cast, whoever has the fewest HP left comes next.\nOff: "
+			+ "the role thresholds decide alone.",
 		Filter = HealingActionCondition, Section = 1)]
 	public bool HealTargetByDanger { get; set; } = true;
 
@@ -978,15 +948,9 @@ internal partial class Configs
 	// On by default: it implements a shortcoming the user reported, and its fallback in every
 	// unknown case is the old behaviour. Whoever wants mitigation on everything turns it off.
 	[UI("Skip mitigation for small area casts",
-		Description = "A learned area cast whose measured damage would leave everybody above the level "
-			+ "at which the tree heals anyway no longer raises the party mitigation.\n"
-			+ "In a fight: Reprisal, Addle and the rest stay off cooldown and are ready for the next "
-			+ "real hit, instead of being spent on a two-percent tick. A hit that would push anyone to "
-			+ "where healing is called for is still mitigated in full.\n"
-			+ "An action nothing has been measured on behaves exactly as before, which is what keeps the "
-			+ "850 shipped entries mitigated. Ratings arrive with play - in content you repeat, one "
-			+ "clear of the fight. The AOE list in Lists shows the measured share per entry and which "
-			+ "of them have already saved a cooldown.",
+		Description = "In a fight: a measured area cast that leaves everybody above the healing line raises no party "
+			+ "mitigation, so Reprisal and Addle wait for a real hit.\nAn unmeasured cast is mitigated as "
+			+ "before.\nOff: every listed cast is mitigated.",
 		Filter = HealingActionCondition, Section = 1)]
 	public bool SkipMitigationForSmallAreaCasts { get; set; } = true;
 
@@ -1013,15 +977,9 @@ internal partial class Configs
 	// On by default - the owner's rule for defaults (29.09.2026). Nothing changes for an action whose
 	// size has never been measured.
 	[UI("Heal ahead of an announced area cast",
-		Description = "Raises the area healing flags when the area cast currently being announced would "
-			+ "leave somebody about to fall - the members \"Choose the heal target by danger\" heals "
-			+ "first - and that member is missing health a heal can restore.\n"
-			+ "In a fight: a member at fifty-five percent in front of a forty-five percent hit is healed "
-			+ "BEFORE the raidwide lands instead of being left at ten percent by it. A hit that leaves "
-			+ "everybody above that line is healed after it lands; this setting sends no heal ahead of it.\n"
-			+ "Uses the measured size of that action and counts an existing barrier against it, since "
-			+ "the barrier absorbs this particular hit. An action whose size has never been measured "
-			+ "changes nothing - ratings arrive with play, one clear of the fight.",
+		Description = "In a fight: when an announced area cast would leave a member about to fall, area healing goes "
+			+ "out before it lands.\nIt uses the cast's measured size and counts barriers; an unmeasured cast "
+			+ "changes nothing.\nOff: the heal comes after the hit.",
 		Filter = HealingActionCondition, Section = 1)]
 	public bool HealAheadOfAnnouncedHit { get; set; } = true;
 
@@ -1033,14 +991,8 @@ internal partial class Configs
 	// him again. On by default - the owner's rule for defaults (29.09.2026); the risk is a cast dodged
 	// last time and not dodged now, met without the area defence.
 	[UI("Skip area defence for casts that missed you",
-		Description = "An area cast from the AoE list that missed you last time - you dodged it, or it was "
-			+ "centred on someone else - does not open your area defence the next time. As soon as it "
-			+ "reaches you once, it counts again; a hit you blocked, parried, absorbed or took under "
-			+ "invulnerability has reached you.\n"
-			+ "In a fight: party mitigation and your own area defensives are kept for the casts that "
-			+ "actually reach you. The cost: the first cast of each action in a session still opens "
-			+ "them, and a cast you dodged last time and fail to dodge now is met without them.\n"
-			+ "Off: every listed cast that can reach you opens the area defence, as before.",
+		Description = "In a fight: an area cast that missed you last time does not open your area defence; once it "
+			+ "reaches you, it counts again.\nOff: every listed cast that can reach you opens it.",
 		Filter = HealingActionCondition, Section = 1)]
 	public bool SkipAreaCastsThatMissedMe { get; set; } = true;
 
@@ -1062,14 +1014,9 @@ internal partial class Configs
 	// On by default - the owner's rule for defaults (29.09.2026). Whether the extra cover is worth the
 	// cooldown is not established from the code.
 	[UI("Mitigate a big area cast even when it is interruptible",
-		Description = "Raises the area defence for an interruptible cast too, if its measured damage is "
-			+ "at or above what the largest barrier in the game absorbs and it lands within about one "
-			+ "GCD.\n"
-			+ "In a fight: in a dungeon where nobody interrupts, the big pull-wide gets Addle and "
-			+ "Radiant Aegis instead of passing unanswered. Small casts, unmeasured casts and casts "
-			+ "further out than a GCD are unaffected, so it cannot fire on trash that is doing nothing.\n"
-			+ "Leaves the healer's threat detection alone: it is a separate path, so the White Mage's "
-			+ "Benediction guard does not widen with it.",
+		Description = "In a fight: an interruptible area cast also gets area mitigation when its measured damage is "
+			+ "at least the largest barrier and it lands within a GCD.\nOff: interruptible casts get none, as "
+			+ "someone is expected to interrupt them.",
 		Filter = HealingActionCondition, Section = 1)]
 	public bool MitigateBigAreaCastsEvenIfInterruptible { get; set; } = true;
 
@@ -1093,14 +1040,8 @@ internal partial class Configs
 	// On by default - the owner's rule for defaults (29.09.2026) - and honestly a heuristic: nothing
 	// here proves the prediction refers to the cast that happens to be running.
 	[UI("Hold a predicted mitigation while a small cast is running",
-		Description = "Stops a mitigation that fires from a BossMod prediction from being spent on a "
-			+ "small area cast when a bigger one is coming right behind it.\n"
-			+ "In a fight: in an opening with a small area cast followed by a heavy one, Radiant "
-			+ "Aegis, Tactician, Troubadour or Shield Samba wait for the second instead of being "
-			+ "eaten by the first. Only applies while a cast is running whose damage has actually "
-			+ "been measured and came out small; otherwise the prediction is followed as before.\n"
-			+ "A judgement call, not a certainty: BossMod gives the timing of the next event, not "
-			+ "which cast it means.",
+		Description = "In a fight: a mitigation from a BossMod prediction waits while a small measured area cast "
+			+ "runs, so it covers the heavier one behind it.\nOff: the prediction is followed at once.",
 		Filter = HealingActionCondition, Section = 1)]
 	public bool HoldProactiveMitigationForSmallCast { get; set; } = true;
 
@@ -1160,13 +1101,9 @@ internal partial class Configs
 	public int LessMPNoRaise { get; set; } = 2400;
 
 	[UI("Keep the MP a raise needs",
-		Description = "In combat and in a party, a job that can raise spends MP on damage only while the raise's cost - or "
-			+ "\"Don't raise below this MP\" where that is higher - is left afterwards. The same holds for a cleanse that saves "
-			+ "no life (Esuna on Slow or Bleeding); one against a status that kills, like Doom, is free. Heals, the raise "
-			+ "itself and free casts are not held.\n"
-			+ "In a fight: a healer at 2600 MP casts no damage spell that would take him below 2400; he uses his free "
-			+ "attacks or waits for MP, and can raise a member who dies at once instead of after the MP has come back.\n"
-			+ "Off: damage spends MP down to the raise's cost and below, as before.",
+		Description = "In a fight: a job that can raise spends MP on damage only while a raise's cost stays left "
+			+ "over.\nHeals, the raise itself and free casts are not held.\nOff: damage spends MP below a raise's "
+			+ "cost.",
 		Filter = RaiseActionCondition, Section = 1)]
 	public bool KeepMpForRaise { get; set; } = true;
 	#endregion
@@ -1190,12 +1127,8 @@ internal partial class Configs
 
 	// Damage against the party's safety is each player's own choice; on is the owner's rule, safety first (A516).
 	[ConditionBool, UI("Help heal figures only healing defeats as a non-healer",
-		Description = "Some fights bring in friendly figures that are defeated only by healing them to full with single-target heals, "
-		+ "such as the Reiryu in Shinryu (Unreal). Healers always heal them. With this on, a Red Mage, Paladin or Summoner "
-		+ "helps with Vercure, Clemency or Physick, but only when the healing they receive would not finish them before the cast "
-		+ "they are running ends.\n"
-		+ "In a fight: on, you give up some damage while the healers fall behind, and the figures are finished in time. Off, "
-		+ "you keep attacking; if the healers do not make it, the figures fly off and hit the whole party.",
+		Description = "In a fight: as Red Mage, Paladin or Summoner you help heal figures only healing defeats, like "
+			+ "Shinryu's Reiryu, when the healing coming is not enough in time.\nOff: you keep attacking.",
 		Filter = HealingActionCondition, Section = 3)]
 	private static readonly bool _healToDefeatAsNonHealer = true;
 
@@ -1301,19 +1234,23 @@ internal partial class Configs
 	// Henchman's "No Fall Damage" hack (A276). Off by default: it hooks a game function, and nobody should run
 	// that without having chosen it.
 	[ConditionBool, UI("No fall damage",
-	Description = "The game's fall damage function returns zero, a hook taken from Henchman's hacks.\nIn a fight: a fall from a height costs no HP.\nIf this game version does not have that function, the setting switches itself off.",
+	Description = "In a fight: a fall from a height costs no HP.\nIf this game version lacks the function, the "
+		+ "setting switches itself off.\nOff: falls hurt as usual.",
 	Filter = Extra)]
 	private static readonly bool _noFallDamage = false;
 
 	// Concept 03, "Weben, Animationssperre und Latenz" (A753): measured, no set value. On by default, his requirement being
 	// that RSR replaces XivAlexander, NoClippy and BossMod's action tweaks.
 	[ConditionBool, UI("Remove lag-induced animation lock delay from instant casts",
-	Description = "After each instant action the game waits for the server's answer before the next one, and adds the network round trip to the animation lock. RSR measures that round trip in every zone and takes it off; the wait for the server's tick stays, so the next action reaches the server as its lock ends. When a request goes without an answer, RSR cuts less. Nothing to set.\nIn a fight: an oGCD frees the next action sooner, so two oGCDs fit between GCDs more often and three where the GCD leaves room, without pushing the GCD back.\nIn PvE and PvP. Held while XivAlexander runs, or while NoClippy runs and is not taken over (below).",
+	Description = "In a fight: RSR takes the network round trip off each instant action's animation lock, so two "
+		+ "oGCDs fit between GCDs more often.\nHeld while XivAlexander, or NoClippy not taken over, runs.\nOff: "
+		+ "the full lock stays.",
 	Filter = Extra, Section = 1)]
 	private static readonly bool _removeAnimationLockDelay = true;
 
 	[ConditionBool, UI("Take over BossMod's and NoClippy's animation lock functions",
-	Description = "While RSR's lock functions are on, BossModReborn's \"Remove extra lag-induced animation lock delay\" and \"Remove extra framerate-induced cooldown delay\" are switched off for the session (your BossMod setting is kept and comes back when RSR's are off or RSR unloads), and NoClippy's compensation is switched off with /noclippy off and back on the same way. XivAlexander cannot be switched from here: while it runs, RSR leaves the lock to it and weaves on what it leaves.\nIn a fight: only RSR shortens the lock, so it is not cut twice and no action reaches the server before the game allows it.",
+	Description = "In a fight: only RSR shortens the animation lock; BossModReborn's and NoClippy's lock functions "
+		+ "are switched off for the session and back on later.\nXivAlexander keeps the lock where it runs.",
 	Parent = nameof(RemoveAnimationLockDelay))]
 	private static readonly bool _takeOverOtherLockTools = true;
 
@@ -1368,7 +1305,8 @@ internal partial class Configs
 	// reihe nach wie die dots auslaufen." Concept 03, "Wahl des DoT-Ziels" (A295). On by default - the owner's
 	// rule for defaults (29.09.2026).
 	[ConditionBool, UI("Spread damage over time by HP, then by expiry",
-	Description = "When a damage-over-time action can go on several enemies, it goes on one without it first, the one with the most HP left, so the damage over time ticks the longest. Once each carries it, it goes on the one whose damage over time runs out first.\nOff: the targeting type decides, as for every other attack.",
+	Description = "In a fight: damage over time goes first on an enemy without it, the one with the most HP, then on "
+		+ "the one whose runs out first.\nOff: the targeting type decides, as for every other attack.",
 	Filter = TargetConfig)]
 	private static readonly bool _dotTargetByHpThenExpiry = true;
 
@@ -1376,7 +1314,9 @@ internal partial class Configs
 	// they stand; an action that removes them may still take it. On by default: the reflection lands with every hit, the
 	// wait costs damage, not HP (the owner's rule: safety before damage).
 	[ConditionBool, UI("Do not attack enemies whose spikes damage their attackers",
-	Description = "An enemy carrying a status whose text says it turns your kind of attack back on you is no target of an attack while the status stands: spikes that deal damage to attackers (Blaze, Ice, Shock or Paralyzing Spikes) for every job, ranged ones included; a counter or reflection of physical attacks (Needles Out, Counter) for a disciple of war, the beastmaster among them; of magic for a disciple of magic; of ranged attacks for the ranged and healer roles; the blue mage counts for all. An action that removes that status may still target it (Quelling Wave on Blaze Spikes and Needles Out); its casts still count for areas and tankbusters. RSR notes each enemy it leaves alone in DefenseTrace.log.\nOff: RSR attacks it like any enemy and takes the damage it returns.",
+	Description = "In a fight: RSR does not attack an enemy whose spikes, counter or reflection would turn your kind "
+		+ "of attack back on you.\nAn action that removes that status may still target it.\nOff: RSR attacks it "
+		+ "and takes the damage it returns.",
 	Filter = TargetConfig, Section = 1)]
 	private static readonly bool _avoidSpikedEnemies = true;
 
@@ -1384,7 +1324,9 @@ internal partial class Configs
 	// after another, only in a place or only at a time. On by default: a tablitaur that falls too early enrages the other (Daedalus, in the
 	// field), a morpho's death confuses you.
 	[ConditionBool, UI("Kill rules of known fights",
-	Description = "Some enemies must fall in an order no danger count finds. Enemies that must fall together (the tablitaur pair, the lamias that raise each other) are each brought down to a reserve and held there until all are: the reserve is what your measured damage clears in half the time the survivor's enrage or raise takes, so the last falls before it lands. An enemy whose death harms you while another lives or outside a place is no target then (a morpho while an abaddon lives, an abaddon while a morpho lives, a myconid outside the mindflayer's water puddles). An enemy whose death harms you at one time but not another, and as much when it falls too late, comes before every other and is held only while a hit now could break it at the wrong time (the King Ahriman piece's final hourglass, while the roulette needle could point Death at you on the beat after the break). A held enemy is caught by no area attack where its fall would harm. RSR notes each hold and release in DefenseTrace.log.\nOff: RSR attacks these enemies like any other.",
+	Description = "In a fight: enemies of known fights fall in the order they must - pairs together, one whose death "
+		+ "harms you only when that is safe.\nRSR notes each hold and release in DefenseTrace.log.\nOff: RSR "
+		+ "attacks them like any other.",
 	Filter = TargetConfig, Section = 1)]
 	private static readonly bool _killRules = true;
 
