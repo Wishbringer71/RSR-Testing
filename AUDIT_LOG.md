@@ -25917,6 +25917,29 @@ Daedalus-Ideen für alle Jobs, kürzere Tooltips.
 
 *Prüfgrad:* Workflow-Lauf und Release-API gelesen, Prüfskripte; die Übergabe gegen den Release-Text abgeglichen.
 
+### A888 · Synergien der Daedalus-Übernahmen geprüft: eine Grenze, ein Fund für alle Jobs (18.11.2026)
+
+TODO-Punkt „Daedalus-Übernahmen auf Synergien prüfen" (sein Auftrag vom 18.11.2026). Je Übernahme die Leser, Zeitpunkte
+und Ressourcen erhoben (`git grep` auf `BurstClock`, `TinctureClock`, `IsInBurstWindow`, `RallyTPRestore`,
+`RallyingCheerTPRestore`; die Wege in `PhantomDefault.HandleOraclePrediction` und `BST_Reborn.AttackAbility`):
+- *Phantom Aim mit Tinktur und Gruppen-Buffs:* beide warten auf denselben Burst und wirken zusammen. *Grenze gefunden:*
+  Mit Devilment (Tanzpartner), Battle Litany, Chain Stratagem und Battle Voice übersteigen Krit- und Direkttrefferrate
+  mit Aim 100 % (Wirktexte 16011, 3557, 7436, 118). Meine Aussage in Konzept 03, Warten sei „nie schlechter", galt nur
+  darunter; berichtigt, mit Rechnung und den Schadensbuffs desselben Fensters (16552, 25785, 7520, 7396, 25801). Die Regel
+  bleibt: Höchstens ein Teil des Krit- und Direkttrefferzuschlags geht verloren, kein Einsatz.
+- *Sternenfall mit der Verjüngung vor Flächen:* RSR setzt die Verjüngung vor einer angekündigten Fläche und Sternenfall
+  nie in einer; nach der Fläche wartet Sternenfall bis kurz vor der Heilung, die dann beides auffängt. Unverwundbarkeit
+  geht vor dem Warten (`HasTankInvuln` steht davor); das Warten verschiebt den Einsatz von Invulnerability mit. Kein
+  Konflikt.
+- *Ketten mit dem Abschluss der Stufe 50:* `CarryChain` setzt Rally vor dem Abschluss-Rally; mit drei Stapeln gibt es
+  dieselben 250 TP und denselben Abschluss. Kein Konflikt. Die Hornwahl wertet die Dressur ohne Kettenfaktor; das gehört
+  zum nächsten Punkt (Rotation).
+- *Flächen und Bereitschaftsanfrage (A884, A879):* Während die Anfrage offen ist, ist außerhalb des Kampfes kein Gegner
+  angreifbar, also geht auch keine Fläche; keine Lücke.
+- *Fund für alle Jobs:* Upstreams „Save Phantom Attacks for class specific damage bonus?" hält bei 13 von 21 Jobs nie
+  (`IsBursting` immer wahr); die Burst-Uhr kennt deren Burst. Ins TODO „Daedalus-Ideen für alle Jobs".
+- *Prüfgrad:* statisch an Code und Wirktexten; kein Code geändert.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

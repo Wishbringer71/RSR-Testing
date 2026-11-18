@@ -39,11 +39,6 @@ den erfolgten einbau in fork auf synergieeffekte prüfen. danach die chains prü
 werden können … synergieeffekte von kombinationen und aufbau einer richtigen umfassenden schadensrotation so wie bei
 anderen jobs. umgekehrt prüfung, ob von den neuen ideen aus daedalus auch alle anderen jobs profitieren könnten."
 
-- **Daedalus-Übernahmen auf Synergien prüfen** (A885, A886). Im Kampf: Phantom Aim, Sternenfall, Burst-Uhr und
-  Kettenregel wirken je für sich; ob sie zusammen mit bestehenden Regeln (Tinktur, Hornwahl, Crucible-Gegenstände,
-  Orakel) mehr bringen oder sich stören, ist ungeprüft. Ort: `BurstClock`, `PhantomDefault.*`, `BST_Reborn.Chains`.
-  Nächster Schritt: Wechselwirkungen je Übernahme erheben (Leser, Zeitpunkte, Ressourcen), Loop. **N**. Konzepte 01, 03,
-  07, 21.
 - **Beastmaster: Ketten nach Lage und eine vollständige Schadensrotation** (A886; seine Rüge vom 18.11.2026: „das sollte
   ursprünglich von dir auch geprüft werden“). Im Kampf: Die Kettenregel füllt nur auf, wenn sonst nichts folgen kann; ob
   Äxte, Dressur, Abschlüsse, Rally, Rallying Cheer, Entfesseln, Borrow, Scheidender Schlag und die GCD-Kombo nach Lage
@@ -53,7 +48,9 @@ anderen jobs. umgekehrt prüfung, ob von den neuen ideen aus daedalus auch alle 
   dann Optionen und Loop. **N**. Konzept 01, „Ketten: Rally und Rallying Cheer tragen die Kette weiter“.
 - **Daedalus-Ideen für alle Jobs** (A885, A886). Im Kampf: Die Burst-Uhr und „Verstärker warten auf den Burst, wenn es
   keinen Einsatz kostet“ gelten heute nur für Phantom Aim; ob andere Verstärker aller Jobs (Inhaltsaktionen, eigene
-  Buffs mit eigener Dauer) und die Verkettung von Ressourcen anderswo daraus gewinnen, ist ungeprüft. Nächster Schritt:
+  Buffs mit eigener Dauer) und die Verkettung von Ressourcen anderswo daraus gewinnen, ist ungeprüft. Ein Fall aus der
+  Synergieprüfung (A888): Upstreams „Save Phantom Attacks for class specific damage bonus?“ hält bei 13 von 21 Jobs nie,
+  weil ihr `IsBursting` immer wahr ist; die Burst-Uhr kennt ihren Burst. Nächster Schritt:
   je Rolle und Job die Verstärker mit eigener Dauer erheben, Loop nach „Universell zuerst“. **N**. Konzept 03.
 
 - **Tooltips kürzer und verständlich** (sein Auftrag vom 18.11.2026: „einige tooltips sind im branch wirklich sehr lang.

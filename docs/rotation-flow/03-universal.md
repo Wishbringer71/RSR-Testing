@@ -684,8 +684,18 @@ merklich schneller zu beenden; sie kostet Geld, und sie für einen gewöhnlichen
     Burst (kein Ruf seit einem GCD), mit gemessenem Takt und einem Burstbeginn in diesem Kampf wartet Aim auf den
     erwarteten nächsten Burst w s später, wenn das im Kampf keinen Einsatz kostet: Bei R s verbleibender Kampfzeit (die
     Zeit bis zum Fall des Ziels, `GetCorrectedTTK`) und Wiederverwendung r bringt Drücken jetzt ⌊R/r⌋ + 1 Einsätze,
-    Warten ⌊(R − w)/r⌋ + 1. Sind beide gleich, liegt jeder Einsatz im Burst, und keiner geht verloren – ohne einen
-    Zuschlag des Bursts zu kennen, ist Warten dann nie schlechter. Kostet es einen, geht Aim jetzt. Kommt der Burst nicht
+    Warten ⌊(R − w)/r⌋ + 1. Sind beide gleich, liegt jeder Einsatz im Burst, und keiner geht verloren. Kostet es einen,
+    geht Aim jetzt.
+  - *Grenze: Raten über 100 %* (Synergieprüfung A888; Wirktexte 16011, 3557, 7436, 118, xivapi v2, 18.11.2026). Im Burst
+    der Gruppe heben Devilment (+20 % Krit und Direkttreffer, auch für den Tanzpartner), Battle Litany (+10 % Krit),
+    Chain Stratagem (+10 % Krit am Ziel) und Battle Voice (+20 % Direkttreffer) die Raten. Mit Aims +50 % kommen sie
+    über 100 %, wenn du Tanzpartner bist und ein Barde oder Dragoon und Gelehrter mitspielt: bei 25 % Grund-Krit
+    25 + 20 + 10 + 10 + 50 = 115 %, bei 35 % Grund-Direkttreffer 35 + 20 + 20 + 50 = 125 %. Ob ein Überschuss bei
+    gewöhnlichen Treffern noch wirkt, nennt kein Wirktext (unbelegt); garantierte Treffer wie Inner Release setzen ihn in
+    Schaden um (Action 7389). Höchstens geht so ein Viertel des Aim-Zuschlags im Burst verloren, während die
+    Schadensbuffs desselben Fensters (Divination 6 %, Radiant Finale bis 6 %, Embolden, Brotherhood, Searing Light je
+    5 %; Action 16552, 25785, 7520, 7396, 25801) jeden Treffer heben *[Schätzung]*. Warten bleibt deshalb die Regel; „nie schlechter“ gilt nur unterhalb dieser
+    Grenze. Kommt der Burst nicht
     binnen eines GCD nach seiner Zeit, endet das Warten.
   - *Im Kampf:* Gefecht von 5 min, Aim bereit 60 s vor dem nächsten Burst. Bisher: Aim bei 0, 120, 240 s, jeweils 60 s
     neben dem Burst. Jetzt: bei 60, 180, 300 s, jeder im Burst, drei Einsätze wie vorher. Rudel, das in 20 s fällt: Ein
@@ -703,7 +713,8 @@ merklich schneller zu beenden; sie kostet Geld, und sie für einen gewöhnlichen
     nach der Tinktur ruft (fremde Rotationen), lässt die Uhr leer; dann gilt das Verhalten vorher.
   - *Falsifikation:* (1) Kein Defekt, weil beide am Pull beginnen? Nur, solange Aim nie aus dem vorigen Kampf nachläuft;
     in Kreszentia tut er das zwischen dicht folgenden Kämpfen. (2) Option falsch, weil der Burst-Zuschlag unbekannt ist?
-    Die Regel verlangt keinen: Sie wartet nur, wo die Zahl der Einsätze gleich bleibt. (3) Ausgeliefert, und nichts
+    Die Regel verlangt keinen: Sie wartet nur, wo die Zahl der Einsätze gleich bleibt; die Grenze der Raten über 100 %
+    (oben) kostet höchstens einen Teil des Krit- und Direkttrefferzuschlags, nicht den Einsatz. (3) Ausgeliefert, und nichts
     ändert sich? Ohne Takt (erste Sitzung ohne zwei Bursts in einem Kampf), ohne Zeit bis zum Fall und in kurzen Kämpfen –
     in kurzen Rudeln ist das richtig. Die Spur schreibt je Halten „phantom aim: held for the burst …" und, wenn der Kampf
     vor dem Burst endet, „phantom aim: hold ended with the fight …"; die Vorhersagen dazu stehen in
