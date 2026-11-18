@@ -25829,6 +25829,39 @@ gelesen (Commits seit der Auswertung, 18.11.2026):
   für Konzept 21 und Kreszentia, im TODO.
 - *Prüfgrad:* Compile; Laufzeit nicht beobachtet.
 
+### A885 · Daedalus v0.1.124/125 ausgewertet: Phantom Aim folgt dem Burst, Sternenfall wartet auf die Verjüngung (18.11.2026)
+
+TODO-Punkt „Crucible, drittes Brett und Phantom Aim: Daedalus v0.1.124/125 auswerten" (A884). Daedalus' „Third Degree"
+ist der dritte Grad, nicht das dritte Brett; die Pläne gelten vor allem dem ersten Brett. Klon `ofnature/Daedalus` auf
+fdb0811 (18.11.2026), gelesen 3189316 und dd3690d (je 17.11.2026), Werkzeugquelle; jede Aussage am Spiel oder an RSRs Code
+geprüft.
+- *Phantom Aim* (dd3690d: Warten bis 30 s auf die Burstaktion von sechs Jobs). Wirktext geprüft (Action 41599: +50 % Krit
+  und Direkttreffer, 30 s, 120 s). *Gebaut:* `BurstClock` – der Burst des Jobs aus den Rufen der Rotation nach der
+  Tinktur, für einen Verstärker der Dauer d neu nach einer Lücke über d, Takt als Median je Job und Sitzung; die Tinktur
+  (A780) liest jetzt dieselbe Uhr (`TinctureClock`) statt eigener Zähler. Phantom Aim wartet unter der Option „Hold
+  Phantom Aim for your burst while that costs no use in the fight" (ab Werk an), wenn ⌊R/r⌋ = ⌊(R − w)/r⌋ (R Zeit bis
+  zum Fall des Ziels, w bis zum nächsten Burst, r Recast). *Verworfen:* Daedalus' Jobliste und die 30-s-Grenze; Aim unter
+  Upstreams „Save Phantom Attacks …" (`IsBursting` bei 13 von 21 Jobs immer wahr). *Berichtigt im Entwurf:* Meine
+  Begründung, Aim gehe unter Inner Release verloren, widerlegt der Wirktext (Action 7389: mehr Schaden unter Krit- und
+  Direkttreffer-Buffs); gestrichen. Konzept 03, „Der Burst des Jobs als Uhr".
+- *Orakel:* Karten vor den Job-Fähigkeiten – in RSR schon so (`PhantomDefault.EmergencyAbility` läuft vor der des Jobs,
+  `CustomRotation_Ability.cs:107`). Verjüngung vor Predict (Daedalus) verworfen: Wo Sternenfall in den 30 s kommt, sagt kein
+  Wirktext. *Gebaut:* Sternenfall wartet bis zum letzten GCD vor der Heilung einer laufenden Phantom-Verjüngung, solange
+  seine Karte sie überdauert (Action 41640, 41643). Konzept 07, „Sternenfall vor einer laufenden Phantom-Verjüngung".
+- *Crucible* (3189316): Schonung später gebrauchter Begleiter, Trank vor der Campsite („heals 90%", in seinem Lauf 30 %),
+  Tome gegen physische Tankbuster, Gift, Eröffnung nach dem ersten Begleiter, Essen und Weg: bei RSR gelöst, gegen seine
+  Regel oder nicht übertragbar; je Punkt in Konzept 21, „Abgleich mit Daedalus v0.1.124". Antigift-Serum heilt kein
+  bestehendes Gift (Wirktext); Daedalus trinkt es vergiftet.
+- *Neu gefunden:* In seinen Mitschnitten (11. und 14.11.2026) hielt jede Beastmaster-Kette genau eine Kombo (58 und 43
+  Kombos). Das Community-Wiki nennt 1,0- bis 3,0-fachen Schaden je Kettenplatz (Werkzeugquelle). Ins TODO:
+  „Beastmaster: Ketten aus mehr als einer Kombo"; Konzept 01.
+- *Nebenbei:* `check_setting_names.py` war am Ausgangsstand rot – der Release-Text nannte „All targets"; jetzt der volle
+  Einstellungstext.
+- *Vorhersage:* `predictions/2026-11-18.json`: `phantom-aim-hold-line-form`, `phantom-aim-hold-not-lost` (kein Halten
+  endet mit dem Kampf), `starfall-waits-line-form`. Wirkt: Zeilen „phantom aim: held for the burst …" in langen Kämpfen
+  in Kreszentia als Phantom-Waldläufer, keine „hold ended with the fight". Wirkt nicht: Halten ohne folgenden Burst.
+- *Prüfgrad:* Compile, Prüfskripte; Laufzeit nicht beobachtet; kein unabhängiger Prüfer (kein Eingriff über Leben und Tod).
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

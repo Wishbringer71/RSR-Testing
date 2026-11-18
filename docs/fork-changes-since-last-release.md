@@ -24,8 +24,8 @@ What this release changes in the fight. For the whole distance from upstream, se
 - **Areas spare the enemies your engage setting does not attack.** With "Previously engaged targets (Non-Tanks)", or the
   default in a party, RSR never picked an enemy that was not fighting yet as its target, but its areas still hit one as a
   bystander and pulled it. Now no area reaches an enemy that is not fighting yet and that RSR would not attack itself; a
-  priority target, or an object RSR attacks anyway, stays in reach. With "All targets" only "Don't pull new enemies with
-  AoE" decides, as before.
+  priority target, or an object RSR attacks anyway, stays in reach. With "All targets that are in range for any abilities
+  (Tanks/Autoduty)" only "Don't pull new enemies with AoE" decides, as before.
 
 - **No fight opened while a ready check waits for an answer.** Out of combat and without a countdown, RSR attacks no enemy
   that is not fighting yet while a party member has not answered a ready check - whatever the engage setting or a
@@ -38,6 +38,17 @@ What this release changes in the fight. For the whole distance from upstream, se
   a spell before you walk again. No spell begins that would still be running when you step off, nor within such a pause.
   A movement key BossModReborn reports now holds a spell before your character moves. Instant spells fill the gap. The
   trace writes "cast broken by moving" and what was learned. Without a measurement, the rule is the one before.
+
+- **Phantom Aim waits for your burst** (Occult Crescent, Phantom Ranger). It went out whenever its recast ended. With
+  "Hold Phantom Aim for your burst while that costs no use in the fight", on by default, it waits for your job's next
+  burst when the time your target has left gives the same number of Aims either way, so each lands in a burst and none
+  is lost. RSR reads your burst from where your rotation asks for the tincture, for every job, and learns its cadence
+  in your fights. In a short fight, or before two bursts were seen in one fight, Aim goes as before. The trace writes
+  "phantom aim: held for the burst ...".
+
+- **Starfall lands just before Phantom Rejuvenation heals** (Occult Crescent, Phantom Oracle). Starfall costs you up to
+  90% of your HP. While a Phantom Rejuvenation runs on you and the Starfall prophecy outlasts it, Starfall waits for the
+  last GCD before the heal, so you are not left low until some later heal.
 
 - **Why a tincture did not come.** When the rule holds a tincture in a fight, the trace says why, once per pull: "Tincture
   usage" allows none in this content, none of your job's kind is in the bags, the one you hold is switched off in the item

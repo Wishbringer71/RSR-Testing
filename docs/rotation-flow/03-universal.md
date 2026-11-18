@@ -664,6 +664,50 @@ merklich schneller zu beenden; sie kostet Geld, und sie für einen gewöhnlichen
   Zwei-Minuten-Fenster (`InTwoMIsBurst`), Barde unter seinen Buffs (`InBurstStatus`), Maschinist unter Wildfire; die Viper
   weiter 5 s vor Serpent's Ire, jetzt mit erlaubtem Burst („Auto Burst"). Die Tinktur im Countdown bleibt, wo die Rotation
   sie hatte, beim Maschinisten unter „Auto Burst" wie vorher.
+- *Der Burst des Jobs als Uhr, und ein Verstärker, der ihm folgt: Phantom Aim* (A885; Anlass Daedalus dd3690d, v0.1.125,
+  17.11.2026, „Phantom Aim waits for your burst“ – Werkzeugquelle, am Spiel geprüft):
+  - *Mechanik* (Action 41599, xivapi v2, 18.11.2026): Phantom Aim des Phantom-Waldläufers hebt die kritische Trefferrate
+    und die Direkttrefferrate um 50 % und lässt jeden Angriff treffen, 30 s, Wiederverwendung 120 s; Heilungen nicht.
+    Nach der Schadensformel der Community etwa ein Drittel bis zwei Fünftel mehr Schaden für 30 s *[Schätzung, aus 25 %
+    Grund-Krit, 1,6-fachem Krit und 30 % Grund-Direkttreffer]*. Der Gewinn ist ein Anteil des Schadens im Fenster; er ist
+    im Burst des Jobs am größten. RSR drückte ihn bisher, sobald er bereit war (`PhantomDefault`, im Kampf).
+  - *Wann es auseinanderläuft:* Burst und Aim haben in der Regel denselben Takt (120 s) und beginnen beide am Pull. Ist
+    Aim aus dem vorigen Kampf noch im Recast – in Kreszentia folgen FATEs und Gefechte dicht aufeinander –, wird er mitten
+    im Kampf bereit, der Burst zum Pull oder später. Dann liegen alle weiteren Aims ebenso weit neben dem Burst, bis der
+    Kampf endet; ein Halten richtet sie einmal aus, und jeder folgende liegt wieder darauf.
+  - *Die Uhr* (`BurstClock`, alle Jobs): Jede Rotation ruft im eigenen Burst nach der Tinktur (`UseBurstMedicine`, in den
+    Rotationen aller 21 Jobs). Diese Rufe sind das jobunabhängige Signal, das die Tinktur schon liest (A780). Ein Burst
+    beginnt für einen Verstärker der Dauer d, wenn ein Ruf nach einer Lücke länger als d kommt: Was d lang wirkt, deckt
+    die Rufe davor nicht mehr. Der Takt ist der Median der Abstände zwischen zwei Burstbeginnen im selben Kampf, je Job
+    über die Sitzung. Die Tinktur liest dieselbe Uhr mit ihrer eigenen Dauer, statt die Rufe ein zweites Mal zu zählen.
+  - *Regel* (Option „Hold Phantom Aim for your burst while that costs no use in the fight", ab Werk an): Bereit, nicht im
+    Burst (kein Ruf seit einem GCD), mit gemessenem Takt und einem Burstbeginn in diesem Kampf wartet Aim auf den
+    erwarteten nächsten Burst w s später, wenn das im Kampf keinen Einsatz kostet: Bei R s verbleibender Kampfzeit (die
+    Zeit bis zum Fall des Ziels, `GetCorrectedTTK`) und Wiederverwendung r bringt Drücken jetzt ⌊R/r⌋ + 1 Einsätze,
+    Warten ⌊(R − w)/r⌋ + 1. Sind beide gleich, liegt jeder Einsatz im Burst, und keiner geht verloren – ohne einen
+    Zuschlag des Bursts zu kennen, ist Warten dann nie schlechter. Kostet es einen, geht Aim jetzt. Kommt der Burst nicht
+    binnen eines GCD nach seiner Zeit, endet das Warten.
+  - *Im Kampf:* Gefecht von 5 min, Aim bereit 60 s vor dem nächsten Burst. Bisher: Aim bei 0, 120, 240 s, jeweils 60 s
+    neben dem Burst. Jetzt: bei 60, 180, 300 s, jeder im Burst, drei Einsätze wie vorher. Rudel, das in 20 s fällt: Ein
+    Warten von 60 s kostet den Einsatz, Aim geht sofort.
+  - *Verworfen:* Daedalus' Liste von sechs Jobs mit je einer Burstaktion (Ikishoten, Inner Release, Kunai's Bane, Raging
+    Strikes, Starry Muse, Searing Light) und ein Warten von höchstens 30 s. Die Liste gilt nur für sechs Jobs und muss
+    je Patch gepflegt werden; die 30 s kappen gerade die Fälle, in denen ein längeres Warten keinen Einsatz kostet.
+    Garantierte Treffer verlieren durch Aim nichts: Inner Release etwa „increases damage dealt when under an effect that
+    raises critical hit rate or direct hit rate" (Action 7389). Ebenfalls verworfen: Aim unter
+    Upstreams „Save Phantom Attacks for class specific damage bonus?" (`IsBursting`) zu stellen. Der Text nennt Angriffe,
+    und `IsBursting` ist bei 13 von 21 Jobs immer wahr, bei Krieger, Dunkelritter, Samurai und Tänzer fast immer.
+  - *SWOT:* Stärke: jeder Aim im Burst des eigenen Jobs, ohne Einsatz zu verlieren. Schwäche: Die Kampfzeit ist eine
+    Vorhersage; fällt das Ziel früher, geht ein gehaltener Aim höchstens w s zu spät oder gar nicht. Chance: In langen
+    Gefechten und im Gabelturm, wo Gruppen-Buffs im Burst liegen, wächst der Zuschlag. Bedrohung: Eine Rotation, die nie
+    nach der Tinktur ruft (fremde Rotationen), lässt die Uhr leer; dann gilt das Verhalten vorher.
+  - *Falsifikation:* (1) Kein Defekt, weil beide am Pull beginnen? Nur, solange Aim nie aus dem vorigen Kampf nachläuft;
+    in Kreszentia tut er das zwischen dicht folgenden Kämpfen. (2) Option falsch, weil der Burst-Zuschlag unbekannt ist?
+    Die Regel verlangt keinen: Sie wartet nur, wo die Zahl der Einsätze gleich bleibt. (3) Ausgeliefert, und nichts
+    ändert sich? Ohne Takt (erste Sitzung ohne zwei Bursts in einem Kampf), ohne Zeit bis zum Fall und in kurzen Kämpfen –
+    in kurzen Rudeln ist das richtig. Die Spur schreibt je Halten „phantom aim: held for the burst …" und, wenn der Kampf
+    vor dem Burst endet, „phantom aim: hold ended with the fight …"; die Vorhersagen dazu stehen in
+    `predictions/2026-11-18.json`.
 - *Begriffe* (sein Hinweis, 03.11.2026): Im Spiel heißen Heiltränke „Potion" (Kategorie „Medicine"), die Schadensbuffs
   „Gemdraught" oder „Tincture"; „pot" im englischen Spielerjargon meint die Tinktur. Upstreams „Use potion" meinte die
   Tinktur und las sich wie ein Heiltrank – auch deshalb entfernt.

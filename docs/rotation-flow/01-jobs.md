@@ -2152,6 +2152,17 @@ und Gale als Starter waren es nur bei einem Rampant-Begleiter zwei). Nichts wird
   gegen den einer absichtlichen Kombo nennt kein Text.
 - Eine Tabelle der 50 Affinitäten (WrathCombo): Der Tooltip hat sie.
 
+*Ketten aus mehr als einer Kombo – offen* (A885, im TODO „Beastmaster: Ketten aus mehr als einer Kombo“): In seinen
+Mitschnitten (11. und 14.11.2026, 58 und 43 Kombos, Aktionen 44910 bis 44916; je Kombo eine Zeile ohne und 2,1 s später
+eine mit Wirkung) hielt jede Kette genau eine Kombo; die nächste kam 26 bis 150 s später. Das Muster: Rallying
+Cheer und Rally, dann Trick und eine Axt, eine Kombo – beide Auffüller gehen in dieselbe erste Kombo. Jede Axt verbraucht
+alle TP (mindestens 100), Trick 100 TP des Begleiters (Action 44884, 47093); Rally gibt 40 TP plus 70 je Mastered
+Instinct, Rallying Cheer 30 TP des Begleiters plus 70 je Natural Instinct (44905, 44904). Daedalus (3189316,
+Werkzeugquelle) setzt die Auffüller zwischen die Glieder („beast → you → Rallying Cheer → beast → Rally → finisher“).
+Ob eine längere Kette mehr bringt als eine stärkere Axt aus denselben TP, nennt kein Wirktext („Eine höhere Kettenzahl
+erhöht den Zusatzschaden“ ohne Betrag); der Zusatzschaden je Kettenglied ist in seinen Mitschnitten messbar, sobald
+eine Kette zwei Kombos hält.
+
 *Gegenhypothesen:* Kein Gewinn, weil der Unterschied klein ist? Den Betrag nennt kein Text; K1 kostet nichts und verliert
 nirgends. Ausgeliefert, und nichts ändert sich? Mit einem Rampant-Begleiter war Gale schon die richtige Axt; ohne Katalog
 bleibt die alte Reihenfolge.

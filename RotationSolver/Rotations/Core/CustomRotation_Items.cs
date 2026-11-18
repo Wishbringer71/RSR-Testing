@@ -115,6 +115,8 @@ public partial class CustomRotation
 		if (DataCenter.InCombat)
 		{
 			_asksForTinctureInCombat = true;
+			// A885: the ask marks the rotation's burst for every buff aligned to it (concept 03, "Der Burst des Jobs als Uhr").
+			BurstClock.NoteAsk();
 		}
 
 		// Out of combat only under a countdown: a burst tincture drunk while waiting for a pull without one runs out

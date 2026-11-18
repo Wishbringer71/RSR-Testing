@@ -2683,6 +2683,16 @@
    "status": "exception",
    "loop": "A880",
    "reason": "Definition of the median of the measured samples (middle element, or the mean of the two middle ones): arithmetic of the statistic, not a figure of the game (concept 03, A880)."
+  },
+  {
+   "file": "RotationSolver/Engine/Helpers/BurstClock.cs",
+   "code": "return _cadences.Count > 0 ? _cadences[_cadences.Count / 2] : float.NaN;",
+   "values": [
+    "2"
+   ],
+   "status": "exception",
+   "loop": "A885",
+   "reason": "Definition of the median of the measured burst cadences (the middle element of the sorted list): arithmetic of the statistic, not a figure of the game (concept 03, A885)."
   }
  ]
 }

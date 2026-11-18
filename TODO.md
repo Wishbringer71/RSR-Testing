@@ -34,10 +34,12 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
 
 ## Offene Arbeit
 
-- **Crucible, drittes Brett und Phantom Aim: Daedalus v0.1.124/125 auswerten** (A884). Im Kampf: Daedalus führt für das
-  dritte Brett Teams je Kampf, Tankzuweisung, Laden, Weg durch Gabelungen und einen zweiten Plan; Phantom Aim wartet auf
-  den Burst des Jobs. Ob RSRs Brettregeln (Konzept 21) und Kreszentia daraus gewinnen, ist ungeprüft. Nächster Schritt:
-  den Code von Daedalus 3189316 und dd3690d gegen Konzept 21 und den Kreszentia-Abschnitt lesen, Loop. **N**. Konzept 21.
+- **Beastmaster: Ketten aus mehr als einer Kombo** (A885). Im Kampf: In seinen Läufen hielt jede Kette genau eine Kombo;
+  Rally und Rallying Cheer gingen beide in dieselbe erste Kombo, die nächste kam 26 bis 150 s später. Nach dem
+  Community-Wiki (Werkzeugquelle) wächst der Schaden einer Kombo mit ihrem Platz in der Kette (1,0- bis 3,0-fach), und
+  jede weitere Kombo braucht nur eine Instinktfertigkeit statt zwei. Ort: `BST_Reborn.AttackAbility` (Axt, Trick, Rally,
+  Rallying Cheer). Nächster Schritt: Anteil der Kombos am Schaden und TP-Gewinn je GCD in seinen Mitschnitten messen,
+  dann die Verkettung im Loop. **N**. Konzept 01, „Ketten aus mehr als einer Kombo“.
 
 ## Technische Schuld
 

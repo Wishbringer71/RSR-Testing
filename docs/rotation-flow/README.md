@@ -57,7 +57,7 @@ einer allgemeinen Regel steht.
 | Dungeon, Pull | `09` („Die Abwehr im Pull"), `02` („Feindseligkeit im Pull") |
 | Savage, High-End | `03` („Tinktur nur in schwierigen Kämpfen"), `13` (gelernte Flächen und Tankbuster) |
 | Unreal | `07` („Heilziele außerhalb der Gruppe: Figuren, die nur Einzelheilung besiegt"), `03` („Limit Break allein") |
-| Occult Crescent, Eureka, Bozja | `11` („Tote, die nur die Wiederbelebung des Inhalts aufhebt"), `05` („Bewegungsfähigkeiten", Phantomjobs), `07` (Heilungen der Inhaltsrotationen), `10` (Occult Falcon) |
+| Occult Crescent, Eureka, Bozja | `11` („Tote, die nur die Wiederbelebung des Inhalts aufhebt"), `05` („Bewegungsfähigkeiten", Phantomjobs), `07` (Heilungen der Inhaltsrotationen), `10` (Occult Falcon), `03` („Der Burst des Jobs als Uhr", Phantom Aim) |
 
 **Der Knoten der Kampffamilie ist `08`.** Heilung, Barriere und Minderung sind drei Antworten auf
 dieselbe Frage; die Ordnung zwischen ihnen steht dort, die Messung der Treffergröße in `13`, die

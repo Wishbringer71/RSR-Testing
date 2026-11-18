@@ -2,7 +2,7 @@
 
 [Rotation("Phantom Jobs Loaded", CombatType.PvE)]
 
-public sealed class PhantomDefault : PhantomRotation
+public sealed partial class PhantomDefault : PhantomRotation
 {
 	#region Configs
 	[RotationConfig(CombatType.PvE, Name = "Save Phantom Attacks for class specific damage bonus?")]
@@ -261,7 +261,8 @@ public sealed class PhantomDefault : PhantomRotation
 			return true;
 		}
 
-		if (InCombat && PhantomAimPvE.CanUse(out act))
+		// A885 (concept 03, "Der Burst des Jobs als Uhr"): Aim waits for the job's burst where that costs no use.
+		if (InCombat && PhantomAimPvE.CanUse(out act) && !HoldsAimForBurst())
 		{
 			return true;
 		}
@@ -1341,6 +1342,12 @@ public sealed class PhantomDefault : PhantomRotation
 			if (HasTankInvuln) // already invuln'd
 			{
 				return true;
+			}
+
+			// A885 (concept 07, "Sternenfall vor einer laufenden Phantom-Verjüngung"): its heal follows within a GCD.
+			if (StarfallWaitsForRejuvenation())
+			{
+				return false;
 			}
 
 			if (Player?.GetEffectiveHpPercent() > 90 && (!HasTankStance || Player?.GetEffectiveHpPercent() > 120) && (!SaveInvulnForStarfall || OracleLevel < 6)// Not the tank or won't kill ourselves (directly) and either can't or won't be invuln'ing self for this

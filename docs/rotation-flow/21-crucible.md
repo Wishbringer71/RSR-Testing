@@ -1800,6 +1800,30 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     oder Schutzbegleiter mehr auf dem Horn; mit Unterbrechern im anstehenden Kampf bleibt er. *Ausgeliefert, und nichts
     ändert sich?* Vor der ersten Verlustmessung, ohne gelernte Art auf dem weiteren Weg, mit zwei Seelen-Begleitern im
     Kader oder wenn er genug LP für zwei Verluste hat.
+  *Abgleich mit Daedalus v0.1.124* (3189316, 17.11.2026, „Crucible Third Degree“: Pläne für den dritten Grad, vor allem
+  auf dem ersten Brett; Werkzeugquelle, je Punkt an RSRs Code und am Spiel geprüft, 18.11.2026, A885):
+  - *Begleiter, die ein späterer Kampf braucht, tanken nicht; ein entbehrlicher nimmt die Tankbuster.* RSR führt das als
+    Reserve (Stufe 1 bis 3) für die Fälle, in denen ein Begleiter über das Überleben eines späteren Kampfs entscheidet
+    – Endkampf-Heiler und den einzigen Unterbrecher – und hat das Zurückhalten der Schwächentreffer mit Grund verworfen
+    (Stufe 2). Daedalus' Liste je Kampf ist ein fester Plan für einen Grad und ein Brett. *Keine Änderung.*
+  - *Ein Trank bleibt, wenn eine Campsite folgt; dort nur unter 20 % LP*, mit der Begründung „the camp heals 90%“. Die
+    Campsite gab in seinem Lauf 30 % je Begleiter (Spur vom 07.11.2026, oben unter Stufe 2); 90 % ist unbelegt. RSR heilt
+    unter seiner Trankschwelle („Use HP potions below this HP“). Eine Schwelle von 20 % stünde gegen seine Regel, dass
+    Sicherheit vor dem Vorrat geht. *Keine Änderung.*
+  - *Tome of the Impervious gegen einen physischen Tankbuster, ein Schutzmittel gegen magischen:* RSR wählt den Schutz
+    schon nach der Angriffsart (Schritt 6, `CrucibleItemKind.NullifyPhysical` und `ReflectMagic`). *Keine Änderung.*
+  - *Gift der Terrormilbe:* RSR nimmt das Bestien-Gegengift bei Gift sofort (unmittelbare Gefahr, K8), Daedalus erst
+    unter 60 % LP. Das Antigift-Serum trinkt Daedalus auch vergiftet; sein Wirktext erhöht nur die Resistenz
+    („Increases poison resistance by 100%“) und heilt bestehendes Gift nicht. *Keine Änderung.*
+  - *Der Kampf beginnt erst, wenn der erste Begleiter draußen ist und Borrow gegangen ist.* Daedalus läuft selbst zum
+    Gegner; RSR bewegt dich nicht, du eröffnest. *Nicht übertragbar.*
+  - *Essen vor jedem Lauf, Futter, Weg durch die Gabelungen nach einem Video:* Essen nimmst du selbst; Futter (K14) und
+    Weg (K10) rechnet RSR aus den Blättern und den eigenen Messungen, nicht aus einem festen Plan. *Keine Änderung.*
+  - *Ketten der Instinktfertigkeiten* („a chain is no longer dropped while one half waits for the other“; „two intentional
+    combos can't come back to back“): Die zweite Aussage steht nicht im Job-Guide (na, „Intentional Combos“, abgerufen
+    18.11.2026) – unbelegt. Gemessen in seinen Mitschnitten (11. und 14.11.2026, Aktionen 44910 bis 44916): Jede Kette
+    hielt genau eine Kombo, die nächste kam 26 bis 150 s später. Das ist eine Frage der Rotation (Konzept 01,
+    „Kompass“) und steht im TODO („Beastmaster: Ketten aus mehr als einer Kombo“).
 
 *Falsifikation:* Kein Defekt, weil das erste Brett zweimal ohne Tod fiel? Das gelang mit Gegenständen und Zähnefletschen
 von seiner Hand; die Meisterbretter haben Rang 20 und 25 und Gegner ohne Schwäche. Option falsch? K1 ohne gemessenen

@@ -67,6 +67,22 @@ Occult Elixir, Occult Chakra, Occult Resuscitation, Blessing und Phantom Judgmen
 Bis A519 lasen diese den Stand, weil der Prüfer die Inhaltsrotationen als außerhalb seines Profils ausließ und seine
 Liste der Heilnamen ihre Namen nicht kannte. Abwehrschwellen (sterbender Tank, Intervention, Cover, The Blackest Night)
 sind keine Heilschwellen und bleiben am Stand. `check_heal_threshold_forecast.py` hält das in der CI fest.
+
+**Sternenfall vor einer laufenden Phantom-Verjüngung** (A885; Anlass Daedalus 3189316, v0.1.124, „Rejuvenation is timed
+for Starfall“, Werkzeugquelle). *Mechanik* (Action 41640 und 41643, xivapi v2, 18.11.2026): Sternenfall des
+Phantom-Orakels trifft dich selbst mit bis zu 90 % deiner maximalen LP und die Gegner mit 1.000 Potenz; RSR setzt ihn nur
+über 90 % LP, unter Unverwundbarkeit oder nicht vor einer Fläche. Phantom-Verjüngung heilt dich und die Gruppe in 30
+Yalm mit 90.000 Potenz, wenn sie nach 20 s abläuft; RSR setzt sie vor einer angekündigten Fläche (Abwehr der Gruppe).
+Die Prophezeiung hält 30 s, ihre Karten wechseln darin (Action 41636). *Regel:* Läuft eine Verjüngung auf dir, die
+später als in einem GCD abläuft, und hält die Sternenfall-Karte länger als sie, wartet Sternenfall bis zum letzten GCD
+vor ihrer Heilung. Ohne Unverwundbarkeit stehst du nach Sternenfall bei etwa einem Zehntel deiner LP; die Heilung kommt
+dann binnen eines GCD statt irgendwann. Unter Unverwundbarkeit, ohne Verjüngung oder wenn die Karte vorher endet, gilt
+das Verhalten vorher. *Verworfen:* Daedalus drückt die Verjüngung etwa 12 s vor Predict, damit ihre Heilung einige
+Sekunden in die Prophezeiung fällt. An welcher Stelle der 30 s Sternenfall kommt, sagt kein Wirktext; die Heilung träfe
+ihn nur, wenn er früh kommt, und RSR nähme der Verjüngung dafür ihren Platz vor der Fläche. *Gegenthese:* Das Warten
+kostet Sternenfall, wenn die Karte doch früher endet. Ausgeschlossen: Gewartet wird nur, solange die Karte die Heilung
+überdauert. *Ausgeliefert, und nichts ändert sich?* Wenn nie eine Verjüngung läuft, sobald die Sternenfall-Karte kommt –
+dann bleibt alles wie vorher; die Spur schreibt „starfall: waits for phantom rejuvenation …“.
 Wie weit voraus, hängt von der Heilart ab (A213, Konzept 08): Eine oGCD-Heilung blickt nur so weit voraus, wie die
 laufende Ausführungssperre reicht, eine GCD-Heilung um den Rest des GCD und ihren Wirkvorgang. Maßgeblich ist, wann
 die Heilung landet: Synastry, Krasis, Soteria und Emergency Tactics heilen erst mit dem nächsten GCD und lesen wie

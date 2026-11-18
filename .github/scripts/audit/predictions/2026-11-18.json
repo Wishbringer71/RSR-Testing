@@ -33,5 +33,26 @@
   "kind": "each",
   "situation": "tincture held: ",
   "match": "tincture held: (\"Tincture usage\" \\w+ allows none here \\(high-end (True|False)\\)|no \\w+ tincture in the bags|the \\w+ tincture held is switched off in the item list|it waits for a later burst) \\| \\w+ at [0-9]+ s$"
+ },
+ {
+  "id": "phantom-aim-hold-line-form",
+  "archive": "A885",
+  "kind": "each",
+  "situation": "phantom aim: held",
+  "match": "phantom aim: held for the burst in [0-9.,]+ s \\| fight [0-9]+ s left \\| cadence [0-9]+ s \\| \\w+$"
+ },
+ {
+  "id": "phantom-aim-hold-not-lost",
+  "archive": "A885",
+  "kind": "absent",
+  "situation": "phantom aim: ",
+  "match": "phantom aim: hold ended with the fight"
+ },
+ {
+  "id": "starfall-waits-line-form",
+  "archive": "A885",
+  "kind": "each",
+  "situation": "starfall: waits",
+  "match": "starfall: waits for phantom rejuvenation, which heals in [0-9.,]+ s \\| card [0-9.,]+ s left$"
  }
 ]

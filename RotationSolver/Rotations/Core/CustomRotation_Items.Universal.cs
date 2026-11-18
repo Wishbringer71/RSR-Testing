@@ -105,11 +105,24 @@ public partial class CustomRotation
 		: 0f;
 
 	// A780: per territory, the combat time of the second burst - the first ask for a tincture after a gap longer than
-	// the tincture lasts - and this pull's state of it.
+	// the tincture lasts. The asks are counted by the burst clock that every buff aligned to the burst reads (A885).
 	private static readonly Dictionary<uint, float> _secondBurstAt = [];
-	private static float _lastAskAt;
-	private static float _lastCombatSeen;
-	private static bool _laterBurst;
+
+	/// <summary>The rotation's bursts as a tincture sees them: a new one after a gap longer than a tincture lasts.</summary>
+	internal static readonly BurstClock TinctureClock = new(TinctureSeconds);
+
+	// The longest effect of the tinctures known (all last the same today); 0 before the item list is read - then every
+	// ask after another is a new burst, as with no tincture to cover them.
+	private static float TinctureSeconds()
+	{
+		var longest = 0f;
+		foreach (var medicine in Medicines)
+		{
+			longest = Math.Max(longest, medicine.EffectSeconds);
+		}
+
+		return longest;
+	}
 
 	// A781 (concept 03, "Opener oder später"): the jobs whose two-minute burst carries more of their own damage than the
 	// opener, measured on FFLogs with the tincture taken out at 0 % and at its upper bound (tincture_windows.py,
@@ -125,31 +138,15 @@ public partial class CustomRotation
 	/// </summary>
 	internal static bool TinctureWaitsForLaterBurst(float effectSeconds, float recastSeconds)
 	{
-		var combat = DataCenter.InCombat ? DataCenter.CombatTimeRaw : 0f;
-		if (combat < _lastCombatSeen)
-		{
-			_lastAskAt = 0f;
-			_laterBurst = false;
-		}
-
-		_lastCombatSeen = combat;
 		var territory = DataCenter.Territory?.Id ?? 0;
-		if (DataCenter.InCombat)
+		var at = TinctureClock.LaterBurstAt;
+		if (!float.IsNaN(at))
 		{
-			if (!_laterBurst && combat - _lastAskAt > effectSeconds)
+			if (territory != 0 && (!_secondBurstAt.TryGetValue(territory, out var known) || at < known))
 			{
-				_laterBurst = true;
-				if (territory != 0 && (!_secondBurstAt.TryGetValue(territory, out var known) || combat < known))
-				{
-					_secondBurstAt[territory] = combat;
-				}
+				_secondBurstAt[territory] = at;
 			}
 
-			_lastAskAt = combat;
-		}
-
-		if (_laterBurst)
-		{
 			return false;
 		}
 
