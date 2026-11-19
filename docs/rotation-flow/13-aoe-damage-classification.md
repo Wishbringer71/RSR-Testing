@@ -1085,6 +1085,21 @@ bewertet. Und es ist genau der Inhalt, in dem Minderungen geplant werden: Eine A
 eine Bagatelle geht, fehlt am nächsten harten Einschlag. Im Roulette fällt dieselbe Verschwendung
 niemandem auf; in einem Savage-Kampf ist sie der Unterschied zwischen Durchkommen und Wipe.
 
+## Flächen ohne BossMod-Modul: Splatoons Anzeige als Vorbild
+
+*Sein Vorschlag (19.11.2026):* „es gibt in dem plugin splatoon ein experimentelles feature zur anzeige von
+schadensflächen. das ist nicht perfekt und zeigt einige falsch bzw. versetzt an. wenn man die mängel aber beseitigen
+könnte, wäre es ein hilfreicher ersatz zu bossmod, wo für kämpfe nichts oder nur teilweise vorliegt." *Einordnung:*
+Vorschlag; Prüfaufgabe im Loop.
+- *Stand in RSR:* RSR leitet die Form jedes gegnerischen Flächenzaubers schon selbst aus den Blättern ab, ohne BossMod
+  (`CastType`, `EffectRange`, Kegelwinkel und Innenradius aus dem Omen, Richtung aus `Character.CastRotation`; oben,
+  „Wen ein gelisteter Flächencast erreicht"). Mehrere der Fehler, die er bei Splatoon sieht – Kegel als Kreis, versetzte
+  Linien, Ringe ohne Innenkreis –, sind solche, die RSR dort an Mitschnitten berichtigt hat (A731, A766).
+- *Offen:* Splatoons Quelltext lesen (PunishXIV/Splatoon, Werkzeugquelle), seine Mängel an RSRs Formen messen und
+  klären, wofür RSR die eigenen Formen dort nutzt, wo BossMod kein Modul hat. Kandidaten sind die Wirkzeitsperre und
+  die Bewegungssperre, die heute ohne Modul nur reaktiv wirken. Eine Anzeige zeichnet RSR heute nicht; ob es eine
+  braucht, gehört zur Prüfung (TODO, „Splatoons Flächenanzeige").
+
 ## Was gemessen wird, und was nicht
 
 **Der höchste Anteil im Effektsatz, nicht der mittlere.** Ein Effektsatz trifft acht Mitglieder mit
