@@ -26,6 +26,12 @@ What this release changes in the fight. For the whole distance from upstream, se
   attack lands - its cast and the rest of the GCD - no longer counts toward the number of enemies the area needs. A
   Holy III that would have landed on two, because the third fell during the cast, becomes Glare.
 
+- **Area attacks at a row of training dummies.** The dummies next to the one you hit counted as enemies not fighting
+  yet, so every area that grazed them waited: at the dummies in Living Memory the samurai left Ogi Namikiri and Zanshin
+  unused after Ikishoten and stood up to 28 s with auto-attacks only. A training dummy never fights and pulls nothing;
+  areas hit past it as at a single dummy. When no weaponskill or spell comes for longer than a GCD although one could,
+  the trace now writes "gcd idle: ..." with what was chosen and why each one was refused.
+
 ## Seeing what the enemies do
 
 - **One right picture per enemy area (needs Splatoon).** Circles and lines an enemy casts without the game's orange

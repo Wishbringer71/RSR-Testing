@@ -68,5 +68,12 @@
   "kind": "absent",
   "situation": "area display:",
   "match": "area display: Splatoon's projection settings are not readable"
+ },
+ {
+  "id": "gcd-idle-line-form",
+  "archive": "A923",
+  "kind": "each",
+  "situation": "gcd idle:",
+  "match": "gcd idle: [0-9]+[.,][0-9] s without a GCD - chosen [^;]+(; refused .+)?$"
  }
 ]

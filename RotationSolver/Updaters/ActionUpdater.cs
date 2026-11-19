@@ -125,6 +125,8 @@ internal static partial class ActionUpdater
 		finally
 		{
 			ActionTracer.EndFrame(NextAction);
+			// A923: a stretch with the GCD free and none coming, with what was chosen and refused.
+			GcdIdleWatch.Frame(NextGCDAction);
 			// A819: True North and the target's status change without a new GCD; the side is asked again each frame.
 			DesiredPositional = CalculateDesiredPositional();
 		}

@@ -26791,6 +26791,39 @@ die Reichweite“ aus sechs Ringen; belegt ist das für den Außenrand. Berichti
 Außenrand und bleibt unverändert.
 *Prüfgrad:* statisch am Modulcode und an den Blättern.
 
+### A923 · Samurai an der Puppenreihe: Flächen gesperrt, weil Nachbarpuppen „noch nicht kämpften“; Sonde GCD-Leerlauf (19.11.2026)
+
+*Anlass:* seine Meldungen vom 19.11.2026: „die rotationen an den trainingspuppen scheinen fehlerhaft zu sein, speziell der
+samurai“, „bei der trainingspuppe macht der samurai nur autoattacke über einen längeren zeitraum“ (Upload d2a1f6d0,
+ea095631; Build c93ec988b).
+*Gemessen (Mitschnitt 19.11.2026, Living Memory, Samurai 20:10:46–20:15:26, ein Kampf von 289 s):* GCD-Lücken über 4 s
+nur zwei, beide nach Ikishoten: 28,3 s nach Jinpu (20:12:54,9 bis Gekko 20:13:23,2) und 15,9 s unter Meikyo (20:14:50,8
+bis Gyofu 20:15:06,7); dazwischen nur Auto-Attacke, kein Wirkbeginn. Ogi Namikiri und Zanshin nach dem zweiten und dritten
+Ikishoten ungenutzt abgelaufen, eine Meikyo-Ladung verfallen. Der erste Stillstand endete in derselben Zehntelsekunde, in
+der „Ogi Namikiri Ready“ ablief (Senei 0,09 s danach). Spur: Zanshin 3.156-mal „NoTarget“, „GCD free with nothing
+queued 50,90 s“. Der Monk an derselben Puppe (19:52–20:04) hatte keine Lücke über 4 s. Am 15.11. (Build 9036b6874) kam
+nach allen drei Ikishoten Ogi Namikiri und Zanshin.
+*Ursache, am Mitschnitt und Code:* In Living Memory stehen vier Puppen in einer Reihe, je 8 Yalm auseinander (X −12, −4,
+4, 12). Seit A884 (18.11.) verschont jede Fläche einen Gegner, der „noch nicht kämpft“ (kein Ziel, kein
+Kampfkennzeichen) und den die Einstellung zum Angriff ablehnt; eine Puppe erfüllt beides immer. Von der Flanke aus,
+längs der Reihe, reichen Ogi Namikiri und Zanshin bis zur Nachbarpuppe – der Mittelpunkt scheidet aus
+(`GetCanTargetCount` −1), die Aktion hat kein Ziel. Die Rotation ist seit dem 15.11. unverändert.
+*Gebaut:* (1) Eine Trainingspuppe (`IsDummy`) kämpft nie „noch nicht“ (`DataCenter.NotFightingYet`): Sie greift nicht an,
+eine Fläche, die sie streift, zieht nichts. Gilt für Flächen, „Don't pull new enemies with AoE", die Angriffseinstellung
+und die Schlafregel. (2) Sonde „gcd idle“ (`GcdIdleWatch`): Am Ende jeder Strecke über einen GCD mit freiem GCD, Gegner in
+Reichweite und ohne GCD schreibt RSR die Dauer, den gewählten GCD und die Ablehnungen der GCDs mit Grund.
+*Offen:* Warum nach dem abgelehnten Ogi auch Gekko nicht kam – am Code fällt `SAM_Reborn.GeneralGCD` dann auf Gekko.
+*[Schätzung: eine Wahl, die bei der Auswahl besteht und beim Drücken nicht; der Kegel hängt an der Blickrichtung]*; die
+Sonde zeigt es. Am selben Ort wäre der Stillstand auch mit einem ruhenden Rudel neben dem Ziel möglich.
+*Falsifikation:* (1) kein Defekt – widerlegt, 44 s ohne GCD. (2) Option falsch, Puppen sollten verschont bleiben – eine
+Puppe zieht keinen Kampf; was die Einstellung schützt, gibt es an ihr nicht. (3) ausgeliefert, nichts ändert sich – der
+Stillstand hat eine zweite Ursache als den Kegel; dann nennt ihn die Sonde.
+*Nebenbefund:* Ohne Countdown eröffnet der Samurai mit Gyofu und zieht Meikyo erst im Kampf (`AttackAbility`); The Balance
+(7.4) setzt Meikyo vor den Pull. Gilt für jeden Job, der Vorbereitungen nur im Countdown macht – TODO.
+*Prüfgrad:* Compile, Prüfskripte; im Spiel nicht beobachtet. *Vorhersage:* an seiner Puppenreihe kommen Ogi Namikiri und
+Zanshin nach jedem Ikishoten, keine GCD-Lücke über 4 s außer Bewegung; jede Zeile „gcd idle:“ in der Form
+`gcd-idle-line-form`.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

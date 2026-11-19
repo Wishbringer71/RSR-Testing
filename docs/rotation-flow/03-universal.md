@@ -1414,6 +1414,21 @@ hier, Assise wecke keinen Schlafenden mehr – das galt nur mit Markierung (C209
 *Gegenthese 1 (Assise ist eine Heilung):* Ihr Heilanteil ginge mit der Sperre verloren. Nicht widerlegt, aber gewollt:
 Der Schalter fragt, ob eine Aktion Gegner trifft, nicht wozu sie gedrückt wird; eine Heilung, die einen neuen Pack
 zieht, kostet mehr LP, als sie bringt.
+*Trainingspuppen kämpfen nie und ziehen nichts (A923):* Eine Puppe hält kein Ziel und trägt das Kampfkennzeichen nicht
+verlässlich; als „kämpft noch nicht" eingestuft, sperrte sie seit A884 jede Fläche, die sie streifte. *Gemessen (sein
+Mitschnitt 19.11.2026, Living Memory, Build c93ec988b):* Dort stehen vier Puppen in einer Reihe, je 8 Yalm auseinander.
+Seine Samurai-Sitzung an der dritten: Zanshin 3.156-mal mit „NoTarget“ abgelehnt, Ogi Namikiri nach dem zweiten und
+dritten Ikishoten nie gewirkt, beide Bereitschaften ungenutzt abgelaufen; nach dem ersten Ikishoten, kurz nach dem Pull,
+gingen beide. Am 15.11. (Build 9036b6874, vor A884) gingen alle drei. Die Kegel reichen von der Flanke aus, längs der
+Reihe, bis zur Nachbarpuppe. *Gilt:* Eine Puppe (`IsDummy`) kämpft nie „noch nicht“ (`DataCenter.NotFightingYet`) – für
+die Flächen, „Don't pull new enemies with AoE", die Einstellung zum Angriff und die Schlafregel gleich. Grund: Eine Puppe
+greift nicht an; eine Fläche, die sie streift, zieht nichts in den Kampf. *Im Kampf:* An einer Puppenreihe kommen
+Flächen- und Kegelangriffe wie an einer einzelnen Puppe. *Offen:* In beiden Fenstern kam 28 s und 16 s lang gar kein GCD,
+obwohl die Rotation nach einem abgelehnten Ogi Namikiri auf Gekko fällt (`SAM_Reborn.GeneralGCD`); der Stillstand endete
+in derselben Zehntelsekunde, in der „Ogi Namikiri Ready“ ablief. Der Weg dahin ist am Code nicht gefunden
+*[Schätzung: eine Wahl, die in der Auswahl besteht und beim Drücken nicht – der Kegel hängt an der Blickrichtung]*; die
+Sonde „GCD-Leerlauf“ (unten, „Bereit, aber nicht genutzt") schreibt ihn beim nächsten Mal.
+
 *Gegenthese 2 (ein Gegner ohne Ziel kämpft doch):* Ein Gegner kann im Kampf kurz kein Ziel halten (Wirken auf den
 Boden, Phasenwechsel). Bis A833 wartete die Fläche dann. *Widerlegt seit A833:* Als „kämpft noch nicht" gilt ein Gegner
 nur, wenn er weder ein Ziel hält noch im Kampf steht (das Kampfkennzeichen seiner Figur, `ObjectHelper.InCombat`) – für
@@ -2371,6 +2386,15 @@ GCD-Tabelle der Spur macht ihn messbar.
   ist der Unterschied unter 0,1 s, ohne Wirkung im Kampf.
 
 ## Bereit, aber nicht genutzt
+
+*GCD-Leerlauf (A923):* Steht der GCD im Kampf frei, ein Gegner in Reichweite, RSR spielt und der Spieler wirkt nicht,
+und kommt länger als einen GCD lang keiner, schreibt RSR am Ende dieser Strecke eine Zeile: wie lange, welchen GCD die
+Rotation in der Strecke gewählt hatte (keinen oder welchen) und welche GCDs `CanUse` mit welchem Grund ablehnte.
+*Anforderung:* Seine Samurai-Sitzung vom 19.11.2026 lief 44 s nur mit Auto-Attacke, und die Spur sagte nicht, warum –
+die Bilanz zählt nur „GCD free with nothing queued 50,90 s“. Ohne die Zeile bleibt jeder solche Stillstand eine
+Vermutung; der Schaden ist ein ganzer Burst. *Bauart:* Es sitzt dort, wo die Rotation entscheidet
+(`ActionUpdater.UpdateNextAction`), liest die Ablehnungen, die `ActionTracer.Reject` ohnehin meldet, und greift nicht
+ein. Kosten je Frame: ein Vergleich, solange kein Leerlauf läuft.
 
 Geltender Stand (A820): Kommt ein Cooldown, der eine eigene Abklinggruppe hat, im Kampf länger als einen GCD nicht,
 obwohl er bereit ist, schreibt RSR am Kampfende je Aktion, wie lange er bereit stand, wie oft ihn die Rotation fragte

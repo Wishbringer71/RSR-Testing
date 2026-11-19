@@ -162,6 +162,7 @@ internal static class ActionTracer
 	{
 		DefenseTrace.NoteRefused(a, reason);
 		BurstWatch.Refused(a, reason);
+		GcdIdleWatch.Refused(a, reason);
 		if (!Enabled)
 		{
 			return false;
