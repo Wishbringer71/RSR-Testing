@@ -26450,6 +26450,39 @@ Baustein für K4 (vergangene Bewegung, nicht vorhergesagte).
 
 *Prüfgrad:* Compile, alle Prüfungen, Matrix des Beschwörers neu erzeugt. Im Spiel nicht beobachtet.
 
+### A908 · Bretter: Verbrauchsgegenstände in allen acht Läufen vom 18.11.2026 (19.11.2026)
+
+*Auftrag (19.11.2026):* „erneut bretter prüfen, ob die verbrauchsgegenstände umfassend genutzt wurden und da wo es am
+sinnvollsten war“.
+*Umfang:* jeder Brettlauf des jüngsten Uploads (994f52d8, Build vom 18.11.2026): 8 von 8 Läufen, je Lauf Bestand vor und
+nach dem Endkampf, jede Gegenstandsentscheidung der Spur, die erhaltenen Boni der Abrechnung. Ältere Uploads liefen auf
+älteren Builds und sind in A683 und A897 ausgewertet.
+
+*Ergebnis je Lauf* (Rest nach dem Endkampf; Boni): 13:56 Brett 2: zwei Tome of the Impervious, Merchant's Eye, Thief's
+Eye; Unversehrter Bändiger. 14:10 Brett 2: zwei Tome, Antiparalysis-Serum, Tome of Reflection, Merchant's Eye, G3 Beast
+Potion; Unversehrter Bändiger. 14:26 Brett 2: nichts; Geizhals, Talerregen, Unversehrter Bändiger. 19:23 Brett 3:
+Thief's Eye. 19:47 Brett 1: G3 und G2 Beast Potion, Tome; *ohne* Unversehrter Bändiger. 19:59 Brett 1: G3 Beast Potion;
+*ohne*. 20:10 Brett 1: G2 und G3 Beast Potion, Antipoison-Serum; *ohne*. 20:22 Brett 2: zwei G3 Beast Potion, Tome,
+Thief's Eye, Merchant's Eye; Unversehrter Bändiger. Sparsamkeit und Sammelleidenschaft standen in keinem Lauf mehr;
+der Rest hatte also keinen Bonus zu schützen.
+
+*Befunde:*
+1. *Auffüllen zu spät* (Brett 1, drei Läufe): Der Trank ging 0,4 s und 0,9 s vor dem vorhergesagten Ende, der Kampf endete
+   0,14 s nach der Entscheidung; im dritten Lauf kam die Vorhersage nie unter einen GCD. Je 250 Punkte und LP-Punkte
+   verloren. *Behoben:* Ohne Gegenstandsbonus beginnt das Auffüllen (Heilgegenstände + 1) GCDs vor dem Ende
+   (`FinalFightEndsWithin`); mit Bonus wie bisher nichts im letzten GCD.
+2. *Tome of the Impervious blieb im Endkampf liegen* (vier Läufe): Ohne angekündigten Treffer kannte `Protection` keine
+   Angriffsart und nahm nur ein Minderungsmittel. *Behoben:* Greift ein Gegner ihn ohne Ankündigung an, gilt der
+   Auto-Angriff, also physisch: das Mittel gegen physische Angriffe.
+3. *Merchant's Eye und Thief's Eye* (fünf Läufe): RSR kennt beide nicht. Nicht gebaut; TODO mit den offenen Fragen.
+4. *Übrige Reste ohne Wert:* Seren ohne Gefahr ihres Zustands, Tome of Reflection ohne magischen Angriff – richtig liegen
+   geblieben.
+
+*Prüfgrad:* Spur und Abrechnung aller acht Läufe, Compile. *Vorhersage (von Hand):* Im nächsten Endkampf ohne
+Gegenstandsbonus mit übrigem Heilgegenstand steht „it brings you from … to full“ mindestens zwei GCDs vor dem Ende, und
+die Abrechnung nennt „Unversehrter Bändiger“; ein gehaltenes Tome geht im Endkampf mit „its auto-attack is physical“.
+Widerlegt, wenn einer der beiden Läufe ohne Bonus bzw. mit liegendem Tome endet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

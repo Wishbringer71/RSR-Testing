@@ -841,17 +841,19 @@ public partial class BeastmasterRotation
 		}
 
 		var attackType = AttackTypeAt(chara);
-		var slot = AttackTypeKind.IsPhysical(attackType)
-			? FirstOf(crucible, CrucibleItemKind.NullifyPhysical)
-			: AttackTypeKind.IsMagic(attackType)
-				? FirstOf(crucible, CrucibleItemKind.ReflectMagic)
+		// A908: no announced kind - an enemy attacks him - is its auto-attack, which is physical; before, only a mitigating
+		// item went then, and Tome of the Impervious stayed held to the end of four of his eight runs of 18.11.2026.
+		var slot = AttackTypeKind.IsMagic(attackType)
+			? FirstOf(crucible, CrucibleItemKind.ReflectMagic)
+			: AttackTypeKind.IsPhysical(attackType) || !HitAnnouncedOn(chara)
+				? FirstOf(crucible, CrucibleItemKind.NullifyPhysical)
 				: -1;
 		if (slot < 0)
 		{
 			slot = MostOf(crucible, CrucibleItemKind.Mitigate);
 		}
 
-		why = $"against an announced hit (attack type {attackType})";
+		why = HitAnnouncedOn(chara) ? $"against an announced hit (attack type {attackType})" : "an enemy attacks you - its auto-attack is physical";
 		return slot;
 	}
 
@@ -1457,18 +1459,21 @@ public partial class BeastmasterRotation
 		why = string.Empty;
 		var missing = 1f - player.GetHealthRatio();
 		var held = 0f;
+		var healItems = 0;
 		for (var i = 0; i < crucible->Inventory.Length; i++)
 		{
 			if (TryItem(crucible, i, CrucibleItemKind.Heal, out var heal))
 			{
 				held += heal.Value;
+				healItems++;
 			}
 		}
 
 		// A695: in the final fight, before its last enemy falls - before the next GCD by the time-to-kill forecast -, the
 		// smallest item that brings him to full: "Unversehrter Bändiger" and the HP the score counts. Overhealing costs nothing
 		// any more; earlier the order of the items does not change the HP at the end, only the last one decides the full HP.
-		if (finalFight && FinalFightEndsNow)
+		// A908: the window grows with the items held - one GCD each, and one for the item to land.
+		if (finalFight && (ItemBonusAtStake ? FinalFightEndsNow : FinalFightEndsWithin(healItems)))
 		{
 			// A712: with an item bonus still standing nothing goes in this last GCD - the fight ends, and the bonus
 			// outweighs the points of full HP, whatever the way test said before. Under every goal (A804): points for

@@ -1118,7 +1118,11 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     Elementschutz (Schritt 9) nur, wenn der Treffer nach seiner gemessenen Größe – gezielt: die Tabelle gezielter Treffer
     (`AimedHitLeaves`, A540), Fläche: der angekündigte Anteil (`AnnouncedAreaShare`) – ihn unter die Trankschwelle
     brächte, oder wenn seine Größe nicht gemessen ist (sichere Seite). Der Schutz im Endkampf, „während ein Gegner ihn
-    angreift", ist dann Versicherung und bleibt liegen. *Im Kampf (seine Läufe vom 11.11.2026):* Tome of the Impervious
+    angreift", ist dann Versicherung und bleibt liegen. *Ohne Gegenstandsbonus im Endkampf (A908):* Greift ein Gegner ihn
+    an, ohne dass ein Treffer angekündigt ist, kennt RSR keine Angriffsart; bis A908 ging dann nur ein Minderungsmittel,
+    und Tome of the Impervious blieb liegen – in vier seiner acht Läufe vom 18.11.2026 bis zum Ende. Auto-Angriffe sind
+    physisch; darum nimmt der Schutz ohne angekündigte Art das Mittel gegen physische Angriffe (fünf Blink-Ladungen,
+    120 s), sonst das mindernde. *Im Kampf (seine Läufe vom 11.11.2026):* Tome of the Impervious
     ging bei 78 % LP gegen den Tankbuster der Terrormilbe, Wildfire Weakener bei 63 % gegen einen Feuertreffer des Ogers;
     kein Treffer nahm in diesen Läufen mehr als 17 % seiner LP – beide kosteten Sparsamkeit (750), ohne dass ein Treffer
     ihn unter 40 % gebracht hätte. *Gegenthese 1 – Gift nach dem Treffer:* Der Tankbuster der Milben legt Gift; die Last
@@ -1202,6 +1206,16 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
       Kampf endet, und der Bonus wiegt mehr als die 250. Vorher wie bisher der größte ohne Überheilung: Die LP am
       Ende sind Anfangs-LP plus jede Heilung minus jeder Schaden, solange nichts überheilt – wann ein Gegenstand geht,
       ändert sie nicht, nur der letzte entscheidet über die 100 %.
+    - *Vorlauf des Auffüllens (A908, seine Läufe vom 18.11.2026):* Drei Läufe auf Brett 1 endeten ohne „Unversehrter
+      Bändiger", obwohl Heilgegenstände übrig waren. In zweien nahm RSR den Trank 0,4 s und 0,9 s vor dem vorhergesagten
+      Ende; der Kampf endete 0,14 s nach der Entscheidung (19:47:36), die Heilung kam zu spät. Im dritten fiel der letzte
+      Gegner, bevor die Vorhersage unter einen GCD kam. Ohne Gegenstandsbonus ist ein Heilgegenstand nach dem Kampf wertlos,
+      und ein zu frühes Auffüllen kostet nur einen Gegenstand, wenn danach ein Treffer kommt – der nächste füllt wieder auf.
+      Darum beginnt das Auffüllen so viele GCDs vor dem Ende, wie Heilgegenstände da sind, plus einen für das Eintreffen
+      (`EndFillWindow`): mit einem Gegenstand zwei GCDs, mit drei vier. Steht ein Gegenstandsbonus, gilt weiter: nichts im
+      letzten GCD (A712). *Gegenthese:* Ein Treffer nach dem frühen Auffüllen senkt die LP wieder. Dann füllt der nächste
+      Gegenstand auf; ist keiner mehr da, fehlen die 250 wie vorher, die LP-Punkte bleiben höher. *Vorhersage:* nach seinem
+      nächsten Lauf mit übrigem Heilgegenstand und ohne Bonus „Unversehrter Bändiger" in der Abrechnung.
     - *Gegen einen erhaltenen Gegenstandsbonus:* Ein Heilgegenstand am Ende bringt 250 und die LP-Punkte seiner
       Heilung, gegen 750 (Sparsamkeit) oder 1.000 (Sammelleidenschaft). *Gemessen (A800, seine Abrechnung vom 14.11.2026,
       Brett 2):* 2.099 Rest-LP brachten 764 Punkte, rund 0,36 je LP; ein Gegenstand, der die Hälfte seiner LP heilt, bringt
@@ -1235,6 +1249,13 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
       Verlust entsteht nicht, nur kein Gewinn. (3) Ausgeliefert, und nichts ändert sich: Kein Heilgegenstand ist am Ende
       übrig, weil die übrige Heilung ihn vorher ohne Überheilung nahm. Die LP-Punkte sind dieselben (oben); nur die 250
       fehlen, wenn kein Gegenstand bis 100 % übrig bleibt.
+  - *Merchant's Eye und Thief's Eye (A908, nicht gebaut):* „Doubles the territory tokens earned for the next enemy space
+    cleared" und „Triples the loot drop rate for the next enemy space cleared", je 30 min (XBMItem 101 und 100, xivapi v2,
+    19.11.2026). RSR kennt beide nicht: Sie fallen in keine Art der Gegenstände (`CrucibleItemKind`), werden weder empfohlen
+    noch genutzt und lagen in fünf seiner acht Läufe vom 18.11.2026 am Ende ungenutzt. *Wert:* Marken für den Laden und
+    für Talerregen (mindestens 2.000 am Ende, 500 Punkte), Beute für die Ausrüstung. *Zu klären vor dem Bau:* Beide kosten
+    Sparsamkeit, solange sie steht, und senken die Zahl der gehaltenen Gegenstände (Sammelleidenschaft); welcher Kampf die
+    meisten Marken oder Beute bringt; welchen Status sie legen (für „steht schon"). TODO „Merchant's Eye und Thief's Eye".
   - *Nicht hier:* Teamgröße und Gattung (bis 4.250 und 750) gehören zum Kader (K7, „Teamgröße nach Punkten", „Team aus
     einer Gattung").
   - *Gegenthese 1 – Die schwerste gelernte Last unterschätzt den nächsten Lauf:* Ein Kampf kann schwerer werden als je

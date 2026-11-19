@@ -57,6 +57,14 @@ public partial class BeastmasterRotation
 		&& DataCenter.PackTimeToKill <= DataCenter.DefaultGCDTotal;
 
 	/// <summary>
+	/// K15 (A908): the final fight ends within as many GCDs as healing items are held, plus one for the item to land - the
+	/// window in which the spare healing fills him up for the score. A heal that comes too early costs only an item that is
+	/// worthless after the fight; one that comes too late cost "Unversehrter Bändiger" in three of his runs of 18.11.2026.
+	/// </summary>
+	private static bool FinalFightEndsWithin(int healItems) => InCombat && CrucibleBoard.IsFinalFight && DataCenter.IsPackTimeToKillKnown
+		&& DataCenter.PackTimeToKill <= DataCenter.DefaultGCDTotal * (healItems + 1);
+
+	/// <summary>
 	/// K11 (A585): what each familiar last left a fight with, beside what the team agent showed for it then; filled by the
 	/// rotation that follows the familiar out, cleared on a new area.
 	/// </summary>
