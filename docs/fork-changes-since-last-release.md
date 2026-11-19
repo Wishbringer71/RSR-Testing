@@ -28,7 +28,9 @@ What this release changes in the fight. For the whole distance from upstream, se
 
 - **Area attacks at a row of training dummies.** The dummies next to the one you hit counted as enemies not fighting
   yet, so every area that grazed them waited: at the dummies in Living Memory the samurai left Ogi Namikiri and Zanshin
-  unused after Ikishoten and stood up to 28 s with auto-attacks only. A training dummy never fights and pulls nothing;
+  unused after Ikishoten and stood up to 28 s with auto-attacks only: with Zanshin ready but blocked, the samurai saved
+  its Kenki up to 100, and every combo weaponskill refused itself against the overflow. Now the Kenki above Zanshin's
+  cost is spent while Zanshin waits. A training dummy never fights and pulls nothing;
   areas hit past it as at a single dummy. When no weaponskill or spell comes for longer than a GCD although one could,
   the trace now writes "gcd idle: ..." with what was chosen and why each one was refused.
 

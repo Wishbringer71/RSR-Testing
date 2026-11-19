@@ -30,11 +30,7 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
 
 ## Defekte
 
-- **GCD-Stillstand nach abgelehnter Fläche: Weg nicht gefunden** (A923). *Wirkung im Kampf:* Der Samurai stand 28 s und
-  16 s nur mit Auto-Attacke, solange Ogi Namikiri bereit war und die Fläche keinen Mittelpunkt hatte; am Code fällt die
-  Rotation dann auf Gekko. Dieselbe Lage entsteht mit einem ruhenden Rudel neben dem Ziel.
-  *Nächster Schritt:* die Zeile „gcd idle:“ im nächsten Upload lesen, Weg am Code belegen. *Konzept:* 03, „Bereit, aber
-  nicht genutzt".
+- Keine offenen Defekte.
 
 ## Offene Arbeit
 

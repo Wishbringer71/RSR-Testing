@@ -26857,6 +26857,28 @@ fallen, ohne Nutzen; es ist dieselbe Vorbereitung, die der Autor für den Countd
 *Prüfgrad:* Compile, Prüfskripte; im Spiel nicht beobachtet. *Vorhersage:* Samurai an der Puppe ohne Countdown: „pull
 prepared: Meikyo Shisui before …“, danach Gekko, Kasha, Yukikaze ohne Gyofu (`pull-prepared-line-form`).
 
+### A925 · Samurai: Kenki-Verklemmung bei bereitem, unbrauchbarem Zanshin (19.11.2026)
+
+*Anlass:* seine Rüge vom 19.11.2026: „du siehst dem vollständigen code, analysierst den vollständigen code anhand des logs
+und findest keine ursache? das ist erbärmlich! finde erst einmal heraus anhand von recherche, wie man korrekt analysiert
+und solche probleme löst. dann erneuter versuch in mehreren vollen loops“.
+*Verfahren (Recherche):* systematisches Debuggen nach Zeller („Why Programs Fail“; Delta Debugging, Universität des
+Saarlandes; Werkzeugquelle für das Verfahren): Infektionskette rückwärts vom Symptom, Hypothesen mit Vorhersage, Logbuch,
+Unterschiede zwischen gutem und schlechtem Lauf eingrenzen. Angewandt: Der Unterschied zwischen dem guten ersten Fenster
+und den beiden schlechten war nicht Ogi, sondern Zanshin – im ersten verbraucht, in den beiden anderen bereit und
+unbrauchbar. Hypothese: eine Leiste klemmt. Vorhersage: Kenki steht im Stillstand auf 100. Belegt an der Leistenzeile
+des Mitschnitts (31): 90 nach Ikishoten, 95 nach Gyofu, 100 nach Jinpu (20:12:54,9), 75 nach Senei (20:13:22,5).
+*Ursache am Code:* `SamuraiRotation` sperrt jeden Kombo-Schlag gegen Überlauf (Upstream bd9c156b0: bis 95, 90, 85);
+`SAM_Reborn.AttackAbility` gab Kenki nur ohne „Zanshin Ready“ aus. Ohne Ziel für Zanshin klemmte beides bis zum Ablauf
+von „Zanshin Ready“.
+*Gebaut:* Mit „Zanshin Ready“ gehen die Verbraucher weiter, solange danach Zanshins Kosten bleiben (Kosten aus dem
+Aktionsblatt, `Action.PrimaryCostValue`: 50 und 25).
+*Klasse:* Leistensperren auf GCDs gibt es auch bei Krieger, Dunkelritter, Ninja und Monk, dort jeweils mit einem GCD ohne
+Sperre daneben; den Rest deckt seine Vorgabe zur dynamischen Rotation (TODO).
+*Widerruf:* C234.
+*Prüfgrad:* statisch am Mitschnitt und am Code, Compile, Prüfskripte; im Spiel nicht beobachtet. *Vorhersage:* An der
+Puppenreihe keine GCD-Lücke über einen GCD nach Ikishoten; mit „Zanshin Ready“ kommt Shinten ab 75 Kenki.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -27245,3 +27267,4 @@ geben den Stand vom 14.10.2026 wieder.
 | C231 | A911 und TODO „Sirene (Brett 3)“ (Stand 3eae4b28a): Die Fessel des Crawling Piece endete vor seinem Tod, sein Vorrang verkürzte sie nicht | Die Fessel endete in beiden Fällen in derselben Zeile, in der seine LP auf 0 fielen (19:15:45.319, 19:17:12.170); ich las die Todeszeile (Typ 25), die der Mitschnitt 2 s später schreibt (A913) | widerrufen |
 | C232 | A920 und Konzept 13 (Stand e8d785b86): Splatoons Projection drehe Kegel und Linien mit Ziel jedes Bild zum Ziel und setze Kreise mit Ziel versetzt; RSR zeige sie dort, wo sie landen, Splatoon nicht | Am selben Quelltext (f396ef6) wirkt `faceplayer` nur mit `FaceMe`, das die Projection nicht setzt; die Richtung kommt aus dem Wirkpaket wie bei RSR. Kreise auf einem Ziel wandern bei beiden mit dem Ziel (A766). Ich las die Zuweisung, nicht ihre Auswertung im Zeichner. Nachweislich falsch sind Splatoons Ringe | A921 |
 | C233 | A921, Konzept 13, `SplatoonProjection.MisreadRing` und Release-Text (Stand 3d54ef332): Das Spiel skaliere jedes Omen auf die Reichweite, die Anteil-Lesart des Innenradius sei richtig; RSRs kleinere Lesart ein Defekt | Am Modulcode aller 120 Ringe: Der Außenrand ist immer die Reichweite, der Innenradius achtmal Anteil, zweimal Zahl. Ich hatte aus sechs Ringen auf alle geschlossen | A922 |
+| C234 | A923, Konzept 03 und TODO (Stand 95d7f89db): Nach dem abgelehnten Ogi falle die Rotation auf Gekko, der Weg zum Stillstand sei am Code nicht zu finden | Gekko war selbst gesperrt: Kenki stand auf 100, jeder Kombo-Schlag sperrt sich gegen Überlauf, und der Verbrauch wartete auf Zanshin, das kein Ziel hatte. Die Leistenzeile des Mitschnitts zeigte es; ich hatte nur die Auswahl gelesen, nicht die Bedingungen der Aktionen selbst | A925 |

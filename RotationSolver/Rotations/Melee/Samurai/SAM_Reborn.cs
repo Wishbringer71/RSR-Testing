@@ -158,7 +158,10 @@ public sealed partial class SAM_Reborn : SamuraiRotation
 			}
 		}
 
-		if (!HasZanshinReady)
+		// Concept 14, "Samurai: Kenki-Verklemmung" (A925): with Zanshin ready the spenders still go while Zanshin's cost
+		// stays after them. Held entirely, Kenki climbed to 100 whenever Zanshin could not go, every combo weaponskill
+		// refused itself against the overflow, and no GCD came until Zanshin Ready ran out.
+		if (!HasZanshinReady || Kenki >= ZanshinPvE.Action.PrimaryCostValue + HissatsuShintenPvE.Action.PrimaryCostValue)
 		{
 			if (!CombatElapsedLessGCD(2) && Kenki <= 50 && IkishotenPvE.CanUse(out act))
 			{

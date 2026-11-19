@@ -1423,11 +1423,8 @@ gingen beide. Am 15.11. (Build 9036b6874, vor A884) gingen alle drei. Die Kegel 
 Reihe, bis zur Nachbarpuppe. *Gilt:* Eine Puppe (`IsDummy`) kämpft nie „noch nicht“ (`DataCenter.NotFightingYet`) – für
 die Flächen, „Don't pull new enemies with AoE", die Einstellung zum Angriff und die Schlafregel gleich. Grund: Eine Puppe
 greift nicht an; eine Fläche, die sie streift, zieht nichts in den Kampf. *Im Kampf:* An einer Puppenreihe kommen
-Flächen- und Kegelangriffe wie an einer einzelnen Puppe. *Offen:* In beiden Fenstern kam 28 s und 16 s lang gar kein GCD,
-obwohl die Rotation nach einem abgelehnten Ogi Namikiri auf Gekko fällt (`SAM_Reborn.GeneralGCD`); der Stillstand endete
-in derselben Zehntelsekunde, in der „Ogi Namikiri Ready“ ablief. Der Weg dahin ist am Code nicht gefunden
-*[Schätzung: eine Wahl, die in der Auswahl besteht und beim Drücken nicht – der Kegel hängt an der Blickrichtung]*; die
-Sonde „GCD-Leerlauf“ (unten, „Bereit, aber nicht genutzt") schreibt ihn beim nächsten Mal.
+Flächen- und Kegelangriffe wie an einer einzelnen Puppe. *Folge:* Ohne Zanshin stieg Kenki auf 100, und jeder Kombo-Schlag sperrte sich gegen den Überlauf – 28 s und 16 s ohne
+GCD (Konzept 14, „Samurai: Kenki-Verklemmung“, A925).
 
 *Gegenthese 2 (ein Gegner ohne Ziel kämpft doch):* Ein Gegner kann im Kampf kurz kein Ziel halten (Wirken auf den
 Boden, Phasenwechsel). Bis A833 wartete die Fläche dann. *Widerlegt seit A833:* Als „kämpft noch nicht" gilt ein Gegner

@@ -878,6 +878,34 @@ Ladung da ist, und an der vollen Ladung.
   derselben Reihenfolge, alles unter Fugetsu. Die Verschiebung ändert den eigenen Schaden nicht, nur die Lage zu den
   Gruppenbuffs der anderen.
 
+### Samurai: Kenki-Verklemmung, wenn Zanshin bereit ist und nicht gehen kann
+
+*Seine Meldung (19.11.2026):* „bei der trainingspuppe macht der samurai nur autoattacke über einen längeren zeitraum“.
+*Gemessen (sein Mitschnitt 19.11.2026, Living Memory, Build c93ec988b):* 28,3 s und 15,9 s ohne GCD, beide nach Ikishoten.
+Die Leiste (Mitschnittzeile 31) stand ab Jinpu um 20:12:54,9 auf 100 Kenki, bis Senei um 20:13:22,5 sie auf 75 senkte;
+„Zanshin Ready“ lag in beiden Strecken ungenutzt (Zanshin ohne Ziel, A923).
+*Die Kette am Code:*
+1. Die Kombo-Schläge sperren sich gegen Überlauf (`SamuraiRotation`, Upstream bd9c156b0): Hakaze, Gyofu, Jinpu, Shifu,
+   Fuga bis 95 Kenki, Gekko, Kasha, Mangetsu, Oka, Fuko bis 90, Yukikaze bis 85.
+2. `SAM_Reborn.AttackAbility` gibt Kenki nur aus, solange kein „Zanshin Ready“ liegt (`if (!HasZanshinReady)` um Shinten,
+   Kyuten, Senei, Guren) – es spart für Zanshin (50 Kenki).
+3. Kann Zanshin nicht gehen – kein Ziel, außer Reichweite (8 y) –, steigt Kenki mit jedem Kombo-Schlag bis 100; dann ist
+   kein GCD mehr zulässig, und ausgegeben wird nichts. Erst wenn „Zanshin Ready“ abläuft (30 s), gibt Senei Kenki aus, und
+   die Kombo geht weiter. Unter Meikyo hielt dieselbe Sperre Yukikaze, bis Meikyo ablief.
+*Gilt:* Mit „Zanshin Ready“ geht der Kenki-Verbrauch weiter, solange danach noch die Kosten von Zanshin bleiben – Kenki ab
+Zanshins Kosten plus denen des Verbrauchers (aus dem Aktionsblatt: 50 und 25). Zanshin bleibt so immer bezahlbar, und
+die Leiste läuft nie in die Sperre der Kombo. *Im Kampf:* Statt 28 s Auto-Attacke kommen Shinten und die Kombo; ist
+Zanshin dann möglich, geht es mit den verbliebenen 50 Kenki.
+*Klasse (alle Basisrotationen, 19.11.2026):* Leistensperren auf GCDs tragen außer dem Samurai der Krieger (Storm's Path bis
+80 Beast Gauge), der Dunkelritter (Stalwart Soul bis 80 Blood), der Ninja (Armor Crush bis 4 Kazematoi) und der Monk
+(Meditation unter 5 Chakra). Bei allen gibt es neben dem gesperrten GCD einen ohne Sperre (Storm's Eye, Unleash, Aeolian
+Edge, die Formen); nur beim Samurai trägt jeder Kombo-Schlag eine. Den Rest der Klasse – ein GCD, der nicht gehen kann,
+ohne dass eine Alternative kommt – deckt seine Vorgabe zur dynamischen Rotation (TODO).
+*Falsifikation:* (1) kein Defekt – widerlegt an Leiste und Spur. (2) Option falsch, Zanshin fehlt dann Kenki – nein: es
+bleiben immer seine Kosten. (3) ausgeliefert, nichts ändert sich – Shinten selbst kann nicht gehen (außer Nahkampfreichweite);
+dann geht auch die Kombo nicht, die Lage ist eine andere.
+
+
 ### Barde: Lieder und Burst
 
 **Deckt sich** (26.10.2026, A382) mit The Balance, Bard Basic Guide („Patch Applicable: 7.4", zuletzt geändert
