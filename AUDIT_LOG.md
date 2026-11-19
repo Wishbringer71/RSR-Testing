@@ -26307,6 +26307,25 @@ der Gruppe; gebaut wird K3 zuerst.
 
 *Prüfgrad:* statisch (Code, Zählung) und Modell. Noch nichts im Spiel geändert.
 
+### A902 · Seine Fragen: warum nicht alle Jobs die Signale lesen; Plan, Vorrangliste oder Hybrid (19.11.2026)
+
+*Fragen (19.11.2026):* „warum werden kampfpausen, raidbuffs, vorhergesagte bewegungen nicht von allen jobs gelesen? gründe?
+sind pläne vor vorranglisten für alle jobs sinnvoll? gibt es ein besseres optimum? hybrid?"
+
+*Gemessen:* `git log -S` je Signal. Die Zeitleiste von BossMod kam mit Upstream 25c5f342c (12.04.2026) für Minderung,
+Rückstoß und Heilung, dort für Schaden nur beim Maschinisten. Die Raidbuffs liest nur der Schnitter (Beiruta d5fb87b69,
+09.11.2026, Liste von Hand). Die vorhergesagte Bewegung liest RSR zentral für alle Jobs (`ExceedsBossModCastLimit`,
+`NoCastFitsNow`, `MovementLock`; BossMod-IPC `Hints.MaxCastTime`, BossmodReborn 8d5ff8e21, 15.11.2026).
+
+*Antwort (Konzept 03, F, „Warum nicht alle Jobs …“ und „Bauart“):* Die Signale kamen je Rotation und je Autor, nicht
+über einen allgemeinen Mechanismus; im Fork galt bisher der Vorrang der Sicherheit. Empfehlung: Hybrid mit rollendem
+Horizont. Die Vorrangliste führt aus, ein gemeinsamer Planer beantwortet nur die Haltefragen und rechnet den Rest des
+Kampfes bei jeder Entscheidung neu. Ein Plan je Job kommt nur, wo ein Modell den Gewinn belegt (K6). Gegenposition
+offen: Haltefragen, die einzeln gerechnet werden, können sich stören; darum ein Planer für alle gemeinsam, zu prüfen an
+einem Modell mit zwei Fragen.
+
+*Berichtigt:* meine Tabelle in A901 („vorhergesagte Bewegung nur Paladin und Gelehrter“) – C230.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -26691,3 +26710,4 @@ geben den Stand vom 14.10.2026 wieder.
 | C227 | A865 und Konzept 03 (Stand a1cef7cdb): Upstreams 2,5 s für Sacrificium unterschieden sich beim Schnitter um unter 0,1 s vom GCD | Unter Enshroud läuft der GCD mit 1,5 s; die 2,5 s sind ein Zeitfenster bis Arkaner Kreis, kein GCD (A872) |
 | C228 | A740 und Konzept 24, „Fork-Code in eigenen Teildateien“ (Stand A740): Statische Felder, deren Startwert ein anderes liest, bleiben in ihrer Datei – das schütze die Reihenfolge | `_channelSince` und `_channelSeen` blieben in `DataCenter.cs`, `KeptChannels` zog nach `DataCenter.Channels.cs`; richtig nur durch die Dateireihenfolge, gebrochen durch Upstreams Aufteilung. Die Grenze ist „in derselben Datei hinter dem Gelesenen“ (A878) |
 | C229 | A885 und Konzept 21, „Abgleich mit Daedalus v0.1.124“ (Stand f6093e4ba): „the camp heals 90%“ sei unbelegt, die Campsite gebe 30 % | Allein ruhend heilt sie 90 % (Wiki zum ersten Brett, in Konzept 21 „Campsite“ und in RSRs Rast K10 geführt); 30 % je Teilnehmer gilt bei zwei Begleitern. Berichtigt am 18.11.2026; das Ergebnis „keine Änderung“ bleibt, weil eine feste Trankschwelle von 20 % seiner Sicherheitsregel widerspräche. |
+| C230 | A901 und Konzept 03, F (Stand 19.11.2026): Die vorhergesagte Bewegung lesen nur Paladin und Gelehrter | Beide lesen die vergangene Bewegungszeit (`MovingTime`, `StopMovingTime`). Die Vorhersage von BossMod (`Hints.MaxCastTime`) liest RSR zentral für alle Jobs: Kein Zauber beginnt, der länger wirkt, als bis zur nächsten Bewegung Zeit ist, und der Zaubernde nimmt dann einen Sofortzauber. Die Zählung je Rotation übersah die zentralen Stellen. | A902 |

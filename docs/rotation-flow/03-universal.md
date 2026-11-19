@@ -2715,16 +2715,55 @@ Liste schaut nicht voraus; was sie über den nächsten GCD hinaus weiß, steckt 
   Maschinisten.
 
 **Gemessen, welche Rotation welches Signal liest** (19.11.2026, 22 Reborn-Rotationen; *Surrogat:* gezählt ist, ob ein
-Bezeichner im Code steht, nicht ob er wirkt):
+Bezeichner im Code steht, nicht ob er wirkt), und was zentral für alle Jobs gilt:
 
-| Signal | liest es | fehlt |
+| Signal | in der Rotation | zentral, für alle Jobs |
 |---|---|---|
-| vorhergesagte Pause (BossMod) | MCH | 21 übrige |
-| Kampfende (TTK) | BLU, BST, GNB, MCH, RDM, SCH | 16 (zentral wirkt die TTK-Prüfung der DoTs für alle) |
-| Burst-Uhr oder Burst-Schalter | 17 | BLU, BST, GNB, PLD, SAM, SGE, WHM |
-| Buffs der anderen in der Gruppe | RPR | 21 übrige |
-| vorhergesagte Bewegung | PLD, SCH | 20 übrige |
-| Raidwide (BossMod) | BRD, DNC, MCH, SMN | 18 übrige |
+| vorhergesagte Pause (BossMod) | MCH | Kanäle (Ende vor der Pause, Konzept 14); kein Burst, kein Zeitgeber, kein DoT |
+| Kampfende (TTK) | BLU, BST, GNB, MCH, RDM, SCH | kein DoT auf Gegner, die bald sterben; `HoldCostsUse` für Phantom Aim und Manafication |
+| Burst-Uhr oder Burst-Schalter | 17 (ohne BLU, BST, GNB, PLD, SAM, SGE, WHM) | Tinktur, Phantom Aim (`BurstClock`) |
+| Buffs der anderen in der Gruppe | RPR (eigene Liste) | keine |
+| vorhergesagte Bewegung | keine (PLD und SCH lesen die vergangene Bewegungszeit) | ja: Ein Zauber, der länger wirkt als BossMods erlaubte Wirkzeit (`Hints.MaxCastTime`), beginnt nicht, und der Zaubernde nimmt dann einen Sofortzauber (C6, `ExceedsBossModCastLimit`, `NoCastFitsNow`); die Bewegungssperre liest die nächste Gefahrenzone |
+| Raidwide (BossMod) | BRD, DNC, MCH, SMN | Minderung und Heilung (`StateUpdater`, Konzept 08) |
+
+**Warum nicht alle Jobs diese Signale lesen** (seine Frage, 19.11.2026: „warum werden kampfpausen, raidbuffs,
+vorhergesagte bewegungen nicht von allen jobs gelesen? gründe?"; an der Versionsgeschichte gemessen):
+- *Pause:* Die Zeitleiste von BossMod kam mit Upstream 25c5f342c (12.04.2026) – laut Nachricht „for predictive
+  mitigation, knockback, and healing logic". Im selben Commit las Upstream sie nur beim Maschinisten für den Schaden
+  (`BmrDumpBeforeDowntime`); die übrigen Rotationen schreiben verschiedene Autoren je in ihrer eigenen Datei, und kein
+  allgemeiner Mechanismus nahm sie auf. Im Fork folgte die Arbeit bisher seinem Vorrang „Sicherheit vor Schaden" –
+  Minderung, Heilung, Wiederbelebung –; die Planung des Schadens über eine Pause war bis zu seinem Auftrag vom 19.11.2026
+  keine Aufgabe. Ein schneller allgemeiner Hebel fehlt außerdem: Der Burst-Schalter trägt zwei Bedeutungen (K1).
+- *Raidbuffs:* Allein der Schnitter liest sie, mit einer Liste von Hand aus Beirutas Überarbeitung (d5fb87b69,
+  09.11.2026). Eine allgemeine Erkennung gab es nicht; dass die Texte der Raidbuffs sie tragen, zeigt erst K3.
+- *Bewegung:* Die Vorhersage *liest* RSR für jeden Job zentral (Tabelle). Die Rotationen brauchen sie dafür nicht. Was
+  fehlt, ist die umgekehrte Richtung: Sofortzauber für eine kommende Bewegung aufheben, solange man noch steht (K4). Das
+  ist je Job verschieden, weil jeder andere Sofortzauber hat.
+
+**Bauart: Plan, Vorrangliste oder beides** (seine Frage, 19.11.2026: „sind pläne vor vorranglisten für alle jobs
+sinnvoll? gibt es ein besseres optimum? hybrid?"):
+- *Nur Vorrangliste (heute):* reagiert je Frame auf alles Neue, kostet wenig. Aber sie schaut nicht voraus: Sie kann nicht
+  abwägen, ob „jetzt" oder „später" mehr bringt. Genau daran scheitert die örtliche Regel in K1.
+- *Nur Plan (eine Folge von Aktionen über den Kampf, gesucht über ein Modell je Job):* optimal, solange das Modell stimmt.
+  Es stimmt aber selten lange: Zufallsprocs, Tode, eine falsche Zeitleiste, Latenz. Dazu kommt ein Modell je Job mit
+  Potenzen, Leisten und Procs, das jeder Patch ändert (21 Jobs), und eine Suche, die je Frame Rechenzeit kostet
+  (code.md, „Struktur und Kosten").
+- *Beides, und das ist die Empfehlung (Hybrid mit rollendem Horizont):* Die Vorrangliste bleibt der Ausführende – sie
+  trägt das Wissen des Jobs und reagiert je Frame. Darüber beantwortet ein gemeinsamer Planer nur die wenigen Fragen,
+  in denen die Liste kurzsichtig ist: halten oder jetzt drücken (Verstärker, Abklingzeiten, Ladungen, Leiste). Er rechnet
+  dafür den Rest des Kampfes mit gemessenen Größen – Kampfende aus `GetCorrectedTTK`, Pause aus BossMod, Fenster der
+  Gruppe aus K3 – und rechnet bei jeder Entscheidung neu, statt einem einmal gefassten Plan zu folgen. So arbeiten schon
+  Phantom Aim (`HoldCostsUse`) und das Modell zu K1.
+- *Wo ein Plan je Job dazukommt (K6):* nur wo der Job eine echte kombinatorische Wahl hat und ein Modell den Gewinn
+  belegt, wie die Ketten des Beastmasters (A886). Wo die Standardrotation fest und schon optimal ist, kostet ein Plan nur.
+- *Gegenposition, nicht widerlegt:* Beantwortet der Planer eine Frage nach der anderen, können sich zwei Entscheidungen
+  stören. Ein Beispiel: Halten des Verstärkers und Sparen der Leiste für dasselbe Fenster, jede für sich richtig,
+  zusammen zu spät. Darum ein Planer für alle offenen Haltefragen eines Frames, der sie gemeinsam rechnet. Ob das
+  reicht, zeigt erst das Modell, das zwei Fragen zugleich enthält; bis dahin gilt es als tragende Annahme.
+- *Ein besseres Optimum als den Hybrid* gibt es nur mit einem vollständigen Modell je Job, also einem Löser, der jede
+  Folge kennt. Sein Mehrgewinn über den Hybrid liegt in Entscheidungen, die der Planer nicht stellt
+  *[Schätzung: klein, weil die Vorrangliste die Standardfolge schon optimal trägt, The Balance]*. Sein Preis ist die
+  Pflege von 21 Modellen und ein Modellfehler, der sich durch jede Entscheidung zieht.
 
 **Die Klassen, in denen ein Plan über den nächsten GCD hinaus Schaden bringt, den eine Vorrangliste verliert:**
 1. *Pause und Phase (K1):* Ein Verstärker, ein Zeitgeber oder ein DoT, der in eine Pause läuft (Boss unangreifbar,
