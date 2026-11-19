@@ -26485,6 +26485,25 @@ Gegenstandsbonus mit übrigem Heilgegenstand steht „it brings you from … to 
 die Abrechnung nennt „Unversehrter Bändiger“; ein gehaltenes Tome geht im Endkampf mit „its auto-attack is physical“.
 Widerlegt, wenn einer der beiden Läufe ohne Bonus bzw. mit liegendem Tome endet.
 
+### A909 · Seine Frage: wurden alle Konzepte im Code umgesetzt? (19.11.2026)
+
+*Frage (19.11.2026):* „wurden alle konzepte im code umgesetzt? ebenfalls im loop prüfen“.
+*Umfang:* alle 26 Konzepte unter `docs/rotation-flow/`; jede Stelle, die etwas als offen, nicht gebaut, nicht umgesetzt,
+in Arbeit oder „zu bauen“ führt – 58 Stellen (Suche nach diesen Wendungen, Stand 19.11.2026 nach A908).
+*Ergebnis je Stelle:*
+- *Begründet nicht gebaut* (Verworfenes mit Grund, Gewinn im Promillebereich, Gegenthese hält, seine Entscheidung): 43,
+  in 01, 02, 03 (Tinktur-Gegenrichtung, DoT-Restzeit, Limit Break), 04, 08, 09, 12, 13 (Selbstkorrektur nach Patch:
+  entschieden), 14, 15, 16, 17, 18, 21, 22, 23, 24.
+- *Offen und im TODO:* 5 – Konzept 03, F: K1, K2, K3 und die offene Frage zum eigenen Beitrag in der Gruppenuhr
+  (TODO „Rotationen aller Jobs über den Augenblick hinaus“); Konzept 21, Tausch gegen Gehaltenes bei vollem Inventar
+  (begründet offen: das Inventar war nie voll; die Empfehlung nennt „no free slot“).
+- *Kein offener Punkt* (die Wendung steht in einer Regel oder Tabelle): 10 – etwa 08 „warum hier keine zu bauen ist“,
+  09 „musste nicht gebaut werden“, 20 „ein eigenes Konzept zu bauen“, Tabellenzeilen in 14.
+*Gegenrichtung (als gebaut Beschriebenes):* Die Verweise auf Code prüfen `check_concept_refs.py`, die Voreinstellungen
+`check_concept_defaults.py` in jedem Lauf (grün). Inhaltlich Aussage für Aussage geprüft wurden die Konzepte zuletzt am
+17.11.2026 (Durchgang 2); was seitdem als gebaut dazukam (A884 bis A908), ist je Commit am Code und am Build geprüft.
+*Prüfgrad:* statisch; die Einteilung je Stelle von Hand.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
