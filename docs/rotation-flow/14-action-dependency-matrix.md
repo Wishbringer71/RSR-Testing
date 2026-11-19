@@ -302,6 +302,21 @@ eigene Aktion kam, in allen ACT-Mitschnitten vom 10. bis 19.11.2026.
 - *Schluss:* Proc-Kaskaden gehen in seinen Mitschnitten nicht verloren; ein Mangel läge, wenn, in der Ordnung innerhalb
   der Fenster (zweiter Durchgang je Job).
 
+**Zweiter Durchgang: Burst-Procs im eigenen Burst (19.11.2026, A932).** Je Job die Aktion, die ein Merkmal mit dem
+Burst freischaltet („… Ready upon executing …“), gegen die eigenen Burst-Status beim Drücken, in denselben Mitschnitten:
+- *Im Fenster (100 %):* Goring Blade, Double Down, Lion Heart, Starcross, Rise of the Dragon, Dance of the Dawn,
+  Starfall Dance, Prefulgence, Vice of Thorns, Star Prism, Searing Flash (23 von 23), Fire's Reply, Plentiful Harvest,
+  Primal Ruination, Radiant Encore, Resonant Arrow, Oracle.
+- *Messung trägt nicht:* Kunai's Bane und Wildfire liegen auf dem Gegner, Darkside ist eine Leiste, Ley Lines
+  beschleunigt nur; Primal Rend folgt den drei Fell Cleaves, die Inner Release verbrauchen, und trifft ohnehin kritisch
+  und direkt.
+- *Vom Ablauf bedingt:* Perfectio 3 von 7 im Arcane Circle – jedes Enshroud bringt eines, auch das ungerade; Wind's
+  Reply hängt an Riddle of Wind; Comet in Black außerhalb von Starry Muse nur im Laufen oder gegen den Überlauf der
+  Farbe, wie The Balance es nennt (Pictomancer, unten).
+- *Schluss:* Keine Kaskade läuft am Burst vorbei. Wo eine Rotation The Balance übertreffen kann, liegt es nicht in der
+  festen Folge (sie deckt sich, „Vergleich mit The Balance“), sondern in dem, was ein Guide nicht kennt: Pausen, Kampfende,
+  die Fenster der Gruppe, Bewegung, Rudel (Konzept 03, „F · Über den Augenblick hinaus“, K1 bis K6).
+
 ### Die Statusbedingung: Der Status muss bis zum Losgehen liegen
 
 **Stufe „alle":** Eine Aktion mit Statusbedingung (`StatusNeed`, auf der Zielseite `TargetStatusNeed`)

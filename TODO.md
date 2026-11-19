@@ -42,7 +42,9 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
   bosskämpfen, raids und prüfungen. danach bei allen anderen inhalten und kämpfen“ – Maßstab je Befund: Schaden ohne
   Lücke, Gesundheit der Gruppe, mehr Schaden; Reihenfolge Boss, Raid, Prüfung vor allem anderen. Umfang (seine Präzisierung, 19.11.2026: „ich habe nicht
   gesagt, dass du nur die jobs bearbeiten sollst, die ich spiele. ich habe alle gesagt“): alle Jobs – die 21 Kampfjobs,
-  Blaumagier und Beastmaster –, je Job jede Rotation; Churin und Beiruta, soweit mit den Änderungen des Forks verträglich (CLAUDE.md, seine Präzisierung). *Wirkung im Kampf:* Wo ein Merkmal, ein Status oder eine
+  Blaumagier und Beastmaster –, je Job jede Rotation; Churin und Beiruta, soweit mit den Änderungen des Forks verträglich (CLAUDE.md, seine Präzisierung). Ziel (seine Vorgabe, 19.11.2026): „ziel für alle rotationen ist es, besser als
+  die von the balance zu werden.“ – gemessen an Potenz über den Kampf; wo eine Sicherheitsregel bewusst Schaden kostet,
+  zählt das nicht als schlechter (CLAUDE.md, „Spielweise“). *Wirkung im Kampf:* Wo ein Merkmal, ein Status oder eine
   Aktion eine andere verstärkt oder freischaltet und die Rotation das nicht nutzt, fehlt Schaden in jedem Kampf.
   *Nächster Schritt:* je Job die Wirktexte aller Aktionen und Merkmale (Spielblätter, englisch) auf Querverweise
   erheben, gegen die Rotation halten, Befunde im Loop. *Konzept:* 14 (je Job), 03 „F · Über den Augenblick hinaus“.

@@ -27012,6 +27012,19 @@ Rotation; die mechanisch „fehlenden“ heißen im Code anders (Bezeichner mit 
 *Umfang:* 20 von 22 Jobs mit Daten (ohne Weiser und Blaumagier); jede Rotation je Job im Code durchsucht.
 *Prüfgrad:* Mitschnitte und Wirktexte; Code nur für die Verfallsregeln des Beschwörers.
 
+### A932 · Kaskaden aller Jobs, Durchgang 2: Burst-Procs im eigenen Burst; sein Ziel „besser als The Balance“ (19.11.2026)
+
+*Anlass:* Auftrag aus A931; seine Vorgabe vom 19.11.2026: „ziel für alle rotationen ist es, besser als die von the
+balance zu werden.“ (TODO, Konzept 14).
+*Verfahren:* aus den Merkmalstexten die Paare „X Ready upon executing Y“ (alle Jobs); in allen Mitschnitten je Druck der
+freigeschalteten Aktion, ob ein eigener Burst-Status lag.
+*Ergebnis:* Konzept 14, „Werden die Fenster genutzt?“, zweiter Durchgang. Kein Defekt: 17 Kaskaden zu 100 % im Fenster,
+die übrigen messtechnisch nicht tragend oder vom Ablauf bedingt; Comet in Black am Code und an The Balance geprüft.
+*Schluss für sein Ziel:* Die feste Folge deckt sich mit The Balance (A375 bis A414); übertreffen kann RSR den Guide nur
+in dem, was eine feste Folge nicht kennt – K1 bis K6 (Konzept 03, „F · Über den Augenblick hinaus“).
+*Umfang:* 20 von 22 Jobs mit Daten; Weiser und Blaumagier ohne Mitschnitt.
+*Prüfgrad:* Mitschnitte und Wirktexte; Code für Pictomancer.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
