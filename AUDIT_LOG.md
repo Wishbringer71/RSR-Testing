@@ -26067,6 +26067,30 @@ aufgebraucht … Im Loop prüfen", sein Hinweis „Die linux Aktionen sind 40% g
 - *Prüfgrad:* lokal die Prüfskripte, YAML und das Probe-Skript. Der erste Lauf auf GitHub misst Dauer und
   Überspringen.
 
+### A894 · Upstream-Sync 78b43e656: Gegenstandslogik aus der Heilung gelöst (19.11.2026)
+
+- *Upstream (d8230df73, „Moved item logic off of healing stuff"):*
+  - Die Arznei-Einstellungen stehen in einer eigenen Gruppe (`AutoItemUsage`).
+  - Neue Einstellungen für HP-Tränke: außerhalb des Kampfs, Grenze der Zeit bis zum Fall, nur ohne lebenden Heiler.
+    Für MP-Tränke: außerhalb des Kampfs.
+  - Kein Trank im PvP und keiner während des Sonderzaubers des Tyrannen.
+  - Das Aktionsfenster zeigt die Schalter je Aktion nur noch für Aktionen und für Gegenstände einen Hinweis auf die
+    Gruppe.
+  - Regenerationstränke kennt Upstream als drei feste Ids, jeweils an ihren Inhalt gebunden.
+- *Vergleich mit dem Fork:* Den Trank von der Heilflagge gelöst hatte der Fork schon (A530). Seine Wahl ist
+  allgemeiner: fünf Regenerationstränke über ihre Aktion und Abklinggruppe (A613), deren Inhalt das Spiel prüft;
+  HQ und NQ getrennt; der Notfall vor einem Tankbuster; Feder und Tinktur zuerst. Sie bleibt. Upstreams Bedingungen
+  kommen vor die Wahl, seine Prüfung auf einen lebenden Spieler gilt auch für den Notfall. `ShouldEndSpecial` setzt der
+  Trank nicht mehr. Behielte der Fork nur das Setzen ohne Upstreams Zurücksetzen, liefen Feder und Angriffe danach
+  unter einem gesetzten Schalter; die Entfernung folgt der Begründung von A530. Die Liste der Bewegungsarten im
+  Aktionsfenster liest wieder `IsMovingSpecialType` (Fork) statt einer zweiten Aufzählung.
+- *Voreinstellungen:* Upstreams Werte bleiben. „Außerhalb des Kampfs" aus entspricht der bisherigen festen Regel des
+  Forks. „Nur ohne Heiler" aus folgt der Sicherheit der Gruppe. Die Grenze der Zeit bis zum Fall steht ab Werk auf 0.
+- *Konflikte:* fünf Dateien, aufgelöst nach diesen Regeln; `main` 314eff803. Build und alle Prüfungen auf `main`
+  bestanden, außer `check_release_note`, das dort schon vor dem Merge anschlug (der Text steht im Arbeits-Branch). Im
+  Arbeits-Branch alles grün.
+- *Prüfgrad:* Compile und Prüfskripte; im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

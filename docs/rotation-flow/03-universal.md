@@ -746,6 +746,21 @@ merklich schneller zu beenden; sie kostet Geld, und sie für einen gewöhnlichen
   potions below this MP", aus) und Tinkturen nur in High-End-Inhalten. Die drei Einstellungstexte nennen die gemeinsame
   Wiederverwendung. Ein Tank, der in einem Dungeon mit „überall" eine Tinktur trinkt, hat bis zu fünf Minuten keinen
   Heiltrank.
+- *Wann ein Heiltrank geht, nach Upstream 78b43e656 (A894):* Die Arznei-Einstellungen stehen in einer eigenen Gruppe
+  („Auto > Item Usage"). Upstream ergänzt eigene Bedingungen des Tranks. Er geht nur im Kampf, außer „Use HP potions
+  out of combat" ist an; ab Werk aus, wie bisher die feste Regel des Forks: Außerhalb des Kampfs kehren die LP von selbst
+  zurück. „Stop using HP potions when enemies will die within" ist ab Werk 0, also aus. „Only when no healer is present
+  or alive" ist ab Werk aus: Die Sicherheit der Gruppe geht vor, und ein lebender Heiler heißt nicht, dass er rechtzeitig
+  heilt. Dazu kein Trank im PvP und keiner während des Sonderzaubers des Tyrannen; für Äther gilt „Use MP potions out
+  of combat". Die Wahl selbst bleibt die des Forks:
+  - die meiste Heilung, bei Gleichstand die niedrigere Stufe;
+  - der Notfall vor einem Tankbuster;
+  - Feder und Tinktur zuerst;
+  - die fünf Regenerationstränke der Sonderinhalte, wo Upstream drei kennt und jeden an seinen Inhalt bindet, den das
+    Spiel selbst prüft.
+
+  Upstream entfernt das Setzen von `ShouldEndSpecial` um den Trank; das gehörte zum Heilbefehl, und der Trank ist keine
+  seiner Aktionen (wie hier seit A530).
 - *Schalter je Gegenstand* (A635): Heil- und Manatränke und die Phönixfeder schaltet die Aktionsliste für alle Jobs
   zugleich, und ab Werk ist keiner aus; ausschalten nimmt den Gegenstand für jeden Job heraus. Wann sie gehen, sagt die
   eine Einstellung („Use HP potions", „Use MP potions", „Use Phoenix Down (Experimental)"). Die Aktionsliste sagt es unter dem Schalter

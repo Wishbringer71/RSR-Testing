@@ -184,7 +184,12 @@ public partial class CustomRotation
 	private static bool UseMpPotion(IAction nextGCD, bool waitForTincture, out IAction? act)
 	{
 		act = null;
-		if (!Service.Config.UseMpPotions)
+		if (DataCenter.IsPvP || !Service.Config.UseMpPotions)
+		{
+			return false;
+		}
+
+		if (!DataCenter.InCombat && !Service.Config.UseMpPotionsOutOfCombat)
 		{
 			return false;
 		}
@@ -214,10 +219,39 @@ public partial class CustomRotation
 
 	internal static HpPotionItem[] HpPotions => Consumables.HpPotions;
 
+	private static bool AnyLivingHealerInParty()
+	{
+		foreach (var member in DataCenter.PartyMembers)
+		{
+			if (member.IsJobCategory(JobRole.Healer) && !member.IsDead)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
 	private static bool UseHpPotion(IAction nextGCD, bool waitForTincture, out IAction? act)
 	{
 		act = null;
-		if (!Service.Config.UseHpPotions)
+		if (DataCenter.IsPvP || !Service.Config.UseHpPotions || DataCenter.IsTyrantCastingSpecialIndicator())
+		{
+			return false;
+		}
+
+		if (DataCenter.InCombat)
+		{
+			if (Service.Config.UseHpPotionsTimeToKill > 0f && !IsLongerThan(Service.Config.UseHpPotionsTimeToKill))
+			{
+				return false;
+			}
+		}
+		else if (!Service.Config.UseHpPotionsOutOfCombat)
+		{
+			return false;
+		}
+
+		if (Service.Config.UseHpPotionsOnlyWhenNoHealer && DataCenter.Role != JobRole.Healer && AnyLivingHealerInParty())
 		{
 			return false;
 		}

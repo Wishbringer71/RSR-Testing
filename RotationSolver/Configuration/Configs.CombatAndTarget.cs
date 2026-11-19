@@ -213,7 +213,7 @@ internal partial class Configs
 	Description = "When to use gemdraughts and tinctures. Only rotations that support automatic tincture usage follow this.\n"
 		+ "In a fight: the tincture goes in each burst window where it is ready and in your inventory. Tinctures, HP and MP "
 		+ "potions and Phoenix Down share one recast: a tincture blocks HP and MP potions for its 5 minutes.",
-	Filter = AutoActionUsage, Section = 5, PvPFilter = JobFilterType.NoJob)]
+	Filter = AutoItemUsage, Section = 0, PvPFilter = JobFilterType.NoJob)]
 	private readonly TinctureUseType _TinctureType = TinctureUseType.InHighEndDuty;
 
 	// Damage against healing and mana is each player's own choice; off is the owner's rule, safety first (A502).
@@ -231,26 +231,43 @@ internal partial class Configs
 
 	[ConditionBool, UI("Use HP potions",
 	Description = "In a fight: HP potions, tinctures, MP potions and Phoenix Down share one recast. An HP potion blocks "
-		+ "the next tincture for its recast; a tincture drunk in a burst blocks HP potions for 5 minutes.",
-	Filter = AutoActionUsage, Section = 5)]
+		+ "the next tincture for its recast; a tincture drunk in a burst blocks HP potions for 5 minutes.\n"
+		+ "Enable individual potions in Actions > Item.",
+	Filter = AutoItemUsage, Section = 1, PvPFilter = JobFilterType.NoJob)]
 	private static readonly bool _useHpPotions = false;
 
-	[UI("Use HP potions below this HP", Parent = nameof(UseHpPotions))]
+	[UI("Use HP potions below this HP", Parent = nameof(UseHpPotions), Order = 0)]
 	[Range(0, 1, ConfigUnitType.Percent, 0.002f)]
 	public float UseHpPotionsPercent { get; set; } = 0.5f;
 
+	[ConditionBool, UI("Use HP potions out of combat", Parent = nameof(UseHpPotions), Order = 1)]
+	private static readonly bool _useHpPotionsOutOfCombat = false;
+
+	[UI("Stop using HP potions when enemies will die within",
+	Description = "In combat, stop using HP potions when the enemies' average time to kill is below this. Set to 0 to disable.",
+	Parent = nameof(UseHpPotions), Order = 2)]
+	[Range(0, 30, ConfigUnitType.Seconds, 0.02f)]
+	public float UseHpPotionsTimeToKill { get; set; } = 0f;
+
+	[ConditionBool, UI("Only when no healer is present or alive", Parent = nameof(UseHpPotions), Order = 3)]
+	private static readonly bool _useHpPotionsOnlyWhenNoHealer = false;
+
 	[ConditionBool, UI("Use MP potions",
 	Description = "In a fight: MP potions, tinctures, HP potions and Phoenix Down share one recast. An MP potion blocks "
-		+ "the next tincture for its recast; a tincture drunk in a burst blocks MP potions for 5 minutes.",
-	Filter = AutoActionUsage, Section = 5)]
+		+ "the next tincture for its recast; a tincture drunk in a burst blocks MP potions for 5 minutes.\n"
+		+ "Enable individual potions in Actions > Item.",
+	Filter = AutoItemUsage, Section = 2, PvPFilter = JobFilterType.NoJob)]
 	private static readonly bool _useMpPotions = false;
 
-	[UI("Use MP potions below this MP", Parent = nameof(UseMpPotions))]
+	[UI("Use MP potions below this MP", Parent = nameof(UseMpPotions), Order = 0)]
 	[Range(0, 1, ConfigUnitType.Percent, 0.002f)]
 	public float UseMpPotionsPercent { get; set; } = 0.5f;
 
+	[ConditionBool, UI("Use MP potions out of combat", Parent = nameof(UseMpPotions), Order = 1)]
+	private static readonly bool _useMpPotionsOutOfCombat = false;
+
 	[ConditionBool, UI("Use Phoenix Down (Experimental)",
-	Filter = AutoActionUsage, Section = 5)]
+	Filter = AutoItemUsage, Section = 3, PvPFilter = JobFilterType.NoJob)]
 	private static readonly bool _usePhoenixDown = false;
 
 	[ConditionBool, UI("Only when no one who can raise is alive",

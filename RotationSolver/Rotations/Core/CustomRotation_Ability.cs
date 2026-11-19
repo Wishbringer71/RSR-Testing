@@ -428,10 +428,6 @@ public partial class CustomRotation
 		IBaseAction.ShouldEndSpecial = false;
 		IBaseAction.AllEmpty = false;
 
-		if (DataCenter.CommandStatus.HasFlag(AutoStatus.HealSingleAbility))
-		{
-			IBaseAction.ShouldEndSpecial = true;
-		}
 		// A potion carries its own decision and does not borrow the heal flag's.
 		//
 		// It has three switches of its own - the global setting, a per-item enable, and its own HP
@@ -449,13 +445,13 @@ public partial class CustomRotation
 		// "das flag ist im lowlevel für physick interessant oder für einen redmage mit seinem heal.
 		// aber für potions?"
 		//
-		// InCombat stays, and it is this rule's own condition rather than a borrowed one: a potion
-		// is an emergency consumable, and out of combat health returns on its own.
-		if (DataCenter.InCombat && UseHpPotion(nextGCD, PotionsWaitForTincture(), out act))
+		// The potion's own conditions - in combat, or out of it under "Use HP potions out of combat"; the time-to-kill and
+		// no-healer limits - sit inside UseHpPotion (upstream 78b43e656). It no longer sets ShouldEndSpecial either: that
+		// belonged to the heal command, and the potion is not one of its actions (A894).
+		if (UseHpPotion(nextGCD, PotionsWaitForTincture(), out act))
 		{
 			return true;
 		}
-		IBaseAction.ShouldEndSpecial = false;
 
 		// The last resort for a corpse nobody can raise properly. PhoenixDownItem.CanUseThis carries
 		// the condition - a raise target exists and, under the healer logic, no living raiser is
