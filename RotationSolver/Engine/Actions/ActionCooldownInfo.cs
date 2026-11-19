@@ -247,7 +247,8 @@ public readonly partial struct ActionCooldownInfo : ICooldown
 
 			if (!isEmpty)
 			{
-				if (RecastTimeRemain > DataCenter.DefaultGCDRemain + (DataCenter.DefaultGCDTotal * gcdCountForAbility))
+				if (RecastTimeRemain > DataCenter.DefaultGCDRemain + (DataCenter.DefaultGCDTotal * gcdCountForAbility)
+					&& !FightEndsBeforeKeptChargesGo())
 				{
 					return RefuseCooldown("Cooldown:ChargesKept");
 				}

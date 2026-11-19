@@ -19,3 +19,6 @@ What this release changes in the fight. For the whole distance from upstream, se
   in a fight, with cooldowns, lilies and charges. Out of combat your natural regeneration gives 10% of your HP every
   tick, so now only a heal over time cast as a GCD without its own cooldown goes (Regen, Aspected Benefic, Medica II and
   III); everything else waits for the fight. Not while someone carries damage over time or Doom, not in the Crucible.
+- **No charges lost when the boss dies.** A cooldown with charges that waits only so as not to waste them now goes when
+  the boss, the last enemy in range, will fall before its charges are full and before your next burst. Not for heals,
+  protection or movement. The trace writes "fight end: ... charges released".

@@ -40,5 +40,12 @@
   "kind": "each",
   "situation": "out-of-combat heal held:",
   "match": "out-of-combat heal held: .+ waits for the fight - natural regeneration and a heal over time cover the time until the next enemy$"
+ },
+ {
+  "id": "fight-end-charges-line-form",
+  "archive": "A916",
+  "kind": "each",
+  "situation": "fight end:",
+  "match": "fight end: .+ charges released - the boss falls in [0-9]+[.,][0-9] s, before they cap in [0-9]+[.,][0-9] s and before the burst \\((unknown|[0-9]+ s)\\)$"
  }
 ]

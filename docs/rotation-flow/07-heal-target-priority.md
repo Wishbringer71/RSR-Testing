@@ -747,6 +747,15 @@ dem Pull (Pre-Regen im Countdown ist ein HoT und bleibt).
   Sekunden erledigt. (B) nimmt das Ende der Regeneration vorweg, wo jemand tief steht und der nächste Pull sofort
   kommt: Ein HoT läuft in den Pull hinein und heilt dort weiter. (C) lässt einen Tank, den der Pull bei 30 % trifft,
   ohne diese Hilfe. (B) überwiegt.
+- *Heiler ohne solchen HoT* (seine Frage, 19.11.2026: „was ist mit heilern, die keine hots haben? gibt es die
+  überhaupt?“): Gelehrter und Weiser. Ihre HoTs sind Fähigkeiten mit Abklingzeit oder Leiste (Whispering Dawn, Sacred
+  Soil, Consolation; Physis II, Kerachole), ihre GCD-Heilungen heilen direkt (Physick, Diagnosis, Prognosis) oder legen
+  Schilde (Adloquium, Succor, die eukratischen). Außerhalb des Kampfes heilen sie deshalb nicht; die Regeneration macht in
+  höchstens 30 s voll. *Erwogen:* für sie die direkte GCD-Heilung mit MP freigeben. Sie kürzt nur ein bis zwei Ticks des
+  Wartens, und anders als ein HoT heilt sie nicht in den nächsten Pull hinein; zieht der Tank sofort weiter, gilt ab dem
+  Pull die volle Heilung, und die gesparten Abklingzeiten stehen bereit. *Preis:* die erste Heilung höchstens einen GCD
+  später. Nicht gebaut. Die Fee des Gelehrten heilt mit Embrace von sich aus; das ist keine Aktion des Spielers und
+  bleibt unberührt.
 - *Falsifikation:* (1) *Kein Defekt:* RSR verbrauchte in seinen Mitschnitten nichts Teures ohne Kampf. Gilt nur, weil
   die Gruppe meist voll aus dem Kampf kam; der Code erlaubte es (Option „Heal party members out of combat“). (2) *Option
   falsch – der Tank zieht sofort weiter:* Dann beginnt der nächste Kampf bei tiefer Gesundheit; im Kampf gelten wieder

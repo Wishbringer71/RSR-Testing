@@ -2755,7 +2755,19 @@ vorhergesagte bewegungen nicht von allen jobs gelesen? gründe?"; an der Version
 - *Gegenthese 8 – Die Zeit bis zum Tod schätzt zu früh:* Stirbt der Boss später, als die Schätzung sagt, fehlt die
   verbrauchte Ladung im nächsten Burst. `GetCorrectedTTK` steuert ihren Fehler nach; was bleibt, ist eine Ladung,
   die eine Abklingzeit früher wiederkommt – der Preis ist klein, weil die Ladung bis zum Burst ohnehin nachlädt,
-  wenn der Burst mehr als eine Ladezeit entfernt ist. Zu prüfen am Modell, bevor gebaut wird.
+  wenn der Burst mehr als eine Ladezeit entfernt ist.
+- *Die Rechnung (A916):* Trifft die Schätzung, gewinnt die Freigabe einen ganzen Einsatz, der sonst mit dem Tod des
+  Bosses verfällt. Irrt sie (der Boss lebt über den nächsten Burst hinaus), verliert sie höchstens den Aufschlag des
+  Bursts auf diesen einen Einsatz – die Ladung lädt nach und geht später. Mit der Wahrscheinlichkeit q eines solchen
+  Irrtums und dem Aufschlag P lohnt sie, solange (1 − q) > q · P; bei P = 0,25 *[Annahme wie in K1]* bis q = 0,8. Die
+  Schätzung müsste also in vier von fünf Fällen um mehr als den Abstand zum Burst danebenliegen, damit sie schadet.
+- *Gebaut (A916):* In `CooldownCheck`, an der Stelle „Cooldown:ChargesKept“: Eine Fähigkeit mit Ladungen, die nur aus
+  Sparsamkeit wartet, geht, wenn das aktuelle Ziel ein Boss (`IsBossFromTTK`) und der letzte Gegner in Reichweite ist und
+  laut `GetCorrectedTTK` stirbt, bevor ihre Ladungen voll wären und bevor der nächste eigene Burst fällig ist
+  (`TinctureClock.SecondsToNext`; unbekannt zählt nur der Überlauf). Nicht für freundliche Aktionen (Heilung, Schutz –
+  deren letzte Ladung wartet auf Gefahr, Konzept 07) und nicht für Bewegung mit fester Strecke. Spurzeile je Aktion und
+  Kampf „fight end: … charges released“, Vorhersage `fight-end-charges-line-form`. *Ausgeliefert, und nichts ändert
+  sich:* Ohne gemessene Zeit bis zum Tod oder bei mehreren Gegnern bleibt alles wie bisher.
 
 **Vorbild: die Kampfrotationen von BossMod** (seine Frage, 19.11.2026: „bringt eigentlich der ai-kampf modus in bossmod
 reborn oder in bossmod was? ist da was, dass rsr verbessern könnte? … ich meine die dortige kampfrotation";

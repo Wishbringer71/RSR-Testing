@@ -26652,6 +26652,21 @@ sperrte einen lesenden Befehl. Eine Umleitung zählt jetzt nur, wenn ihr Ziel ei
 den Fall.
 *Prüfgrad:* statisch, Compile, Prüfskripte; Mitschnitte ausgewertet. Im Spiel nicht beobachtet.
 
+### A916 · K2: gehaltene Ladungen gehen vor dem Tod des Bosses (19.11.2026)
+
+*Anlass:* TODO „Rotationen aller Jobs über den Augenblick hinaus“, K2 (Konzept 03, F), unabhängig von K3.
+*Gebaut (zentral, alle Jobs):* An der Stelle „Cooldown:ChargesKept“ in `CooldownCheck` geht eine Fähigkeit mit Ladungen,
+die nur aus Sparsamkeit wartet, wenn das Ziel ein Boss und der letzte Gegner in Reichweite ist und laut
+`GetCorrectedTTK` fällt, bevor die Ladungen voll wären und bevor der eigene Burst fällig ist (`TinctureClock`). Nicht für
+freundliche Aktionen und Bewegung mit fester Strecke. Spurzeile je Aktion und Kampf, Vorhersage
+`fight-end-charges-line-form`.
+*Rechnung (Konzept 03, K2):* Gewinn bei richtiger Schätzung ein ganzer Einsatz, Verlust bei falscher höchstens der
+Burst-Aufschlag auf einen Einsatz; lohnt bis zu einer Irrtumsrate von vier aus fünf bei P = 0,25 *[Annahme]*.
+*Wirkung im Kampf:* Am Ende eines Bosskampfes verfallen keine Ladungen mehr, die nur auf den Überlauf oder den nächsten
+Burst warteten – etwa Gnashing Fang, Double Check und Checkmate, Fleche-artige Ladungen *[welche Rotationen ohne usedUp
+fragen, zeigt die Spur]*.
+*Prüfgrad:* statisch, Compile, Prüfskripte. Im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
