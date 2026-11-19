@@ -21,13 +21,13 @@
   },
   {
    "repo": "awgil/ffxiv_bossmod",
-   "commit": "1758cc8ea",
-   "date": "2026-11-18",
+   "commit": "02a16b442",
+   "date": "2026-11-19",
    "use": "BossMod (Original)"
   },
   {
    "repo": "BeirutaNa1na/RotationSolverReborn",
-   "commit": "d1e376bdd",
+   "commit": "abfd49fa0",
    "date": "2026-11-19",
    "use": "Beiruta-Rotationen"
   },
@@ -183,7 +183,7 @@
   },
   {
    "repo": "t3knical/DalamudPlugins",
-   "commit": "1821dcdd9",
+   "commit": "e63189109",
    "date": "2026-11-19",
    "use": "Tekz-BossmodReborn-Fork (Zielvorrang je Kampf), BeastMasterHelper (A667)"
   },

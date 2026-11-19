@@ -26541,6 +26541,56 @@ boosts:“ nennt Merchant's Eye (TokenBoost) und Thief's Eye (LootBoost); widerl
 (`predictions/2026-11-19.json`, crucible-eyes-recognized). Danach in einem Lauf mit Tome of the Impervious: kein
 „crucible item: Tome of the Impervious an enemy attacks you“ vor dem Endkampf.
 
+### A911 · Quellen am Auftragsende: BossMod (Original), Beiruta, Tekz (19.11.2026)
+
+`check_source_updates.py` (19.11.2026): 39 Quellen, 3 bewegt, 35 aktuell, 1 unerreichbar (FrontlineAdvisor, wie zuvor).
+- *Beiruta* (d1e376bdd → abfd49fa0): „Healer fixes", schon mit Upstream 996f28183 gemergt und in A907 ausgewertet.
+- *Tekz/DalamudPlugins* (1821dcdd9 → e63189109): nur Download-Zähler in `repo.json`; kein Inhalt.
+- *BossMod, awgil* (1758cc8ea → 02a16b442, 25 Commits, 88 Dateien): Module für Shinryu Unreal und Extreme, Smileton,
+  Stigma Dreamscape, D99, FF16-Kollaboration, M5N/M12N; die Schnitter-Rotation (f49fb988); das Sirenen-Modul auf Brett 3
+  (62a5d135).
+  - *Schnitter:* neuer Schalter für Sacrificium, darunter „direkt vor Communio" mit der Begründung, der Webplatz vor
+    Communio gehöre meist Lemure's Slice, dessen Void Shroud mit dem Ende von Enshroud verfällt. `RPR_Reborn` stellt
+    Sacrificium in der Abfrage vor Lemure's Slice und nimmt es im ersten Webplatz nach dem ersten Reaping; Lemure's
+    Slice fällt danach in den Webplätzen nach dem zweiten und vierten Reaping (Konzept 14, „Folge im Enshroud"). Der
+    Konflikt um den letzten Webplatz entsteht dort nicht. Nichts zu ändern (statisch).
+  - *Sirene, Crawling Piece:* BossMod nimmt es nur vorrangig, solange der Spieler gebunden ist, sonst mit Vorrang 0 und
+    einer verbotenen Fläche vor ihm. RSR führt Upstreams „Crucible of the Unbroken - Siren logic", das es immer
+    vorzieht. *Sein Mitschnitt vom 18.11.2026 (Brett 3, zwei Crawling Pieces):* Agonales Klammern (BDB8) band ihn um
+    19:15:39.276 bei voller LP des Stücks (3.365), sein erster Schlag folgte 0,36 s später; die Fessel endete um 19:15:45.3,
+    das Stück fiel um 19:15:47.3. Das zweite band ihn um 19:17:04.148, 0,36 s nach seinem ersten Schlag, bei 3.024 LP.
+    Der Vorrang verhinderte die Fessel in keinem der beiden Fälle, und ihr Ende hing nicht am Tod des Stücks [zwei Fälle].
+    BossMods Lösung setzt auf Ausweichen durch seine KI, das RSR nicht hat. Offen ins TODO („Sirene (Brett 3): Vorrang
+    des Crawling Piece ohne gemessenen Nutzen"), Mechanik vor der Regel.
+  - *Shinryu Unreal:* ein Modul jetzt auch in BossMod (Original). RSR liest BossModReborn; ob BossModReborn eines hat,
+    ist hier nicht geprüft [weiß nicht]; seine Shinryu-Läufe stehen in A877.
+*Prüfgrad:* Diffs gelesen, ein Mitschnitt ausgewertet; keine Codeänderung.
+
+### A912 · Release 7.5.8.7+wsh1 veröffentlicht, Release-Text übergeben, neuer Zweig (19.11.2026)
+
+Sein Auftrag (19.11.2026): „danach: branch zu main, compile, release, neuer branch" – die Freigabe (CLAUDE.md, „Grenzen
+und Löschungen").
+- *Vorher gemessen:* Upstream abgeglichen (0 ausstehend); `main` Vorfahr des Arbeitszweigs; Tag `7.5.8.7+wsh1` frei auf
+  `origin`; Versionsangaben auf 7.5.8.7 (+wsh1, -wsh1). 65 Prüfschritte und Build hier grün, Pre-Push-Gate bestanden.
+- *Release-Text:* Bis zu dieser Prüfung nannte er nur vier Änderungen (bis A891). Ergänzt um jede Fork-Änderung im Spiel
+  seit 7.5.8.5+wsh1: Leveln des Kaders (A898, A899), Gegenstände auf den Brettern (A908, A910), Brettstart (A897),
+  Empfehlungsfenster (A896), Schnitter und Beiruta-Heiler (A907), Gegenstandseinstellungen (A894).
+- *CHANGELOG:* Abschnitt 7.5.8.7+wsh1: die neuen öffentlichen Member `CrucibleSpoilsOpen`, `CrucibleSpoilsTakeAll`,
+  `CrucibleSpoilsOffers` von `BeastmasterRotation` (aus den öffentlichen Zeilen der Fork-Commits seit dem Tag; die
+  übrigen sind intern oder Teil einer Rotation).
+- *Zweig zu `main`:* `main` auf `claude/fixes-after-7.5.8.5` (716797360) vorgespult und gepusht.
+- *Build:* `build.yaml` per `workflow_dispatch` auf `main`, Lauf 44574799036, erfolgreich.
+- *Release:* `publish.yaml` per `workflow_dispatch` auf `main` mit `7.5.8.7+wsh1`, Lauf 44575618349, erfolgreich.
+  Release auf 716797360, `latest.zip` 3 791 421 Bytes, Digest sha256:f4afb730…6a46, Text gleich dem Release-Text.
+- *Übergabe:* `fork-changes-in-play.md` steht auf Upstream 7.5.8.7; die Einträge sind in die Themen eingearbeitet
+  (Phantomangriffe, Beastmaster-Abschluss, Schnitter und Crucible bei „Damage and rotation", Beiruta bei „Healing — when
+  it lands", Empfehlungsfenster und Einstellungen bei „Seeing what the rules decide"). `fork-changes-since-last-release.md`
+  beginnt mit „Changes since 7.5.8.7+wsh1".
+- *Zweige:* `claude/fixes-after-7.5.8.7` von `main` nach seiner Namensvorgabe, die Übergabe darauf.
+  `claude/fixes-after-7.5.8.5` ist vollständig gemergt und ein Löschfall auf `origin` (Ref-Löschungen sind der Sitzung
+  gesperrt).
+*Prüfgrad:* Workflow-Läufe und Release-API gelesen, Prüfskripte; die Übergabe gegen den Release-Text abgeglichen.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

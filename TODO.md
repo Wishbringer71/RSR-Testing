@@ -34,6 +34,13 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
 
 ## Offene Arbeit
 
+- **Sirene (Brett 3): Vorrang des Crawling Piece ohne gemessenen Nutzen** (A911; Beastmaster-Vorrang). *Wirkung im
+  Kampf:* Upstreams „Crucible of the Unbroken - Siren logic" (ab Werk an) zieht den Schaden auf das Crawling Piece. In
+  beiden Fällen seines Laufs vom 18.11.2026 band es ihn bei voller LP, bevor ein Schlag es traf, und die Fessel endete vor
+  seinem Tod – der Vorrang verhinderte und verkürzte sie nicht und kostete Schaden am Boss. BossMod (awgil 02a16b442)
+  nimmt es nur noch vorrangig, solange man gebunden ist, und weicht ihm sonst aus. *Nächster Schritt:* Loop zur Mechanik
+  (bindet es bei Berührung oder auf Abstand, endet die Fessel mit seinem Tod, was tut es gebunden), dann die Regel an
+  der zentralen Stelle (`IsCrucibleThirdBoardPriority`). *Konzept:* 21.
 - **Rotationen aller Jobs über den Augenblick hinaus** (sein Auftrag vom 19.11.2026; A901). *Wirkung im Kampf:*
   Verstärker, Zeitgeber und DoTs laufen heute in vorhergesagte Pausen, Ressourcen bleiben beim Tod des Ziels übrig, der
   eigene Burst richtet sich nach der eigenen Uhr statt nach den Raidbuffs, die wirklich auf dir liegen. *Nächster
