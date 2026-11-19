@@ -86,6 +86,33 @@ internal abstract class RecommendationWindow : Window
 		RespectCloseHotkey = false;
 	}
 
+	// A896 (concept 03, "Geschlossen bis zum nächsten Anlass"): whether the window's condition held in the last frame.
+	private bool _wanted;
+
+	/// <summary>
+	/// Every frame, open or closed (Dalamud asks DrawConditions only of an open window): a window the player closed comes
+	/// back when its condition holds anew - the next team screen, shop or spoils - and stays closed for the one it was closed on.
+	/// </summary>
+	public sealed override void PreOpenCheck()
+	{
+		var wanted = DrawConditions();
+		if (wanted && !_wanted)
+		{
+			IsOpen = true;
+		}
+
+		_wanted = wanted;
+	}
+
+	/// <summary>A896: a close by the player goes into the trace, so an upload tells it from a window that never showed.</summary>
+	public override void OnClose()
+	{
+		if (_wanted)
+		{
+			DefenseTrace.Line($"recommendation window closed by the player: {WindowName}");
+		}
+	}
+
 	public override void PreDraw()
 	{
 		_theme = M3Style.Push(M3Density.Tight);

@@ -1926,6 +1926,22 @@ hinzu; Warnung, wo etwas fehlt oder nicht bezahlbar ist), Gründe und Grundlagen
 als gefüllter Material-Knopf, der ausgegraut ist, solange nichts zu tun ist. Maßstab für Größe und Satz sind die
 allgemeinen Regeln, nicht die Vorgaben einer Bibliothek:
 
+- *Geschlossen bis zum nächsten Anlass* (A896; seine Meldung vom 18.11.2026: „bei wechsel zwischen den brettern wird die
+  begleiterauswahl irgendwann nicht mehr angezeigt"):
+  - *Regel:* Schließt der Spieler ein Empfehlungsfenster, gilt das für den laufenden Anlass – diesen Teambildschirm,
+    diesen Laden, diese Beute. Tritt die Bedingung des Fensters neu ein, ist es wieder da. Jedes Schließen schreibt die
+    Spur („recommendation window closed by the player: …").
+  - *Ursache vorher:* Das Fenster setzte `IsOpen` nur beim Erzeugen. Dalamud fragt `DrawConditions` nur bei offenem
+    Fenster, `PreOpenCheck` aber jeden Frame (Dalamud d0e93484, `WindowHost.DrawInternal`, gelesen 19.11.2026; Werkzeugquelle).
+    Mit dem X oder der Gamepad-Taste „Zurück" geschlossen, blieb ein Fenster bis zum Neuladen des Plugins zu, für jedes
+    weitere Brett.
+  - *Grundlage:* ISO 9241-110, Steuerbarkeit: Der Spieler bestimmt, was er sieht. Ein Schließen, das keinen Weg zurück
+    lässt, nimmt ihm die Empfehlung für den Rest der Sitzung, ohne dass er es gewollt hat.
+  - *Falsifikation:*
+    - *Option falsch:* Er wollte es für immer weg. Dafür gibt es die Einstellung je Fenster, ab Werk an.
+    - *Ausgeliefert, und nichts ändert sich:* Das Teamfenster fehlte, weil `RecommendCrucibleTeam` leer blieb (ein
+      Brett ohne Teamgröße). Messweg: die Spurzeile „crucible team screen open: board …, team size …, … picks" je
+      Öffnung. Bei 0 picks liegt die Ursache dort.
 - *Größe frei, in Breite und Höhe.* Der Spieler zieht das Fenster an jedem Rand; ImGui merkt sich die Größe. Grundlage:
   ISO 9241-110, Steuerbarkeit; Windows UX Guide: „Use resizable windows whenever practical to avoid scroll bars and
   truncated data".

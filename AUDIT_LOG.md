@@ -26112,6 +26112,28 @@ auf github notwendig im ablauf?" Dazu seine Vorgabe „ci minuten generell senke
   denselben Hook (dort greift das Gate nicht: keine Prüfskripte im Baum).
 - *Prüfgrad:* Selbsttests und lokal alle Prüfungen; der erste echte Push misst das Gate.
 
+### A896 · Empfehlungsfenster kommen nach dem Schließen mit dem nächsten Anlass zurück (19.11.2026)
+
+Seine Meldung (18.11.2026, mit dem Upload vom Abend): „bei wechsel zwischen den brettern wird die begleiterauswahl
+irgendwann nicht mehr angezeigt".
+- *Spur (Build f2643919e, Sitzungen 12:57 und 18:23):* 21-mal öffnete sich der Teambildschirm (`XBMPetParty`). Nach
+  zehn Öffnungen folgte keine Zeile „crucible team: …", zuletzt um 20:24:46 und 20:25:04 nach einem Wechsel über die
+  Brettliste. Diese Zeile schreibt RSR erst bei seinem Klick auf Übernehmen. Ob das Fenster fehlte, zeigt die Spur
+  deshalb nicht.
+- *Ursache am Code:* Jedes Empfehlungsfenster setzte `IsOpen` nur beim Erzeugen. Dalamud fragt `DrawConditions` nur
+  bei offenem Fenster, `PreOpenCheck` jeden Frame (Dalamud d0e93484 vom 19.11.2026, `WindowHost.DrawInternal`;
+  Werkzeugquelle). Einmal mit dem X oder der Gamepad-Taste „Zurück" geschlossen, blieb ein Fenster bis zum Neuladen
+  des Plugins zu, für jedes weitere Brett. Das betrifft die Defektklasse aller sieben Empfehlungsfenster (Team, Laden,
+  Campsite, Weg, Schatz, Beute, Carnivale-Satz) über ihre gemeinsame Basis.
+- *Gebaut (Konzept 03, „Geschlossen bis zum nächsten Anlass"):* `RecommendationWindow.PreOpenCheck` öffnet das
+  Fenster, sobald seine Bedingung neu eintritt; für den laufenden Anlass bleibt das Schließen. Jedes Schließen schreibt
+  die Spur. Der Teambildschirm schreibt bei jeder Öffnung Brett, Teamgröße, Zahl der Vorschläge und Ziel. Eine leere
+  Empfehlung blendet das Fenster ebenfalls aus; diesen zweiten Weg trennt die Zeile vom Schließen.
+- *Vorhersage:* Im nächsten Upload ab diesem Build steht je Öffnung „crucible team screen open: board …, team size …,
+  … picks, goal …" (`crucible-team-screen-line-form`). Fehlt ihm das Fenster wieder, zeigt die Zeile davor entweder ein
+  Schließen durch ihn oder 0 picks. Bei 0 picks ist der Loop am Brett zu führen (Teamgröße, Kandidaten).
+- *Prüfgrad:* Compile; Dalamuds Ablauf am Quelltext gelesen; im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

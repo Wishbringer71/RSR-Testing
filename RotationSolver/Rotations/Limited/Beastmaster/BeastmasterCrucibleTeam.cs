@@ -1027,6 +1027,8 @@ public partial class BeastmasterRotation
 
 	// K7: one step of a requested change each time the team has taken the last one, at most one GCD after it; a joiner the
 	// game does not take leaves the recommendation for this session, a leaver it does not take ends the change.
+	private static bool _teamScreenTraced;
+
 	internal static void FollowTeamRequest(CrucibleGoal goal)
 	{
 		// A806: the team the screen showed when it opened - the last run's - for the turns among equals; after an Apply the
@@ -1042,7 +1044,17 @@ public partial class BeastmasterRotation
 			_teamAtOpen = CrucibleTeamNow();
 		}
 
+		var opened = open && _teamAtOpen != null && !_teamScreenTraced;
 		CrucibleTeamRecommendation = open ? RecommendCrucibleTeam(board, goal) : [];
+		// A896: what the screen offered when it opened - an empty recommendation hides the window, so the trace tells it from
+		// a window the player closed.
+		_teamScreenTraced = open;
+		if (opened)
+		{
+			DefenseTrace.Line($"crucible team screen open: board {board}, team size {CrucibleBoard.TeamSize(board)}, "
+				+ $"{CrucibleTeamRecommendation.Count} picks, goal {goal}");
+		}
+
 		if (_teamWanted == null)
 		{
 			return;

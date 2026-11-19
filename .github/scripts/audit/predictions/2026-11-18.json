@@ -82,5 +82,12 @@
   "kind": "each",
   "situation": "crucible spoils:",
   "match": "crucible spoils: [0-9]+ pieces, [0-9]+ item and [0-9]+ gear slots free - (take all|take .+; leave .+)$"
+ },
+ {
+  "id": "crucible-team-screen-line-form",
+  "archive": "A896",
+  "kind": "each",
+  "situation": "crucible team screen open:",
+  "match": "crucible team screen open: board [0-9]+, team size [0-9]+, [0-9]+ picks, goal \\w+$"
  }
 ]
