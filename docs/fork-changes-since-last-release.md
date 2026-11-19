@@ -54,6 +54,13 @@ What this release changes in the fight. For the whole distance from upstream, se
   A white mage no longer puts Regen on two others while the tank, who already carries Regen, stands at the edge. The
   trace writes "critical heal GCD -> ...".
 
+- **When an action cannot go, another one comes.** An action the game refuses when pressed - out of sight, a status that
+  forbids it, a target it cannot be used on - is left out of the choice until the game takes it again, so the rotation's
+  next action follows at once instead of the same press failing frame after frame. And when the rotation's own conditions
+  hold back every weaponskill or spell for longer than a GCD, the strongest one the game takes goes, with every safety
+  check kept: the samurai's Kenki stall at the dummy would have cost one GCD instead of 28 seconds. Not during mudras,
+  Ten Chi Jin or dance steps, not for limited jobs, not in PvP. The trace writes "dynamic rotation: ...".
+
 ## Seeing what the enemies do
 
 - **One right picture per enemy area (needs Splatoon).** Circles and lines an enemy casts without the game's orange

@@ -26974,6 +26974,29 @@ Heilung, gilt der Pfad wie bisher. Die Sammlung der kritischen Mitglieder teilen
 `critical-heal-gcd-line-form`; nach einer Zeile „critical class: X …“ kein Heil-GCD auf ein anderes Mitglied, solange
 einer X erreicht.
 
+### A930 · Dynamische Rotation: Ablehnung durch das Spiel und Ausweg aus dem Leerlauf (19.11.2026)
+
+*Anlass:* seine Vorgabe vom 19.11.2026 („wenn etwas gerade nicht möglich ist, wird eine alternative gewählt“) und sein
+Auftrag desselben Tages: „dynamische rotation nun im vollen loop mit konzept, audit, codereview, fehlerbeseitigung“.
+*Grundlagen am Code:* Die Rotationen sind Vorranglisten; was `CanUse` ablehnt, überspringen sie schon. `CanUse` fragt das
+Spiel aber nur nach einigen Gründen ohne Ziel (`BadStatusAction`); ein Druck, den das Spiel ablehnt, schrieb nur ein
+Debug-Protokoll, und die Rotation wählte dieselbe Aktion wieder. Und Vorlieben in `ActionCheck` können jeden GCD sperren
+(Samurai, A923, A925). Vorbild: BossModReborns `ActionQueue.FindBest` überspringt, was gerade nicht geht.
+*Gebaut (Konzept 03, „Dynamische Rotation: geht eine Aktion nicht, kommt eine Alternative“, Ebene alle):*
+- D1 (`DynamicRotation`): Lehnt das Spiel einen Druck ab und nennt es für Aktion und Ziel einen Grund
+  (`GetActionStatus` ohne Abklingzeit und Wirken), lehnt `CanUse` die Aktion für dieses Ziel ab („RefusedByGame“), bis das
+  Spiel 0 sagt. Ohne Grund keine Sperre.
+- D2 (`CustomRotation.DynamicFallback`): Steht der GCD länger als einen GCD frei und wählt die Rotation keinen, geht der
+  Schadens-GCD der Rotation mit der höchsten genannten Potenz, den das Spiel annimmt – gefragt ohne `ActionCheck` und
+  `RotationCheck`, mit jeder zentralen Prüfung. Nicht unter Mudra, Ten Chi Jin, Standard- und Technical Step, nicht für
+  begrenzte Jobs, nicht in PvP, nicht solange eine Wiederbelebung ansteht.
+*Verworfen:* Ausweichpfade je Rotation (Universell zuerst); `GetActionStatus` vor jeder Wahl (Kosten je Frame, deckt D2
+nicht).
+*Unabhängige Prüfung:* keine; das Konzept greift nicht über Leben und Tod ein (CLAUDE.md, „Prüfgrad“).
+*Prüfgrad:* statisch, Compile, Prüfskripte; im Spiel nicht beobachtet; D1 ohne Messung, wie oft das Spiel ablehnt.
+*Vorhersage:* `dynamic-refused-line-form`, `dynamic-fallback-line-form`; an der Puppenreihe keine „gcd idle“-Zeile über
+zwei GCDs.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

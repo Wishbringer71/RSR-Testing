@@ -524,12 +524,12 @@ public readonly partial struct ActionBasicInfo
 			return RefuseBasic("BasicCheck:StatusProvidedDuringGCD");
 		}
 
-		if (!IsActionCheckValid())
+		if (!IBaseAction.IgnoreRotationChecks && !IsActionCheckValid())
 		{
 			return RefuseBasic("BasicCheck:ActionCheck");
 		}
 
-		if (!IsRotationCheckValid())
+		if (!IBaseAction.IgnoreRotationChecks && !IsRotationCheckValid())
 		{
 			return RefuseBasic("BasicCheck:RotationCheck");
 		}

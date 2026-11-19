@@ -255,6 +255,13 @@ public partial class BaseAction : IBaseAction
 			return ActionTracer.Reject(this, "NoTarget");
 		}
 
+		// A930 (concept 03, "Dynamische Rotation", D1): what the game refused on this target waits until the game takes it.
+		if (!TargetInfo.IsTargetArea
+			&& DynamicRotation.StillRefused(this, PreviewTarget.Value.Target?.GameObjectId ?? Player.Object?.GameObjectId ?? 0))
+		{
+			return ActionTracer.Reject(this, "RefusedByGame");
+		}
+
 		// A929 (concept 07): while the heal path asks only for the member in the critical class, no other target.
 		if (IBaseAction.CriticalHealTargets is { } critical && !ReachesAny(PreviewTarget.Value, critical))
 		{

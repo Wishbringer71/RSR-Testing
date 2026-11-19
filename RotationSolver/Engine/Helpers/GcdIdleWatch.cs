@@ -17,6 +17,9 @@ internal static class GcdIdleWatch
 	private static readonly List<string> _chosen = [];
 	private static readonly Dictionary<string, int> _refused = [];
 
+	/// <summary>Seconds the GCD has stood free in a fight without one coming; zero outside such a stretch.</summary>
+	internal static float IdleSeconds => _idle;
+
 	/// <summary><c>CanUse</c> refused <paramref name="action"/> for <paramref name="reason"/>: counted while a stall runs.</summary>
 	internal static void Refused(IBaseAction action, string reason)
 	{

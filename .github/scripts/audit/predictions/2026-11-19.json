@@ -110,5 +110,19 @@
   "kind": "each",
   "situation": "critical heal GCD ->",
   "match": "critical heal GCD -> .+ #[0-9]+ on .+ at [0-9]+\\s?%, critical .+ at -?[0-9]+% forecast$"
+ },
+ {
+  "id": "dynamic-refused-line-form",
+  "archive": "A930",
+  "kind": "each",
+  "situation": "dynamic rotation: .+ refused by the game on",
+  "match": "dynamic rotation: .+ refused by the game on .+ \\(\\w+\\) - left out until the game takes it$"
+ },
+ {
+  "id": "dynamic-fallback-line-form",
+  "archive": "A930",
+  "kind": "each",
+  "situation": "dynamic rotation: .+ instead of none",
+  "match": "dynamic rotation: .+ instead of none - no GCD for [0-9]+[.,][0-9] s$"
  }
 ]

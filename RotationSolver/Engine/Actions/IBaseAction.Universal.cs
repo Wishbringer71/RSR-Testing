@@ -18,6 +18,10 @@ public partial interface IBaseAction : IAction
 	// is refused (concept 07, "Der Heil-GCD für ein Mitglied der kritischen Klasse", A929).
 	internal static List<IBattleChara>? CriticalHealTargets { get; set; }
 
+	// Set while the way out of a GCD stall asks the rotation's damage GCDs without the rotation's own conditions (ActionCheck,
+	// RotationCheck); every central check stays (concept 03, "Dynamische Rotation", D2, A930).
+	internal static bool IgnoreRotationChecks { get; set; }
+
 	// Set by the defence dispatch while a defence path runs: whether the hit that opened it reaches the
 	// player. False rejects the actions that protect only him (concept 13, A233); null outside the paths.
 	internal static bool? SelfProtectionHitsMe { get; set; }

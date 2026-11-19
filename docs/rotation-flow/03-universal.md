@@ -2415,6 +2415,95 @@ GCD-Tabelle der Spur macht ihn messbar.
   Geschwindigkeit. Upstreams `RPR_Reborn` rechnet für Sacrificium einen GCD als 2,5 s; bei der Schnelligkeit des Schnitters
   ist der Unterschied unter 0,1 s, ohne Wirkung im Kampf.
 
+## Dynamische Rotation: geht eine Aktion nicht, kommt eine Alternative
+
+Geltender Stand (A930): Eine Rotation ist eine Vorrangliste, die je Frame neu gefragt wird; was `CanUse` ablehnt, gibt
+den Platz an die nächste Aktion. Zwei Lücken schließt RSR für alle Jobs an einer Stelle: Lehnt das Spiel einen Druck mit
+einem Grund ab, ist die Aktion für die Wahl gesperrt, bis das Spiel sie wieder annimmt (D1). Sperren die Bedingungen der
+Rotation selbst länger als einen GCD jeden GCD, obwohl das Spiel einen annähme, kommt der stärkste, den das Spiel
+annimmt (D2).
+
+**Seine Vorgabe** (19.11.2026): „und dynamische rotationen zeichnen sich dadurch aus: wenn etwas gerade nicht möglich
+ist, wird eine alternative gewählt.“ Am 19.11. in den Auftrag genommen: „dynamische rotation nun im vollen loop mit
+konzept, audit, codereview, fehlerbeseitigung“.
+
+**Grundlagen**
+- *RSR heute:* Jede Rotation fragt ihre Aktionen der Reihe nach (`if (X.CanUse(out act)) return true;`). Was `CanUse`
+  ablehnt – Abklingzeit, Reichweite, Status, eigene Bedingung (`ActionCheck`) –, überspringt sie; insoweit ist sie schon
+  dynamisch. Zwei Fälle fallen durch:
+  - *D1, das Spiel lehnt ab, RSR nicht:* `CanUse` fragt das Spiel nur nach einigen Gründen und ohne Ziel
+    (`BadStatusAction`: nicht gelernt, falscher Job, hier nicht nutzbar, keine Ladung). Gründe wie Statusbann (581,
+    etwa Pacification gegen Waffenfertigkeiten), Sichtlinie oder Reichweite aus Sicht des Spiels (562, 566) oder „kann
+    nicht ausgeführt werden“ am Ziel (579) sieht es erst beim Drücken. `RSCommands` drückt, `UseAction` liefert „nein“,
+    und das schrieb nur ein Debug-Protokoll; im nächsten Frame wählt die Rotation dieselbe Aktion wieder – ohne Ende.
+  - *D2, die Rotation sperrt sich selbst:* Bedingungen einer Rotation sind teils Vorlieben (Samurai: kein Kombo-Schlag
+    über 85/90/95 Kenki gegen Überlauf). Fällt der Weg aus, über den sie sich lösen (der Verbraucher), sperrt jede
+    Bedingung ihren GCD, und es kommt keiner. Gemessen: Samurai an der Puppe 28,3 s und 15,9 s nur Auto-Attacke (A923,
+    A925); A925 behob diesen einen Weg, die Klasse bleibt für jede künftige Bedingung.
+- *Vorbild:* BossModReborns Warteschlange (`ActionQueue.FindBest`, 8d5ff8e21) überspringt jede Aktion, deren Bedingung
+  gerade nicht erfüllt ist („no point waiting forever“), und nimmt die nächste nach Vorrang; vor dem Drücken fragt sie das
+  Spiel (`GetActionStatus`). Werkzeugquelle.
+- *Spiel:* `ActionManager.GetActionStatus(Typ, Aktion, Ziel, Abklingzeit prüfen, Wirken prüfen)` nennt den Grund einer
+  Ablehnung als Zahl (`ActionStatus`), 0 heißt annehmbar; ohne die beiden Prüfungen nennt es den Grund unabhängig von
+  laufendem GCD und Zauber.
+
+**Optionen**
+- *N:* wie bisher; eine Ablehnung durch das Spiel hält die Rotation fest, eine Selbstsperre bis ihre Bedingung fällt.
+- *Je Rotation Ausweichpfade:* 21 Jobs, jeder mit eigenen Lücken; die nächste Bedingung bringt den nächsten Stillstand.
+  Verworfen (Universell zuerst).
+- *Alle Bedingungen beim Spiel gegenprüfen (vor jeder Wahl `GetActionStatus` mit Ziel):* deckt D1 vorab, kostet je Frame
+  eine Spielabfrage je gefragter Aktion (code.md, „Struktur und Kosten“) und deckt D2 nicht. Verworfen.
+- *D1, Sperre nach Ablehnung (gewählt):* Liefert `UseAction` „nein“ und nennt das Spiel für Aktion und Ziel einen Grund,
+  ist die Aktion für dieses Ziel gesperrt; `CanUse` fragt das Spiel nur für gesperrte Aktionen, und sobald es 0 sagt,
+  ist die Sperre weg. Kein fester Zeitraum: Das Spiel sagt, wann es wieder geht. Ohne Grund (0 beim Nachfragen, etwa
+  Zeitpunkt) sperrt RSR nicht.
+- *D2, Ausweg aus dem Leerlauf (gewählt):* Steht der GCD länger als einen GCD frei (dieselbe Strecke, die
+  `GcdIdleWatch` misst) und wählt die Rotation keinen, fragt RSR die eigenen Schadens-GCDs der Rotation (mit im
+  Wirktext genannter Potenz) ohne deren eigene Bedingungen (`ActionCheck`, `RotationCheck`), aber mit jeder zentralen
+  Prüfung (Ziel, Reichweite, Blick, Kanal, Bewegung, Rudel, Wiederbelebungsschutz, Spielstatus) und nimmt den mit der
+  höchsten genannten Potenz, den das Spiel für sein Ziel annimmt. Im nächsten GCD fragt RSR wieder zuerst die Rotation.
+- *D2 nicht:* solange ein Ablauf läuft, den ein fremder GCD zerstört (Mudra, Ten Chi Jin, Standard und Technical Step),
+  bei begrenzten Jobs (Blaumagier: Final Sting und Self-destruct tragen die höchste Potenz und kosten das Leben;
+  Beastmaster, Inhaltsrotationen), in PvP, und solange eine Wiederbelebung als nächste Aktion ansteht.
+
+**Abwägung im Kampf (SWOT)**
+- *D1:* Stärke – nach einer Ablehnung kommt im nächsten Frame die nächste Aktion statt Auto-Attacke bis zum Ende der
+  Ursache. Schwäche – ein Druck je Ursache geht verloren. Bedrohung – das Spiel nennt einen Grund, der im nächsten Frame
+  schon weg ist; dann prüft `CanUse` neu und lässt die Aktion zu. Chance – die Spur zählt erstmals, wie oft das Spiel
+  ablehnt.
+- *D2:* Stärke – ein Stillstand kostet höchstens einen GCD statt bis zum Ende der Selbstsperre (beim Samurai 28 s).
+  Schwäche – der Ausweg kennt Kombos und Leisten nicht; er nimmt einen GCD, den die Rotation an dieser Stelle nicht
+  gewollt hätte (etwa Gekko mit 10 Kenki Überlauf). Ein verlorener GCD wiegt mehr als jeder Überlauf einer Leiste: Ein
+  Kombo-Schlag trägt ein Vielfaches der Potenz von 10 Kenki. Bedrohung – eine Rotation, die absichtlich keinen GCD wählt;
+  RSRs absichtliche Pausen sind zentrale Prüfungen (Blick, Kanal, Bewegungssperre, Wiederbelebung) und bleiben.
+- *Bilanz:* beide; D1 ohne Preis außer einem Druck, D2 mit dem Preis eines nicht gewollten GCD gegen einen Stillstand.
+
+**Falsifikation**
+- (1) *Kein Defekt:* widerlegt für D2 am Mitschnitt (A923, A925). Für D1 gibt es keinen Mitschnitt, weil RSR die
+  Ablehnung nicht schrieb – tragende Annahme A1 unten, die Spur misst sie ab jetzt.
+- (2) *Option falsch:* D2 nimmt einen GCD, der einen Ablauf zerstört. Abgedeckt sind die bekannten (Mudra, Ten Chi Jin,
+  Schritte); ein unbekannter zeigt sich in der Spur „dynamic rotation: … instead of none“.
+- (3) *Ausgeliefert, nichts ändert sich – warum?* Das Spiel lehnt nie ab, und keine Rotation sperrt sich; dann schreibt
+  die Spur nichts, gewollt.
+
+**Anforderungen**
+
+| # | Vorgabe | prüfbares Kriterium | Ort | Beleg heute | Messweg |
+|---|---|---|---|---|---|
+| R1 | Geht etwas nicht, kommt eine Alternative (19.11.) | nach einer Ablehnung durch das Spiel wird die Aktion bis zur Annahme nicht mehr gewählt | D1 | statisch | „dynamic rotation: … refused by the game“ |
+| R2 | dieselbe | kein Leerlauf über einen GCD, wenn das Spiel einen Schadens-GCD annimmt | D2 | statisch | „dynamic rotation: … instead of none“, keine „gcd idle“-Zeile über zwei GCDs |
+| R3 | Sicherheit vor Schaden | jede zentrale Prüfung gilt auch im Ausweg | D2 | Code | – |
+| R4 | Alle Jobs (Universell zuerst) | an einer Stelle für jede Rotation | `BaseAction`, `CustomRotation_Invoke` | Code | Zeilen bei mehreren Jobs |
+
+**Tragende Annahmen**
+- A1: `UseAction` liefert „nein“ nur bei einer echten Ablehnung, nicht bei einem Zeitproblem. Gesperrt wird nur, wenn
+  das Spiel beim Nachfragen einen Grund nennt; sonst schreibt die Spur die Ablehnung ohne Sperre.
+- A2: Was der Wirktext als erste Potenz nennt, ordnet die Schadens-GCDs eines Jobs hinreichend. [Schätzung: für einen
+  Ausweg, der nur nach einer Selbstsperre greift, genügt das; der Kombo-Zuschlag fehlt in der Ordnung.]
+
+*Messweg:* „dynamic rotation: <Aktion> refused by the game on <Ziel> (<Grund>) - left out until the game takes it“,
+„dynamic rotation: <Aktion> taken again“, „dynamic rotation: <Aktion> instead of none - no GCD for <s> s“.
+
 ## Bereit, aber nicht genutzt
 
 *GCD-Leerlauf (A923):* Steht der GCD im Kampf frei, ein Gegner in Reichweite, RSR spielt und der Spieler wirkt nicht,

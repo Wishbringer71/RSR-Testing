@@ -34,12 +34,13 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
 
 ## Offene Arbeit
 
-- **Dynamische Rotation: geht eine Aktion gerade nicht, kommt eine Alternative** (seine Vorgabe vom 19.11.2026: „und
-  dynamische rotationen zeichnen sich dadurch aus: wenn etwas gerade nicht möglich ist, wird eine alternative gewählt.
-  nur für später als todo.“). *Wirkung im Kampf:* Eine gewählte Aktion, die das Spiel nicht ausführt, hält heute jeden
-  GCD an, bis ihre Bedingung abläuft (Samurai an der Puppe: 28 s Auto-Attacke, A923). *Nächster Schritt:* für alle Jobs
-  am allgemeinen Ort (Auswahl und Drücken) eine Aktion, deren Druck scheitert, für die Auswahl ausschließen. *Konzept:*
-  03.
+- **Rotation jedes Jobs: Synergien und Kaskaden innerhalb des Jobs** (sein Auftrag vom 19.11.2026: „danach die
+  rotationen jedes jobs auf verbesserungspotential prüfen. innerhalb des jobs durch auswertung der eigenschaften der
+  funktionen, angriffe, skills, talente und allen drumrum, auf synergieeffekte und kaskaden. im vollen kritischen loop
+  mit antithese, audit und codereview mit fehlerbehebung“). *Wirkung im Kampf:* Wo ein Merkmal, ein Status oder eine
+  Aktion eine andere verstärkt oder freischaltet und die Rotation das nicht nutzt, fehlt Schaden in jedem Kampf.
+  *Nächster Schritt:* je Job die Wirktexte aller Aktionen und Merkmale (Spielblätter, englisch) auf Querverweise
+  erheben, gegen die Rotation halten, Befunde im Loop. *Konzept:* 14 (je Job), 03 „F · Über den Augenblick hinaus“.
 - **Rotationen aller Jobs über den Augenblick hinaus** (sein Auftrag vom 19.11.2026; A901). *Wirkung im Kampf:*
   Verstärker, Zeitgeber und DoTs laufen heute in vorhergesagte Pausen, Ressourcen bleiben beim Tod des Ziels übrig, der
   eigene Burst richtet sich nach der eigenen Uhr statt nach den Raidbuffs, die wirklich auf dir liegen. *Nächster
