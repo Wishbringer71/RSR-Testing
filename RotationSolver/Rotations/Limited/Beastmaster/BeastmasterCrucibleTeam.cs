@@ -230,6 +230,32 @@ public partial class BeastmasterRotation
 		return CrucibleBoard.SyncRank(next) > 0 ? Math.Max(sync, CrucibleBoard.RecommendedRank(next)) : sync;
 	}
 
+	/// <summary>
+	/// K7 (A899, his goal of 19.11.2026 - the whole roster leveled evenly for the next boards): with none below this board's
+	/// level limit, the next board on which familiars of known rank stand below its limit - up to its cap they draw the full
+	/// share of a run, above a cap half and less (his results of 14. to 18.11.2026). Names it as the game's board screen
+	/// does; empty when no later board has one. Which boards he has unlocked RSR does not read: the note chooses nothing.
+	/// </summary>
+	private static string LevelsElsewhere(uint board, List<TeamCandidate> candidates)
+	{
+		for (var next = board + 1; CrucibleBoard.SyncRank(next) > 0; next++)
+		{
+			var limit = LevelLimit(next);
+			var count = 0;
+			foreach (var candidate in candidates)
+			{
+				count += candidate.Rank > 0 && candidate.Rank < limit ? 1 : 0;
+			}
+
+			if (count > 0)
+			{
+				return $" {count} level on the board recommended for rank {CrucibleBoard.RecommendedRank(next)} (sync from {CrucibleBoard.SyncRank(next)}).";
+			}
+		}
+
+		return string.Empty;
+	}
+
 	// K7 (A822): the familiars of known rank below the level limit.
 	private static HashSet<BeastmasterPet> BelowLimit(List<TeamCandidate> all, int sync, int limit)
 	{
@@ -657,6 +683,7 @@ public partial class BeastmasterRotation
 		CrucibleGoalWhyNot = chosenGoal == goal ? string.Empty
 			: chosenGoal == CrucibleGoal.Level
 				? $"Level is not offered: no familiar of known rank stands below {levelLimit}, this board's cap or the next board's recommended rank; plays as {goal}."
+					+ LevelsElsewhere(board, candidates)
 				: "Score is not offered: no familiar has reached this board's cap, and its team is not measured to pass safely; plays as Safe win.";
 
 		if (goal == CrucibleGoal.Level && party != null)
@@ -1053,6 +1080,11 @@ public partial class BeastmasterRotation
 		{
 			DefenseTrace.Line($"crucible team screen open: board {board}, team size {CrucibleBoard.TeamSize(board)}, "
 				+ $"{CrucibleTeamRecommendation.Count} picks, goal {goal}");
+			if (CrucibleGoalWhyNot.Length > 0)
+			{
+				// A899: why the chosen goal is not played here, and with Level the next board that levels.
+				DefenseTrace.Line("crucible team: " + CrucibleGoalWhyNot);
+			}
 		}
 
 		if (_teamWanted == null)

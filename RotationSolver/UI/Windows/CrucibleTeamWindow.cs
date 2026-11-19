@@ -23,7 +23,7 @@ internal sealed class CrucibleTeamWindow : RecommendationWindow
 	// A804: the goals of a run, in the order of CrucibleGoal.
 	private static readonly M3Segment[] Goals =
 	[
-		new("Level", Tooltip: "Every place below the board's cap or the next board's recommended rank, the lowest first; above it only while the team is endangered."),
+		new("Level", Tooltip: "Every familiar up to the board's cap, the lowest first; above it only while the team is endangered. With none here, the next board that levels them."),
 		new("Safe win", Tooltip: "The full team, the lowest as long as passing is safe; stronger ones while it is endangered or unmeasured."),
 		new("Score", Tooltip: "The strongest, as few as are not endangered; a team of one kin where it scores more."),
 	];

@@ -1,0 +1,9 @@
+[
+ {
+  "id": "crucible-goal-why-not-line-form",
+  "archive": "A899",
+  "kind": "each",
+  "situation": "crucible team: Level is not offered",
+  "match": "crucible team: Level is not offered: no familiar of known rank stands below [0-9]+, this board's cap or the next board's recommended rank; plays as \\w+\\.( [0-9]+ level on the board recommended for rank [0-9]+ \\(sync from [0-9]+\\)\\.)?$"
+ }
+]

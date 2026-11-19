@@ -599,7 +599,7 @@ def team_content(picks, status="Team set: 3 familiars. Confirm it on the screen.
     def content(w):
         with w.section("Goal of the runs", "Kept until you change it; the team follows it, the board always plays safe, then for points"):
             w.choice(["Level", "Safe win", "Score"])
-            w.note("Familiars that lag behind in rank fill the team; once none does, as Score.")
+            w.note("Every familiar up to the board's cap, the lowest first; above it only while the team is endangered. With none here, the next board that levels them.")
         with w.section("Team for this board", f"{len(picks)} familiars"):
             with w.list(len(picks)) as items:
                 for i, (pet, chip, why) in enumerate(picks):
@@ -846,7 +846,11 @@ def scenario_resize(failures, **defect):
     ctx.frames([window], 4)
     m4 = measure(window, ctx)
     check("content shrinks: height follows", abs(m4["height"] - m4["need"]) <= 1.0, f"{m4['height']:.0f} vs {m4['need']:.0f}", failures)
-    window.content = team_content(PICKS + [("Gnath", "joins", "hits Earth (2)")])
+    # Three more picks, so that the content grows whatever note leads the height: a window that does not follow stays at
+    # the old height (A899 - with one more pick and the long note of Level, the columns rebalanced to the same height,
+    # and no check caught a window that does not follow).
+    window.content = team_content(PICKS + [("Gnath", "joins", "hits Earth (2)"), ("Uragnite", "joins", "hits Water (2)"),
+                                           ("Sabotender", "joins", "hits Earth (1)")])
     ctx.frames([window], 4)
     m5 = measure(window, ctx)
     # A816: with a list in columns one more item can leave the height as it is or shorten it (the columns rebalance);

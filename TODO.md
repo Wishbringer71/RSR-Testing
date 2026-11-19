@@ -113,29 +113,6 @@ nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigt
 
 ## Warten auf Daten oder Fremde
 
-- **Beastmaster, Crucible: „Level“ füllt jeden Platz – Vorlage an ihn** (seine Vorgabe vom 18.11.2026; A898).
-  *Kontext:* Er will unter „Level" jeden Platz füllen, weil jeder Mitgenommene Erfahrung bekommt. Seine Abrechnungen
-  vom 18.11.2026 zeigen dazu zweierlei. Die Erfahrung wird durch die Größe des Kaders geteilt (Rang 12 auf Brett 2:
-  24 bei 12 Begleitern, 48 bei 6). Und sie fällt mit dem Rang über dem Brett (Brett 1: Rang 1 255, Rang 11 22).
-  *Optionen im Kampf:*
-  - (A) *jeden Platz füllen:* Brett 2 mit 12 statt 5. Die fünf zurückliegenden (Rang 10) bekommen je rund 50 statt 121
-    [Schätzung: geteilt wie gemessen]. Die sieben Aufgefüllten (Rang 11 bis 13) bekommen je 24 bis 60, die sie kaum
-    brauchen. Dazu mehr Sicherheit und kein In Unterzahl.
-  - (B) *wie heute (A806):* Mitgenommen werden die unter der Grenze, darüber nur gegen Gefährdung. Die
-    zurückliegenden bekommen den größten Teil.
-
-  - (C) *so wenige wie sicher, die niedrigsten zuerst* (sein Hauptkriterium vom 19.11.2026: die Erfahrung steigt
-    bei weniger Begleitern stärker; gemessen: halbe Größe, doppelter Zuwachs je Begleiter). Mitgenommen werden die
-    niedrigsten, so viele, wie die gemessenen Verluste des Bretts mit einem in Reserve tragen (die Größenrechnung von
-    „Score", A698). Keiner darf dabei an die 255 je Brett stoßen. Beispiel Brett 2 mit seinen fünf auf Rang 10:
-    Trägt der Kader die Verluste mit fünf, bekommen sie je rund 2,4-mal so viel wie mit zwölf [Schätzung: Teilung
-    wie gemessen], dazu In Unterzahl (2.500 Punkte). Preis: weniger Begleiter in Reserve, wenn die Messung den
-    schwersten Lauf noch nicht kennt.
-
-  *Empfehlung:* (C). Sie folgt seinem Hauptkriterium. (B) nimmt mit, wer unter der Grenze steht, auch zwölf, und
-  teilt die Erfahrung unter allen; (A) teilt sie noch weiter.
-  *Auflösung:* seine Entscheidung. Konzept 21, K7, „Leveln".
-
 - **Nebenprojekt: Charakterwerte, Stufen und Materia-Empfehlung** (A874, A875). Konzept 26 steht; seine Angabe
   (17.11.2026): „nebenthema zuende. wird irgendwann von mir neu angesprochen“. Auflösung: sein neuer Auftrag.
 

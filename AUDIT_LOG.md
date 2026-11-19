@@ -26206,6 +26206,55 @@ beastmaster da sind"). Die Logs kamen am selben Abend (Upload 994f52d8).
     lokaler Branch `latest` auf `main`, ohne Verlust, und `origin` blieb unberührt. Zurückgewechselt und mit
     `git branch -d` entfernt.
 
+### A899 · Leveln des ganzen Kaders: seine Vorgaben zusammengeführt, Hinweis auf das nächste Brett (19.11.2026)
+
+*Anlass:* seine Entscheidung zur Vorlage aus A898 („C umsetzen, im vollen Loop, aber alle unter obergrenze des aktuellen
+brettes. lieber 12 begleiter halbe erfahrung als 6 begleiter volle erfahrung.“), seine Frage „oder ist die exp aufteilung
+granularer?“ und seine Vorgaben „alle unterschiedlichen ideen und vorgaben hierzu im optimum zusammen führen und konflikt
+lösen im loop“ und „ziel ist es optimal den gesamten kader zu leveln und ihn so möglichst gleichmäßig auf die nächsten
+bretter vorzubereiten“ (alle 19.11.2026).
+
+*Messung:* alle 16 Abrechnungen (`XBMResult`) seiner Uploads vom 14. bis 18.11.2026, 182 Begleiter, je Lauf nach Rang
+vor dem Lauf. Die Erfahrung ist je Begleiter bemessen, nicht aus einem Topf verteilt: gleicher Rang im selben Lauf, gleicher
+Zuwachs, mit oder ohne Horn; eine andere Mischung des Kaders (13:56 gegen 14:10 am 18.11.2026) ließ Rang 10 bei 121 und
+Rang 11 bei 60. Sie hängt am Rang gegenüber dem Cap des Bretts (Brett 2, Cap 10: Rang 8 bis 10 je 121, 11 60, 12 24;
+Brett 1: Rang 11 und 12 je 22; Brett 3: Rang 11 142, 12 118) und an der Größe (Rang 12, Brett 2: 24 bei 12, 48 bei 6),
+ab Rang 8 nicht an der Punktzahl (8.703 bis 10.051). Dreimal genau 255 über zwei Rangaufstiege stützen einen Balken von
+100 je Rang [Schätzung].
+
+*Zusammenführung (Konzept 21, K7, „Leveln“, „Zusammengeführt“):* Die Grenze aus A822 (unter dem empfohlenen Rang des
+nächsten Bretts) und „unter obergrenze des aktuellen brettes“ meinen dieselben Begleiter, weil der empfohlene Rang des
+nächsten Bretts überall einen über dem Cap liegt und der Begleiter am Cap den vollen Teil bekommt; die strenge Lesart ist
+verworfen. Die Größe verteilt nur, die Summe über den Kader bleibt gleich; darum nimmt „Level“ alle bis zum Cap mit, wie er
+entschied, und von Option C bleibt der Vorrang der Niedrigsten. Füllen über dem Cap (seine Vorgabe vom 18.11.2026) kostet
+den Kader Erfahrung, weil der Gefüllte selbst die Hälfte und weniger bekommt und jedem Nachzügler einen Teil nimmt; es bleibt
+bei der Gefährdung als einzigem Grund (A806). Die Kaderwahl im Code entsprach dem schon; geändert ist der Rest seines Ziels:
+Steht auf einem Brett keiner bis zum Cap, nennt das Teamfenster das nächste Brett mit Nachzüglern und ihre Zahl
+(`LevelsElsewhere`), und die Spur schreibt beim Öffnen des Teamfensters, warum das gewählte Ziel nicht gespielt wird.
+Der Tooltip von „Level“ nennt die Grenze als Cap und den Hinweis. Verworfen: den Balken je Begleiter für Gleichrangige zu
+lernen (gleicht sich nach einem Lauf von selbst aus); Begleiter über dem Cap bis zur 255-Grenze kleiner Kader aufzufüllen
+(Teilung nur an einem Paar belegt, trifft nur Kader unter etwa fünf Nachzüglern).
+
+*Korrektur am Konzept:* „die Begleiter-EP folgen der Punktzahl“ und der Schluss „Größe gegen Punkte“ (ein Begleiter mehr
+bringt mehr als eine Stufe In Unterzahl) sind ab Rang 8 widerlegt und ersetzt; die Werte aus A898, Frage 2, über
+Rangaufstiege (193, 159) stehen nicht mehr als Vergleich.
+
+*Layoutmodell:* Mit dem längeren Text von „Level" verlor der Selbsttest von `window_layout_model.py` seinen Fall
+„no_follow": Ein weiterer Begleiter ließ die Spalten auf dieselbe Höhe ausgleichen, und keine Prüfung bemerkte ein Fenster,
+das dem Inhalt nicht folgt. Am Stand davor schlug er an. Verschärft statt gelockert: Das Szenario fügt drei Begleiter
+hinzu, und „content grows: height follows" fängt den Fall wieder (502 gegen 560 px). Der Text von „Level" ist auf
+149 Zeichen gekürzt; mit 230 überschritt die Notiz im Fenster 75 Zeichen je Zeile.
+
+*Prüfgrad:* statisch, Layoutmodell und Build; die Wirkung des Hinweises zeigt erst sein nächster Lauf auf einem Brett ohne
+Nachzügler.
+
+*Vorhersage:* (1) `crucible-goal-why-not-line-form` (`predictions/2026-11-19.json`): Öffnet er das Teamfenster unter
+„Level“ auf einem Brett, auf dem keiner bis zum Cap steht, folgt auf „crucible team screen open: …“ die Zeile „crucible
+team: Level is not offered: … plays as SafeWin.“, mit „N level on the board recommended for rank R (sync from S).“, wenn
+ein höheres Brett Nachzügler hat; widerlegt, wenn die Zeile fehlt oder eine andere Form hat. (2) Von Hand, tragende Annahme
+„die Größe verteilt nur“: Die nächste Abrechnung mit gleichem Brett, gleichem Rang ohne Rangaufstieg und anderer Größe
+zeigt Zuwachs × Größe gleich (±1 je Begleiter, Rundung); widerlegt, wenn der kleinere Kader in der Summe mehr bekommt.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

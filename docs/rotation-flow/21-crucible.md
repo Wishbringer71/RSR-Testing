@@ -2413,8 +2413,9 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
   kämpfen alle bis rang 10 … ein hochskalieren auf 10 gibt es nicht" (Hinweis); und die Frage, wo die Verkleinerung des
   Kaders blieb, wenn Begleiter ohnehin nicht eingesetzt werden.
   *Mechanik:* Jeder Begleiter im Kader eines Laufs bekommt Erfahrung, mit oder ohne Horn (sein Hinweis); die
-  Begleiter-EP folgen der Punktzahl des Laufs (consolegameswiki), höchstens 255 je Begleiter und Brett (CrucibleSux,
-  nach dem Wiki zu 7.56, Werkzeugquelle), 100 je Rang (Daedalus, Bestiarium „21/100"); der Rang reicht bis 25. Das Spiel
+  Begleiter-EP hängen am Rang gegenüber dem Brett und an der Größe des Kaders, ab Rang 8 nicht an der Punktzahl
+  (gemessen, unten „Zusammengeführt"; consolegameswiki nennt die Punktzahl), höchstens 255 je Begleiter und Lauf
+  (CrucibleSux, nach dem Wiki zu 7.56, Werkzeugquelle), 100 je Rang (Daedalus, Bestiarium „21/100"); der Rang reicht bis 25. Das Spiel
   gleicht nur nach unten an: Wer über dem Synchronrang des Bretts steht (`IsPetOverSyncedRank`), kämpft mit ihm, wer
   darunter steht, mit dem eigenen. *Woher der echte Rang kommt (A803):* aus der Spielfunktion, die ClientStructs als
   `GetSyncedRank(petId)` führt (Disassemblierung seiner Spielbinärdatei vom 13.11.2026; Adresse 0x140AA52B0 wie in
@@ -2461,67 +2462,92 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
     Plätze bleiben leer (sie bringen In Unterzahl, wo die Größe eine Stufe trifft). Ist auch ein voller Kader unter dem Cap
     gefährdet, tritt der rangniedrigste am oder über dem Cap an die Stelle des schwächsten, der weder heilt noch schützt
     noch unterbricht, bis er es nicht mehr ist.
-  - *Offen, seine Vorgabe vom 18.11.2026 (noch nicht umgesetzt):* „auswahl "leveln" fügt keine weiteren begleiter
-    hinzu, nur die, die bis zur brettgrenze leveln sollen. das ist suboptimal. alle hinzugefügten begleiter bekommen
-    erfahrung, also widerspricht eine begrenzung der anzahl dem zweck des levelns. ausserdem sollte gelevelt werden bis
-    zur mindestgrenze des nächsten brettes. immer mit vorrang der begleiter mit geringstem level. abarbeiten, sobald
-    neue logs für beastmaster da sind und ausgewertet werden können.“ *Einordnung:* Vorgabe; sie ersetzt in „Über dem
-    Cap nur gegen Gefährdung“ das Füllen nur gegen Gefährdung und die leeren Plätze. Künftig füllt „Level“ jeden Platz bis
-    zur Größe des Bretts mit Begleitern, die noch Erfahrung bekommen, und zwar die rangniedrigsten zuerst. Die Grenze ist
-    die Mindestgrenze des nächsten Bretts. Den Satz „alle hinzugefügten begleiter bekommen erfahrung“ belegt sein
-    Hinweis vom 14.11.2026 (oben). Er deckt sich mit „Größe gegen Punkte“ unten: Ein Begleiter mehr bringt mehr, als
-    eine Stufe In Unterzahl kostet. *Im Loop zu klären, an seinen neuen Logs:*
-    - ob „Mindestgrenze des nächsten Brettes“ dasselbe ist wie die heutige Grenze aus A822 (der empfohlene Rang des
-      nächsten Bretts, wo er über dem Cap liegt) oder eine andere Spalte von `XBMContent`;
-    - was die Abrechnung (`XBMResult`) bei vollem gegenüber verkleinertem Kader an Erfahrung je Begleiter zeigt.
-      *Gegenposition:* Die Erfahrung folgt der Punktzahl, höchstens 255 je Begleiter und Brett. Füllt der volle Kader
-      die Grenze nicht und kostet In Unterzahl Punkte, verliert jeder einzelne Begleiter Erfahrung, auch wenn die Summe
-      über alle steigt.
-  - *Beantwortet an seinem Upload vom 18.11.2026 (A898):*
-    - *Frage 1:* Die „Mindestgrenze des nächsten Bretts" ist dessen empfohlener Rang (Brett 3: 11), und das ist die
-      Grenze aus A822 (`LevelLimit`: auf Brett 2 max(10, 11) = 11).
-    - *Frage 2:* Acht Abrechnungen. Jeder mitgenommene Begleiter bekam Erfahrung, zwischen 22 und 255. Sie hängt am
-      Rang gegenüber dem Brett: Brett 1 gab Rang 1 255 (die Obergrenze), Rang 3 193, Rang 5 159, Rang 11 und 12 je 22;
-      Brett 2 gab Rang 7 166, Rang 10 121, Rang 11 60; Brett 3 gab Rang 11 142, Rang 12 118. Und sie wird durch die
-      Größe des Kaders geteilt: Rang 12 auf Brett 2 bekam mit 12 Begleitern zweimal 24 (9.424 und 9.615 Punkte), mit 6
-      Begleitern 48 (9.000 Punkte). Bei halber Größe ist das genau das Doppelte, bei weniger Punkten. Dasselbe sagen
-      die Guides („a smaller roster earns more per familiar", FullBoosts, gelesen 19.11.2026; Werkzeugquelle). Nur
-      dieses eine Paar trennt die Größe vom Rang [Schätzung: Teilung durch die Größe, belegt an einem Paar].
-    - *Sein Hauptkriterium (19.11.2026: „prüfen, ob bei weniger begleitern die erfahrung stärker steigt als bei vielen
-      begleitern. das ist das hauptkriterium bem leveln"; sein Hinweis: „pro rang gibt es auch einen aufzufüllenden
-      erfahrungsbalken, also entweder werte oder prozent"):*
-      - *Datengrundlage:* alle 16 Abrechnungen seiner Uploads vom 14. bis 18.11.2026, 182 Begleiter. Der Balken
-        steht im Fenster auf einer Skala bis 100: In allen 182 Einträgen liegen davor und danach zwischen 0 und 98.
-      - *Gleiches Brett, gleicher Rang, verschiedene Größe:* Brett 2, Rang 12, ohne Rangaufstieg. Mit 12 Begleitern
-        stieg der Balken um 24 (32→56, 54→78, 27→51); mit 6 Begleitern um 48 (10→58, 36→84, 12→60, 32→80, 15→63),
-        bei 9.000 gegen 9.424 und 9.615 Punkte. Bei halber Größe ist es genau das Doppelte, auf demselben Balken, ob
-        der in Prozent oder in Punkten zählt. Die Summe über das Team blieb gleich (6 × 48 = 12 × 24).
-      - *Antwort:* Ja. Bei weniger Begleitern steigt die Erfahrung je Begleiter stärker, bei halber Größe auf das
-        Doppelte. Belegt ist das an diesem einen Vergleich; andere Bretter und Größen gibt sein Bestand nicht her
-        (Brett 1 nur mit 10, Brett 3 nur mit 14 Begleitern).
-      - *Was die Größe des Balkens offen lässt:* Über einen Rangaufstieg hinweg sind Zuwächse nur vergleichbar, wenn
-        jeder Rang denselben Balken hat. Die Blätter (`XBMPetParamGrow`, `XBMScoreRank`) nennen keine benannte Spalte
-        dazu, und `XBMPetParamGrow` liefert bei xivapi nur Nullen (gelesen 19.11.2026). Ob höhere Ränge mehr
-        Erfahrung je Balken brauchen: weiß nicht. Es fehlt die Erfahrung je Rang aus dem Spiel. Die Werte über
-        Ränge hinweg (Rang 1 255, Rang 11 22) stehen deshalb in der Einheit des Balkens, nicht in Erfahrungspunkten.
-      - *Obergrenze:* 255 erreichten nur Begleiter ab einem Rang unter dem Brett (Brett 1 Rang 1; Brett 2 Rang 1
-        und 3). Ein sehr kleiner Kader aus sehr niedrigen Begleitern läuft gegen sie, und was darüber geht, verfällt
-        [Schätzung: die Grenze aus CrucibleSux, A796].
-    - *Folge für seine Vorgabe:* „alle hinzugefügten begleiter bekommen erfahrung" stimmt. Der Schluss, eine
-      Begrenzung widerspreche dem Leveln, stimmt nicht: Jeder weitere Begleiter nimmt den zurückliegenden einen
-      gleichen Teil, und je höher sein Rang, desto weniger nützt ihm sein eigener Teil. Die Vorgabe ist deshalb nicht
-      umgesetzt. Sie steht als Vorlage im TODO („Level füllt jeden Platz"), mit Empfehlung.
+  - *Zusammengeführt (seine Vorgaben vom 18. und 19.11.2026, A899):* Sein Ziel ordnet die übrigen: „ziel ist es optimal
+    den gesamten kader zu leveln" und „ihn so möglichst gleichmäßig auf die nächsten bretter vorzubereiten" (19.11.2026,
+    Vorgabe), dazu „alle unterschiedlichen ideen und vorgaben hierzu im optimum zusammen führen und konflikt lösen im
+    loop" (Vorgabe).
+    - *Geltende Regel:* Unter „Level" nimmt RSR jeden Begleiter bis zum Cap des Bretts mit – das heißt unter dem
+      empfohlenen Rang des nächsten Bretts (A822; auf Brett 2 bis Rang 10) –, die rangniedrigsten zuerst, bis zur Größe
+      des Bretts, und verkleinert diese Zahl nicht. Über dem Cap kommt einer nur als Rollenträger oder gegen Gefährdung
+      (A806). Steht auf diesem Brett keiner bis zum Cap, nennt das Fenster das nächste Brett, auf dem welche bis zu
+      dessen Cap stehen, und ihre Zahl (`LevelsElsewhere`); die Spur schreibt es beim Öffnen des Teamfensters.
+    - *Seine Angaben dazu:*
+      - 18.11.2026 (Vorgabe): „auswahl "leveln" fügt keine weiteren begleiter hinzu, nur die, die bis zur brettgrenze
+        leveln sollen. das ist suboptimal. alle hinzugefügten begleiter bekommen erfahrung, also widerspricht eine
+        begrenzung der anzahl dem zweck des levelns. ausserdem sollte gelevelt werden bis zur mindestgrenze des nächsten
+        brettes. immer mit vorrang der begleiter mit geringstem level."
+      - 19.11.2026 (Vorgabe): „prüfen, ob bei weniger begleitern die erfahrung stärker steigt als bei vielen begleitern.
+        das ist das hauptkriterium bem leveln"; Hinweis: „pro rang gibt es auch einen aufzufüllenden erfahrungsbalken,
+        also entweder werte oder prozent".
+      - 19.11.2026, seine Entscheidung zur Vorlage (A898, Option C „so wenige wie sicher, die niedrigsten zuerst"):
+        „C umsetzen, im vollen Loop, aber alle unter obergrenze des aktuellen brettes. lieber 12 begleiter halbe
+        erfahrung als 6 begleiter volle erfahrung."
+    - *Messung (alle 16 Abrechnungen vom 14. bis 18.11.2026, 182 Begleiter; der Balken steht auf einer Skala bis 100):*
+      - *Je Begleiter, nicht aus einem Topf:* Im selben Lauf bekam jeder Begleiter desselben Rangs genau denselben
+        Zuwachs, auf einem Horn oder nicht. Die Mischung der anderen ändert ihn nicht: Brett 2, 12 Begleiter, einmal elf
+        auf Rang 10 und einer auf 11, einmal drei auf 10, acht auf 11 und einer auf 12 – Rang 10 bekam beide Male 121,
+        Rang 11 beide Male 60.
+      - *Rang gegenüber dem Brett:* Brett 2 (Cap 10), 12 Begleiter: Rang 8 bis 10 je 121, Rang 11 60, Rang 12 24. Brett 1
+        (Cap 5), 10 Begleiter: Rang 11 und 12 je 22. Brett 3 (Cap 15), 14 Begleiter: Rang 11 142, Rang 12 118. Bis zum
+        Cap bekommt ein Begleiter den vollen Teil, einen Rang darüber die Hälfte, zwei darüber ein Fünftel, weit darüber
+        kaum etwas. Derselbe Rang 11 bekam auf Brett 3 142, auf Brett 2 60, auf Brett 1 22.
+      - *Größe:* Brett 2, Rang 12: 24 bei 12 Begleitern, 48 bei 6. Die Summe über den Kader blieb gleich (12 × 24 =
+        6 × 48) [Schätzung: Teilung durch die Größe auch auf den anderen Rängen; belegt an diesem einen Paar].
+      - *Punktzahl:* Ab Rang 8 änderte sie nichts: Rang 9 bekam bei 10.051 und bei 8.703 Punkten je 121, Rang 10 bei
+        9.996 und bei 9.424 je 121. Rang 6 und 7 bekamen bei mehr Punkten mehr (Rang 6: 225 bei 9.696, 195 bei 9.166;
+        Rang 7: 166 bei 9.671, 142 bei 9.166). Woran das liegt: weiß nicht; es fehlen Läufe mit gleichem Rang unter 8
+        und verschiedener Punktzahl.
+      - *Obergrenze:* Dreimal genau 255 über zwei Rangaufstiege (Rang 1 auf 3, Balken 0 auf 55, zweimal; Rang 3 auf 6,
+        55 auf 10) [Schätzung: jeder Rang hat einen Balken von 100 Einheiten, und 255 je Begleiter und Lauf ist eine
+        Grenze in derselben Einheit, wie Daedalus' Bestiarium „21/100" und CrucibleSux sie nennen].
+    - *Konflikte und ihre Auflösung:*
+      1. *Grenze – „mindestgrenze des nächsten brettes" (18.11.) gegen „unter obergrenze des aktuellen brettes"
+         (19.11.):* Auf jedem Brett mit Nachfolger liegt dessen empfohlener Rang genau einen über dem Cap (Cap 5, 10, 15,
+         20; empfohlen 6, 11, 16, 21). Beide meinen dieselben Begleiter, wenn der Begleiter am Cap mitzählt. Er zählt
+         mit: Rang 10 bekam auf Brett 2 121 wie Rang 8 und 9, und auf Brett 3 kämpft er unter Rang 11 nur, wenn zu
+         wenige andere leben (K6). „Unter" streng gelesen (Rang 10 bleibt zu Hause) ist verworfen: Er bliebe auf 10
+         stehen, bis er auf Brett 3 als Ersatz levelt. Die Grenze im Code (A822) bleibt.
+      2. *Größe – „weniger begleiter, mehr erfahrung je begleiter" (Hauptkriterium) und Option C „so wenige wie sicher"
+         gegen „lieber 12 begleiter halbe erfahrung als 6 begleiter volle erfahrung":* Gemessen verteilt die Größe nur,
+         die Summe über den Kader bleibt gleich. Weniger Begleiter mehren die Erfahrung nicht, sie häufen sie auf wenige.
+         Für den ganzen Kader, gleichmäßig, nimmt RSR deshalb alle bis zum Cap mit, wie er entschieden hat; von Option C
+         bleibt „die niedrigsten zuerst".
+      3. *Füllen – „alle hinzugefügten begleiter bekommen erfahrung" (18.11.) gegen „alle unter obergrenze" (19.11.):*
+         Ein Begleiter über dem Cap bekommt selbst die Hälfte bis ein Fünftel des vollen Teils und nimmt jedem
+         Nachzügler einen Teil (bei 12 statt 11 je ein Zwölftel) [Schätzung: Teilung wie gemessen]. Auf dem nächsten
+         Brett bekommt derselbe Begleiter mehr (Rang 11: 142 statt 60). Füllen kostet den Kader also Erfahrung, und der
+         Gefüllte levelt besser dort, wo er bis zum Cap steht. Darum füllt über dem Cap nur die Gefährdung (A806). Seine
+         Prämisse stimmt (jeder bekommt Erfahrung), der Schluss daraus nicht.
+      4. *Vorrang der Niedrigsten, gleichmäßig:* gilt. Bei gleichem Rang entscheiden die Schwäche und dann, wer im
+         letzten Lauf fehlte. Gleichmäßig wird es von selbst: Ein Nachzügler auf Brett 2 steigt je Lauf um mehr als einen
+         Rang (121), wer einmal draußen blieb, ist im nächsten Lauf der niedrigste. Den Balken je Begleiter dafür zu
+         lernen ist verworfen: Er trennt nur Gleichrangige, und die gleichen sich nach einem Lauf von selbst aus.
+      5. *Den ganzen Kader auf die nächsten Bretter:* Über dem Cap levelt ein Begleiter auf diesem Brett kaum (Rang 11 auf
+         Brett 1: 22). Steht hier keiner bis zum Cap, spielt RSR Safe win (A821) und nennt das nächste Brett, auf dem
+         Begleiter bis zu dessen Cap stehen, mit ihrer Zahl („9 level on the board recommended for rank 11 (sync from
+         15)"). Ob er es spielen kann, liest RSR nicht; der Hinweis wählt kein Brett.
+    - *Gegenposition:* (a) *Ein voller Kader ist sicherer.* Die Sicherheit misst die Gefährdung an den Verlusten des
+      Bretts, ungemessen gilt der Kader als gefährdet und füllt (A806); ein voller Kader ohne Gefährdung bringt keine
+      Sicherheit, die fehlt. (b) *Die 255 je Lauf:* Ein sehr kleiner Kader sehr niedriger Begleiter läuft gegen sie, und
+      was darüber ginge, verfällt; Begleiter über dem Cap kosteten dann nichts. Nicht gebaut: Den vollen Teil je Rang
+      und Brett kennt RSR nur von Brett 2, die Teilung nur an einem Paar, und der Fall trifft nur Kader unter etwa fünf
+      Begleitern bis zum Cap [Schätzung: 121 × 12 / 255 ≈ 5,7 auf Brett 2]. (c) *Auf einem höheren Brett levelt der
+      Kader schneller, als RSR es wählt:* Ja, darum der Hinweis (Punkt 5); das Brett wählt er.
+    - *Falsifikation:* (1) *Kein Defekt:* Für den Kader stimmt das – Code und Regel A806 nehmen schon jeden bis zum Cap
+      mit. Neu ist der Hinweis auf das nächste Brett. (2) *Option falsch – die Größe mehrt die Erfahrung doch:* Dann
+      läge 6 × 48 über 12 × 24; es ist gleich, gemessen nur an Rang 12. Tragende Annahme mit Vorhersage (A899): die
+      nächste Abrechnung mit gleichem Brett und Rang und anderer Größe. (3) *Ausgeliefert, und nichts ändert sich –
+      warum?* Er spielt weiter ein Brett ohne Nachzügler, oder kein Rang ist bekannt; dann nennt der Hinweis nichts.
   *Im Kampf (sein Bild vom 14.11.2026, Brett 2, Build vor A805):* zehn Begleiter ab Rang 10 im Kern, Salamander und Worm
   (Rang 6) auf den zwei übrigen Plätzen, obwohl 42 zurücklagen; er wählte danach selbst zwölf niedrige und schaffte das
   Brett (die Abrechnung hob sie auf Rang 8). *Gegenthese (schwächer im Kampf):* durch seinen Lauf widerlegt; die
   Hornwahl (K6) setzt je Kampf die stärksten ein. *Preis:* längere Kämpfe, und bis zur ersten Messung auf der neuen
   Rangstufe fallen die Lasten des Spielers je Kampf auf die schwersten aller Läufe zurück, gemessen mit stärkeren Kadern –
   Bonuswahl (K15) und Wegtest rechnen dann zu günstig; die Heilung unter der Trankschwelle (K8) bleibt.
-  Gibt es keinen Begleiter unter 25 mehr, gilt die Größe nach Punkten (Score). *Größe gegen Punkte (Schluss, unbelegt):*
-  Ein Begleiter mehr kostet höchstens eine Stufe In Unterzahl (1.250 bis 4.250 Punkte), die EP aller Begleiter folgen der
-  Punktzahl; bei rund 15.000 Punkten bringt ein Begleiter mehr bei sieben (1/7 = 14 %) mehr als die Stufe (8 %), bei
-  fünf und drei ebenso – darum füllen Begleiter unter dem Cap jeden Platz (seine Wertung: „viele begleiter mitnehmen
-  lohnt für das leveln").
+  Gibt es keinen Begleiter unter 25 mehr, gilt die Größe nach Punkten (Score). *Größe und Punkte:* Die Punktzahl änderte
+  die Erfahrung ab Rang 8 nicht (oben, „Zusammengeführt"); unter Level bringt eine Stufe In Unterzahl also keine
+  Erfahrung, und die Größe folgt allein den Begleitern bis zum Cap (seine Wertung: „viele begleiter mitnehmen lohnt für
+  das leveln").
   *Einstellung:* das Ziel des Laufs „Level" (unten), ab Werk. Die anderen Ziele bilden den Kader ohne Nachzügler.
   *Gegenthese 1 (schwächer im Kampf):* Ein Nachzügler auf einem Reserveplatz hat weniger Werte als der Begleiter, den die
   gierige Wahl dort hätte. Teilweise widerlegt: Er steht mindestens auf der Empfehlung des Spiels, die Schwächen trägt der
@@ -2563,7 +2589,7 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
   | # | Seine Angabe | Kriterium | Stelle | Messweg |
   |---|---|---|---|---|
   | Z1 | „einen von drei buttons auswählen, und begleiterauswahl basiert darauf" (Vorschlag) | drei Ziele im Kaderfenster | `CrucibleTeamWindow`, `CrucibleGoal` | Spur „crucible team: goal …" |
-  | Z2 | „beim leveln werden alle plätze mit begleitern unter dem levelcap aufgefüllt" | unter Level jeder Platz an einen Begleiter mit echtem Rang unter dem Synchronrang, solange es sie gibt | `LevelTeam` | Spur: Rang und „levels" je Begleiter |
+  | Z2 | „beim leveln werden alle plätze mit begleitern unter dem levelcap aufgefüllt" | unter Level jeder Platz an einen Begleiter mit echtem Rang bis zum Cap (A822), solange es sie gibt | `LevelTeam` | Spur: Rang und „levels" je Begleiter |
   | Z3 | „wenn nicht genug … unter levelcap …, wird geprüft, ob das erfolgreiche bestehen des brettes gefährdet ist, dann mit den niedrigsten begleitern über cap auffüllen, bis keine gefährdung mehr" | fehlen Begleiter unter dem Cap, füllen die rangniedrigsten am oder über dem Cap nur, solange der Kader gefährdet ist | `LevelTeam`, `TeamEndangered` | Fensterhinweis „… at or above it against danger" |
   | Z4 | „die niedrigsten begleiter vorrang, ausser wichtige gründe … nur, wenn sonst das erfolgreiche bewältigen des brettes in frage gestellt ist"; „also die summe aller niedrigen begleiter" | einziger Grund gegen einen niedrigen ist die Gefährdung, gemessen am ganzen Kader | `TeamEndangered` | wie Z3 |
   | Z5 | „bei der auswahl sicheres bestehen, werden auch immer die niedrigsten begleiter ausgewählt, solange das bestehen sicher ist" | Safe win: volle Größe, die rangniedrigsten; ein stärkerer nur, solange der Kader nicht nachweislich sicher ist | `RecommendCrucibleTeam` (Safe win) | Fensterhinweis „{n} stronger in place of low ones" |
@@ -2577,9 +2603,11 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
   | Z13 | „ist ‚hast‘ … nicht eine beschleunigung der angriffe“, „gewisse fähigkeitsboni überhaupt nicht gewertet“ (Hinweis, 15.11.) | Schaden, physischer und magischer Schaden, Kritrate, Hast und Verlangsamung ergeben das Tempo; auf der Skala zählt es, soweit es deine Last nachweislich senkt (Auto-Angriffe), und das Fenster nennt es | `GearFold`, `UncountedEffects` | Spur „crucible pace: …“, Wert im Fenster |
   | Z14 | „je besser die begleiter im brett werden, desto geringer ist doch die gefahr“ (Hinweis, 15.11.) | die Gefahr folgt den gemessenen Lasten je Kampf und Rang (A729); keine unbelegte Annahme in einer Rechnung, die Schutz zurückhält | `NetLoad`, `DipLoad`, `CarriesToFinal` | Spur „crucible fight …: net loss …“ je Rang |
   | Z15 | „was nicht aufgrund externer recherche belegt werden kann, könnte doch durch einmaligen ingame kauf und nutzung belegt werden“ (Vorschlag, 15.11.) | Anteil am Teamschaden, physischer Anteil und Krit-Mehrschaden misst RSR im Kampf; bis dahin Werte aus seinem Mitschnitt | `CrucibleBoard.PaceBasis` | Spur „crucible pace: … your share …“ |
+  | Z16 | „ziel ist es optimal den gesamten kader zu leveln" und „möglichst gleichmäßig auf die nächsten bretter vorzubereiten"; „alle unter obergrenze des aktuellen brettes. lieber 12 begleiter halbe erfahrung als 6 begleiter volle erfahrung" (19.11.) | unter Level jeder Begleiter bis zum Cap, die niedrigsten zuerst, ohne Verkleinern; ohne solche hier das nächste Brett mit Nachzüglern genannt | `LevelTeam`, `LevelsElsewhere` | Spur „crucible team: Level is not offered …" |
   *Grundlagen (belegt):* Der Levelcap ist der Synchronrang des Bretts (`XBMContent`, Spalte 36: 5, 10, 15, 20, 25); wer
   darüber steht, kämpft mit ihm, wer darunter steht, mit dem eigenen. Jeder Begleiter im Kader bekommt Erfahrung, mit
-  oder ohne Horn (sein Hinweis), höchstens 255 je Brett, der Punktzahl folgend (Wiki, CrucibleSux). Die Hornwahl (K6)
+  oder ohne Horn (sein Hinweis), höchstens 255 je Lauf, nach Rang gegenüber dem Brett
+  und Größe des Kaders (K7, „Leveln", „Zusammengeführt"). Die Hornwahl (K6)
   setzt einen Begleiter unter dem empfohlenen Rang nur ein, wenn weniger andere leben als Hörner da sind. Vor dem Boss
   verlangt B5 zwei, die heilen oder schützen; wo Gegner unterbrechbar zaubern, verlangt K4 einen Seelen-Begleiter. Der
   echte Rang kommt aus dem Spiel (A803) und der Abrechnung (A799). Die Verluste der Begleiter lernt der Endkampf je Brett
@@ -2697,8 +2725,8 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
     gespielte Ziel hervor und sagt, warum seine Wahl hier fehlt.
   - *Falsifikation:* (1) *Kein Defekt:* Level ohne Begleiter unter dem Cap nahm einen kleinen Kader (Code `LevelTeam`:
     Nachzügler zählten bis Rang 25, gefüllt wurde nur unter dem Cap). (2) *Option falsch – Leveln über dem Cap lohnt
-    doch:* Ja, darum spielt RSR dann Safe win, das mehr Begleiter mitnimmt; angeboten wird nur das Ziel, das dafür
-    gebaut ist. (3) *Ausgeliefert, nichts ändert sich:* Wenn kein Rang bekannt ist. Dann zählt niemand als unter dem
+    doch:* Wenig – über dem Cap bekommt ein Begleiter die Hälfte und weniger (A899, „Zusammengeführt"). RSR spielt dann
+    Safe win, das alle mitnimmt, und nennt das nächste Brett, auf dem sie bis zum Cap stehen. (3) *Ausgeliefert, nichts ändert sich:* Wenn kein Rang bekannt ist. Dann zählt niemand als unter dem
     Cap, Level fehlt, und Safe win spielt; das Fenster sagt es (A804).
 - *Kader stimmt: Start statt Apply (A821):*
   - *Seine Vorgabe (15.11.2026):* „wenn am anfang des brettes die auswahl der begleiter mit den vorgeschlagenen
