@@ -26775,6 +26775,22 @@ beobachtet. *Vorhersage:* bei eingeschalteter Projection je gesperrtem Ring eine
 Splatoon's projection - it draws X-Y from the marker's name, the game lays the marker to R“ (Brett 1: Bedrock Uplift);
 keine Zeile „settings are not readable“ (`area-display-blocked-ring-line-form`, `area-display-settings-readable`).
 
+### A922 · Ringe am Modulcode: Außenrand ist die Reichweite, Innenradius mal Anteil, mal Zahl (19.11.2026)
+
+*Anlass:* Defekt aus A921 („Innenradius der Ringe aus einem Abgleich, der keiner war“), im Loop.
+*Gemessen (BossModReborn 8d5ff8e21, alle Module, Form `new AOEShapeDonut(innen, außen)` an einer Aktion; Aktions- und
+Omen-Blatt):* 120 Ringe mit Ziffern im Omen. 105 nennen im Omen die Reichweite selbst – beide Lesarten gleich. In den
+zehn übrigen legt das Modul den Außenrand immer auf die Reichweite; den Innenradius achtmal als Anteil der Reichweite
+(Bedrock Uplift, Flood, Aetherblight u. a.), zweimal als Zahl (Blazing Ring 8–25 bei Omen 4008, Dead Man's Dirge 3–43
+bei Omen 5003). Fünf sind nicht vergleichbar (die Form steht an einer anderen Aktion oder das Modul weicht bewusst ab).
+*Ergebnis:* Der Defekt ist widerlegt. Keine Lesart des Innenradius gilt allgemein; RSRs kleinere Lesart (A731) ist die
+sichere Seite und bleibt – jetzt am Modulcode statt an den Kommentarzeilen belegt. Splatoons Fehler liegt am Außenrand,
+in allen zehn Fällen.
+*Widerruf (C233):* A921, Konzept 13, Code-Kommentar und Release-Text verallgemeinerten „das Spiel skaliert das Omen auf
+die Reichweite“ aus sechs Ringen; belegt ist das für den Außenrand. Berichtigt; RSRs Sperre prüft ohnehin nur den
+Außenrand und bleibt unverändert.
+*Prüfgrad:* statisch am Modulcode und an den Blättern.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -27162,3 +27178,4 @@ geben den Stand vom 14.10.2026 wieder.
 | C230 | A901 und Konzept 03, F (Stand 19.11.2026): Die vorhergesagte Bewegung lesen nur Paladin und Gelehrter | Beide lesen die vergangene Bewegungszeit (`MovingTime`, `StopMovingTime`). Die Vorhersage von BossMod (`Hints.MaxCastTime`) liest RSR zentral für alle Jobs: Kein Zauber beginnt, der länger wirkt, als bis zur nächsten Bewegung Zeit ist, und der Zaubernde nimmt dann einen Sofortzauber. Die Zählung je Rotation übersah die zentralen Stellen. | A902 |
 | C231 | A911 und TODO „Sirene (Brett 3)“ (Stand 3eae4b28a): Die Fessel des Crawling Piece endete vor seinem Tod, sein Vorrang verkürzte sie nicht | Die Fessel endete in beiden Fällen in derselben Zeile, in der seine LP auf 0 fielen (19:15:45.319, 19:17:12.170); ich las die Todeszeile (Typ 25), die der Mitschnitt 2 s später schreibt (A913) | widerrufen |
 | C232 | A920 und Konzept 13 (Stand e8d785b86): Splatoons Projection drehe Kegel und Linien mit Ziel jedes Bild zum Ziel und setze Kreise mit Ziel versetzt; RSR zeige sie dort, wo sie landen, Splatoon nicht | Am selben Quelltext (f396ef6) wirkt `faceplayer` nur mit `FaceMe`, das die Projection nicht setzt; die Richtung kommt aus dem Wirkpaket wie bei RSR. Kreise auf einem Ziel wandern bei beiden mit dem Ziel (A766). Ich las die Zuweisung, nicht ihre Auswertung im Zeichner. Nachweislich falsch sind Splatoons Ringe | A921 |
+| C233 | A921, Konzept 13, `SplatoonProjection.MisreadRing` und Release-Text (Stand 3d54ef332): Das Spiel skaliere jedes Omen auf die Reichweite, die Anteil-Lesart des Innenradius sei richtig; RSRs kleinere Lesart ein Defekt | Am Modulcode aller 120 Ringe: Der Außenrand ist immer die Reichweite, der Innenradius achtmal Anteil, zweimal Zahl. Ich hatte aus sechs Ringen auf alle geschlossen | A922 |

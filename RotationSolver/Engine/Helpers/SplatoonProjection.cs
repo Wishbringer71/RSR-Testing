@@ -62,9 +62,9 @@ internal static class SplatoonProjection
 	}
 
 	/// <summary>
-	/// The ring Splatoon draws for <paramref name="act"/> when it contradicts the game: Splatoon reads the omen's digits as
-	/// yalms, the game scales the omen to the action's reach (BossModReborn's module code for six rings, A921). Null when
-	/// Splatoon draws no ring for it or draws it with the action's reach.
+	/// The ring Splatoon draws for <paramref name="act"/> when it contradicts the game: Splatoon takes the omen's first pair
+	/// of digits as the outer edge in yalms, the ring reaches as far as the action (BossModReborn's module code for every
+	/// ring where the two differ, A921, A922). Null when Splatoon draws no ring for it or draws it with the action's reach.
 	/// </summary>
 	internal static (float Inner, float Outer)? MisreadRing(Lumina.Excel.Sheets.Action act)
 	{

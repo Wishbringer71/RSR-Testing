@@ -34,7 +34,7 @@ What this release changes in the fight. For the whole distance from upstream, se
   you cannot leave before they land, such as raidwides, are not drawn. Cones and rings without a marker are left out,
   as nothing names their angle or inner circle. Setting: "Draw enemy areas without a ground marker through Splatoon", on
   by default.
-- **Splatoon's wrong rings are blocked.** Splatoon's projection reads a ring's radii from the marker's name as yalms; the
-  game scales the marker to the action's reach. Where the two differ - Bedrock Uplift on the first Crucible board shows
+- **Splatoon's wrong rings are blocked.** Splatoon's projection reads a ring's radii from the marker's name as yalms;
+  the ring reaches as far as the action does. Where the two differ - Bedrock Uplift on the first Crucible board shows
   36-48 yalms at Splatoon for a ring at 18-24 - RSR adds the action to Splatoon's projection blacklist while the
   projection is on; the game's own marker stays. Actions in that blacklist are not drawn by RSR either.

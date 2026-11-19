@@ -1130,10 +1130,13 @@ unverändert seit b85045e, 01.08.2026; Werkzeugquelle):
   RSR. *Gemessen (alle 19 Mitschnitte):* 1.904 Bodenkreise ohne Ziel, 2.347 um den Wirkenden, 736 auf ein anderes Ziel;
   kein Bodenkreis (`TargetArea`) nannte ein Ziel, der einzige Fall, in dem beide auseinandergingen. Unterschied:
   Splatoon misst einen Kreis auf einem Ziel ohne dessen Trefferkreis, RSR mit (bei Spielern rund ein halber Yalm).
-- *Ringe – nachweislich falsch:* Splatoon liest „sircle_XXYY“ als Innen- und Außenradius in Yalm. Das Spiel skaliert das
-  Omen aber auf die Reichweite: Alle sechs Ringe, deren Form BossModReborns Modulcode festlegt (8d5ff8e21), passen zur
-  Lesart als Anteil der Reichweite, keiner zur absoluten – Bedrock Uplift (Crucible, Brett 1) 6–12, 12–18, 18–24, bei
-  Splatoon 5–10, 20–30, 36–48; Flood 8–16 und 16–24, bei Splatoon 10–20 und 20–30; Aetherblight 16–60, bei Splatoon 8–30.
+- *Ringe – nachweislich falsch:* Splatoon liest „sircle_XXYY“ als Innen- und Außenradius in Yalm. Der Außenrand ist
+  aber die Reichweite der Aktion: Von 120 Ringen, deren Form BossModReborns Modulcode festlegt (8d5ff8e21), nennen 105
+  im Omen die Reichweite selbst; in allen zehn übrigen legt das Modul den Außenrand auf die Reichweite, nicht auf die
+  Zahl im Omen (fünf weitere sind nicht vergleichbar). Den Innenradius nehmen die Module dort achtmal als Anteil der
+  Reichweite, zweimal als Zahl. Beispiele: Bedrock Uplift (Crucible, Brett 1) 6–12, 12–18, 18–24, bei Splatoon 5–10,
+  20–30, 36–48; Flood 8–16 und 16–24, bei Splatoon 10–20 und 20–30; Aetherblight 16–60, bei Splatoon 8–30; Blazing Ring
+  8–25, bei Splatoon 8–40.
   Wer zwischen 30 und 60 Yalm vor Aetherblight steht oder bei 12 bis 18 vor der zweiten Welle von Bedrock Uplift, sieht
   sich bei Splatoon in Sicherheit und wird getroffen. Die Kommentarzeilen der Module („range 20-18 donut“) taugen nicht
   als Gegenprobe: BossMods Analysewerkzeug schreibt sie aus demselben Blatt. *Umfang:* im Blatt 51 Ringaktionen mit
@@ -1179,9 +1182,9 @@ zeichnet. Das Weichen vor Splatoon entfernt nur Doppelungen; die Sperrliste als 
 nicht sehen will.
 
 **Falsifikation:**
-1. *Kein Defekt – Splatoons Ringe stimmen:* widerlegt am Modulcode von BossMod für sechs Aktionen, darunter sein Brett 1.
-   Dass das Spiel jedes Omen auf die Reichweite skaliert, ist für diese sechs belegt, für die übrigen 45
-   *[Schätzung: dieselbe Regel]*; eine Sperre dort kostet höchstens eine Doppelung der Spielmarkierung.
+1. *Kein Defekt – Splatoons Ringe stimmen:* widerlegt am Modulcode von BossMod für alle zehn Ringe, deren Omen-Zahl
+   nicht die Reichweite ist, darunter sein Brett 1. Für die übrigen 41 dieser Art im Blatt gilt dieselbe Regel
+   *[Schätzung]*; eine Sperre dort kostet höchstens eine Doppelung der Spielmarkierung.
 2. *Option falsch – die Sperre schadet:* Sie trifft nur Wirken mit Omen; die Markierung des Spiels bleibt. Behebt
    Splatoon seine Lesart später, bleiben RSRs Einträge und verbergen dann eine richtige Doppelung; er sieht sie in
    Splatoons Liste und kann sie dort löschen. Ändert Splatoon Namen oder Typen, findet RSR die Einstellungen nicht,
@@ -1194,9 +1197,10 @@ nicht sehen will.
 Wirkformen 6, 7, 8, 14; eine eigene Zeichnung neben Splatoon (Projektion, Clipping, Kosten je Bild für eine Aufgabe, die
 Splatoon kann).
 
-*Nebenbefund:* RSRs Innenradius nimmt die kleinere der beiden Lesarten (A731). Für die sechs Ringe mit Modulcode ist die
-Anteil-Lesart richtig; wo die absolute kleiner ist (Bedrock Uplift 5 statt 6, Aetherblight 8 statt 16), zählt RSR
-Spieler im sicheren Innenkreis als getroffen – sichere Seite, im TODO.
+*RSRs Innenradius, am Modulcode bestätigt (A922):* RSR nimmt die kleinere der beiden Lesarten (A731). A731 stützte das
+auf die Kommentarzeilen der Module, die keine unabhängige Quelle sind; der Modulcode trägt es: Wo beide auseinandergehen,
+nehmen die Module achtmal den Anteil, zweimal die Zahl. Keine Lesart gilt allgemein; die kleinere zählt einen Spieler im
+Innenkreis eher als getroffen, die sichere Seite.
 
 ## Was gemessen wird, und was nicht
 
