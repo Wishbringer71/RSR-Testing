@@ -48,6 +48,15 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
   Aktion eine andere verstärkt oder freischaltet und die Rotation das nicht nutzt, fehlt Schaden in jedem Kampf.
   *Nächster Schritt:* je Job die Wirktexte aller Aktionen und Merkmale (Spielblätter, englisch) auf Querverweise
   erheben, gegen die Rotation halten, Befunde im Loop. *Konzept:* 14 (je Job), 03 „F · Über den Augenblick hinaus“.
+- **Arenagrenzen ohne BossMod erkennen** (sein Auftrag vom 19.11.2026: „viele arenen in trials und raids und
+  ally-raids haben umrandungen mit schadensflächen. wenn man die arena verläßt fällt man runter und stirbt, kommt man in
+  schadenslfäche und stirbt oder kriegt einen starken debuff mit dot. bmr hat daher für seine module umrandungen der
+  arenen eingearbeitet. wie erkennt man aber diese umrandungen bei inhalten ohne bmr? über das gelände? über vnavmesh?
+  konzept im vollen kritischen loop mit antithese und research“). *Wirkung im Kampf:* Ein Rückstoß, ein eigener Schritt
+  oder ein Weg aus einer Fläche über den Rand tötet oder bringt einen starken DoT; ohne BossMod-Modul kennt RSR den Rand
+  nicht (`Hints.IsPositionSafe` antwortet dann nicht). *Nächster Schritt:* Grundlagenforschung – woran das Spiel den
+  Rand führt (Gelände, Kollision, Arena-Objekte, Statusflächen), was vnavmesh, BossMod und andere Werkzeuge daraus lesen;
+  danach Konzept mit Optionen, Antithese und Falsifikation. *Konzept:* 13 (Flächen), 02 (Bewegung).
 - **Rotationen aller Jobs über den Augenblick hinaus** (sein Auftrag vom 19.11.2026; A901). *Wirkung im Kampf:*
   Verstärker, Zeitgeber und DoTs laufen heute in vorhergesagte Pausen, Ressourcen bleiben beim Tod des Ziels übrig, der
   eigene Burst richtet sich nach der eigenen Uhr statt nach den Raidbuffs, die wirklich auf dir liegen. *Nächster
