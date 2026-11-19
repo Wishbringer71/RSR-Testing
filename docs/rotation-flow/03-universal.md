@@ -2723,7 +2723,7 @@ Bezeichner im Code steht, nicht ob er wirkt), und was zentral für alle Jobs gil
 | Kampfende (TTK) | BLU, BST, GNB, MCH, RDM, SCH | kein DoT auf Gegner, die bald sterben; `HoldCostsUse` für Phantom Aim und Manafication |
 | Burst-Uhr oder Burst-Schalter | 17 (ohne BLU, BST, GNB, PLD, SAM, SGE, WHM) | Tinktur, Phantom Aim (`BurstClock`) |
 | Buffs der anderen in der Gruppe | RPR (eigene Liste) | keine |
-| vorhergesagte Bewegung | keine (PLD und SCH lesen die vergangene Bewegungszeit) | ja: Ein Zauber, der länger wirkt als BossMods erlaubte Wirkzeit (`Hints.MaxCastTime`), beginnt nicht, und der Zaubernde nimmt dann einen Sofortzauber (C6, `ExceedsBossModCastLimit`, `NoCastFitsNow`); die Bewegungssperre liest die nächste Gefahrenzone |
+| vorhergesagte Bewegung | keine (PLD, SCH und seit Upstream 996f28183 SMN lesen die vergangene Bewegungszeit; SMN zählt Bewegung erst nach 0,3 s) | ja: Ein Zauber, der länger wirkt als BossMods erlaubte Wirkzeit (`Hints.MaxCastTime`), beginnt nicht, und der Zaubernde nimmt dann einen Sofortzauber (C6, `ExceedsBossModCastLimit`, `NoCastFitsNow`); die Bewegungssperre liest die nächste Gefahrenzone |
 | Raidwide (BossMod) | BRD, DNC, MCH, SMN | Minderung und Heilung (`StateUpdater`, Konzept 08) |
 
 **Warum nicht alle Jobs diese Signale lesen** (seine Frage, 19.11.2026: „warum werden kampfpausen, raidbuffs,
@@ -2868,7 +2868,10 @@ den jobweisen Abläufen.
   rate is increased." (Battle Voice 141), beides (Devilment 1825); auf dem Gegner „Damage taken is increased." (Dokumori
   3849) und „Rate at which critical hits are taken is increased." (Chain Stratagem 1221). Derselbe Text steht auch an
   eigenen Verstärkern; ein Raidbuff ist er, wenn ein *anderes* Gruppenmitglied ihn auf dich legt (oder auf dein Ziel).
-  Eine Liste der Ids braucht das nicht; der Schnitter führt heute eine eigene (`burstStatusIds`).
+  Eine Liste der Ids braucht das nicht; der Schnitter führt heute eine eigene (`burstStatusIds`). Wie leicht eine
+  Liste veraltet, zeigt Upstreams Merge d1e376bdd (19.11.2026): Er strich Radiant Finale (2722, der Status des Barden
+  selbst) ohne Ersatz, und der Schnitter sah den Burst des Barden nicht mehr; der Fork führt dort den Status der Gruppe
+  (2964, A907), bis K3 die Liste ersetzt.
 - *Störquellen mit demselben Text* (xivapi v2, 19.11.2026): Standard Finish (1821, „Damage dealt is increased.") liegt
   auf dem Tanzpartner fast ständig, weil der Tänzer es alle 30 s erneuert; die Karten des Astrologen The Balance (3887)
   und The Spear (3889) tragen ihn je Minute einzeln. Eine Uhr, die jeden solchen Status zählt, sähe beim Tanzpartner

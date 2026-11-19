@@ -26418,6 +26418,38 @@ im Teamfenster), Prüfmittel (`burst_downtime_model.py`, `session_brief.py`, `ch
 *Prüfgrad:* Compile, Selbsttests (der neue Fall mit Datum scheitert am vorigen Leser), alle Prüfungen. Keine weitere
 Prüfrunde; die Korrekturen sind von keinem zweiten Prüfer gesehen.
 
+### A907 · Upstream 996f28183 und 7.5.8.7: Beiruta-Heiler, Swiftcast in Bewegung beim Beschwörer (19.11.2026)
+
+*Gemergt:* `upstream/main` 996f28183 in `main` (21f507848), Fork-Version 7.5.8.7 (7eeafbe57), `main` in den Arbeits-Branch.
+Neu seit A894: Beirutas Überarbeitung der Heiler (5307993f, abfd49fa0), die Adloquium-Liste der Tanks (nur `BeirutaSCH`
+liest sie, Fenster nur beim Gelehrten), Swiftcast in Bewegung und die Bewegungsschwelle beim Beschwörer, Befehlstexte der
+Inhaltsrotationen für Schalter, beim Schnitter Radiant Finale aus der Raidbuff-Liste.
+
+*Konflikte (7) und wie sie gelöst sind:*
+- `OtherConfiguration.cs`: Fork-Felder und Upstreams `AdloquiumTankPriority`, an Upstreams Stelle.
+- Fünf Beiruta-Dateien: Upstreams Fassung. Die Korrekturen des Forks von A-Nummern vor dem Umbau (gemeinsame Liste statt
+  `Holmgang` 88, Paladin und Gunbreaker, Walking Dead) sind darin nur noch beim Weisen in der alten Form vorhanden; dort
+  wieder auf `StatusHelper.NoNeedHealingStatus` gesetzt.
+- `SMN_Reborn.cs`: Upstreams Schalter „Swiftcast movement priority“ und die Bewegungsschwelle übernommen (nur mit „Swiftcast
+  for movement uptime“, ab Werk aus); Slipstream nimmt die Schwelle. Nicht übernommen: Swiftcast auf Resurrection als
+  zweiter Weg (Konzept 11, der zentrale Weg), Crimson Cyclone mit Schwelle (Sprung beim Ausweichen, A900), die Heilfreigabe
+  und Trankschalter, die der Fork in Teildateien bzw. zentral führt.
+
+*Inhaltlich (Defekte gefunden):*
+1. *Walking Dead sperrt die Heilung bis zur letzten Sekunde* in den neuen `BeirutaAST`, `BeirutaSCH`, `BeirutaSGE`
+   (`UndeadStatus` mit `WalkingDead`, `UndeadReleaseSeconds` 1 s). Der Status verlangt 100 % LP vor Ablauf, sonst stirbt
+   der Dunkelritter. Fremde Rotationen, aber ohne Richtungsentscheidung tödlich: Walking Dead aus der Liste genommen (bleibt
+   Holmgang 409). Der Weißmagier heilt Walking Dead gezielt (Benediction) und ist nicht betroffen.
+2. *Schnitter sieht den Burst des Barden nicht mehr:* Upstreams Merge d1e376bdd strich `StatusID.RadiantFinale` (2722,
+   der Status des Barden selbst) aus `burstStatusIds`, ohne Ersatz und ohne Begründung im Commit. „Perfectio on raid
+   buffs“ wartete dann nicht mehr auf Radiant Finale. Jetzt der Status der Gruppe 2964.
+
+*Synergien mit den eigenen Konzepten:* Die Liste des Schnitters ist ein Beleg für K3 (Konzept 03, F): Eine Liste von Hand
+veraltet; die Erkennung am Statustext ersetzt sie, wenn K3 das Warten baut. Die Bewegungsschwelle des Beschwörers ist ein
+Baustein für K4 (vergangene Bewegung, nicht vorhergesagte).
+
+*Prüfgrad:* Compile, alle Prüfungen, Matrix des Beschwörers neu erzeugt. Im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

@@ -699,7 +699,10 @@ public sealed class RPR_Reborn : ReaperRotation
 	StatusID.Embolden,
 	StatusID.SearingLight,
 	StatusID.BattleVoice,
-	StatusID.TechnicalFinish
+	StatusID.TechnicalFinish,
+	// A907: Radiant Finale's buff on every member (2964); upstream's merge d1e376bdd dropped the bard's own 2722 and with
+	// it the bard's burst from this list.
+	StatusID.RadiantFinale_2964
 	];
 
 	private bool AtIdealPositional
