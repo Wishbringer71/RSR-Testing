@@ -97,6 +97,14 @@ und Einstellungen, die stehen bleiben müssen, dazu Structs, Interfaces und klei
 Konflikt bringen. *Auflösung:* Ein Member zieht beim nächsten Eingriff in ihn in die Teildatei seiner Klasse
 (`code.md`, „Struktur und Kosten"); neue lässt `check_fork_placement.py` nicht zu. *Konzept:* 24.
 
+### BurstWatch führt reine Hilfsaktionen des Jobs · N
+„ready but unused over the fight" nennt „Analysieren" (Beastmaster, `Gauge`) mit „(not asked)": eine Aktion des Jobs
+ohne Schaden, die keine Rotation fragt; die Ausnahmen gelten nur Aktionen aller Klassen, GCDs, Abwehr und Bewegung
+(A855, A864). *Kosten:* eine Angabe ohne Wirkung im Kampf in jeder Zeile des Beastmasters. *Auflösung:* ein
+Merkmal aus den Blättern, das Hilfsaktionen von Fähigkeiten mit Wirkung trennt, ohne echte Abklingzeiten wie Buffs
+auszuschließen; bis dahin bleibt die Vorhersage `burstwatch-no-general-actions` für den Beastmaster widerlegt (A897).
+*Konzept:* 03, „Bereit, aber nicht genutzt".
+
 ### Plugin-Identität ist die des Upstreams · N
 `manifest.json` unverändert (`InternalName`, URLs). Ein eigener interner Name verlegt den Ordner mit Einstellungen und
 gelernten Tabellen, ein eigener angezeigter Name nimmt BossModReborn die Verbindung (es erkennt RSR an „Rotation Solver
@@ -122,11 +130,6 @@ nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigt
   `MCH_Reborn.AttackAbility`, Auswahl `whichToUse` ohne Rückfall. Auflösung: nächste Puppensitzung mit Maschinist nach
   einem anderen Job, Vorhersage `mch-checkmate-hides-double-check`; trifft sie zu, Konzept 03 fortschreiben und den
   Rückfall bauen. Konzept 03, „Bereit, aber nicht genutzt“.
-
-- **Beastmaster: Teilgründe der Wartezeiten im Crucible bestätigen** (A869). Jede Wartezeit vom 16.11.2026 folgt einer
-  Bedingung des Spiels oder der Rotation; die Teilgründe nannte die Zeile damals nicht. Auflösung: nächster Crucible-Upload
-  ab Build 33778ad29, Vorhersagen `bst-horn-waits-for-lock`, `bst-axe-waits-for-tp`; ein anderer Teilgrund → Loop an
-  dieser Aktion. Konzept 01, „Bereit, aber nicht genutzt im Crucible".
 
 - **Absturz einer zweiten Installation am 11.11.2026, 21:18** (A736). Das Spiel endete als Dunkelritter in der
   Azim-Steppe 0,5 s nach Kampfbeginn, ohne die Plugins zu entladen; Build b184ee7fc (08.11.2026). Das `DefenseTrace.log`

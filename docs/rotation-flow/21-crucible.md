@@ -2691,9 +2691,13 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
     dort „Beginnen“ (`AddonMaster.ContentsFinderConfirm.Commence`, ECommons) – einmal, nur nach dem eigenen Start und
     solange es auf ihn wartet. Findet RSR den Knopf nicht, bleibt „Team ready“ mit dem Grund stehen; kein anderer Knopf,
     kein Aufruf einer Agentenfunktion.
-    - *Selbstprüfung:* Kommt nach dem Start bis zum Schließen der Brettwahl keine Bestätigung, oder führt der
-      Gebietswechsel danach nicht ins Brett, schreibt die Spur es, und RSR bietet „Start“ in dieser Sitzung nicht mehr an;
-      den Klick macht er dann selbst. „Beginnen“ drückt RSR erst, wenn der Knopf aktiv ist. Schließt die Bestätigung, ohne
+    - *Selbstprüfung (A897):* Die Brettwahl schließt mit dem Druck, die Bestätigung kommt vom Server später. Gemessen
+      in seiner Spur vom 18.11.2026: 1,7 s danach, zweimal. Ein Fehlschlag ist deshalb erst eines von beiden: Die
+      Brettwahl steht wieder offen, ohne dass eine Bestätigung kam, oder der Gebietswechsel führt nicht ins Brett. Dann
+      schreibt die Spur es, und RSR bietet „Start“ in dieser Sitzung nicht mehr an; den Klick macht er selbst.
+      Dazwischen wartet RSR, ohne feste Frist, weil das Spiel jeden Ausgang selbst anzeigt. *Vorher* galt schon das
+      Schließen der Brettwahl ohne Bestätigung als Fehlschlag. In beiden Läufen vom 18.11.2026 urteilte RSR 7 ms nach
+      dem Druck, „Beginnen“ drückte er selbst, und „Start“ fehlte für den Rest der Sitzung. „Beginnen“ drückt RSR erst, wenn der Knopf aktiv ist. Schließt die Bestätigung, ohne
       dass er das Gebiet wechselt, und steht die Brettwahl noch – zurückgezogen –, gilt das nicht als Fehlschlag; „Start“
       steht wieder bereit.
     - *Im Kampf:* Vorher drei Klicks (Teamfenster prüfen, Herausfordern, Beginnen), jetzt einer in RSRs Fenster.

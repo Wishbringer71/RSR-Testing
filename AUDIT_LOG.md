@@ -26134,6 +26134,37 @@ irgendwann nicht mehr angezeigt".
   Schließen durch ihn oder 0 picks. Bei 0 picks ist der Loop am Brett zu führen (Teamgröße, Kandidaten).
 - *Prüfgrad:* Compile; Dalamuds Ablauf am Quelltext gelesen; im Spiel nicht beobachtet.
 
+### A897 · Uploads vom 18.11.2026: Brettstart wartet auf die Serverantwort, Vorhersagen beurteilt (19.11.2026)
+
+Upload 994f52d8 (RotationSolver) und zwei identische fflogsarchive mit zwei Mitschnitten vom 18.11.2026; der
+Network-Mitschnitt 0f38492f ist byte-gleich mit dem vom 17.11.2026 (ausgewertet in A866 ff.). Spur: sechs Sitzungen auf
+Build f2643919e, 69 Kämpfe, Crucible auf Brett 1 und 2, sonst Gold Saucer, Tiefer Wald, Mahlstrom, Dorf des Nebels.
+- *Brettstart (A846, Vorhersage `crucible-start-board`, FAIL in beiden Crucible-Sitzungen):*
+  - RSR drückte „Start" in der Brettwahl um 13:45:21.276 und schrieb 7 ms später „board choice closed without a duty
+    confirmation - not offered again this session". Die Bestätigung kam 1,7 s danach, „Beginnen" drückte er selbst;
+    um 19:37:11 genauso.
+  - *Ursache:* Die Brettwahl schließt mit dem Druck, die Bestätigung kommt vom Server. RSR wertete das Schließen
+    schon als Fehlschlag.
+  - *Behoben (Konzept 21, K7, „Selbstprüfung"):* Fehlgeschlagen ist der Start erst, wenn die Brettwahl ohne
+    Bestätigung wieder offen steht oder der Gebietswechsel nicht ins Brett führt. Dazwischen wartet RSR ohne Frist.
+  - *Vorhersage:* bleibt `crucible-start-board`.
+- *Vorhersagen (evaluate_predictions.py):*
+  - *Überholt:* `level-core-low` (A805) und `level-below-cap` (A806). Seit A822 levelt „Level" bis zum empfohlenen
+    Rang des nächsten Bretts, und die Begleiter stehen auf Rang 10 und mehr.
+  - *Was seine Meldung vom 18.11.2026 zeigt:* Um 13:57:02 nahm „Level" fünf Begleiter mit („Team set: 5
+    familiars"). Das ist sein TODO-Punkt „Level füllt jeden Platz", jetzt fällig.
+  - *`bst-horn-waits-for-lock`, `bst-axe-waits-for-tp` (A869):* Es kamen Teilgründe hinzu, die die Vorhersage nicht
+    kannte. Beim Horn ist es `Cooldown:ChargesKept`: Die Rotation fragt mit gehaltenen Ladungen, und das Horn geht
+    erst vor der vollen Ladung. Bei der Axt ist es `BasicCheck:ActionCheck`, die eigene Prüfung der Aktion auf ihren
+    TP. Beide sind Bedingungen der Rotation, kein Defekt; der TODO-Punkt „Teilgründe der Wartezeiten bestätigen" ist
+    damit erledigt.
+  - *`burstwatch-no-general-actions` (A855):* widerlegt für den Beastmaster durch „Analysieren", eine Hilfsaktion des
+    Jobs. Ohne Wirkung im Kampf; als technische Schuld im TODO.
+  - *Teilweise:* `team-start-event` (A821) und `bst-chain-carried` (A886) traten in der Sitzung ab 18:23 ein, in der
+    Sitzung ab 12:57 nicht.
+  - *Ohne Gegenbeleg:* alle übrigen PASS. Für A885, A890, A892 und A896 ist dieser Upload zu alt.
+- *Prüfgrad:* Spur ausgewertet, Code und Konzept geändert, Compile.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

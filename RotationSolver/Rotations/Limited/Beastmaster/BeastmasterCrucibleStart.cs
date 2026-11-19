@@ -25,6 +25,7 @@ public partial class BeastmasterRotation
 	private static StartStep _startStep;
 	private static uint _startTerritory;
 	private static bool _startRefused;
+	private static bool _startChoiceClosed;
 
 	/// <summary>
 	/// K7: whether RSR's "Start" can start the board now - the board choice open, ready, and holding a visible, enabled button
@@ -77,6 +78,7 @@ public partial class BeastmasterRotation
 		}
 
 		_startStep = StartStep.Pressed;
+		_startChoiceClosed = false;
 		_startTerritory = DataCenter.TerritoryID;
 		DefenseTrace.Line($"crucible start: pressed the board choice's start (event {start->State.EventType}, param {start->Param})");
 		choice->ReceiveEvent(start->State.EventType, (int)start->Param, start);
@@ -121,11 +123,17 @@ public partial class BeastmasterRotation
 			return;
 		}
 
+		// A897: the board choice closes with the press and the confirmation comes from the server after it (1.7 s, twice, in his
+		// trace of 18.11.2026). Failed is only a choice that shows again with no confirmation in between.
 		if (_startStep == StartStep.Pressed && !choiceShown)
+		{
+			_startChoiceClosed = true;
+		}
+		else if (_startStep == StartStep.Pressed && choiceShown && _startChoiceClosed)
 		{
 			_startRefused = true;
 			_startStep = StartStep.None;
-			DefenseTrace.Line("crucible start: the board choice closed without a duty confirmation - not offered again this session");
+			DefenseTrace.Line("crucible start: the board choice shows again without a duty confirmation - not offered again this session");
 		}
 		else if (_startStep == StartStep.Commenced && !confirmShown && choiceShown)
 		{
