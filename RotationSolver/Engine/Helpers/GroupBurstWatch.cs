@@ -23,6 +23,18 @@ internal static class GroupBurstWatch
 	}
 
 	private static readonly List<Use> _uses = [];
+
+	// The scan of one target's effect entries, without a closure per call: Observe runs on the game's thread only.
+	private static bool _onMember;
+	private static uint _found;
+	private static readonly Action<EffectEntry> FindRaidStatus = static entry =>
+	{
+		if (_found == 0 && entry.type == ActionEffectType.ApplyStatusEffectTarget && entry.value != 0
+			&& (_onMember ? StatusHelper.RaisesDamageDealt((StatusID)entry.value) : StatusHelper.RaisesDamageTaken((StatusID)entry.value)))
+		{
+			_found = entry.value;
+		}
+	};
 	private static float _lastPullSeen = float.NaN;
 	private static float _combatSeen = float.MaxValue;
 
@@ -39,10 +51,12 @@ internal static class GroupBurstWatch
 			var next = float.NaN;
 			foreach (var use in _uses)
 			{
-				if (use.Recast > 0f)
+				// More than a GCD overdue: it did not come (a member died, or held it), and nothing should wait for it - as
+				// BurstClock.SecondsToNext.
+				var due = use.UsedAt + use.Recast - now;
+				if (use.Recast > 0f && due >= -DataCenter.DefaultGCDTotal)
 				{
-					var due = Math.Max(0f, use.UsedAt + use.Recast - now);
-					next = float.IsNaN(next) ? due : Math.Min(next, due);
+					next = float.IsNaN(next) ? Math.Max(0f, due) : Math.Min(next, Math.Max(0f, due));
 				}
 			}
 
@@ -64,22 +78,19 @@ internal static class GroupBurstWatch
 		var onEnemy = false;
 		foreach (var effect in set.TargetEffects)
 		{
-			var member = IsMember(effect.TargetID);
-			var found = 0u;
-			effect.ForEach(entry =>
+			_onMember = IsMember(effect.TargetID);
+			_found = 0;
+			effect.ForEach(FindRaidStatus);
+			if (_found != 0)
 			{
-				if (found == 0 && entry.type == ActionEffectType.ApplyStatusEffectTarget && entry.value != 0
-					&& (member ? StatusHelper.RaisesDamageDealt((StatusID)entry.value) : StatusHelper.RaisesDamageTaken((StatusID)entry.value)))
+				// A status laid on another than the caster names the buff, so its own status (Embolden's 1239) does not.
+				if (status == 0 || effect.TargetID != source.GameObjectId)
 				{
-					found = entry.value;
+					status = _found;
 				}
-			});
 
-			if (found != 0)
-			{
-				status = found;
-				members += member ? 1 : 0;
-				onEnemy |= !member;
+				members += _onMember ? 1 : 0;
+				onEnemy |= !_onMember;
 			}
 		}
 
@@ -92,10 +103,13 @@ internal static class GroupBurstWatch
 		Sync();
 		var now = DataCenter.CombatTimeRaw;
 		var recast = action.Recast100ms / 10f;
+		// A use is the caster's action where the sheet gives its recast; an action that is itself a GCD (the four Technical
+		// Finishes) is the caster's status, so its uses meet across the finishes for the measured gap.
+		var byAction = recast > DataCenter.DefaultGCDTotal;
 		Use? known = null;
 		foreach (var use in _uses)
 		{
-			if (use.Caster == source.GameObjectId && use.Status == status)
+			if (use.Caster == source.GameObjectId && (byAction ? use.Action == action.RowId : use.Status == status))
 			{
 				known = use;
 			}
@@ -109,12 +123,14 @@ internal static class GroupBurstWatch
 
 		// The action's own recast where it is more than a GCD; else the measured gap since the last use.
 		var measured = !float.IsNaN(known.UsedAt) ? now - known.UsedAt : 0f;
-		known.Recast = recast > DataCenter.DefaultGCDTotal ? recast : measured;
+		known.Recast = byAction ? recast : measured;
 		known.UsedAt = now;
 		known.Action = action.RowId;
+		known.Status = status;
 
 		var next = NextIn;
-		DefenseTrace.Line($"group burst: {source.ClassJob.Value.Abbreviation.ExtractText()} used {action.Name.ExtractText()}, status #{status} "
+		var job = source.ClassJob.Value.Abbreviation.ExtractText();
+		DefenseTrace.Line($"group burst: {(job.Length > 0 ? job : "NPC")} used {action.Name.ExtractText()}, status #{status} "
 			+ (onEnemy ? "on the enemy" : $"on {members} members")
 			+ $", recast {(known.Recast > 0f ? $"{known.Recast:F0} s" : "unknown")} - next group buff in "
 			+ (float.IsNaN(next) ? "unknown" : $"{next:F0} s"));

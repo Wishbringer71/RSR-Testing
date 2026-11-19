@@ -26393,6 +26393,31 @@ fünf Einträge ohne jede Nennung; ihr Konzept ist nachgetragen (19, 03, 19, 24,
 
 *Prüfgrad:* Selbsttests; Lauf am heutigen TODO (beide offenen Punkte gelistet, jeder Eintrag mit Konzept).
 
+### A906 · Audit und Code-Review über A899 bis A905 (19.11.2026)
+
+*Anlass:* sein Auftrag vom 19.11.2026: „konzept weiter verbessern, im vollen loop, audit, codereview, felherbeseitigung“.
+*Umfang:* `git diff e46d012f1..HEAD`, 18 Dateien: Code (`GroupBurstWatch`, `StatusHelper.GroupBurst`, `LevelsElsewhere`, Spur
+im Teamfenster), Prüfmittel (`burst_downtime_model.py`, `session_brief.py`, `check_concept_links.py`,
+`window_layout_model.py`, `build.yaml`), Konzepte 03, 13, 21.
+
+*Befunde und Behebung:*
+1. *Ein Raidbuff mit verschiedenen Status für Wirkenden und Gruppe* (Embolden: 1239 auf dem Rotmagier, 1297 auf der Gruppe)
+   lag unter dem Status, den das letzte Ziel trug; wechselte die Reihenfolge, entstand ein zweiter Eintrag, und der alte
+   sagte den nächsten Gruppenburst zu früh voraus. Jetzt gilt ein Einsatz als Aktion des Wirkenden, wo das Blatt die
+   Wiederverwendung nennt, und der Status auf einem anderen als dem Wirkenden benennt ihn.
+2. *Ein überfälliger Raidbuff* (Wirkender tot, gehalten) sagte bis zum Kampfende „in 0 s“ voraus. Jetzt fällt er einen GCD
+   nach seiner Zeit heraus, wie bei der Burst-Uhr.
+3. *`check_concept_links.py`* las jede zweistellige Zahl in 80 Zeichen nach „Konzept“ als Konzept (ein Datum wurde 19 und
+   11). Jetzt nur die Nummern und Dateinamen direkt dahinter; Selbsttestfall mit Datum.
+4. *Mitglied ohne Job* (NPC in Duty Support, Trust): Die Spurzeile hatte einen leeren Job, und die Vorhersage wäre
+   gescheitert. Jetzt „NPC“, die Vorhersage nimmt es an.
+5. *Ein Abschluss je Ziel* bei jeder Aktion eines Gruppenmitglieds im Kampf: jetzt ein statischer Delegat mit Feldern
+   (läuft nur im Spielthread).
+6. *`todo_by_concept`* las einen Pfad als Text, wenn er als Zeichenkette kam. Jetzt eigenes Argument `text`.
+
+*Prüfgrad:* Compile, Selbsttests (der neue Fall mit Datum scheitert am vorigen Leser), alle Prüfungen. Keine weitere
+Prüfrunde; die Korrekturen sind von keinem zweiten Prüfer gesehen.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

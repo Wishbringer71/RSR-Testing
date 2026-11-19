@@ -122,22 +122,23 @@ def check_outside(known, paths=OUTSIDE):
 # first form and a bold `**Konzept:**` line, while the TODO writes `*Konzept:* 03, „Abschnitt"` inside the entry - every
 # entry counted as one without a concept, and the report said nothing wrong).
 ENTRY = re.compile(r'^(?:### (?P<heading>.+)|- \*\*(?P<bullet>[^*]+)\*\*)')
-CONCEPT_MARK = re.compile(r'(?:\*{1,2}Konzept:\*{1,2}|\bKonzept)\s*(?P<refs>(?:\d\d\b|`?\d\d-[a-z0-9-]+\.md`?)[^*]{0,80})')
+CONCEPT_MARK = re.compile(r'(?:\*{1,2}Konzept:\*{1,2}|\bKonzept)\s*(?P<refs>(?:`?\d\d-[a-z0-9-]+\.md`?|\d\d\b)(?:\s*(?:,|und)\s*(?:`?\d\d-[a-z0-9-]+\.md`?|\d\d\b))*)')
 NUMBER = re.compile(r'\b(\d\d)\b')
 
 
-def todo_by_concept(path=Path('TODO.md'), names=None):
+def todo_by_concept(path=Path('TODO.md'), names=None, text=None):
     """Which open points name which concept.
 
     The binding lives in TODO.md and only there - a copy of the titles inside each concept would be
     a second place to age. An entry names its concept with `*Konzept:*` (or `**Konzept:**`) followed by
     the concept's number or file name; this reads it back so the assignment can be seen without opening
-    both files. `names` are the concept files, to resolve a bare number.
+    both files. `names` are the concept files, to resolve a bare number; `text` stands in for the file in the self-test.
     """
-    text = path.read_text(encoding='utf-8') if isinstance(path, Path) and path.exists() else (
-        path if isinstance(path, str) and not isinstance(path, Path) else None)
     if text is None:
-        return {}, []
+        path = Path(path)
+        if not path.exists():
+            return {}, []
+        text = path.read_text(encoding='utf-8')
     names = sorted(names if names is not None else (p.name for p in CONCEPT_DIR.glob('*.md')))
     by_number = {n[:2]: n for n in names if NUMBERED.match(n)}
     assigned, unassigned = {}, []
@@ -211,9 +212,9 @@ def selftest():
 
     sample = ('# TODO\n\n## Offene Arbeit\n\n- **Bullet** text *Konzept:* 03, „F".\n\n### Heading\n*Auflösung:* x.\n'
               '*Konzept:* 12.\n\n### Without\ntext only, a Konzept without number\n\n### Bold form\n**Konzept:** `13-aoe.md`\n'
-              '\n### Prose\nsee Konzept 13, „Abschnitt".\n')
-    assigned, unassigned = todo_by_concept(sample, names=['03-universal.md', '12-searing.md', '13-aoe.md'])
-    if assigned != {'03-universal.md': ['Bullet'], '12-searing.md': ['Heading'], '13-aoe.md': ['Bold form', 'Prose']} \
+              '\n### Prose\nsee Konzept 13, „Abschnitt".\n\n### Dated\n*Konzept:* 12 (seine Vorgabe vom 03.11.2026).\n')
+    assigned, unassigned = todo_by_concept(text=sample, names=['03-universal.md', '11-raise.md', '12-searing.md', '13-aoe.md'])
+    if assigned != {'03-universal.md': ['Bullet'], '12-searing.md': ['Heading', 'Dated'], '13-aoe.md': ['Bold form', 'Prose']} \
             or unassigned != ['Without']:
         raise AssertionError('the TODO reader missed a form of entry or of concept mark: %s %s' % (assigned, unassigned))
 

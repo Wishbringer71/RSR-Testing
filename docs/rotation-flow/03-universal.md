@@ -2892,11 +2892,14 @@ den jobweisen Abläufen.
     Gegner legt (Chain Stratagem, Dokumori), oder auf mehr Gruppenmitglieder als den Wirkenden und einen weiteren. Das
     schließt ohne eigene Zahl aus, was nur Tänzer und Partner trifft (Standard Finish), und was nur einen trifft (die
     Karten). In einer Gruppe aus zwei misst die Uhr deshalb nur Debuffs auf dem Gegner.
-  - *Wann sie wiederkommt:* nach der Wiederverwendung der Aktion aus dem Aktionsblatt (`Recast100ms`). Ist die Aktion
-    selbst ein GCD (Technical Finish; die Abklingzeit trägt Technical Step), nach dem gemessenen Abstand zwischen den
-    letzten beiden Anwendungen desselben Status durch denselben Wirkenden; vorher ist sie unbekannt.
+  - *Wann sie wiederkommt:* nach der Wiederverwendung der Aktion aus dem Aktionsblatt (`Recast100ms`); ein Einsatz ist
+    dann die Aktion des Wirkenden. Ist die Aktion selbst ein GCD (die vier Technical Finishes; die Abklingzeit trägt
+    Technical Step), nach dem gemessenen Abstand zwischen den letzten beiden Anwendungen desselben Status durch denselben
+    Wirkenden; vorher ist sie unbekannt. Den Status benennt, was auf einem anderen als dem Wirkenden liegt (Embolden legt
+    auf sich 1239, auf die Gruppe 1297).
   - *Vorhersage:* `NextIn` – Sekunden bis zum frühesten erwarteten Raidbuff der Gruppe in diesem Kampf; unbekannt,
-    solange keiner beobachtet ist. Neuer Kampf, neue Liste.
+    solange keiner beobachtet ist. Ein Raidbuff, der mehr als einen GCD überfällig ist (Wirkender tot, gehalten), zählt
+    nicht mehr (A906). Neuer Kampf, neue Liste. Ein Mitglied ohne Job (NPC) heißt in der Spur „NPC“.
   - *Spur:* je Raidbuff eine Zeile „group burst: JOB used AKTION, status #ID on N members, recast R s - next group buff
     in X s“ (Job statt Name). Sein nächster Upload aus einer Gruppe mit Raidbuffs zeigt, ob Erkennung und Takt stimmen;
     erst dann wartet ein eigener Verstärker darauf (Gegenthese 6).
