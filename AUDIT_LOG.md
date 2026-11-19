@@ -26474,7 +26474,9 @@ der Rest hatte also keinen Bonus zu schützen.
 2. *Tome of the Impervious blieb im Endkampf liegen* (vier Läufe): Ohne angekündigten Treffer kannte `Protection` keine
    Angriffsart und nahm nur ein Minderungsmittel. *Behoben:* Greift ein Gegner ihn ohne Ankündigung an, gilt der
    Auto-Angriff, also physisch: das Mittel gegen physische Angriffe.
-3. *Merchant's Eye und Thief's Eye* (fünf Läufe): RSR kennt beide nicht. Nicht gebaut; TODO mit den offenen Fragen.
+3. *Merchant's Eye und Thief's Eye* (fünf Läufe): RSR kannte beide nicht. *Behoben:* neue Arten `TokenBoost` und
+   `LootBoost` aus dem Wirktext; vor dem nächsten Kampf, je Kampf eines von jedem, Thief's Eye nicht vor dem Endkampf,
+   Merchant's Eye vor dem Endkampf nur mit Talerregen; nicht, solange ein Gegenstandsbonus gehalten wird.
 4. *Übrige Reste ohne Wert:* Seren ohne Gefahr ihres Zustands, Tome of Reflection ohne magischen Angriff – richtig liegen
    geblieben.
 

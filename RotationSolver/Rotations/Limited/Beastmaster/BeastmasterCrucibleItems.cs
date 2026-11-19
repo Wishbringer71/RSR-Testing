@@ -39,6 +39,8 @@ public partial class BeastmasterRotation
 		Buff,
 		Escape,
 		Convert,
+		TokenBoost,
+		LootBoost,
 	}
 
 	// What an item of the board does, read once from its English effect text (XBMItem): its kind; the share it heals or
@@ -206,6 +208,16 @@ public partial class BeastmasterRotation
 			{
 				items[id] = new CrucibleItem(CrucibleItemKind.Convert, 0f, false, name, ToMagic: convert.Groups["kind"].Value == "magic");
 			}
+			else if (text.Contains("territory tokens earned for the next enemy space", StringComparison.Ordinal))
+			{
+				// A908: Merchant's Eye - "Doubles the territory tokens earned for the next enemy space cleared".
+				items[id] = new CrucibleItem(CrucibleItemKind.TokenBoost, 0f, false, name);
+			}
+			else if (text.Contains("loot drop rate for the next enemy space", StringComparison.Ordinal))
+			{
+				// A908: Thief's Eye - "Triples the loot drop rate for the next enemy space cleared".
+				items[id] = new CrucibleItem(CrucibleItemKind.LootBoost, 0f, false, name);
+			}
 			else if (text.Contains(EscapeText, StringComparison.Ordinal))
 			{
 				// A671: the Beastly Smokebomb - "allowing escape from battle", chosen by the player at an enemy space.
@@ -354,6 +366,10 @@ public partial class BeastmasterRotation
 			return kind != CrucibleItemKind.Heal;
 		}
 	}
+
+	// A908: the fight a Merchant's Eye or a Thief's Eye was used for - one each per fight, since their status is unnamed.
+	private static uint _tokenBoostFor;
+	private static uint _lootBoostFor;
 
 	// The English names of the statuses, for the ones the items answer: Reraise, Sandstill, Auto-potion, poison, blindness,
 	// the protections and Auto-remedy.
@@ -576,6 +592,28 @@ public partial class BeastmasterRotation
 		{
 			slot = FirstOf(crucible, CrucibleItemKind.Sandstill);
 			why = "before the next fight, no Sandstill stands";
+		}
+
+		// A908: before the next fight, the items that pay off in it - Merchant's Eye doubles its tokens (for the shop, and
+		// before the final fight for Talerregen where the board gives it), Thief's Eye triples its loot (not before the final
+		// fight: its spoils end with the run). Once each per fight; not while an item bonus is kept.
+		if (slot < 0 && !keepNoItem && !InCombat)
+		{
+			var next = CrucibleBoard.UpcomingBattle();
+			var final = next != 0 && CrucibleBoard.IsFinalBattle(next);
+			if (next != 0 && _tokenBoostFor != next && (!final || CrucibleBoard.BonusPoints(CrucibleBoard.ScoreBonus.RollingInRiches) > 0)
+				&& FirstOf(crucible, CrucibleItemKind.TokenBoost) is >= 0 and var tokens)
+			{
+				slot = tokens;
+				_tokenBoostFor = next;
+				why = final ? "before the final fight: twice its tokens, for Talerregen" : "before the next fight: twice its tokens";
+			}
+			else if (next != 0 && !final && _lootBoostFor != next && FirstOf(crucible, CrucibleItemKind.LootBoost) is >= 0 and var loot)
+			{
+				slot = loot;
+				_lootBoostFor = next;
+				why = "before the next fight: three times its loot";
+			}
 		}
 
 		if (slot < 0 && !keepNoItem && InCombat && bossFighting && !PlayerHasStatusNamed(player, "Auto-potion"))

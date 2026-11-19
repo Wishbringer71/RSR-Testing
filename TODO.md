@@ -47,11 +47,6 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
   lesen, seine Fehler (falsch, versetzt) an RSRs eigenen Formen aus den Blättern messen, Nutzen im Loop prüfen.
   *Konzept:* 13, „Flächen ohne BossMod-Modul".
 
-- **Merchant's Eye und Thief's Eye: RSR kennt sie nicht** (seine Läufe vom 18.11.2026, A908). *Wirkung im Kampf:*
-  doppelte Marken oder dreifache Beute des nächsten Kampfs gehen verloren; in fünf von acht Läufen lagen sie am Ende
-  ungenutzt. *Nächster Schritt:* Art aus dem Wirktext, Status nach dem Gebrauch messen, Abwägung gegen Sparsamkeit und
-  Sammelleidenschaft, Wahl des Kampfs. *Konzept:* 21, K15 („Merchant's Eye und Thief's Eye").
-
 ## Technische Schuld
 
 Ohne Wirkung im Kampf oder bewusst eingegangen; je Kosten und Auflösungsbedingung.

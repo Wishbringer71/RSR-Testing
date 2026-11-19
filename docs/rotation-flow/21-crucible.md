@@ -1249,13 +1249,19 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
       Verlust entsteht nicht, nur kein Gewinn. (3) Ausgeliefert, und nichts ändert sich: Kein Heilgegenstand ist am Ende
       übrig, weil die übrige Heilung ihn vorher ohne Überheilung nahm. Die LP-Punkte sind dieselben (oben); nur die 250
       fehlen, wenn kein Gegenstand bis 100 % übrig bleibt.
-  - *Merchant's Eye und Thief's Eye (A908, nicht gebaut):* „Doubles the territory tokens earned for the next enemy space
-    cleared" und „Triples the loot drop rate for the next enemy space cleared", je 30 min (XBMItem 101 und 100, xivapi v2,
-    19.11.2026). RSR kennt beide nicht: Sie fallen in keine Art der Gegenstände (`CrucibleItemKind`), werden weder empfohlen
-    noch genutzt und lagen in fünf seiner acht Läufe vom 18.11.2026 am Ende ungenutzt. *Wert:* Marken für den Laden und
-    für Talerregen (mindestens 2.000 am Ende, 500 Punkte), Beute für die Ausrüstung. *Zu klären vor dem Bau:* Beide kosten
-    Sparsamkeit, solange sie steht, und senken die Zahl der gehaltenen Gegenstände (Sammelleidenschaft); welcher Kampf die
-    meisten Marken oder Beute bringt; welchen Status sie legen (für „steht schon"). TODO „Merchant's Eye und Thief's Eye".
+  - *Merchant's Eye und Thief's Eye (A908):* „Doubles the territory tokens earned for the next enemy space cleared" und
+    „Triples the loot drop rate for the next enemy space cleared", je 30 min (XBMItem 101 und 100, xivapi v2, 19.11.2026).
+    Bis A908 kannte RSR beide nicht; in fünf seiner acht Läufe vom 18.11.2026 lagen sie am Ende ungenutzt.
+    - *Regel:* Vor dem nächsten Kampf – außerhalb des Kampfes, solange die Brettwahl den nächsten Kampf nennt
+      (`UpcomingBattle`) – geht Merchant's Eye, vor dem Endkampf nur, wo das Brett Talerregen vergibt (mindestens 2.000
+      Marken am Ende, 500 Punkte; nicht Brett 1). Thief's Eye geht vor jedem Kampf außer dem Endkampf: Seine Beute endet
+      mit dem Lauf. Je Kampf eines von jedem, weil ihr Status keinen Namen im Wirktext hat. Nicht, solange ein
+      Gegenstandsbonus gehalten wird (Sparsamkeit, Sammelleidenschaft; `KeepsNoItemBonus`).
+    - *Gegenthese 1 – Ein späterer Kampf bringt mehr:* Wie viele Marken oder wie viel Beute ein Kampf gibt, liest RSR
+      nicht vorab. Früher genutzt, wirkt das Auge, bevor ein Laden oder Schatz kommt; liegen bleiben kostet sicher.
+    - *Gegenthese 2 – Die Brettwahl ist nicht offen:* Dann nennt `UpcomingBattle` keinen Kampf, und das Auge wartet bis
+      zur nächsten Wahl eines Feldes. *Vorhersage:* „before the next fight: twice its tokens" bzw. „three times its loot"
+      in der Spur seines nächsten Laufs, der ein Auge hält; widerlegt, wenn ein Auge am Ende wieder übrig ist.
   - *Nicht hier:* Teamgröße und Gattung (bis 4.250 und 750) gehören zum Kader (K7, „Teamgröße nach Punkten", „Team aus
     einer Gattung").
   - *Gegenthese 1 – Die schwerste gelernte Last unterschätzt den nächsten Lauf:* Ein Kampf kann schwerer werden als je
