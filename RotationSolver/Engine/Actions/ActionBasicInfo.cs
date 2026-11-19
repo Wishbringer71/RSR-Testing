@@ -539,6 +539,11 @@ public readonly partial struct ActionBasicInfo
 			return RefuseBasic("BasicCheck:HeldForDowntime");
 		}
 
+		if (OutOfCombatHealHeld())
+		{
+			return RefuseBasic("BasicCheck:OutOfCombatHeal");
+		}
+
 		// A channel that ends upon moving does not start where BossMod forbids the spot: its first step ends it (A651).
 		return !MovementLock.ChannelStartBarred(AdjustedID) || RefuseBasic("BasicCheck:ChannelStartBarred");
 	}

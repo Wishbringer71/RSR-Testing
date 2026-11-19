@@ -188,6 +188,80 @@ public readonly partial struct ActionBasicInfo
 		return true;
 	}
 
+	private static readonly System.Collections.Concurrent.ConcurrentDictionary<uint, bool> _outOfCombatHealTraced = new();
+
+	/// <summary>
+	/// Concept 07, "Heilung außerhalb des Kampfes" (A915, his rule of 19.11.2026): out of combat the natural regeneration
+	/// gives 10 % of max HP per tick, so a heal waits for the fight unless it is a heal over time cast as a GCD without a
+	/// recast of its own and paid with MP or nothing. Not while a member carries damage over time or Doom, not in the
+	/// Crucible, where the familiars carry their losses, and never for an action that deals damage.
+	/// </summary>
+	private bool OutOfCombatHealHeld()
+	{
+		if (DataCenter.InCombat)
+		{
+			_outOfCombatHealTraced.Clear();
+			return false;
+		}
+
+		if (DataCenter.IsPvP || DataCenter.IsInCrucible || DotOnParty.AnyDot || !ActionTooltip.RestoresHpAtAll(AdjustedID)
+			|| ActionTooltip.TryStatedPotency(AdjustedID, out _))
+		{
+			return false;
+		}
+
+		var plainHealOverTime = IsGeneralGCD && (MPNeed > 0 || _action.Action.PrimaryCostValue == 0) && GrantsHealOverTime();
+		if (plainHealOverTime || AnyMemberDoomed())
+		{
+			return false;
+		}
+
+		if (_outOfCombatHealTraced.TryAdd(AdjustedID, true))
+		{
+			DefenseTrace.Line($"out-of-combat heal held: {Name} waits for the fight - natural regeneration and a heal over "
+				+ "time cover the time until the next enemy");
+		}
+
+		return true;
+
+		static bool AnyMemberDoomed()
+		{
+			foreach (var member in DataCenter.PartyMembers)
+			{
+				if (member.DoomNeedHealing())
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
+	}
+
+	// Whether the action lays a heal over time on its target, on itself or on the party, by the statuses' own texts.
+	private bool GrantsHealOverTime()
+	{
+		return AnyHealOverTime(_action.Setting.TargetStatusProvide) || AnyHealOverTime(_action.Setting.StatusProvide);
+
+		static bool AnyHealOverTime(StatusID[]? statuses)
+		{
+			if (statuses == null)
+			{
+				return false;
+			}
+
+			foreach (var status in statuses)
+			{
+				if (StatusHelper.IsAnyHealOverTime(status))
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
+	}
+
 	// A status the action gives that raises your damage, critical or direct hit rate, or the damage the target takes - by
 	// its English text, as the group's raid buffs are known (K3).
 	private bool IsOwnDamageBuff()

@@ -33,5 +33,12 @@
   "kind": "each",
   "situation": "downtime hold:",
   "match": "downtime hold: .+ waits - pause in -?[0-9]+[.,][0-9] s for [0-9]+[.,][0-9] s, its window is [0-9]+ s, (alone|in a group)$"
+ },
+ {
+  "id": "out-of-combat-heal-line-form",
+  "archive": "A915",
+  "kind": "each",
+  "situation": "out-of-combat heal held:",
+  "match": "out-of-combat heal held: .+ waits for the fight - natural regeneration and a heal over time cover the time until the next enemy$"
  }
 ]

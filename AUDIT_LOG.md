@@ -26627,6 +26627,31 @@ bekanntes Ende unverändert.
 *Prüfgrad:* statisch, Compile, Prüfskripte; das Modell aus A901. Im Spiel nicht beobachtet; welche Aktionen als
 Verstärker erkannt werden, zeigt erst die Spur.
 
+### A915 · Heilung außerhalb des Kampfes: nur ein HoT, die Regeneration trägt den Rest (19.11.2026)
+
+*Seine Vorgabe (19.11.2026):* „bei heilungen ausserhalb des kampfes prüfen, ob dort wirklich die gesamten sprüche
+verbraucht werden. das wäre kontraproduktiv. wenn kein kampf, dann eigene regeneration und ein einfacher hot sollten
+reichen bis zum nächsten gegner. im loop kritisch prüfen“.
+*Gemessen (alle 19 Mitschnitte seiner Uploads, eigene Aktionen auf Verbündete):*
+- Natürliche Regeneration außerhalb des Kampfes: 10 % der maximalen LP je 3-s-Tick in jedem Gebiet mit Messung (Städte,
+  Gebiete, Tam-Tara, M2, Pilgers Pfad 71–100); im Crucible einmal 30 %.
+- Ohne Gegneraktion 5 s davor und 3 s danach: Regen 24 (19 auf volle Ziele), Divine Benison 5, Afflatus laetitiae 4,
+  Asylum 2; Benediction, Tetragrammaton, Assise, Presence of Mind nie. Mein erster Schnitt nach der Kampfzeile von ACT
+  zählte Presence of Mind, Assise und Benediction als „ohne Kampf“; RSRs Spur zeigte „combat started“ 0,1 s nach ihnen –
+  Eröffnungen, keine Heilungen ohne Kampf. Die übrigen Fälle sind Pre-Regen im Countdown („UsePreRegen“, 5 bis 3 s vor
+  dem Pull) und der letzte GCD vor dem Kampfende.
+- *Ergebnis:* Die ganzen Sprüche verbrauchte RSR nicht. Möglich war es mit „Heal party members out of combat“: Dann
+  gelten außerhalb des Kampfes die Schwellen des Kampfes ohne Rücksicht auf Abklingzeit und Leiste. Ob die Option bei ihm
+  an ist, weiß ich nicht; keine Konfiguration liegt in seinen Uploads.
+*Gebaut (Konzept 07, „Heilung außerhalb des Kampfes“):* zentral in `BasicCheck` für jeden Job – außerhalb des Kampfes
+geht nur ein HoT als GCD ohne eigene Abklingzeit mit MP oder ohne Kosten; alles andere, das LP gibt und keinen Schaden
+macht, wartet. Ausnahmen: Schaden über Zeit auf der Gruppe, Doom, Crucible, PvP. Spurzeile je Aktion und Pause,
+Vorhersage `out-of-combat-heal-line-form`.
+*Nebenbefund am Prüfmittel:* `concept_first.py` (A910) wertete ein `=>` in einem gesuchten Muster als Umleitung und
+sperrte einen lesenden Befehl. Eine Umleitung zählt jetzt nur, wenn ihr Ziel eine Codedatei ist; der Selbsttest prüft
+den Fall.
+*Prüfgrad:* statisch, Compile, Prüfskripte; Mitschnitte ausgewertet. Im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

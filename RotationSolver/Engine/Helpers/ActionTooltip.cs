@@ -119,6 +119,35 @@ internal static class ActionTooltip
 	private static bool HealsParty(string text)
 		=> RestoresHp.IsMatch(text) && text.Contains("party members", StringComparison.Ordinal);
 
+	private static readonly Regex RestoresAnyHp = new(@"\brestores [^.]*HP", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+	private static readonly Dictionary<uint, bool> _restoresHp = [];
+
+	/// <summary>
+	/// A915: whether the effect text of <paramref name="actionId"/> restores HP to anyone - "Restores all of a target's HP",
+	/// "Instantly restores own HP", a heal over time's "Restores HP over time" -, kept per action. False when the sheet has
+	/// no row.
+	/// </summary>
+	public static bool RestoresHpAtAll(uint actionId)
+	{
+		if (_restoresHp.TryGetValue(actionId, out var heals))
+		{
+			return heals;
+		}
+
+		try
+		{
+			var sheet = Svc.Data.GetExcelSheet<ActionTransient>(ClientLanguage.English);
+			heals = sheet != null && sheet.TryGetRow(actionId, out var row) && RestoresAnyHp.IsMatch(row.Description.ExtractText());
+		}
+		catch (Exception)
+		{
+			heals = false;
+		}
+
+		_restoresHp[actionId] = heals;
+		return heals;
+	}
+
 	/// <summary>
 	/// Whether the effect text of <paramref name="actionId"/> says the action itself deals damage to the enemies around the
 	/// player, as Holy, Assize and Macrocosmos do (concept 03, "Flächen, die Gegner treffen", A826, A832). Read from the sheet's text without
