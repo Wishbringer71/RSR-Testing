@@ -38,8 +38,9 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
   Verstärker, Zeitgeber und DoTs laufen heute in vorhergesagte Pausen, Ressourcen bleiben beim Tod des Ziels übrig, der
   eigene Burst richtet sich nach der eigenen Uhr statt nach den Raidbuffs, die wirklich auf dir liegen. *Nächster
   Schritt:* K3 – Beobachtung gebaut (A904); nach seinem nächsten Upload aus einer Gruppe mit Raidbuffs die Spur
-  „group burst:“ auswerten, dann eigene Verstärker auf den Gruppenburst warten lassen; danach K1 mit
-  Rechnung über den Rest des Kampfes in `BasicCheck`, dann K2, K5, K4, K6. *Konzept:* 03, „F · Über den
+  „group burst:“ auswerten, dann eigene Verstärker auf den Gruppenburst warten lassen; K1 erster Schritt gebaut
+  (A914: allein jede Pause im Fenster, in der Gruppe nur im ersten GCD), danach K1 mit der Uhr der Gruppe aus K3, dann
+  K2, K5, K4, K6. *Konzept:* 03, „F · Über den
   Augenblick hinaus".
 
 - **Splatoons Flächenanzeige als Ersatz, wo BossMod kein Modul hat** (sein Vorschlag vom 19.11.2026). *Wirkung im

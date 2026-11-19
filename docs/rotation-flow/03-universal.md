@@ -2860,6 +2860,27 @@ den jobweisen Abläufen.
   wird nur, wo die Pause gleich nach dem Beginn des Fensters kommt.
 - *Allein* (Solo, Trust, Duty Support ohne Raidbuffs) entfällt Gegenthese 4: Halten, wann immer die Pause ins Fenster
   fällt und das Warten keinen Einsatz kostet.
+- *Gebaut, erster Schritt (A914): was ohne die Messung der Gruppe schon trägt.* Zentral in `BasicCheck`
+  (`HeldForDowntime`, „BasicCheck:HeldForDowntime"), für jeden Job, ohne eine Zeile in den Rotationen:
+  - *Ein eigener Verstärker* ist eine Aktion, die einen Status gibt (`StatusProvide`), dessen englischer Text den Schaden,
+    die Kritrate oder die Direkttrefferrate erhöht (`RaisesDamageDealt`, dieselbe Erkennung wie K3), oder einen auf den
+    Gegner, der den erlittenen Schaden erhöht (`RaisesDamageTaken`). Seine Dauer d nennt sein Wirktext („Duration: 20s").
+  - *Er wartet,* wenn BossMods Zeitleiste eine Pause in t < d Sekunden vorhersagt und ihr Ende kennt, das Warten bis zu
+    ihrem Ende keinen Einsatz bis zum Tod des Ziels kostet (`HoldCostsUse`), und: *allein* (keine weiteren
+    Gruppenmitglieder) bei jedem solchen t, weil das ganze Fenster nach der Pause mehr trifft als ein Teil davor
+    (Gegenthese 4, allein); *in der Gruppe* (auch Trust und Duty Support) nur, wenn t kürzer als ein GCD ist – die sichere
+    Annahme „die Gruppe drückt“: Im Modell gewinnt Halten dann nur, wenn die Pause in den ersten 2 s des Fensters beginnt,
+    also bevor ein zweiter GCD darin landet.
+  - *Spur:* je Aktion und Pause eine Zeile „downtime hold: AKTION waits - pause in t s for p s, its window is d s, alone
+    or in a group“.
+  - *Nicht davon berührt:* Ohne BossMod-Modul (keine Pause vorhergesagt) oder ohne bekanntes Ende gilt das bisherige
+    Verhalten. Gehalten wird nur ein Verstärker; Schaden, DoTs und Ladungen bleiben K2 und K5.
+  - *Falsifikation:* (1) *Kein Defekt:* Ein Verstärker in eine Pause trifft kaum etwas. Allein trifft er nur t/d seines
+    Fensters, gehalten das ganze; in der Gruppe innerhalb eines GCD höchstens einen GCD. (2) *Option falsch:* In der Gruppe
+    trennt Halten den Burst von den Raidbuffs der anderen. Darum hält sie dort nur im ersten GCD, wo das Modell den
+    Gewinn zeigt. *Preis:* Wo die Gruppe ebenso hält, wäre längeres Halten besser; das misst erst K3. (3) *Ausgeliefert,
+    und nichts ändert sich:* Erkennt RSR den Verstärker nicht (kein Status in `StatusProvide`, Text ohne die Wendung), oder
+    sagt BossMod keine Pause voraus, wartet nichts. Messweg: die Spurzeile, Vorhersage `downtime-hold-line-form`.
 
 **K3 – Fenster der Gruppe am Spiel messen** (in Arbeit, A901):
 - *Erkennbar für alle Jobs* (Status-Wirktexte, xivapi v2, 19.11.2026): Die Raidbuffs tragen allgemeine Texte – „Damage

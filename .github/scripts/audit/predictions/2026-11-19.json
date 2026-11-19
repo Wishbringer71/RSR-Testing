@@ -26,5 +26,12 @@
   "kind": "each",
   "situation": "crucible siren:",
   "match": "crucible siren: bound - the crawling piece comes first until it falls, its fall ends the bind$"
+ },
+ {
+  "id": "downtime-hold-line-form",
+  "archive": "A914",
+  "kind": "each",
+  "situation": "downtime hold:",
+  "match": "downtime hold: .+ waits - pause in -?[0-9]+[.,][0-9] s for [0-9]+[.,][0-9] s, its window is [0-9]+ s, (alone|in a group)$"
  }
 ]

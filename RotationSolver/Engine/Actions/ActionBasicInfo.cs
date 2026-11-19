@@ -534,6 +534,11 @@ public readonly partial struct ActionBasicInfo
 			return RefuseBasic("BasicCheck:RotationCheck");
 		}
 
+		if (HeldForDowntime())
+		{
+			return RefuseBasic("BasicCheck:HeldForDowntime");
+		}
+
 		// A channel that ends upon moving does not start where BossMod forbids the spot: its first step ends it (A651).
 		return !MovementLock.ChannelStartBarred(AdjustedID) || RefuseBasic("BasicCheck:ChannelStartBarred");
 	}

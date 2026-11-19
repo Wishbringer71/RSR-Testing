@@ -151,4 +151,73 @@ public readonly partial struct ActionBasicInfo
 		BasicRefusal = part;
 		return false;
 	}
+
+	private static readonly System.Collections.Concurrent.ConcurrentDictionary<uint, bool> _ownDamageBuff = new();
+	private static readonly System.Collections.Concurrent.ConcurrentDictionary<uint, DateTime> _downtimeHoldTracedUntil = new();
+
+	/// <summary>
+	/// Concept 03, "F · Über den Augenblick hinaus", K1 (A914): an own damage buff waits while BossMod's timeline predicts a
+	/// downtime inside its window and knows its end, if the wait costs no use before the target dies. Alone at any point of
+	/// the window - the whole window after the downtime hits more than a part before it; in a group only within the first
+	/// GCD, the safe assumption that the group presses on cooldown until K3 measures it.
+	/// </summary>
+	private bool HeldForDowntime()
+	{
+		var downtimeIn = DataCenter.BMRNextDowntimeIn;
+		var downtimeEndIn = DataCenter.BMRNextDowntimeEndIn;
+		if (downtimeIn == float.MaxValue || downtimeEndIn == float.MaxValue || downtimeEndIn <= downtimeIn || !DataCenter.InCombat
+			|| !IsOwnDamageBuff() || !ActionTooltip.TryStatedDuration(AdjustedID, out var window) || downtimeIn >= window)
+		{
+			return false;
+		}
+
+		var alone = DataCenter.PartyMembers.Count <= 1;
+		if ((!alone && downtimeIn >= DataCenter.DefaultGCDTotal) || CustomRotation.HoldCostsUse(_action, downtimeEndIn))
+		{
+			return false;
+		}
+
+		var now = DateTime.Now;
+		if (!_downtimeHoldTracedUntil.TryGetValue(AdjustedID, out var until) || now > until)
+		{
+			_downtimeHoldTracedUntil[AdjustedID] = now.AddSeconds(downtimeEndIn);
+			DefenseTrace.Line($"downtime hold: {Name} waits - pause in {downtimeIn:F1} s for {downtimeEndIn - downtimeIn:F1} s, "
+				+ $"its window is {window:F0} s, {(alone ? "alone" : "in a group")}");
+		}
+
+		return true;
+	}
+
+	// A status the action gives that raises your damage, critical or direct hit rate, or the damage the target takes - by
+	// its English text, as the group's raid buffs are known (K3).
+	private bool IsOwnDamageBuff()
+	{
+		if (_ownDamageBuff.TryGetValue(AdjustedID, out var known))
+		{
+			return known;
+		}
+
+		var setting = _action.Setting;
+		var buff = AnyRaises(setting.StatusProvide, false) || AnyRaises(setting.TargetStatusProvide, true);
+		_ownDamageBuff[AdjustedID] = buff;
+		return buff;
+
+		static bool AnyRaises(StatusID[]? statuses, bool onEnemy)
+		{
+			if (statuses == null)
+			{
+				return false;
+			}
+
+			foreach (var status in statuses)
+			{
+				if (onEnemy ? StatusHelper.RaisesDamageTaken(status) : StatusHelper.RaisesDamageDealt(status))
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
+	}
 }

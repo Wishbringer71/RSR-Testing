@@ -26610,6 +26610,23 @@ Einstellung geändert.
 *Prüfgrad:* statisch, Compile, Prüfskripte; Mitschnitt ausgewertet. *Vorhersage:* je Fessel eine Zeile „crucible siren:
 bound - …“ (`crucible-siren-bound`); widerlegt, wenn Fessel 5710 im Mitschnitt liegt und die Zeile fehlt.
 
+### A914 · K1, erster Schritt: eigene Verstärker warten über eine vorhergesagte Pause (19.11.2026)
+
+*Anlass:* TODO „Rotationen aller Jobs über den Augenblick hinaus“; K3 wartet auf seinen Upload aus einer Gruppe, der Teil
+von K1, der ohne die Uhr der Gruppe trägt, nicht (Konzept 03, F, „K1, erster Schritt“).
+*Gebaut (zentral, alle Jobs):* `ActionBasicInfo.HeldForDowntime` in `BasicCheck`. Ein eigener Verstärker (Status aus
+`StatusProvide` mit dem Text eines Raidbuffs, oder auf dem Gegner aus `TargetStatusProvide`) wartet, wenn BossMods
+Zeitleiste eine Pause innerhalb seiner Dauer (Wirktext „Duration“) vorhersagt und ihr Ende kennt, und das Warten bis zu
+ihrem Ende keinen Einsatz kostet (`HoldCostsUse`). Allein bei jeder solchen Pause; in der Gruppe nur, wenn sie innerhalb
+eines GCD beginnt (Modell `burst_downtime_model.py`: Halten gewinnt bei drückender Gruppe nur bis s = 2 s). Spurzeile je
+Aktion und Pause, Vorhersage `downtime-hold-line-form`.
+*Wirkung im Kampf:* Allein (Solo-Inhalte mit BossMod-Modul, Crucible, Tiefe Gewölbe) landet das ganze Fenster des
+Verstärkers nach einer Zwischenphase, statt zum Teil in ihr. In der Gruppe fällt kein Verstärker mehr in den letzten GCD
+vor einer Pause. *Preis:* In einer Gruppe, die ebenso hält, wäre längeres Halten besser (K3). Ohne Modul oder ohne
+bekanntes Ende unverändert.
+*Prüfgrad:* statisch, Compile, Prüfskripte; das Modell aus A901. Im Spiel nicht beobachtet; welche Aktionen als
+Verstärker erkannt werden, zeigt erst die Spur.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
