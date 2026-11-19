@@ -37,7 +37,12 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
 - **Rotation jedes Jobs: Synergien und Kaskaden innerhalb des Jobs** (sein Auftrag vom 19.11.2026: „danach die
   rotationen jedes jobs auf verbesserungspotential prüfen. innerhalb des jobs durch auswertung der eigenschaften der
   funktionen, angriffe, skills, talente und allen drumrum, auf synergieeffekte und kaskaden. im vollen kritischen loop
-  mit antithese, audit und codereview mit fehlerbehebung“). *Wirkung im Kampf:* Wo ein Merkmal, ein Status oder eine
+  mit antithese, audit und codereview mit fehlerbehebung“); seine Präzisierung desselben Tages: „ziel ist die
+  aufrechterhaltung der schadensgeneriereung, aufrechterhaltung der gruppengesundheit und erhöhung des schadensoutputs bei
+  bosskämpfen, raids und prüfungen. danach bei allen anderen inhalten und kämpfen“ – Maßstab je Befund: Schaden ohne
+  Lücke, Gesundheit der Gruppe, mehr Schaden; Reihenfolge Boss, Raid, Prüfung vor allem anderen. Umfang (seine Präzisierung, 19.11.2026: „ich habe nicht
+  gesagt, dass du nur die jobs bearbeiten sollst, die ich spiele. ich habe alle gesagt“): alle Jobs – die 21 Kampfjobs,
+  Blaumagier und Beastmaster –, je Job jede Rotation; Churin und Beiruta, soweit mit den Änderungen des Forks verträglich (CLAUDE.md, seine Präzisierung). *Wirkung im Kampf:* Wo ein Merkmal, ein Status oder eine
   Aktion eine andere verstärkt oder freischaltet und die Rotation das nicht nutzt, fehlt Schaden in jedem Kampf.
   *Nächster Schritt:* je Job die Wirktexte aller Aktionen und Merkmale (Spielblätter, englisch) auf Querverweise
   erheben, gegen die Rotation halten, Befunde im Loop. *Konzept:* 14 (je Job), 03 „F · Über den Augenblick hinaus“.

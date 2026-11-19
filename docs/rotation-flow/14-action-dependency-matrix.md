@@ -287,6 +287,21 @@ Fenster, die `ActionId.resx` ausblendet, belegt der offizielle Job-Guide: Ready 
 Reign, Ogi Namikiri Ready, Hypercharged, Full Metal Machinist je 30 s, Phantom Kamaitachi Ready 45 s,
 Silken Symmetry und Silken Flow 30 s. Der Code braucht sie nicht: Er liest die Restzeit zur Laufzeit.
 
+**Gemessen an seinen Mitschnitten (19.11.2026, A931; sein Auftrag vom 19.11.: Synergien und Kaskaden jedes Jobs).**
+Jeder eigene Status, den der Wirktext einer Aktion als Bedingung nennt („while under the effect of …“, „while … is
+active“), gegen das Statusblatt der Englischfassung; gezählt, wie oft er ablief, ohne dass in den letzten 0,6 s eine
+eigene Aktion kam, in allen ACT-Mitschnitten vom 10. bis 19.11.2026.
+- *Umfang:* 20 Jobs mit Daten; Weiser und Blaumagier kommen in den Mitschnitten nicht vor.
+- *Beschwörer:* Refulgent Lux 11 von 39, Further Ruin 7 von 66, Ruby's Glimmer 4 von 37 verfallen. Am Mitschnitt fiel
+  jeder Verfall von Further Ruin und Ruby's Glimmer in eine Strecke ohne angreifbares Ziel (12 bis 38 s ohne eigenen
+  Treffer auf einen Gegner: Phasenwechsel im Final Coil, Shinryu); Refulgent Lux verfiel sonst, wenn im Radius niemand
+  verletzt war – nach seiner Regel (Konzept 08, „Wann Lux Solaris zündet“) richtig.
+- *Weißmagier:* Sacred Sight 4 von 1074. *Astrologe:* Earthly Dominance geht von selbst in Giant Dominance über, kein
+  Verlust. Ley Lines und Starry Muse sind Buffs, die gewollt auslaufen.
+- *Übrige Jobs:* höchstens ein Verfall, jeweils am Kampfende.
+- *Schluss:* Proc-Kaskaden gehen in seinen Mitschnitten nicht verloren; ein Mangel läge, wenn, in der Ordnung innerhalb
+  der Fenster (zweiter Durchgang je Job).
+
 ### Die Statusbedingung: Der Status muss bis zum Losgehen liegen
 
 **Stufe „alle":** Eine Aktion mit Statusbedingung (`StatusNeed`, auf der Zielseite `TargetStatusNeed`)

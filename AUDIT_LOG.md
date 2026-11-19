@@ -26997,6 +26997,21 @@ nicht).
 *Vorhersage:* `dynamic-refused-line-form`, `dynamic-fallback-line-form`; an der Puppenreihe keine „gcd idle“-Zeile über
 zwei GCDs.
 
+### A931 · Kaskaden aller Jobs, Durchgang 1: verfallen Freischalter in seinen Mitschnitten? (19.11.2026)
+
+*Anlass:* sein Auftrag vom 19.11.2026 („die rotationen jedes jobs auf verbesserungspotential prüfen … auf
+synergieeffekte und kaskaden“) mit seinen Präzisierungen (Ziel: Schaden ohne Lücke, Gruppengesundheit, mehr Schaden, Boss,
+Raid, Prüfung zuerst; alle Jobs; Churin und Beiruta, soweit verträglich, ohne Entscheidungen von ihm).
+*Verfahren:* Wirktexte aller Aktionen (`ActionId.resx`) und Merkmale (xivapi v2, Trait/TraitTransient, 19.11.2026); je
+Job die Status, die eine Aktion freischalten, gegen das Statusblatt; in allen ACT-Mitschnitten vom 10. bis 19.11.2026
+gezählt, wie oft einer ablief, ohne dass in 0,6 s davor eine eigene Aktion kam; jeder Verfall gegen den letzten und
+nächsten eigenen Treffer auf einen Gegner. Die Skripte stehen nicht im Repository (einmalige Auswertung).
+*Ergebnis:* Konzept 14, „Werden die Fenster genutzt?“. Kein Defekt: Die Verfälle des Beschwörers lagen in Strecken ohne
+angreifbares Ziel oder ohne Verletzte (Lux Solaris, seine Regel). Alle eigenen Aktionen jedes Jobs fragt seine
+Rotation; die mechanisch „fehlenden“ heißen im Code anders (Bezeichner mit Zusatz).
+*Umfang:* 20 von 22 Jobs mit Daten (ohne Weiser und Blaumagier); jede Rotation je Job im Code durchsucht.
+*Prüfgrad:* Mitschnitte und Wirktexte; Code nur für die Verfallsregeln des Beschwörers.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
