@@ -107,6 +107,9 @@ internal static class PositionalWatch
 			Band = MathF.Max(Band, MathF.Abs(press.Margin));
 		}
 
+		// A928 (concept 02): the press after BossMod walked the player into the side judges that move.
+		PositionalMove.Judged(actionId, targetId, press.Margin, hit, miss, press.TrueNorth);
+
 		var name = Service.GetSheet<Lumina.Excel.Sheets.Action>().GetRowOrDefault(actionId)?.Name.ExtractText() ?? actionId.ToString();
 		DefenseTrace.Line($"positional: {name} needs {press.Needed}{(press.Key.Comboed ? " in combo" : string.Empty)}, "
 			+ $"{float.RadiansToDegrees(press.Margin):F1}° inside its side, true north {(press.TrueNorth ? "yes" : "no")} - "

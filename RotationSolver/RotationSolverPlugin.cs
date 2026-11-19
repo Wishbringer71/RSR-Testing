@@ -218,6 +218,7 @@ public sealed partial class RotationSolverPlugin : IAsyncDalamudPlugin
 		DataCenter.ResetAllRecords();
 		DataCenter.ResetHealMeasurements();
 		PositionalWatch.AreaChanged();
+		PositionalMove.AreaChanged();
 
 		if (id == 0)
 		{
@@ -447,6 +448,8 @@ public sealed partial class RotationSolverPlugin : IAsyncDalamudPlugin
 		ActionQueueManager.Disable();
 		ActionManagerEx.DisposeInstance();
 		BMRPlanUpdater.Disable();
+		// A928: BossMod's movement preset does not stay on without RSR.
+		PositionalMove.Dispose();
 		ActionContextMenu.Dispose();
 		BestiaryTrace.Disable();
 		CrucibleWindowTrace.Disable();

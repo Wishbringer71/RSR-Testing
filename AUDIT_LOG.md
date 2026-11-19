@@ -26926,6 +26926,33 @@ beide heilen erst bei Treffern; zurückgehalten ist richtig.
 (36597: 0,127, Spurzeile „unmitigated 13 % under a vulnerability“). Plausibel am Mitschnitt.
 *Prüfgrad:* Spur, Mitschnitt und Tabellen; Code nur für die Ursache der kritischen Klasse gelesen.
 
+### A928 · Positionals: BossMods Bewegungsmodul statt eigenem Hook, nach der unabhängigen Prüfung (19.11.2026)
+
+*Anlass:* die eine unabhängige Prüfung des Konzepts aus A926 (CLAUDE.md, „Prüfgrad“; ein frischer Hilfsagent mit
+Konzept, Code, BossMod-Quelltext 8d5ff8e21 und Spur): 15 Befunde, drei hoher Schwere (unbegrenzter Weg, kein Erkennen
+eines Treffers durch den Schritt, Stillstand und Fehlleitung nicht abgedeckt). Nach der Regel ein Befund am Vorgehen:
+zurück zur Anforderung statt flicken.
+*Geprüft am Quelltext (Prüferaussage als Behauptung, A858):* BossMods Modul „Automatic movement“ (`NormalMovement`,
+„Pathfind“) bewegt ohne KI aus der aktiven Voreinstellung; `GoToPositional` liefert das Zielgebiet der Seite mit
+Kantenpuffer; `Presets.Create`, `SetActive`, `ClearActive`, `GetActive` und `AddTransientStrategy` stehen über IPC
+(`IPCProvider.cs`). Meine Aussagen in A926 und C235 („ohne KI bewegt BossMod nie“, „keine Schnittstelle“) waren falsch.
+*Prämisse, die falsch war:* B1 setzte voraus, dass nur ein eigener Hook bewegen kann. Damit baute das Konzept nach, was
+in seinem Spiel schon läuft – Wegsuche, Gefahrenkarte, Sondermodi, Fehlleitung, Vorrang der Taste –, und jeder
+Prüfbefund hoher Schwere lag in diesem Nachbau.
+*Gebaut (Konzept 02, „Bewegung in die Seite über BossMods Bewegungsmodul“):* `PositionalMove` schaltet die
+Voreinstellung „RSR Positionals“ („Automatic movement“: Pathfind; „Goes to specified positional“: 0,5 y Puffer, Seite
+als vorübergehende Strategie) nur für das Fenster ein, in dem der nächste GCD eine Seite braucht, auf der er nicht
+steht, und True North ihn nicht deckt; nie unter BossMods KI, einer anderen aktiven Voreinstellung, einem anstehenden
+Blick, einem Ziel, das ihn ansieht, oder vor einem positionalen oGCD. Selbstkontrolle: Verfehlen auf der Seite oder
+ein Treffer im Fenster, der nicht die ganze Gruppe trifft, stellt für das Ziel ab, ein zweiter für das Gebiet.
+Einstellung „Move into positionals through BossMod“, ab Werk an. Die Erweiterung der Lernregel entfällt (Befund B8).
+*Befunde der Prüfung:* Antwort je Befund in der Tabelle des Konzepts. Diese Fassung prüfte keine weitere Runde (eine
+Runde je Anforderung); sie ist in diesem Umfang ungeprüft.
+*Widerruf:* C236.
+*Prüfgrad:* statisch am BossMod-Quelltext und am Code, Compile, Prüfskripte; im Spiel nicht beobachtet. *Vorhersage:*
+`positional-move-line-form`, `positional-move-arrives` (eine Zeile „pressed … inside its side, true north no – hit“
+nach einem Fenster), `positional-move-preset-taken` (keine Ablehnung der Voreinstellung).
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -27316,3 +27343,4 @@ geben den Stand vom 14.10.2026 wieder.
 | C233 | A921, Konzept 13, `SplatoonProjection.MisreadRing` und Release-Text (Stand 3d54ef332): Das Spiel skaliere jedes Omen auf die Reichweite, die Anteil-Lesart des Innenradius sei richtig; RSRs kleinere Lesart ein Defekt | Am Modulcode aller 120 Ringe: Der Außenrand ist immer die Reichweite, der Innenradius achtmal Anteil, zweimal Zahl. Ich hatte aus sechs Ringen auf alle geschlossen | A922 |
 | C234 | A923, Konzept 03 und TODO (Stand 95d7f89db): Nach dem abgelehnten Ogi falle die Rotation auf Gekko, der Weg zum Stillstand sei am Code nicht zu finden | Gekko war selbst gesperrt: Kenki stand auf 100, jeder Kombo-Schlag sperrt sich gegen Überlauf, und der Verbrauch wartete auf Zanshin, das kein Ziel hatte. Die Leistenzeile des Mitschnitts zeigte es; ich hatte nur die Auswahl gelesen, nicht die Bedingungen der Aktionen selbst | A925 |
 | C235 | A819 und Konzept 02 (15.11.2026), meine Aussage an ihn: BossModReborn bewege ihn nach RSRs Seite (B2), RSR müsse deshalb nicht selbst bewegen (B1 verworfen) | BossMod bewegt nur mit eingeschalteter KI; an der Puppe lief sie nicht (er stand still auf der Diagonale), und keine Schnittstelle nimmt einen Schritt an. Die Voraussetzung war nie geprüft | A926 |
+| C236 | A926, C235 und Konzept 02 (Stand c479f65e9): Ohne eingeschaltete KI bewege BossMod nie, und keine Schnittstelle nehme einen Schritt von einem anderen Plugin an; RSR müsse deshalb selbst über einen Hook bewegen | BossMods Modul „Automatic movement“ bewegt ohne KI aus der aktiven Voreinstellung, und Voreinstellungen stehen über IPC. Gefunden von der unabhängigen Prüfung, am Quelltext bestätigt | A928 |

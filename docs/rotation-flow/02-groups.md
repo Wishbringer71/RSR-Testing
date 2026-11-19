@@ -226,8 +226,8 @@ Gruppenheilungen.
 
 Geltender Stand (A819, A926): RSR wählt nach Stellung, wirft True North, wenn der nächste GCD sein Positional verfehlen
 würde oder der Spieler so knapp an der Grenze steht, dass das Spiel schon einmal anders geurteilt hat, und meldet die
-gebrauchte Seite nur, wo ein Schritt etwas bringt. Bewegen tut BossModReborn nur mit eingeschalteter KI; ohne sie
-macht RSR den minimalen Schritt selbst („B1 neu“, beschlossen, im Bau).
+gebrauchte Seite nur, wo ein Schritt etwas bringt. Bewegen tut BossModReborn: mit seiner KI, sonst schaltet RSR
+sein Modul „Automatic movement“ für das Fenster der Seite ein („Bewegung in die Seite über BossMods Bewegungsmodul“).
 
 **Grundlagen**
 - *Geometrie:* Um die Mitte des Ziels liegen vier Sektoren zu 90°, bezogen auf seine Blickrichtung: vorn, zwei
@@ -317,7 +317,8 @@ die Teile gilt N.
     - Er kämpft gegen BossMods KI und gegen seine eigene Bewegungstaste.
   - Bedrohung: seine Vorgabe, nichts zu empfehlen, was ihn für Schaden aus einer sicheren Position holt; Konzept 13,
     B6 („RSR dreht, bewegt aber nie").
-  - Bilanz: verworfen. B2 leistet dasselbe mit Gefahrenkarte.
+  - Bilanz (15.11.): verworfen. Am 19.11. erneut verworfen, mit anderem Grund: BossMods Bewegungsmodul leistet es ohne
+    eigenen Hook („Bewegung in die Seite über BossMods Bewegungsmodul“).
 - *B2, BossModReborn bewegt:*
   - Stärke: genau sein Vorschlag. Mit „Stand at positional edges" geht BossMod nur über die Kante, und nur wo der
     Platz sicher ist.
@@ -370,117 +371,119 @@ die Teile gilt N.
 - Bilanz: Ausgleich, kein Gewinn; nicht gebaut. Mit BossMods KI gibt es den Fall ohne Gefahr kaum, weil sie ihn vor
   dem letzten Webfenster hinstellt.
 
-**Befund 19.11.2026: Niemand bewegte ihn – B2 stand auf einer ungeprüften Voraussetzung (A926)**
+**Befund 19.11.2026: Niemand bewegte ihn (A926, A928)**
 - *Seine Rüge (19.11.2026):* „bei den positionals hatte ich dir eine klare vorgabe gegeben, mit dem hinweis auf zittern also
   minimalste bewegungen in die richtige position. du meintest du kriegst das über befehle an bmr hin. also war das auch
-  gelogen.“ Geprüft: Die Aussage war falsch, weil ihre Voraussetzung – BossMods KI ist an – nie geprüft war. Seit dieser
-  Rüge gilt sein Vorschlag vom 15.11. als *Vorgabe*: minimale Bewegung in die richtige Stellung.
-- *Am Quelltext (BossModReborn 8d5ff8e21, 15.11.2026):* „Goes to specified positional“ (`GoToPositional`) legt nur ein
-  Zielgebiet in die Hinweise (`GoalZones`); Bewegung macht daraus allein die KI (`AIController` → `ForcedMovement` →
-  `MovementOverride.DesiredDirection`). Ohne eingeschaltete KI bewegt BossMod nie. Eine Schnittstelle, über die ein
-  anderes Plugin BossMod einen Schritt befiehlt, gibt es nicht (`IPCProvider`: nur `AI.PauseMovement`, Abfragen und
-  Sicherheitsprüfungen).
+  gelogen.“ Seit dieser Rüge gilt sein Vorschlag vom 15.11. als *Vorgabe*: minimale Bewegung in die richtige Stellung.
+- *Am Quelltext (BossModReborn 8d5ff8e21, 15.11.2026):*
+  - „Goes to specified positional“ (`GoToPositional`) legt nur ein Zielgebiet in die Hinweise (`GoalZones`), mit einem
+    Kantenpuffer von 0, 0,5, 1,5 oder 3 y. Bewegt wird daraus von einem von zwei Wegen: der KI (`AIController`) oder dem
+    Modul „Automatic movement“ (`NormalMovement`, Ziel „Pathfind“), das ohne KI läuft, solange es in der aktiven
+    Voreinstellung (Preset) steht.
+  - Andere Plugins steuern Voreinstellungen über IPC: `Presets.Create`, `Presets.SetActive`, `Presets.ClearActive`,
+    `Presets.GetActive`, `Presets.AddTransientStrategy`.
+  - Weder KI noch eine Voreinstellung mit „Automatic movement“ waren an der Puppe aktiv: Er stand still auf der Diagonale.
+  - Widerrufen (C235, C236): „BossMod bewegt ihn“ (15.11., ohne Prüfung der KI) und „ohne KI bewegt BossMod nie, keine
+    Schnittstelle nimmt einen Schritt an“ (A926; die unabhängige Prüfung fand das Modul und die Schnittstelle).
 - *Gemessen (seine Spur, 19.11.2026, Living Memory, Puppe):* Er stand still auf der Diagonale hinten, 0,2° in der Flanke.
-  - Monk: Demolieren zehnmal, davon sechsmal mit True North (Treffer, 14 %) und viermal ohne (0 %, verfehlt);
-    Tigerpeitschenhieb bei +0,2° stets Treffer. True North hat zwei Ladungen je 45 s, Demolieren kommt etwa alle 17 s –
-    jedes dritte bleibt ohne Ladung.
+  - Monk: Demolieren zehnmal im Abstand von 17,6 bis 37 s, sechsmal mit True North (Treffer, 14 %) und viermal ohne (0 %,
+    verfehlt); Tigerpeitschenhieb bei +0,2° stets Treffer. True North lädt eine Ladung je 45 s; bei diesem Abstand
+    bleibt fast jedes zweite Demolieren ohne Ladung.
   - Samurai: an derselben Stelle −0,1° vor der Flanke. Gekko bei +0,1° hinten stets 61 %; Kasha ohne True North dreimal
     56 % gegen 61 % mit – verfehlt, aber als „unknown“ gelesen.
   - *Geometrie bestätigt:* Das Spiel urteilt auf 0,1° genau wie RSR (45°-Grenze, Mitte zu Mitte). `ShouldAddPositional`
     (`FindEnemyPositional`, cos 45°) und `PositionalWatch` (`SideMargin`) messen dieselbe Grenze. True North fehlte
-    allein an den Ladungen, nicht an der Messung.
-- *Zweiter Befund:* Die Lernregel (B3b) urteilt nur über Drücke „tief“ in einer Seite. An der Grenze lernt sie nie, das
-  Band (B3c) blieb 0,0°, und ein Fehlschlag an der Kante blieb „unknown“.
+    allein an den Ladungen.
+- *Zweiter Befund:* Die Lernregel (B3b) urteilt nur über Drücke „tief“ in einer Seite; an der Kante blieb das Band 0,0°.
 
-**B1 neu: RSR macht den minimalen Schritt selbst (A926)**
+**Bewegung in die Seite über BossMods Bewegungsmodul (A928)**
 
-*Die Gründe gegen B1 (15.11.) am heutigen Stand:*
-- „Keine Gefahrenkarte“ – überholt. RSR prüft den Zielpunkt mit seinem Treffertest für gegnerisches Wirken (Konzept 13,
-  `AreaShapeReaches`, für einen Punkt statt für eine Figur) und, wo BossMod läuft, mit `Hints.IsPositionSafe`
-  (Verbotszonen, Arenagrenze, der Weg dorthin).
-- „Bricht Zauber und Kanäle“ – gilt; deshalb kein Schritt, solange er wirkt oder kanalisiert.
-- „Kämpft gegen BossMods KI und seine Taste“ – gilt; deshalb kein Schritt, solange BossMods KI ihn führt, und jede
-  Eingabe von ihm – Taste, Maus, Pad – beendet den Schritt im selben Frame.
-- „Nichts, was ihn für Schaden aus einer sicheren Position holt“ – der Zielpunkt ist so sicher wie der Standort, sonst
-  kein Schritt; seine Vorgabe verlangt genau diese Bewegung.
+*Optionen nach der unabhängigen Prüfung (A928):*
+- *N, True North allein:* an der Puppe ohne Ladung bei fast jedem zweiten Demolieren.
+- *B1, eigener Hook auf die Gehsteuerung:* ausgearbeitet in A926, von der Prüfung angegriffen mit drei Befunden hoher
+  Schwere: unbegrenzter Weg bis um das Ziel herum, keine Erkennung eines Treffers durch den Schritt, Sondermodi
+  (Stillstand, Fehlleitung) nicht abgedeckt; dazu eine Signatur, die nach einem Patch eine falsche Funktion treffen
+  kann, eine unfertige Verkettung mit BossMods eigenem Hook und Lücken in der Nachbildung seiner Eingabeprüfung. Jede
+  dieser Lücken ist in BossMods `MovementOverride` und `NormalMovement` schon gelöst. Verworfen: Es baute nach, was in
+  seinem Spiel schon läuft, mit eigenem Absturzrisiko.
+- *B2a, BossMods KI:* bewegt, wenn er sie einschaltet; dann folgt sie RSRs Seite schon (`FollowRSRDesiredPositional`).
+- *B2b, BossMods „Automatic movement“, von RSR nur im Fenster der Seite eingeschaltet:* Gewählt.
+  - Stärken: Gefahrenkarte und Wegsuche von BossMod; Sondermodi (Pyretic, Stillstand, Rückstoß) über „Special“;
+    Fehlleitung und Vorrang seiner Taste in BossMods Hook; das Ziel ist das nächste Stück der Seite mit 0,5 y Puffer –
+    ein Weg um die Kante, nicht um das Ziel. [Schätzung: BossMods Wegsuche nimmt das nächste Feld höchsten Werts, also
+    den kürzesten Weg in die Seite.]
+  - Schwächen: Nur mit BossMod; steht eine eigene Voreinstellung von ihm aktiv, fasst RSR sie nicht an (dann N). Im
+    Fenster weicht BossMods Wegsuche auch Flächen aus – eine Bewegung aus der Gefahr, nie in sie.
+  - Bedrohung: BossMod ändert Namen von Modul, Spur oder Option; dann lehnt `Presets.Create` ab, die Spur schreibt es
+    einmal, und es gilt N.
 
-*Was gilt (zu bauen, Regel auf der Ebene Nahkämpfer):*
-- *Auslöser:* Im Kampf ist der nächste GCD eine positionale Aktion; das Ziel hat ein Positional, sieht nicht ihn an
-  (sonst dreht es sich mit, etwa allein in der offenen Welt), True North deckt den GCD nicht, und er steht nicht mit dem
-  Sicherheitsabstand auf dessen Seite.
-- *Ziel des Schritts:* derselbe Abstand zur Mitte des Ziels, der kleinste Winkel, ab dem sein Trefferkreis ganz in der
-  Seite liegt: Grenze plus `asin(Trefferkreis / Abstand)` (Trefferkreis des Spielers und Abstand aus dem Spiel; bei 3,5 y
-  Abstand rund 8°, ein Weg von gut einem halben Yalm). Bewegt wird entlang des Kreises, also tangential; er bleibt in
-  Reichweite. Der Sicherheitsabstand deckt eine kleine Drehung des Ziels zwischen Schritt und Urteil; das Spiel selbst
-  urteilt nach der Mitte (gemessen, oben).
-- *Wann:* frühestens nach dem Druck des vorigen GCD, sobald dessen Wirkung nicht mehr an der Stellung hängt
-  (`PositionalWatch` hat seinen Druck erfasst), und nur, wenn bis zum nächsten GCD mehr Zeit bleibt als der Weg braucht.
-  So ist er gemeldet, bevor das Spiel urteilt.
-- *Nie,* solange er wirkt oder kanalisiert, BossMods KI navigiert, vnavmesh einen Pfad läuft, ein Blick ansteht
-  (Konzept 13, Blickwache: im Standardmodus dreht Gehen die Figur), ein Pyretic-Zustand Bewegung bestraft (BossMods
-  Sondermodus oder der Status), er gebunden oder bewegungsunfähig ist, oder der Zielpunkt nicht sicher ist.
-- *Mittel:* ein Hook auf die Gehrichtung des Spielers (`RMIWalk`), wie BossMods `MovementOverride` ihn nutzt
-  (Signaturen dort, Werkzeugquelle, BSD-3). Er ersetzt die Eingabe nur, solange ein Schritt läuft, die Eingabe des Spiels
-  null ist und das Spiel Eingaben liest (dieselben beiden Prüfungen wie BossMod). Die Richtung rechnet er wie BossMod je
-  nach Steuerungsmodus (Standard: zur Blickrichtung der Figur, Legacy: zur Kamera). Hooken BossMod und RSR dieselbe Stelle,
-  verketten die Hooks; BossMods KI geht vor, weil RSR während ihrer Navigation nicht schreitet.
-- *Ohne Hook:* Findet RSR eine Signatur nach einem Patch nicht, schreibt die Spur es einmal, und der Schritt bleibt aus;
-  True North und die Wahl nach Stellung laufen weiter wie vor A926.
-- *Abbruch:* Ist der Zielwinkel erreicht, endet der Schritt; braucht er länger als das Doppelte des berechneten Wegs, oder
-  wird er unsicher, ebenso.
-- *Selbstkontrolle* (code.md, „Entscheidung zur Laufzeit“; seine Vorgabe vom 14.11.2026): Beim Druck des positionalen GCD
-  misst `PositionalWatch`, ob er auf der Seite steht.
-  - Ein Schritt, der nicht ankam (abgebrochen, Ziel drehte) oder nach dem das Spiel trotzdem verfehlt, sperrt Schritte
-    für dieses Ziel.
-  - Ein zweiter solcher Fall im Gebiet sperrt sie bis zum Gebietswechsel; dann gilt das Verhalten vor A926.
-  - Jede Entscheidung schreibt eine Zeile „positional step: …“ in die Spur.
-- *Lernregel (B3b) berichtigt:* Ein Bonus unter dem kleinsten gelernten Treffer desselben Schlüssels (Aktion, Kombo,
-  Stufe) ist ein Fehlschlag, auch an der Grenze; ein Bonus über dem größten gelernten Fehlschlag ein Treffer. So wächst
-  das Band an der Kante, und der Schritt wird gegen das Urteil des Spiels gemessen.
-- *Option:* „Step into positionals“ (Gruppe Positionals), ab Werk an – seine Vorgabe, und code.md „Option und
-  Beobachtbarkeit“. Aus gilt der Stand vor A926.
-- *True North:* bleibt die Antwort, wo der Schritt nicht geht (Sperre, Gefahr, Ziel sieht ihn an, Hook fehlt). Ist der
-  Schritt angekommen, steht er auf der Seite, und True North wird nicht gebraucht – die Ladungen bleiben für die Mechanik.
+*Was gilt (gebaut, A928, Ebene Nahkämpfer; `PositionalMove`, Einstellung „Move into positionals through BossMod“):*
+- *Fenster:* Der nächste GCD ist positional, True North deckt ihn nicht, sein Ziel hat ein Positional und sieht nicht
+  ihn an (allein in der offenen Welt dreht es sich mit), und er steht nicht 0,5 y tief in der Seite. Das Fenster endet
+  mit dem Druck dieses GCD oder wenn eine Bedingung fällt. Ein positionaler oGCD, der vor diesem GCD ansteht (Trick
+  Attack), hält das Fenster zu, bis er gedrückt ist.
+- *Voraussetzungen:* BossMod läuft, seine KI navigiert nicht, keine andere Voreinstellung ist aktiv, und kein Blick
+  steht an (Konzept 13, Blickwache: im Standardmodus dreht Gehen die Figur; ob BossMods Bewegung die Blickrichtung hält,
+  ist unbelegt).
+- *Im Fenster:* RSR legt einmal je Sitzung die Voreinstellung „RSR Positionals“ an („Automatic movement“: Ziel
+  Pathfind; „Goes to specified positional“: Kantenpuffer 0,5 y), setzt deren Seite als vorübergehende Strategie auf die
+  des GCD und aktiviert sie; am Ende des Fensters deaktiviert RSR sie wieder. Er bleibt danach stehen, wo er ist.
+- *Selbstkontrolle* (code.md, „Entscheidung zur Laufzeit“):
+  - Fehlschlag ist: Er kam auf der Seite an (beim Druck gemessen) und das Spiel verfehlt trotzdem; oder ein gegnerischer
+    Treffer, der nicht die ganze Gruppe trifft (kein Raidwide), erreicht ihn im Fenster. Nicht: BossMod hielt ihn an (Gefahr), er ging selbst, das Ziel drehte sich.
+  - Erster Fehlschlag: keine Fenster mehr für dieses Ziel. Zweiter im Gebiet: keine bis zum Gebietswechsel; dann gilt N.
+  - Spur: „positional move: BossMod walks you to the rear/flank for …“, „… pressed …° inside its side, true north
+    yes/no – hit/miss/unknown“, „off for … – …“, „not now – <Grund>“ (einmal je Grund), „stopped for this target/area –
+    …“. Hat BossMod keine Preset-Schnittstelle (ältere Fassung), fragt RSR beim nächsten Fenster erneut.
+- *Absturz:* Bleibt „RSR Positionals“ aktiv, weil eine Sitzung ohne Schließen endete, schaltet RSR sie beim ersten Lauf
+  mit BossMod einmal ab (Spur: „… was still active from an earlier session“) – sonst wiche BossMod bis zum Abschalten
+  von Hand selbständig aus.
+- *Option:* „Move into positionals through BossMod“ (Gruppe Positionals), ab Werk an (seine Vorgabe). Aus gilt N.
+- *Lernregel (B3b):* bleibt; die geplante Erweiterung an der Kante entfällt. Mit 0,5 y Puffer steht er nicht mehr an der
+  Kante, und ein Urteil nach dem kleinsten gelernten Bonus täuscht, wo ein Buff die Potenz ändert (Kazematoi).
 
-*Optionen und Abwägung (SWOT im Kampf):*
-- *N, wie bisher (True North allein):* an der Puppe verfehlt jedes dritte Demolieren; in Kämpfen mit belegtem Rücken
-  fehlen die Ladungen dort, wo sie gebraucht werden. Keine Bewegung, kein Risiko aus ihr.
-- *B2, BossMods KI:* bewegt nur, wenn er die KI einschaltet – an der Puppe lief sie nicht. Bleibt bestehen für Spieler mit KI.
-- *B1, RSR schreitet:* trifft jedes Positional, wo der Platz frei ist, mit einem Weg unter einem Yalm. *Schwäche:* ein
-  Hook auf die Bewegung (Absturz, wenn die Signatur auf eine falsche Stelle zeigt – dieselbe Stelle nutzt BossMod in
-  jeder Sitzung). *Bedrohung:* eine Fläche, die keine Quelle kennt (kein Modul, kein gelistetes Wirken) – derselbe Preis
-  wie jeder eigene Schritt ohne Warnung, begrenzt durch die Weglänge; ein Ziel, das sich ständig dreht – begrenzt durch
-  die Sperre nach einem Fehlschlag.
-- *Bilanz:* B1, weil der Schaden sicher entsteht (gemessen) und das Risiko nur aus einer unbekannten Fläche auf einem Weg
-  unter einem Yalm kommt; Sicherheit vor Schaden bleibt gewahrt, weil der Zielpunkt geprüft ist.
+*Befunde der Prüfung und ihre Antwort:*
+
+| Befund | Antwort |
+|---|---|
+| B1 Weg unbegrenzt | BossMods Ziel ist die nächste Stelle der Seite; Weg und Ort prüft seine Wegsuche |
+| B2 schädlicher Fehlschlag nicht erkannt | Treffer im Fenster zählt als Fehlschlag (Selbstkontrolle) |
+| B3 Stillstand, Fehlleitung fehlen | BossMods „Special“ und sein Hook decken sie |
+| B4 nur Endpunkt geprüft | BossMods Wegsuche plant über die Karte |
+| B5 Signatur nach Patch | kein eigener Hook |
+| B6 Modul und Schnittstelle übersehen | Grundlage dieser Fassung; C236 |
+| B7 Verkettung der Hooks | kein eigener Hook; KI und fremde Voreinstellung gehen vor |
+| B8 Lernregel mit Buffs | Erweiterung entfällt |
+| B9 Abbruch als Fehlschlag | nur Ankunft mit Verfehlen und Treffer im Fenster zählen |
+| B10 Anker nur positionaler Druck | Fenster hängt am nächsten GCD, nicht am vorigen Druck |
+| B11 Trick Attack | positionaler oGCD hält das Fenster zu |
+| B12 Abstand aus falschem Maß | Kantenpuffer 0,5 y wie BossMods Option; eine Drehung des Ziels deckt True North bei vollen Ladungen (B3c) |
+| B13 Rückstoß im Schritt | BossMods „Special“ |
+| B14 Eingabeprüfung | BossMods Hook |
+| B15 Zahlen und alter Stand | berichtigt in diesem Abschnitt |
 
 *Falsifikation:*
 - (1) *Kein Defekt:* widerlegt am Mitschnitt (viermal Demolieren mit 0 %, dreimal Kasha mit 56 %).
-- (2) *Option falsch:* Der Schritt führt in eine unbekannte Fläche oder bricht etwas. Gegen jedes Brechen stehen die
-  Bedingungen „nie, solange …“; gegen die unbekannte Fläche nur die Weglänge – tragende Annahme A2 unten.
-- (3) *Ausgeliefert, nichts ändert sich – warum?* Die Signatur fehlt (Spurzeile), BossMods KI führt ihn (dann bewegt sie),
-  das Ziel sieht ihn an, die Ladungen reichen ohnehin, oder er drückt eine Taste. Jeder Fall schreibt seinen Grund in die
-  Spur, nicht still.
+- (2) *Option falsch:* BossMod bewegt ihn in eine Fläche, die es nicht kennt – derselbe Preis wie seine KI; die
+  Selbstkontrolle stellt nach einem Treffer im Fenster ab.
+- (3) *Ausgeliefert, nichts ändert sich – warum?* BossMod fehlt, eine eigene Voreinstellung ist aktiv, BossMod lehnt die
+  Voreinstellung ab, oder das Ziel sieht ihn an. Jeder Fall schreibt seinen Grund einmal in die Spur.
 
 *Anforderungen (seine Vorgaben → Kriterium → Ort → Beleg heute → Messweg):*
 
 | # | Vorgabe | prüfbares Kriterium | Ort | Beleg heute | Messweg |
 |---|---|---|---|---|---|
-| P1 | Minimale Bewegung in die richtige Stellung (15.11., 19.11.) | Schritt endet beim kleinsten Winkel mit Trefferkreis in der Seite | „B1 neu“, Ziel des Schritts | statisch | „positional step: … arrived, … °“ |
-| P2 | Sicherheit vor Schaden | kein Schritt in einen Punkt, den ein gegnerisches Wirken oder BossMod verbietet | „Nie, solange …“ | statisch | „positional step: … unsafe“ |
-| P3 | Kein Supergau, im Spiel lernen (14.11.) | nach einem Fehlschlag keine Schritte für das Ziel, nach dem zweiten im Gebiet keine | Selbstkontrolle | statisch | „positional step: … stopped“ |
-| P4 | Seine Taste geht vor (Spielweise) | jede Eingabe von ihm beendet den Schritt im selben Frame | Mittel | statisch | „positional step: … your input“ |
-| P5 | Alle Nahkämpfer (Universell zuerst) | gilt für jede Aktion in `ActionPositional` | Auslöser | Code | Zeilen bei MNK, SAM, DRG, RPR, VPR, NIN |
+| P1 | Minimale Bewegung in die richtige Stellung (15.11., 19.11.) | Ziel ist die nächste Stelle der Seite mit 0,5 y Puffer; nach dem Fenster keine Bewegung | „Was gilt“, Fenster | BossMod-Quelltext | „positional move: … arrived“ |
+| P2 | Sicherheit vor Schaden | Weg und Ziel aus BossMods Gefahrenkarte; kein Fenster unter seiner KI oder fremden Voreinstellung | Voraussetzungen | BossMod-Quelltext | „positional move: … stopped“ |
+| P3 | Kein Supergau, im Spiel lernen (14.11.) | nach einem Fehlschlag kein Fenster für das Ziel, nach dem zweiten im Gebiet keines | Selbstkontrolle | statisch | „positional move: … off“ |
+| P4 | Seine Taste geht vor (Spielweise) | Eingabe von ihm überstimmt BossMods Bewegung | BossMods Hook | BossMod-Quelltext | – |
+| P5 | Alle Nahkämpfer (Universell zuerst) | jeder GCD in `ActionPositional`; positionale oGCDs halten das Fenster | Fenster | Code | Zeilen bei MNK, SAM, DRG, RPR, VPR, NIN |
 
 *Tragende Annahmen:*
-- A1: Die Signaturen aus BossMod 8d5ff8e21 zeigen in seinem Spiel auf die Gehsteuerung – belegt dadurch, dass BossMod mit
-  ihnen in derselben Spielversion läuft. Prüfung: Die Spur schreibt beim Start, ob der Hook steht.
-- A2: Ein Weg unter einem Yalm führt selten in eine Fläche, die weder RSR noch BossMod kennt. [Schätzung: selten, weil
-  fast jede Fläche angekündigt wird.] Prüfung: Tode nach einer Zeile „positional step“ in seinen Mitschnitten.
-- A3: Das Spiel meldet den neuen Ort, bevor der nächste GCD urteilt – der Schritt endet früh im GCD. Prüfung:
-  `PositionalWatch` beim Druck nach dem Schritt (Treffer oder Fehlschlag).
-
-*Unabhängige Prüfung:* vor dem Bau einmal (CLAUDE.md, „Prüfgrad“), weil der Schritt ihn bewegt.
+- A1: Modul-, Spur- und Optionsnamen gelten in seinem BossMod wie in 8d5ff8e21. Prüfung: `Presets.Create` antwortet
+  „false“, die Spur schreibt es.
+- A2: Deaktivieren hält die Bewegung im selben Frame an. [Schätzung: BossMods Modul läuft nur aus der aktiven
+  Voreinstellung.] Prüfung: „positional move: … arrived“ gegen den Abstand beim Druck.
 
 **Wechselwirkungen**
 - *Bewegungssperre beim Wirken (Konzept 03):* BossMods Gehen für Positionals fällt zwischen die GCDs. Die

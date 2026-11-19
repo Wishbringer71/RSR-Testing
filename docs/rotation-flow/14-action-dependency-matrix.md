@@ -916,8 +916,8 @@ dann geht auch die Kombo nicht, die Lage ist eine andere.
   zurück, die die Wahl des GCD gesetzt haben kann; sie läuft jetzt danach. Ein Kommentar stand vor der falschen Methode.
 - *Geprüft, nicht geändert (Upstream-Zeilen ohne Wirkung im Kampf):* `MeleeMeditationcheck` nennt Tendo Goken doppelt;
   der Meikyo-Zweig prüft `!HasFugetsuAndFuka` ein zweites Mal, nachdem der erste Zweig dafür schon zurückkehrt.
-- *Positionals:* Gekko und Kasha wählt die Rotation nach Stellung; die Stellung selbst macht der Schritt aus Konzept 02,
-  „B1 neu“.
+- *Positionals:* Gekko und Kasha wählt die Rotation nach Stellung; die Stellung selbst macht BossMods Bewegungsmodul
+  (Konzept 02, „Bewegung in die Seite über BossMods Bewegungsmodul“).
 
 
 ### Barde: Lieder und Burst

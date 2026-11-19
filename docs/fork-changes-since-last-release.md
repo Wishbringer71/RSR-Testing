@@ -40,6 +40,14 @@ What this release changes in the fight. For the whole distance from upstream, se
   dancer with Standard Step. The first damaging weaponskill or spell follows. Not for the ninja. The trace writes
   "pull prepared: ...".
 
+- **Melee: BossMod walks you into the side your next weaponskill needs.** When the next weaponskill needs rear or flank,
+  you stand elsewhere and True North does not cover it, RSR switches on BossMod's automatic movement with its positional
+  goal until that weaponskill is pressed: BossMod walks you 0.5 yalms inside the side by its own
+  pathfinding and stops. Not while BossMod's AI moves you, another BossMod preset is active, a gaze is due or the target
+  faces you. A hit while you are walked there, or a miss on the side, stops it for that target; a second one for the
+  area. Needs BossMod; it adds the BossMod preset RSR Positionals. Setting: "Move into positionals through BossMod", on by
+  default. The trace writes "positional move: ...".
+
 ## Seeing what the enemies do
 
 - **One right picture per enemy area (needs Splatoon).** Circles and lines an enemy casts without the game's orange

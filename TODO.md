@@ -47,10 +47,6 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
   GCD an, bis ihre Bedingung abläuft (Samurai an der Puppe: 28 s Auto-Attacke, A923). *Nächster Schritt:* für alle Jobs
   am allgemeinen Ort (Auswahl und Drücken) eine Aktion, deren Druck scheitert, für die Auswahl ausschließen. *Konzept:*
   03.
-- **Positionals: RSR macht den minimalen Schritt selbst** (seine Meldung und Rüge vom 19.11.2026; A926). *Wirkung im
-  Kampf:* An der Kante verfehlen Demolieren, Kasha und Gekko, sobald True North leer ist; BossMod bewegt ohne eingeschaltete
-  KI nie. *Nächster Schritt:* unabhängige Prüfung des Konzepts, dann Bau (Eingriff in die Gehsteuerung, Sicherheit,
-  Selbstkontrolle) und die Berichtigung der Lernregel. *Konzept:* 02, „B1 neu bewertet“.
 - **Rotationen aller Jobs über den Augenblick hinaus** (sein Auftrag vom 19.11.2026; A901). *Wirkung im Kampf:*
   Verstärker, Zeitgeber und DoTs laufen heute in vorhergesagte Pausen, Ressourcen bleiben beim Tod des Ziels übrig, der
   eigene Burst richtet sich nach der eigenen Uhr statt nach den Raidbuffs, die wirklich auf dir liegen. *Nächster

@@ -87,6 +87,8 @@ internal static class MajorUpdater
 		Run("StunWatch.Update", StunWatch.Update);
 		Run("SleepInterruptWatch.Update", SleepInterruptWatch.Update);
 		Run("AreaDisplay.Update", AreaDisplay.Update);
+		// A928 (concept 02): after the rotation chose, BossMod's movement for the next GCD's side.
+		Run("PositionalMove.Update", PositionalMove.Update);
 
 		UpdateCost.Step("rotation state");
 		StateUpdate();

@@ -743,6 +743,14 @@ internal partial class Configs
 		PvEFilter = JobFilterType.Melee)]
 	private static readonly bool _autoUseTrueNorth = true;
 
+	[ConditionBool, UI("Move into positionals through BossMod",
+		Description = "In a fight: when your next weaponskill needs rear or flank and True North does not cover it, "
+			+ "BossMod's \"Automatic movement\" walks you inside that side.\nNeeds BossMod; not while its AI "
+			+ "moves you or another BossMod preset is active.\nAdds the BossMod preset \"RSR Positionals\".",
+		Parent = nameof(UseAbility),
+		PvEFilter = JobFilterType.Melee)]
+	private static readonly bool _moveIntoPositionals = true;
+
 	[ConditionBool, UI("Use movement speed abilities out of combat in duties", Parent = nameof(UseAbility))]
 	private static readonly bool _autoSpeedOutOfCombat = true;
 

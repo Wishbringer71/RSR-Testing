@@ -82,5 +82,26 @@
   "kind": "each",
   "situation": "pull prepared:",
   "match": "pull prepared: .+ before .+, no countdown$"
+ },
+ {
+  "id": "positional-move-line-form",
+  "archive": "A928",
+  "kind": "each",
+  "situation": "positional move: BossMod walks you",
+  "match": "positional move: BossMod walks you to the (rear|flank) for .+$"
+ },
+ {
+  "id": "positional-move-arrives",
+  "archive": "A928",
+  "kind": "present",
+  "situation": "positional move: .+ pressed",
+  "match": "positional move: .+ pressed [0-9]+[.,][0-9]° inside its side, true north no - hit$"
+ },
+ {
+  "id": "positional-move-preset-taken",
+  "archive": "A928",
+  "kind": "absent",
+  "situation": "positional move:",
+  "match": "BossMod refused the preset"
  }
 ]

@@ -342,6 +342,13 @@ public static partial class Watcher
 							: DataCenter.Role != JobRole.Tank || TankbusterForecast.TookCastFor(tankbusterForPlayer != 0 ? tankbusterForPlayer : marked.RowId)
 								? ", after a tankbuster marker"
 							: ", after a tankbuster marker, no cast taken for it"));
+					// A928 (concept 02): a hit while BossMod walks the player into a positional stops the move; a raidwide
+					// reaches him anywhere and says nothing about the spot.
+					if (!partyWide)
+					{
+						PositionalMove.HitOnPlayer(marked.Name.ExtractText());
+					}
+
 					TankSwapWatch.RecordHitOnPlayer(tankbusterForPlayer != 0 ? tankbusterForPlayer : marked.RowId, marked.Name.ExtractText(),
 						source.GameObjectId, hitShare, markedForPlayer, !partyWide && OtherConfiguration.HostileCastingTank.Contains(marked.RowId),
 						StatusesAppliedTo(set, playerObject.GameObjectId));
