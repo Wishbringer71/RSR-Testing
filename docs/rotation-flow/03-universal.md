@@ -518,6 +518,21 @@ vorgezogener Sofort-GCD verliert höchstens seine spätere Lage: Polyglot, Farbe
 später, wären dort aber auch nur ein GCD gewesen. Deshalb geht der stärkste Sofort-GCD, dessen Ressource keinen anderen
 Zweck hat, vor einem schwächeren und vor keinem. Swiftcast zählt hier nicht, wo der Job damit wiederbelebt (Konzept 11).
 
+**Eine Ressource, die mit der Zeit nachwächst und an ihrer Obergrenze verfällt** (Heilungslilien des Weißmagiers, A933),
+hat einen anderen Zweck – Heilung – und geht trotzdem vor einer Erneuerung des DoT vor seiner Zeit, solange danach ein
+Vorrat bleibt. Grund: Ihre Zahl über den Kampf ist fest, weil der Zähler unterhalb der Grenze stetig weiterläuft; was
+im Laufen gezogen wird, fehlt nicht der Heilung, sondern wird später nicht an der Grenze abgeworfen. Im Kampf: Eine Lilie
+im Laufen ersetzt eine Dia-Erneuerung mit 25 s Rest (85 Potenz direkt, dazu rund 1,7 zusätzliche Ticks zu 85, zusammen
+rund 230), und der Abwurf an der Grenze, der sonst im Stand einen Glare III (350) ersetzt hätte, entfällt; drei Lilien
+und Misery wiegen vier Glare III auf (1400 gegen 4 × 350, The Balance, Skills Overview 7.4, gelesen 19.11.2026). Netto
+rund 120 Potenz je Bewegungs-GCD, und Afflatus Rapture heilt dabei die Gruppe. The Balance: Lilien „can cover the
+majority of movement requirements in any fight", die frühe Dia-Erneuerung ist „for when you are truly out of options"
+(Basic Guide 7.3). Preis: Nach dem Laufen liegt eine Lilie weniger bereit; braucht die Gruppe binnen 20 s mehr als die
+verbliebenen, heilt Cure II statt einer Lilie (1000 MP, im Stand). Deshalb nur, solange mindestens zwei Lilien
+bereitliegen (eine bleibt), weniger als drei Blutlilien stehen (sonst geht Misery vor) und kein angekündigter Raidwide
+die Lilie für die Heilung danach hält (`HealForResourceWaitsForAreaHit`, A292). Option „Use a lily instead of an early
+Dia while moving", ab Werk an.
+
 **Ein DoT vor seiner Zeit** (meine Ableitung, keine Quelle nennt es; The Balance schweigt dazu, Astrologian und Sage
 Basic Guide, 06.11.2026). Bei voller Laufzeit des DoT ist es gleich, wann er erneuert wird; es zählt nur, wie viele
 Erneuerungen im Stand einen Füller kosten. Mit Restzeit R erneut gesetzt, verschiebt er die nächste um D − R nach hinten
@@ -533,7 +548,7 @@ erneuert wird) bleibt unberührt.
 
 | Job | Sofort-GCDs, wenn kein Zauber startbar ist | Stand |
 |---|---|---|
-| Weißmagier | Glare IV, Afflatus Misery, Lilien in Pausen; danach Dia jeden GCD („Use DOT while moving even if it does not need refresh", ab Werk an; Dia trifft auch direkt) | deckt sich |
+| Weißmagier | Glare IV, Afflatus Misery, Lilien in Pausen; ab zwei Lilien eine Lilie (Rapture vor Solace); danach Dia jeden GCD („Use DOT while moving even if it does not need refresh", ab Werk an; Dia trifft auch direkt) | **geändert (A933):** vorher Dia vor jeder Lilie unter der Grenze – in seinen Mitschnitten 1324 Dia-Erneuerungen mit über 5 s Rest im Laufen |
 | Gelehrter | Ruin II nach „Seconds you must be moving before Ruin II will be used" (ab Werk 0 s) | deckt sich |
 | Weiser | Phlegma, im Laufen auch die letzte Ladung; Toxikon; Eukrasia mit Eukrasian Dosis vor ihrer Zeit nach der Ableitung oben | **geändert (A603):** vorher Eukrasian Dosis nur zur Erneuerung |
 | Astrologe | Lightspeed, im Laufen beide Ladungen („Use both stacks of Lightspeed while moving", ab Werk an); Combust vor seiner Zeit nach der Ableitung oben | **geändert (A603):** vorher Combust nur zur Erneuerung |

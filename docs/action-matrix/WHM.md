@@ -1,6 +1,6 @@
 # WHM — Abhängigkeitsmatrix
 
-Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-11; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
+Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-19; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `WhiteMageRotation`
 - Rotation: `RotationSolver/Rotations/Healer/WhiteMage/WHM_Reborn.cs`
@@ -84,6 +84,7 @@ direkt: 42 · ungenutzt: 2
 | Aero II | Regel prüft | Dia |
 | Aero | Regel prüft | Aero II |
 | Afflatus Rapture | Regel prüft | Afflatus Misery |
+| Afflatus Rapture | Regel prüft | Afflatus Solace |
 | Afflatus Solace | Regel prüft | Afflatus Misery |
 | Aquaveil | Regel prüft | Divine Benison |
 | Asylum | Regel sperrt vorher | Benediction |

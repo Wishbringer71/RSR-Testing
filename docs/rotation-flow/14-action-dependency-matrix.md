@@ -317,6 +317,28 @@ Burst freischaltet („… Ready upon executing …“), gegen die eigenen Burst
   festen Folge (sie deckt sich, „Vergleich mit The Balance“), sondern in dem, was ein Guide nicht kennt: Pausen, Kampfende,
   die Fenster der Gruppe, Bewegung, Rudel (Konzept 03, „F · Über den Augenblick hinaus“, K1 bis K6).
 
+**Dritter Durchgang: Inhalt der Burstfenster und Regeln von xivanalysis (19.11.2026, A933).** Je Job die Aktionen
+und GCDs zwischen Beginn und Ende des eigenen Burst-Status (beim Debuff auf dem Gegner: des eigenen auf diesem Ziel),
+dazu die Regeln des xivanalysis-Katalogs (Stand deb2253, 08.11.2026), die ein Mitschnitt messen kann: DoT-Erneuerung
+vor der Zeit, Life Surge, Infuriate auf Nascent Chaos, Formless Fist.
+- *Umfang:* 21 von 23 Jobs mit Burstfenster gemessen (Weiser hat keinen Burst-Status; Blaumagier kommt nicht vor; der
+  Beastmaster ist nicht ausgewertet); DoT-Erneuerung bei allen 13 DoTs in den Mitschnitten.
+- *Voll:* Fight or Flight (3 × 8 GCDs mit allen Pflichtaktionen), No Mercy (3 × 8), Delirium (5 × 3), Lance Charge,
+  Technical Finish, Starry Muse, Reawakened, Divination, Chain Stratagem.
+- *Nur scheinbar unvollständig:* Primal Wrath fällt einen GCD nach dem Ende von Inner Release, Bloodfest eine
+  Sekunde vor No Mercy (beide 60 s), Battle Voice und Radiant Finale zwei Sekunden vor Raging Strikes, wie The Balance
+  sie ordnet; Tenri Jindo, Zesho Meppo, Phantom Kamaitachi und Brotherhood folgen 120- und 90-s-Abklingzeiten und
+  fallen in jedes zweite 60-s-Fenster; Gluttony geht nach dem doppelten Enshroud, nicht im Enshroud.
+- *Rotmagier:* Manafication 43 bis 63 s vor Embolden an der Puppe – die Puppe fiel nach 24 bis 44 s, und
+  `HoldCostsUse` gab sie frei, weil das Warten einen Einsatz gekostet hätte. Richtig nach The Balance („Align with
+  Embolden only if you're sure you won't lose a use“).
+- *DoT vor der Zeit:* Weißmagier 1526 Dia-Erneuerungen mit über 0,5 s Rest, davon 1324 im Laufen – das ist der Befund
+  unter „Weißmagier“. Barde zwölf Sekunden im Median: Iron Jaws am Ende des Bursts, gewollt. Übrige unter 5 s.
+- *Life Surge* (Dragoon) zweimal auf Wheeling Thrust, einmal auf Lance Barrage von fünf: an der Puppe beim Kampfbeginn,
+  wo Heavens' Thrust und Drakesbane noch nicht erreichbar waren. *Infuriate* nie auf Nascent Chaos (0 von 7).
+- *Nicht messbar aus dem Mitschnitt:* Kazematoi, Beast Gauge, Blood Gauge, Lilien und andere Leisten stehen in keiner
+  Zeile; sie prüft der Code-Abgleich je Job („Vergleich mit The Balance“).
+
 ### Die Statusbedingung: Der Status muss bis zum Losgehen liegen
 
 **Stufe „alle":** Eine Aktion mit Statusbedingung (`StatusNeed`, auf der Zielseite `TargetStatusNeed`)
@@ -687,6 +709,16 @@ Hier der Vorlauf (A343); Ressourcen und Buffs stehen unter „Schadensausteiler:
 - *Dragoon* (The Balance, Openers, Patch 7.5): kein Vorlauf im Standard-Opener; der Trank nach dem zweiten GCD, mit
   Lance Charge, vor Battle Litany. RSR nimmt ihn, sobald Battle Litany liegt – einen GCD später; der Trank wirkt 30 s
   und deckt das Fenster weiter. Nicht geändert.
+- *Dragoon, Life Surge im Burst* (A933): Life Surge macht den nächsten Waffenskill kritisch; den größten Ertrag bringt
+  er auf den beiden größten, Heavens' Thrust und Drakesbane (je 460 gegen 340 für Lance Barrage, für Chaotic Spring
+  und Wheeling Thrust von hinten und für Fang and Claw von der Flanke; Job-Guide, Patch 7.5, gelesen 19.11.2026). Upstreams Bedingung (e7d18b6fd) ließ unter Battle Litany und
+  Life of the Dragon jeden Nebenfinisher zu. Im Mitschnitt vom 15.11.2026 gingen so im ersten Burst beide Ladungen auf
+  Wheeling Thrust und Lance Barrage; Heavens' Thrust und zweimal Drakesbane fielen ohne sie ins selbe Fenster. Der große
+  Finisher steht nach jedem Nebenfinisher höchstens zwei GCDs später (Lance Barrage → Heavens' Thrust, Wheeling Thrust
+  und Fang and Claw → Drakesbane, Chaotic Spring → Wheeling Thrust → Drakesbane), und zwei Ladungen finden in 20 s
+  Battle Litany drei große Treffer. Ein Nebenfinisher bekommt Life Surge deshalb nur noch, wenn Battle Litany vor dem
+  nächsten GCD endet; dann fiele der große Treffer heraus. Im Kampf: 120 Potenz je Fehlgriff, mal dem Aufschlag des
+  kritischen Treffers, unter beiden Buffs.
 - *Viper* (Openers, Patch 7.55): Slither bei −0,5 s – RSR springt in der letzten halben Sekunde, wenn das Ziel
   außerhalb der Nahkampfreichweite steht (Konzept 04, „Der Sprung zum Ziel am Ende des Countdowns", A347); der Trank
   fällt nach dem dritten GCD. RSR nahm ihn mit „Experimental Pot Usage(used up to 5 seconds before SerpentsIre comes
@@ -826,6 +858,7 @@ Tankbuster danach nicht zurück. Dieselbe Regel gilt für Celestial Intersection
 | Trank im Opener | nach dem Pull | bei unter 3 s im Countdown, im Kampf, sobald Presence of Mind bereit ist, nach „Tincture usage" und der Tinkturregel aller Jobs (Konzept 03, A780, A781) | weicht um rund drei Sekunden ab: Der Trank endet so viel früher, also vor dem letzten Glare seines Fensters. Nicht geändert – der Unterschied liegt unter einem GCD Trankwirkung, und das Fenster der Gruppe ist eine Annahme über sie |
 | Dia | dauerhaft, außer das Ziel stirbt in unter 15 s | DoT-Regel nach Zeit bis zum Tod gegen den Füller (`DotEffect`) | deckt sich, genauer: rechnet die Gewinnschwelle statt fester 15 s |
 | Glare IV | drei Einsätze unter Presence of Mind | sobald verfügbar | deckt sich |
+| Bewegung | Lilien decken „the majority of movement requirements“; Dia vor seiner Zeit nur „for when you are truly out of options“ (Basic Guide 7.3, gelesen 19.11.2026) | ab zwei Lilien eine Lilie vor Dia vor seiner Zeit, eine bleibt (Konzept 03, C6) | **geändert (A933):** vorher Dia vor jeder Lilie unter der Grenze |
 | Holy | in Dungeons stark (Betäubung), im Raid ab drei Gegnern | AoE-Zahl 3 (A344), dazu Streckung und Rückhaltungen der Betäubung | deckt sich |
 | Afflatus Misery | unter Buffs, wo es geht; keine Blutlilie überlaufen lassen | mit Opener-Option unter Buffs oder Presence of Mind; Lilien nur bei weniger als drei Blutlilien | deckt sich |
 | Angefangene Lilien-Sätze | vor Kampfende abschließen | keine eigene Regel | nicht gebaut: Schaden im Promillebereich, und am Kampfende ist eine Heilung ohne Bedarf keine Sicherheit |

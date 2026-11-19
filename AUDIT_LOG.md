@@ -27025,6 +27025,39 @@ in dem, was eine feste Folge nicht kennt – K1 bis K6 (Konzept 03, „F · Übe
 *Umfang:* 20 von 23 Jobs gemessen; Weiser und Blaumagier ohne Mitschnitt, der Beastmaster nicht ausgewertet.
 *Prüfgrad:* Mitschnitte und Wirktexte; Code für Pictomancer.
 
+### A933 · Kaskaden aller Jobs, Durchgang 3: Burstfenster, xivanalysis-Regeln; Lilie im Laufen, Life Surge (19.11.2026)
+
+*Anlass:* sein Auftrag vom 19.11.2026 („weiter mit den übrigen jobs im vollen loop“), Fortsetzung von A931 und A932.
+*Verfahren:* in allen ACT-Mitschnitten vom 10. bis 19.11.2026 je Job Aktionen und GCDs zwischen Beginn und Ende des
+eigenen Burst-Status, dazu die messbaren Regeln des xivanalysis-Katalogs (deb2253, 08.11.2026): DoT vor der Zeit, Life
+Surge, Infuriate auf Nascent Chaos, Formless Fist; Abklingzeiten an den Spielblättern (xivapi, 19.11.2026: Bloodfest,
+No Mercy, Double Down, Inner Release je 60 s, Manafication 110 s, Embolden 120 s).
+*Ergebnis:* Konzept 14, „Werden die Fenster genutzt?“, dritter Durchgang. Zwei Befunde, beide behoben:
+- *Weißmagier:* 1526 Dia-Erneuerungen mit Rest, 1324 davon im Laufen; Lilien gingen im Laufen erst an der Grenze.
+  The Balance (Basic Guide 7.3, Skills Overview 7.4) nennt Lilien das Bewegungsmittel und die frühe Dia-Erneuerung den
+  letzten Ausweg. Jetzt ab zwei Lilien eine Lilie vor Dia vor seiner Zeit (Konzept 03, C6, die Ableitung über die
+  feste Lilienzahl; Option „Use a lily instead of an early Dia while moving“, ab Werk an, weil ein Spieler Vorrat
+  gegen Schaden anders gewichten kann). Die Regel „Ressource ohne anderen Zweck“ in C6 war meine Ableitung und hier
+  zu eng: Eine Ressource, die stetig nachwächst und an der Grenze verfällt, fehlt der Heilung nicht.
+- *Dragoon:* Upstreams `lsOnAltFinishersDuringBuff` (e7d18b6fd) gab Life Surge unter Battle Litany jedem
+  Nebenfinisher; am 15.11. gingen so beide Ladungen auf Wheeling Thrust und Lance Barrage, Heavens' Thrust und
+  Drakesbane kamen ohne. Jetzt nur, wenn Battle Litany vor dem nächsten GCD endet (Konzept 14, „Dragoon, Life Surge im
+  Burst“; Potenzen am Job-Guide, Patch 7.5).
+- *Kein Defekt:* Paladin, Revolverklinge, Dunkelritter, Dragoon (sonst), Tänzer, Pictomancer, Viper, Astrologe,
+  Gelehrter voll; Krieger, Ninja, Monk, Schnitter, Barde mit Lücken, die Abklingzeit oder Folge erklären; Rotmagier
+  Manafication vor Embolden, weil die Puppe nach 24 bis 44 s fiel (`HoldCostsUse`, A464). Die Abwehr der Tanks an der
+  Puppe in diesem Mitschnitt (Build 9036b6874) ist A818.
+- *Eigener Messfehler, berichtigt:* Der erste Entwurf der Konzeptzeile schrieb Life Surge auf Nebenfinishern dem
+  Kampfbeginn zu, ungemessen; der Ablauf zeigte sie mitten im Burst.
+*Umfang:* 21 von 23 Jobs mit Burstfenster gemessen (Weiser ohne Burst-Status, Blaumagier ohne Mitschnitt, Beastmaster
+nicht ausgewertet); Leisten (Kazematoi, Beast Gauge, Lilien und andere) stehen in keiner Mitschnittzeile, sie deckt der
+Code-Abgleich mit The Balance (A375 bis A414, A379).
+*Vorhersage:* Im nächsten ACT-Mitschnitt mit Weißmagier sinkt der Anteil der Dia-Erneuerungen mit über 5 s Rest im
+Laufen, solange zwei Lilien bereitlagen, auf null (Messung wie hier: Position des Spielers vor und bei Dia);
+im Dragoon-Burst trägt Life Surge Heavens' Thrust oder Drakesbane, einen Nebenfinisher nur in der letzten GCD von
+Battle Litany. Beides steht in keiner Zeile des `DefenseTrace.log`, deshalb ohne maschinenlesbare Vorhersage.
+*Prüfgrad:* Mitschnitte, Spielblätter, Job-Guide, The Balance; Code, Compile, CI; im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

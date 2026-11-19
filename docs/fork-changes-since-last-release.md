@@ -61,6 +61,17 @@ What this release changes in the fight. For the whole distance from upstream, se
   check kept: the samurai's Kenki stall at the dummy would have cost one GCD instead of 28 seconds. Not during mudras,
   Ten Chi Jin or dance steps, not for limited jobs, not in PvP. The trace writes "dynamic rotation: ...".
 
+## Single jobs
+
+- **White mage: a lily while moving instead of an early Dia.** While you move and no spell can start, a lily (Afflatus
+  Rapture, else Afflatus Solace) now goes before Dia refreshed with time left, as long as two lilies are ready and no
+  raidwide is announced; one lily stays for healing. Lilies grow back on time, so this costs no heal over the fight and
+  each one brings Afflatus Misery a step closer. Setting: "Use a lily instead of an early Dia while moving", on by
+  default.
+- **Dragoon: Life Surge on Heavens' Thrust and Drakesbane in the burst.** Under Battle Litany both charges went to
+  whichever finisher came next, Wheeling Thrust or Lance Barrage included, while Heavens' Thrust and Drakesbane followed
+  in the same window. A lesser finisher now takes Life Surge only when Battle Litany ends before the next weaponskill.
+
 ## Seeing what the enemies do
 
 - **One right picture per enemy area (needs Splatoon).** Circles and lines an enemy casts without the game's orange
