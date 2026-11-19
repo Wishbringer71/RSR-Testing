@@ -26299,7 +26299,13 @@ nicht widerlegt; zuerst ein Modell über einen ganzen Kampf.
 *Nebenbefund:* Weil „Auto Burst“ ab Werk an ist, ist `usedUp: IsBurst` beim Maschinisten immer wahr; seine Ladungen halten
 nie für das eigene Fenster (zu prüfen in K6 gegen Konzept 17).
 
-*Prüfgrad:* statisch (Code, Zählung). Noch nichts im Spiel geändert.
+*Modell K1* (`burst_downtime_model.py`, Selbsttest, in der CI bei Änderung): Gegenthese 4 trägt. Drückt die Gruppe ihre
+Raidbuffs bei Abklingzeit, gewinnt Halten über eine Pause nur, wenn sie in den ersten 2 von 20 s des Fensters beginnt;
+die örtliche Rechnung f · (1 + P) < 1 hätte bis 14 s gehalten und dazwischen Schaden gekostet. Allein oder mit einer
+Gruppe, die ebenso hält, gewinnt Halten immer. Folge: K1 rechnet den Rest des Kampfes und braucht das gemessene Verhalten
+der Gruppe; gebaut wird K3 zuerst.
+
+*Prüfgrad:* statisch (Code, Zählung) und Modell. Noch nichts im Spiel geändert.
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

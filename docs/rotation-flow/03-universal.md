@@ -2742,7 +2742,8 @@ Bezeichner im Code steht, nicht ob er wirkt):
    (Beastmaster A886). Je Job verschieden, deshalb nach K1 bis K5, die für alle gleich gelten (CLAUDE.md, „Universell
    zuerst").
 
-**Reihenfolge nach Wirkung im Kampf** [Schätzung, je Klasse zu belegen]: K1 vor K3 vor K2 vor K5 vor K4 vor K6. K1 trifft jede
+**Reihenfolge nach Wirkung im Kampf** [Schätzung, je Klasse zu belegen]: K1 vor K3 vor K2 vor K5 vor K4 vor K6; gebaut
+wird K3 vor K1, weil K1 das gemessene Verhalten der Gruppe braucht (unten). K1 trifft jede
 Zwischenphase in Prüfungen, Raids und Savage, und ein ganzer Burst in einer Pause kostet sein ganzes Fenster; K3 trifft
 jeden Kampf mit Gruppe; K2 jedes Kampfende, ist aber teilweise gebaut. *Gegenposition:* In Dungeons, seinem häufigsten
 Inhalt, gibt es kaum Pausen; dort wirken K2 und K5 öfter. Darum K1 zuerst als allgemeiner Mechanismus, aber K2 und K5 vor
@@ -2766,12 +2767,21 @@ den jobweisen Abläufen.
   am Status gelesen), wiegt das jetzige Fenster f · (1 + P), ein volles nach der Pause 1 – solange dort keine liegen.
   Halten lohnt, wenn f · (1 + P) < 1 und das Warten bis zum Ende der Pause keinen Einsatz bis zum Kampfende kostet
   (`HoldCostsUse`).
-- *Gegenthese 4 – Halten verschiebt jedes spätere Fenster gegen die Gruppe:* Drückt die Gruppe vor der Pause und du
-  danach, liegen alle folgenden Einsätze um die Wartezeit neben ihren. Belegt ist das nicht widerlegt; Gegengewicht:
-  Nach einer Pause sind alle Abklingzeiten, die in ihr ablaufen, bei der Rückkehr bereit, und Gruppen legen sie dann
-  gemeinsam. Bevor gebaut wird, muss ein Modell über einen ganzen Kampf (Pause, Rückkehr, folgende Fenster) zeigen, wann
-  das Halten trägt; bis dahin ist K1 in Gruppen mit Raidbuffs nicht entschieden.
-- *Allein* (Solo, Trust, Duty Support ohne Raidbuffs) entfällt Gegenthese 4; dort trägt die Rechnung ohne Modell.
+- *Gegenthese 4 – Halten verschiebt jedes spätere Fenster gegen die Gruppe: trägt* (Modell `burst_downtime_model.py`,
+  Kampf 600 s, Verstärker 20 s je 120 s, Pause 30 s, Raidbuffs der Gruppe P = 0,25 *[Annahme]*). Beginnt die Pause s
+  Sekunden nach dem Fenster:
+  - *allein:* Halten gewinnt bei jedem s unter 20 – es kostet keinen Einsatz und trifft das ganze Fenster;
+  - *Gruppe drückt bei Abklingzeit:* Halten gewinnt nur bei s ≤ 2. Schon ab s = 4 gleicht der verlorene Teil des
+    jetzigen Fensters nicht auf, dass jedes spätere Fenster neben dem der Gruppe liegt. Die örtliche Rechnung oben
+    (f · (1 + P) < 1) hielte bis s = 14 und läge dazwischen falsch;
+  - *Gruppe hält ebenso:* Halten gewinnt bei jedem s unter 20.
+- *Folge:* Die Entscheidung braucht den Rest des Kampfes und das Verhalten der Gruppe, nicht nur das eine Fenster. Darum
+  rechnet K1 zur Zeit der Entscheidung den Rest des Kampfes durch (Kampfende aus `GetCorrectedTTK`, Pause aus BossMod,
+  Fenster der Gruppe aus K3) und kommt nach K3: Erst wenn RSR misst, wann die Raidbuffs der anderen tatsächlich auf dir
+  liegen, weiß es, ob die Gruppe drückt oder hält. Bis dahin gilt die sichere Annahme „die Gruppe drückt“, und gehalten
+  wird nur, wo die Pause gleich nach dem Beginn des Fensters kommt.
+- *Allein* (Solo, Trust, Duty Support ohne Raidbuffs) entfällt Gegenthese 4: Halten, wann immer die Pause ins Fenster
+  fällt und das Warten keinen Einsatz kostet.
 - *Gegenthese 1 – Die Gruppe drückt ohnehin:* Halten trennt den eigenen Burst von den Raidbuffs der anderen. Liegt nur
   ein Teil des Fensters in der Pause, bringt das gemeinsame Fenster mehr als ein eigenes volles danach. Deshalb hält die
   Regel nur, wenn die Pause einen größeren Teil des Fensters nimmt, als die Gruppe an Raidbuffs mitbringt; allein
