@@ -166,6 +166,12 @@ public partial class CustomRotation
 			IBaseAction.TargetOverride = TargetType.Heal;
 			IBaseAction.HealPathRunning = true;
 
+			// A929 (concept 07): a member in the critical class gets the heal GCD first.
+			if (CriticalHealGcd(out act))
+			{
+				return act;
+			}
+
 			if (DataCenter.CommandStatus.HasFlag(AutoStatus.HealAreaSpell))
 			{
 				IBaseAction.AutoHealCheck = true;

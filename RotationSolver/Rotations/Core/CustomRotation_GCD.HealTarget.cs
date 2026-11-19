@@ -27,6 +27,67 @@ public partial class CustomRotation
 
 	private static (uint Action, ulong Target) _downtimeHealTraced;
 
+	/// <summary>
+	/// Concept 07, "Der Heil-GCD für ein Mitglied der kritischen Klasse" (A929): with a member in the critical class the heal
+	/// path first asks the rotation's area and single heal GCDs for a heal that reaches such a member - Regen, which picks
+	/// among members without Regen, went to two others while the tank stood at 0 % forecast. What goes stays the rotation's
+	/// choice; only the target is given. Without one that reaches the member, the heal path runs as before.
+	/// </summary>
+	private bool CriticalHealGcd(out IAction? act)
+	{
+		act = null;
+		var single = DataCenter.CommandStatus.HasFlag(AutoStatus.HealSingleSpell)
+			|| (DataCenter.AutoStatus.HasFlag(AutoStatus.HealSingleSpell) && CanHealSingleSpell);
+		var area = DataCenter.CommandStatus.HasFlag(AutoStatus.HealAreaSpell)
+			|| (DataCenter.AutoStatus.HasFlag(AutoStatus.HealAreaSpell) && CanHealAreaSpell);
+		if ((!single && !area) || !CanCastHeals || CollectCriticalMembers() == 0)
+		{
+			return false;
+		}
+
+		IBaseAction.CriticalHealTargets = _criticalMembers;
+		IBaseAction.AutoHealCheck = true;
+		try
+		{
+			if ((area && (ActiveDutyRotation?.HealAreaGCD(out act) == true || HealAreaGCD(out act)))
+				|| (single && (ActiveDutyRotation?.HealSingleGCD(out act) == true || HealSingleGCD(out act))))
+			{
+				TraceCriticalHealGcd(act);
+				return true;
+			}
+		}
+		finally
+		{
+			IBaseAction.CriticalHealTargets = null;
+			IBaseAction.AutoHealCheck = false;
+		}
+
+		act = null;
+		return false;
+	}
+
+	private static (uint Action, ulong Target) _criticalHealTraced;
+	private static DateTime _criticalHealTracedAt;
+
+	// One line per heal and target within a GCD; the path asks every frame until the heal goes out.
+	private static void TraceCriticalHealGcd(IAction? act)
+	{
+		var target = (act as IBaseAction)?.Target.Target;
+		var key = (act?.ID ?? 0u, target?.GameObjectId ?? 0ul);
+		var now = DateTime.Now;
+		if (key == _criticalHealTraced && (now - _criticalHealTracedAt).TotalSeconds < DataCenter.DefaultGCDTotal)
+		{
+			return;
+		}
+
+		_criticalHealTraced = key;
+		_criticalHealTracedAt = now;
+		var critical = _criticalMembers.Count > 0 ? _criticalMembers[0] : null;
+		DefenseTrace.Line($"critical heal GCD -> {act?.Name ?? "?"} #{key.Item1}"
+			+ (target != null ? $" on {target.Name.TextValue} at {target.GetHealthRatio():P0}" : string.Empty)
+			+ (critical != null ? $", critical {critical.Name.TextValue} at {critical.GetForecastEffectiveHpPercent()}% forecast" : string.Empty));
+	}
+
 	private static bool CanCastHeals => !StatusHelper.PlayerHealingPunished();
 
 	/// <summary>

@@ -26953,6 +26953,27 @@ Runde je Anforderung); sie ist in diesem Umfang ungeprüft.
 `positional-move-line-form`, `positional-move-arrives` (eine Zeile „pressed … inside its side, true north no – hit“
 nach einem Fenster), `positional-move-preset-taken` (keine Ablehnung der Voreinstellung).
 
+### A929 · Kritische Klasse: der Heil-GCD geht zuerst an das Mitglied (19.11.2026)
+
+*Anlass:* TODO-Defekt aus A927 (sein Mitschnitt 19.11.2026, 19:26, Weißmagier in einer Vierergruppe): Der Tank stand in
+der Vorhersage für einen GCD bei 0 % und 6 %, RSR legte zweimal Regen auf andere Mitglieder.
+*Ursache am Code:* Regen sucht sein Ziel unter den Mitgliedern ohne Regen (`TargetStatusProvide`), der Tank trug Regen;
+der Zweig steht in `HealSingleGCD` vor Cure II. Die Notfallheilung der Fähigkeiten geht nur, wenn sie ein Mitglied der
+kritischen Klasse erreicht (`EmergencyHealAheadOfGcd`); der GCD-Pfad prüfte das nicht. Benediktion blieb richtig aus:
+Sie liest die Vorausschau einer Sofortheilung (A213), der Tank stand bei 69 %.
+*Vorhersage gegen Verlauf:* Die GCD-Vorausschau sagte 0 %, der Tank fiel bis 45 % (19:26:05,9). Zu düster, aber auf der
+sicheren Seite; sie steuert sich selbst nach (`ScoreTtkForecast`). Die Spur trägt keine Proben je Mitglied; eine
+genauere Prüfung der Vorhersage hat keinen Beleg in diesem Upload.
+*Gebaut (Konzept 07, „Der Heil-GCD für ein Mitglied der kritischen Klasse“, Ebene alle mit Heil-GCD):* Steht ein
+Mitglied in der kritischen Klasse, fragt der Heilpfad zuerst Flächen- und Einzel-Heil-GCD mit
+`IBaseAction.CriticalHealTargets`; `CanUse` lehnt jedes andere Ziel ab („MissesTheCriticalMember“). Findet sich keine
+Heilung, gilt der Pfad wie bisher. Die Sammlung der kritischen Mitglieder teilen Fähigkeit und GCD
+(`CollectCriticalMembers`).
+*Verworfen:* Regen nur beim Weißmagier hinter Cure II – ließe Astrologe, Gelehrter, Weiser offen.
+*Prüfgrad:* statisch am Mitschnitt und am Code, Compile, Prüfskripte; im Spiel nicht beobachtet. *Vorhersage:*
+`critical-heal-gcd-line-form`; nach einer Zeile „critical class: X …“ kein Heil-GCD auf ein anderes Mitglied, solange
+einer X erreicht.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

@@ -562,6 +562,42 @@ Heilpfade des Jobs ihrer eigenen Bedingungen wegen nicht – etwa weil seine Sch
 den der Tank beim freien GCD hat (im Fall vom 01.11. unter 24 %); dann kommen die übrigen Heilfähigkeiten des Pfads nach
 ihren Bedingungen vor, und Benediktion wartet, wie er es eingestellt hat. Beides zeigt die Trace-Zeile.
 
+### Der Heil-GCD für ein Mitglied der kritischen Klasse
+
+**Was geschah** (Vierergruppe, sein Mitschnitt vom 19.11.2026, 19:25:56 bis 19:26:09, Build c93ec988b; A927, A929). Der
+Tank fiel nach einer Tankbuster-Serie auf 39 %, der Weißmagier legte Regen, Tetragrammaton und Afflatus Solace auf ihn
+(69 %). Danach stand der Tank in der Vorhersage für einen GCD bei 0 % und 6 % (tatsächlich 45 % um 19:26:05,9); RSR
+wirkte zweimal Regen – auf zwei andere Mitglieder.
+
+**Ursache am Code.** Regen sucht sein Ziel unter den Mitgliedern ohne Regen (`TargetStatusProvide`); der Tank trug Regen,
+also nahm Regen das nächste Mitglied, und der Zweig für Regen steht in `HealSingleGCD` vor Cure II. Die Notfallheilung
+der Fähigkeiten (oben) geht nur, wenn sie ein Mitglied der kritischen Klasse erreicht; der GCD-Pfad prüft das nicht.
+Benediktion blieb richtig aus: Sie liest die kurze Vorausschau einer Sofortheilung (A213) – der Tank stand bei 69 %.
+
+**Regel (Ebene alle, die einen Heil-GCD haben: Heiler, Rotmagier, Beschwörer, Paladin, Blaumagier, Inhaltsrotationen).**
+Steht ein Mitglied in der kritischen Klasse, fragt der Heilpfad zuerst Flächen- und Einzel-Heil-GCD nur nach Heilungen,
+die ein solches Mitglied erreichen (sein Ziel oder unter den Getroffenen einer Fläche); jede andere lehnt `CanUse` in
+diesem Durchgang ab („MissesTheCriticalMember“). Findet sich keine – außer Reichweite, kein MP, Bewegung –, gilt der
+Heilpfad wie bisher. Was gewählt wird, bleibt bei der Rotation und ihren Bedingungen; nur das Ziel ist vorgegeben. Spur:
+„critical heal GCD -> <Aktion> on <Mitglied> …, critical … at …% forecast“, einmal je Heilung, Ziel und GCD.
+
+**Abwägung im Kampf.**
+- *N, wie bisher:* Ein Tank mit Regen in der kritischen Klasse bekommt den GCD erst, wenn kein anderes Mitglied ohne
+  Regen unter der Schwelle steht. Stimmt die Vorhersage, fehlt ihm die Heilung, die ihn trägt.
+- *Nur beim Weißmagier Regen hinter Cure II stellen:* behebt den Fall, lässt dieselbe Lage beim Astrologen (Aspected
+  Benefic), Gelehrten und Weisen (Schilde) offen. Verworfen (Universell zuerst).
+- *Der Durchgang vor dem Heilpfad (gewählt):* trifft jeden Heil-GCD jeder Rotation an einer Stelle.
+- *Preis:* Ist die Vorhersage zu düster – hier 0 % gegen 45 % –, geht ein GCD an den Tank, den ein anderes Mitglied
+  auch gebraucht hätte. Der andere wird im nächsten GCD geheilt; der Tank nach seiner Vorhersage nicht mehr. Sicherheit
+  vor Schaden: Die Vorhersage steuert sich selbst nach (`ScoreTtkForecast`).
+
+**Falsifikation.** (1) *Kein Defekt:* widerlegt am Mitschnitt (zweimal Regen auf andere bei 0 % und 6 % Vorhersage).
+(2) *Option falsch:* Der Durchgang nimmt eine schwächere Heilung, nur weil sie das Ziel trifft – dieselbe Rotation hätte
+sie für dieses Ziel auch gewählt; ihre Reihenfolge bleibt. (3) *Ausgeliefert, nichts ändert sich:* Kein GCD erreicht das
+Mitglied (Reichweite, Bewegung) – dann bleibt der alte Weg, und die Spur schreibt keine „critical heal GCD“-Zeile.
+*Vorhersage (A929):* Steht ein Mitglied in der kritischen Klasse, folgt eine Zeile „critical heal GCD -> … on <dieses
+Mitglied>“ oder keine; nie zwei Regen hintereinander auf andere.
+
 ### Die Füllheilung: heilen, wenn nichts anderes zu tun ist
 
 **Was sie tut.** „Use GCD heals when there's nothing else to do" (ab Werk an) läuft am Ende des GCD-Pfads, nach Heilung,

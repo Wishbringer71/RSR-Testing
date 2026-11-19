@@ -48,6 +48,12 @@ What this release changes in the fight. For the whole distance from upstream, se
   area. Needs BossMod; it adds the BossMod preset RSR Positionals. Setting: "Move into positionals through BossMod", on by
   default. The trace writes "positional move: ...".
 
+- **A member about to fall gets the heal GCD.** When a party member's health, carried forward to when a heal cast now
+  lands, falls into the critical class, every heal GCD - of a healer, red mage, summoner, paladin or blue mage - first
+  goes to that member, or to an area that covers them; only if none can reach them does the usual heal order follow.
+  A white mage no longer puts Regen on two others while the tank, who already carries Regen, stands at the edge. The
+  trace writes "critical heal GCD -> ...".
+
 ## Seeing what the enemies do
 
 - **One right picture per enemy area (needs Splatoon).** Circles and lines an enemy casts without the game's orange

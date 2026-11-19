@@ -30,14 +30,7 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
 
 ## Defekte
 
-- **Kritische Klasse ohne Heil-GCD auf das Mitglied** (sein Mitschnitt 19.11.2026, 19:26, Weißmagier, Build c93ec988b;
-  A927). *Wirkung im Kampf:* Der Tank stand in der Vorhersage bei 0 % und 6 % (tatsächlich 45 %); RSR legte zwei GCDs
-  lang Regen auf andere Mitglieder statt einer Heilung auf ihn. Gestorben ist niemand. [Schätzung: Stimmt die Vorhersage einmal,
-  fehlt ihm genau diese Heilung.] *Am Code:* Regen sucht sein Ziel unter den Mitgliedern ohne Regen (`TargetStatusProvide`); der Tank trug Regen,
-  also ging der Heil-GCD vor Cure II an andere – der GCD-Pfad hat keine Entsprechung zur Notfallheilung der Fähigkeiten
-  (`EmergencyHealAheadOfGcd`, nur wenn sie ein Mitglied der kritischen Klasse erreicht). *Nächster Schritt:* erst die
-  Vorhersage gegen den Verlauf (`ScoreTtkForecast`; 0 % gegen 45 %, der DPS stand mit 39 % tiefer), dann die Wahl des
-  Mittels auf der Ebene aller Heilenden. *Konzept:* 07, „Das Mittel richtet sich nach der Gefahr“.
+- Keine offenen Defekte.
 
 ## Offene Arbeit
 

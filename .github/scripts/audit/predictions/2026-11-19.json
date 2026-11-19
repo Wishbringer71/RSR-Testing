@@ -103,5 +103,12 @@
   "kind": "absent",
   "situation": "positional move:",
   "match": "BossMod refused the preset"
+ },
+ {
+  "id": "critical-heal-gcd-line-form",
+  "archive": "A929",
+  "kind": "each",
+  "situation": "critical heal GCD ->",
+  "match": "critical heal GCD -> .+ #[0-9]+ on .+ at [0-9]+\\s?%, critical .+ at -?[0-9]+% forecast$"
  }
 ]

@@ -14,6 +14,10 @@ public partial interface IBaseAction : IAction
 	// that states no damage and does not move the player may answer (concept 03, "Den Kampf eröffnen", pull without a countdown, A924).
 	internal static bool PullPreparationOnly { get; set; }
 
+	// Set while the heal path asks its GCDs only for a heal that reaches a member in the critical class: any other target
+	// is refused (concept 07, "Der Heil-GCD für ein Mitglied der kritischen Klasse", A929).
+	internal static List<IBattleChara>? CriticalHealTargets { get; set; }
+
 	// Set by the defence dispatch while a defence path runs: whether the hit that opened it reaches the
 	// player. False rejects the actions that protect only him (concept 13, A233); null outside the paths.
 	internal static bool? SelfProtectionHitsMe { get; set; }
