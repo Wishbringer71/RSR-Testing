@@ -1121,8 +1121,10 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     angreift", ist dann Versicherung und bleibt liegen. *Ohne Gegenstandsbonus im Endkampf (A908):* Greift ein Gegner ihn
     an, ohne dass ein Treffer angekündigt ist, kennt RSR keine Angriffsart; bis A908 ging dann nur ein Minderungsmittel,
     und Tome of the Impervious blieb liegen – in vier seiner acht Läufe vom 18.11.2026 bis zum Ende. Auto-Angriffe sind
-    physisch; darum nimmt der Schutz ohne angekündigte Art das Mittel gegen physische Angriffe (fünf Blink-Ladungen,
-    120 s), sonst das mindernde. *Im Kampf (seine Läufe vom 11.11.2026):* Tome of the Impervious
+    physisch; darum nimmt der Schutz im Endkampf ohne angekündigte Art das Mittel gegen physische Angriffe (fünf
+    Blink-Ladungen, 120 s), sonst das mindernde. In einem früheren Kampf, für den der Schutz geplant ist
+    (`ProtectionPlanned`), wartet das Mittel gegen physische Angriffe auf den angekündigten Treffer (A910): Sonst nähmen
+    Auto-Angriffe die fünf Ladungen, bevor der geplante Treffer kommt. *Im Kampf (seine Läufe vom 11.11.2026):* Tome of the Impervious
     ging bei 78 % LP gegen den Tankbuster der Terrormilbe, Wildfire Weakener bei 63 % gegen einen Feuertreffer des Ogers;
     kein Treffer nahm in diesen Läufen mehr als 17 % seiner LP – beide kosteten Sparsamkeit (750), ohne dass ein Treffer
     ihn unter 40 % gebracht hätte. *Gegenthese 1 – Gift nach dem Treffer:* Der Tankbuster der Milben legt Gift; die Last
@@ -1216,6 +1218,11 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
       letzten GCD (A712). *Gegenthese:* Ein Treffer nach dem frühen Auffüllen senkt die LP wieder. Dann füllt der nächste
       Gegenstand auf; ist keiner mehr da, fehlen die 250 wie vorher, die LP-Punkte bleiben höher. *Vorhersage:* nach seinem
       nächsten Lauf mit übrigem Heilgegenstand und ohne Bonus „Unversehrter Bändiger" in der Abrechnung.
+      *Vorrang des Begleiters im Vorlauf (A910):* Der Vorlauf beginnt vor dem Fenster von „Unversehrte Bestien" (unten,
+      ein GCD). Solange der Begleiter im Feld lebt, alle übrigen bei voller LP stehen und dessen Bonus die
+      Gegenstandsboni übersteigt, hält das Auffüllen des Spielers den größten Heilgegenstand „to self or familiar" zurück;
+      im letzten GCD ist er frei, und der Begleiter hat dort Vorrang. Ohne diesen Halt nähme der frühe Vorlauf den einzigen
+      Trank, den der Begleiter erreicht, und 250 kosteten 1.000.
     - *Gegen einen erhaltenen Gegenstandsbonus:* Ein Heilgegenstand am Ende bringt 250 und die LP-Punkte seiner
       Heilung, gegen 750 (Sparsamkeit) oder 1.000 (Sammelleidenschaft). *Gemessen (A800, seine Abrechnung vom 14.11.2026,
       Brett 2):* 2.099 Rest-LP brachten 764 Punkte, rund 0,36 je LP; ein Gegenstand, der die Hälfte seiner LP heilt, bringt
@@ -1256,7 +1263,11 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
       (`UpcomingBattle`) – geht Merchant's Eye, vor dem Endkampf nur, wo das Brett Talerregen vergibt (mindestens 2.000
       Marken am Ende, 500 Punkte; nicht Brett 1). Thief's Eye geht vor jedem Kampf außer dem Endkampf: Seine Beute endet
       mit dem Lauf. Je Kampf eines von jedem, weil ihr Status keinen Namen im Wirktext hat. Nicht, solange ein
-      Gegenstandsbonus gehalten wird (Sparsamkeit, Sammelleidenschaft; `KeepsNoItemBonus`).
+      Gegenstandsbonus gehalten wird (Sparsamkeit, Sammelleidenschaft; `KeepsNoItemBonus`), und wie Schaden und
+      Stärkung nur, wo ein Gegenstandsbonus nicht auf dem Spiel steht oder der Weg als nicht getragen gilt
+      (`NonSafetyItemsGo`, A910): Die Augen schützen nichts. „Je Kampf“ heißt je Lauf und Kampf, weil die Zeile eines
+      Kampfes im nächsten Lauf wiederkehrt (A910). Welche Gegenstände RSR als Augen erkannt hat, nennt die Spur einmal je
+      Sitzung beim Lesen der Gegenstände („crucible items read: …").
     - *Gegenthese 1 – Ein späterer Kampf bringt mehr:* Wie viele Marken oder wie viel Beute ein Kampf gibt, liest RSR
       nicht vorab. Früher genutzt, wirkt das Auge, bevor ein Laden oder Schatz kommt; liegen bleiben kostet sicher.
     - *Gegenthese 2 – Die Brettwahl ist nicht offen:* Dann nennt `UpcomingBattle` keinen Kampf, und das Auge wartet bis

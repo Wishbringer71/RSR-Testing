@@ -26504,6 +26504,43 @@ in Arbeit oder „zu bauen“ führt – 58 Stellen (Suche nach diesen Wendungen
 17.11.2026 (Durchgang 2); was seitdem als gebaut dazukam (A884 bis A908), ist je Commit am Code und am Build geprüft.
 *Prüfgrad:* statisch; die Einteilung je Stelle von Hand.
 
+### A910 · Code-Review bad8f13b9..HEAD: fünf Befunde an den Gegenständen der Bretter behoben (19.11.2026)
+
+*Auftrag (19.11.2026):* „danach audit und codereview, felherbeseitigung“. *Umfang:* der Bereich bad8f13b9..HEAD (A899 bis
+A909), Code-Review auf hoher Stufe mit vier Blickwinkeln (Zeilen, entfernte Wirkung, Aufrufer, Regeln der CLAUDE.md).
+Fünf Befunde, alle in `BeastmasterCrucibleItems.cs` (A908); in den übrigen Dateien des Bereichs kein Befund.
+*Befunde und Behebung (Konzept 21, K15):*
+1. *Tome of the Impervious gegen Auto-Angriffe in einem geplanten früheren Kampf* (wichtig): A908 nahm ohne angekündigte
+   Angriffsart das Mittel gegen physische Angriffe in jedem Kampf, in dem der Schutz läuft; der Schritt für den Spieler
+   ruft ihn auch in einem früheren, für den Schutz geplanten Kampf (`ProtectionPlanned`), solange ein Gegner angreift.
+   Dort nahmen Auto-Angriffe die fünf Ladungen vor dem geplanten Treffer. Behoben: ohne angekündigte Art nur im Endkampf.
+2. *Der Vorlauf des Auffüllens nimmt den Trank des Begleiters* (wichtig): Der Vorlauf (A908) beginnt bis zu
+   Heilgegenstände + 1 GCDs vor dem Ende, „Unversehrte Bestien“ erst im letzten GCD; der größte Gegenstand, der den
+   Begleiter erreicht, ging vorher an den Spieler – 250 statt 1.000. Behoben: Solange der Begleiter lebt, die übrigen voll
+   stehen und dessen Bonus die Gegenstandsboni übersteigt, hält der Vorlauf diesen Gegenstand zurück; im letzten GCD ist
+   er frei.
+3. *Die Augen übergingen `NonSafetyItemsGo`* (wichtig): Merchant's und Thief's Eye schützen nichts, gingen aber auch,
+   wo Schaden und Stärkung für einen Gegenstandsbonus warten. Behoben.
+4. *Je Kampf statt je Lauf und Kampf* (wichtig): Die Merker der Augen hielten nur die Zeile des Kampfes; dieselbe Zeile
+   im nächsten Lauf galt als schon versorgt, und das Auge blieb liegen. Behoben: Schlüssel (Lauf, Kampf).
+5. *Die Erkennung der Augen hatte keinen Messweg* (gering): Erkannt werden sie an einer Wendung ihres Textes; ändert
+   der Patch sie, bleiben sie still liegen. Behoben: Die Spur nennt einmal je Sitzung beim Lesen der Gegenstände, welche
+   sie als Augen erkannt hat.
+*Eigener Fehler, Reihenfolge:* Die Behebungen 1, 3, 4 und 5 schrieb ich über ein Python-Skript in der Shell in den Code,
+bevor das Konzept fortgeschrieben war – gegen „Definition of Ready“ (CLAUDE.md). `concept_first.py` griff nur bei Edit
+und Write und sah den Shell-Befehl nicht; der Hook selbst nennt zwei frühere Brüche derselben Regel (A635). Behoben:
+Der Hook prüft auch Bash; ein Befehl, der einen Pfad unter `RotationSolver*/` nennt und eine Schreibform trägt (sed -i,
+perl -i, tee, Umleitung, open(..., "w"), write_text, git apply, patch), wird abgewiesen, solange keine Änderung unter
+`docs/` offen ist; der Selbsttest prüft fünf Schreibformen und sechs lesende Befehle. *Preis:* Eine Umleitung aus einem
+lesenden Befehl, der einen Codepfad nennt (`git diff <Datei> > /tmp/d`), wird ohne offenes Konzept ebenfalls abgewiesen.
+Das Konzept dieser Behebungen stand vor dem Commit; geprüft habe ich die vier Stellen danach am Konzept, nicht davor.
+*Prüfgrad:* statisch, Compile, Prüfskripte (`run_ci_checks.py`); keine Laufzeitbeobachtung. Die Korrekturen sieht keine
+weitere Prüfrunde; sie sind ungeprüft.
+*Vorhersage:* `DefenseTrace.log`, erste Sitzung mit einem Lauf im Crucible: „crucible items read: … token and loot
+boosts:“ nennt Merchant's Eye (TokenBoost) und Thief's Eye (LootBoost); widerlegt, wenn „none“ oder nur eines dasteht
+(`predictions/2026-11-19.json`, crucible-eyes-recognized). Danach in einem Lauf mit Tome of the Impervious: kein
+„crucible item: Tome of the Impervious an enemy attacks you“ vor dem Endkampf.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

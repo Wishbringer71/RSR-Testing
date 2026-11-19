@@ -12,5 +12,12 @@
   "kind": "each",
   "situation": "group burst:",
   "match": "group burst: ([A-Z]{3}|NPC) used .+, status #[0-9]+ (on the enemy|on [0-9]+ members), recast ([0-9]+ s|unknown) - next group buff in ([0-9]+ s|unknown)$"
+ },
+ {
+  "id": "crucible-eyes-recognized",
+  "archive": "A910",
+  "kind": "each",
+  "situation": "crucible items read:",
+  "match": "crucible items read: [0-9]+, token and loot boosts: (?=.*\\(TokenBoost\\))(?=.*\\(LootBoost\\)).+$"
  }
 ]

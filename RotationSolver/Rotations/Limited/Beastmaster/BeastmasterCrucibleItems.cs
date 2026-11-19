@@ -323,6 +323,17 @@ public partial class BeastmasterRotation
 			items[id] = item;
 		}
 
+		// A908 review: the eyes are known by a phrase of their text; the trace says once per session which items it found.
+		var eyes = new List<string>();
+		foreach (var item in items.Values)
+		{
+			if (item.Kind is CrucibleItemKind.TokenBoost or CrucibleItemKind.LootBoost)
+			{
+				eyes.Add($"{item.Name} ({item.Kind})");
+			}
+		}
+
+		DefenseTrace.Line($"crucible items read: {items.Count}, token and loot boosts: {(eyes.Count > 0 ? string.Join(", ", eyes) : "none")}");
 		return items;
 
 		static bool Share(Match match, out float share)
@@ -368,8 +379,8 @@ public partial class BeastmasterRotation
 	}
 
 	// A908: the fight a Merchant's Eye or a Thief's Eye was used for - one each per fight, since their status is unnamed.
-	private static uint _tokenBoostFor;
-	private static uint _lootBoostFor;
+	private static (int Run, uint Battle) _tokenBoostFor;
+	private static (int Run, uint Battle) _lootBoostFor;
 
 	// The English names of the statuses, for the ones the items answer: Reraise, Sandstill, Auto-potion, poison, blindness,
 	// the protections and Auto-remedy.
@@ -597,18 +608,19 @@ public partial class BeastmasterRotation
 		// A908: before the next fight, the items that pay off in it - Merchant's Eye doubles its tokens (for the shop, and
 		// before the final fight for Talerregen where the board gives it), Thief's Eye triples its loot (not before the final
 		// fight: its spoils end with the run). Once each per fight; not while an item bonus is kept.
-		if (slot < 0 && !keepNoItem && !InCombat)
+		// They protect nothing: while an item bonus is at stake they wait like damage and buffs (NonSafetyItemsGo).
+		if (slot < 0 && !keepNoItem && !InCombat && NonSafetyItemsGo(player))
 		{
-			var next = CrucibleBoard.UpcomingBattle();
-			var final = next != 0 && CrucibleBoard.IsFinalBattle(next);
-			if (next != 0 && _tokenBoostFor != next && (!final || CrucibleBoard.BonusPoints(CrucibleBoard.ScoreBonus.RollingInRiches) > 0)
+			var next = (CrucibleBoard.Run, CrucibleBoard.UpcomingBattle());
+			var final = next.Item2 != 0 && CrucibleBoard.IsFinalBattle(next.Item2);
+			if (next.Item2 != 0 && _tokenBoostFor != next && (!final || CrucibleBoard.BonusPoints(CrucibleBoard.ScoreBonus.RollingInRiches) > 0)
 				&& FirstOf(crucible, CrucibleItemKind.TokenBoost) is >= 0 and var tokens)
 			{
 				slot = tokens;
 				_tokenBoostFor = next;
 				why = final ? "before the final fight: twice its tokens, for Talerregen" : "before the next fight: twice its tokens";
 			}
-			else if (next != 0 && !final && _lootBoostFor != next && FirstOf(crucible, CrucibleItemKind.LootBoost) is >= 0 and var loot)
+			else if (next.Item2 != 0 && !final && _lootBoostFor != next && FirstOf(crucible, CrucibleItemKind.LootBoost) is >= 0 and var loot)
 			{
 				slot = loot;
 				_lootBoostFor = next;
@@ -630,7 +642,7 @@ public partial class BeastmasterRotation
 			? HitAnnouncedOn(player) && AnnouncedHitThreatens(player, line)
 			: HitAnnouncedOn(player) || (EnemyAttacks(player) && (finalFight || ProtectionPlanned(crucible)))))
 		{
-			slot = Protection(crucible, player, out why);
+			slot = Protection(crucible, player, out why, finalFight);
 		}
 
 		// 7, first (A577, A642): heal the familiar when it would fall before the next weave window - to a hit as large as its
@@ -658,7 +670,7 @@ public partial class BeastmasterRotation
 			&& DataCenter.IsTankbusterAimedAt(familiar)
 			&& (finalFight || (familiarLossAhead > 0 && familiar.CurrentHp <= familiarLossAhead)))
 		{
-			slot = Protection(crucible, familiar, out why);
+			slot = Protection(crucible, familiar, out why, finalFight);
 			if (slot >= 0)
 			{
 				on = familiar;
@@ -866,7 +878,8 @@ public partial class BeastmasterRotation
 	// 6 and 7: none while one of the protections stands on the character; against a physical hit the item that nullifies
 	// physical attacks, against a magical one the one that reflects magic, else - or when that one is missing - the one that
 	// mitigates every kind.
-	private static unsafe int Protection(InstanceContentCrucibleOfTheUnbroken* crucible, IBattleChara chara, out string why)
+	private static unsafe int Protection(InstanceContentCrucibleOfTheUnbroken* crucible, IBattleChara chara, out string why,
+		bool finalFight)
 	{
 		why = string.Empty;
 		foreach (var (_, item) in CrucibleItems)
@@ -879,11 +892,13 @@ public partial class BeastmasterRotation
 		}
 
 		var attackType = AttackTypeAt(chara);
-		// A908: no announced kind - an enemy attacks him - is its auto-attack, which is physical; before, only a mitigating
-		// item went then, and Tome of the Impervious stayed held to the end of four of his eight runs of 18.11.2026.
+		// A908: in the final fight no announced kind - an enemy attacks him - is its auto-attack, which is physical; before,
+		// only a mitigating item went then, and Tome of the Impervious stayed held to the end of four of his eight runs of
+		// 18.11.2026. Not in an earlier fight: the planned protection waits there for the announced hit (A906 review).
+		var unannounced = !HitAnnouncedOn(chara);
 		var slot = AttackTypeKind.IsMagic(attackType)
 			? FirstOf(crucible, CrucibleItemKind.ReflectMagic)
-			: AttackTypeKind.IsPhysical(attackType) || !HitAnnouncedOn(chara)
+			: AttackTypeKind.IsPhysical(attackType) || (finalFight && unannounced)
 				? FirstOf(crucible, CrucibleItemKind.NullifyPhysical)
 				: -1;
 		if (slot < 0)
@@ -891,7 +906,7 @@ public partial class BeastmasterRotation
 			slot = MostOf(crucible, CrucibleItemKind.Mitigate);
 		}
 
-		why = HitAnnouncedOn(chara) ? $"against an announced hit (attack type {attackType})" : "an enemy attacks you - its auto-attack is physical";
+		why = finalFight && unannounced ? "an enemy attacks you - its auto-attack is physical" : $"against an announced hit (attack type {attackType})";
 		return slot;
 	}
 
@@ -1498,9 +1513,16 @@ public partial class BeastmasterRotation
 		var missing = 1f - player.GetHealthRatio();
 		var held = 0f;
 		var healItems = 0;
+
+		// A910: the early fill starts before the familiar's last GCD (A695) - while its bonus can still come, the largest
+		// heal that reaches it waits for it; in the last GCD it is free again, and the familiar goes first there.
+		var forFamiliar = finalFight && !FinalFightEndsNow && Familiar is { IsDead: false, CurrentHp: > 0 }
+			&& OthersOfTeamAtFull(CurrentPet) && CrucibleBoard.BonusPoints(CrucibleBoard.ScoreBonus.Selfless) > ItemBonusPointsAtStake
+			? BestHeal(crucible, 0f, 1f, true)
+			: -1;
 		for (var i = 0; i < crucible->Inventory.Length; i++)
 		{
-			if (TryItem(crucible, i, CrucibleItemKind.Heal, out var heal))
+			if (i != forFamiliar && TryItem(crucible, i, CrucibleItemKind.Heal, out var heal))
 			{
 				held += heal.Value;
 				healItems++;
@@ -1525,7 +1547,7 @@ public partial class BeastmasterRotation
 			var least = float.MaxValue;
 			for (var i = 0; i < crucible->Inventory.Length; i++)
 			{
-				if (TryItem(crucible, i, CrucibleItemKind.Heal, out var heal) && heal.Value >= missing && heal.Value < least)
+				if (i != forFamiliar && TryItem(crucible, i, CrucibleItemKind.Heal, out var heal) && heal.Value >= missing && heal.Value < least)
 				{
 					full = i;
 					least = heal.Value;
@@ -1558,7 +1580,7 @@ public partial class BeastmasterRotation
 		var value = 0f;
 		for (var i = 0; i < crucible->Inventory.Length; i++)
 		{
-			if (TryItem(crucible, i, CrucibleItemKind.Heal, out var heal) && heal.Value <= missing && heal.Value <= spare
+			if (i != forFamiliar && TryItem(crucible, i, CrucibleItemKind.Heal, out var heal) && heal.Value <= missing && heal.Value <= spare
 				&& heal.Value > value)
 			{
 				best = i;
