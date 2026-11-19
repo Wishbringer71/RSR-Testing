@@ -240,6 +240,12 @@
    "commit": "f396ef6",
    "date": "2026-11-19",
    "use": "Projection, IPC, Einstellungen der Projection (Konzept 13, A920, A921)"
+  },
+  {
+   "repo": "awgil/ffxiv_navmesh",
+   "commit": "38d2a24",
+   "date": "2026-11-06",
+   "use": "vnavmesh: floor under a landing point (IPC), concept 05, A934"
   }
  ]
 }

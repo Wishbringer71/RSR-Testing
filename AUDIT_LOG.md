@@ -27080,6 +27080,8 @@ actions land“ (gespeicherter Name bleibt); dazu Boden unter dem Landepunkt nac
 Standort; unbekannt gilt als sicher. Todeswand lernen (O3) offen bis zum ersten beobachteten Fall. Neue Ablehnungen
 schreibt die Spur einmal („movement check: … held - …“).
 *Kein unabhängiger Prüfer:* Die Regel bewegt nicht, sie hält eine Bewegung zurück.
+*Quelle eingetragen:* awgil/ffxiv_navmesh 38d2a24 in `source_versions.json`. Auftragsende 19.11.2026: Upstream ohne
+neue Commits, 40 von 41 Quellen aktuell, priestkos/FrontlineAdvisor nicht erreichbar.
 *Vorhersage:* `predictions/2026-11-19.json`, „movement-check-line-form“. Im Kampf: In einer Arena mit Abgrund (Rand ohne
 Wand) bleibt ein Rücksprung, der über die Kante landen würde, aus, und die Spur nennt „it lands where vnavmesh has no
 floor“; auf festem Boden keine solche Zeile. Widerlegt, wenn diese Zeile auf Boden erscheint, auf dem er steht.
