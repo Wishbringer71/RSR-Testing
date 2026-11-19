@@ -133,7 +133,7 @@ gelten beide als Guard.
 
 *Was gilt (A756):* Jede PvP-Aktion, die dich bewegt (`AffectsPosition` im Aktionsblatt), trägt ihre Bewegungsart wie in
 PvE (`05-action-coverage.md`, „Bewegungsfähigkeiten"). Damit gilt „Only use damaging gap closers within this distance"
-(ab Werk 3 Yalm) auch in PvP, und mit „Check movement actions with BossModReborn (Experimental)" wird der Weg geprüft.
+(ab Werk 3 Yalm) auch in PvP, und mit „Check where movement actions land" (ab Werk an, A934) wird der Weg geprüft.
 - *Sprung auf das Ziel mit Schaden* (`HostileMovingAttack`): Onslaught, Primal Rend, Plunge, Rough Divide, High Jump,
   Forked Raiju, Fleeting Raiju, Hissatsu: Soten. Dazu wie bisher Intervene, Seraph Strike und Crimson Cyclone.
 - *Sprung zu einem Gruppenmitglied* (`FriendlyMovingForward`): Guardian.

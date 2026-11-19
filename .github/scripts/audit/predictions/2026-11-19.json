@@ -124,5 +124,12 @@
   "kind": "each",
   "situation": "dynamic rotation: .+ instead of none",
   "match": "dynamic rotation: .+ instead of none - no GCD for [0-9]+[.,][0-9] s$"
+ },
+ {
+  "id": "movement-check-line-form",
+  "archive": "A934",
+  "kind": "each",
+  "situation": "movement check: .+ held - ",
+  "match": "movement check: .+ held - .+$"
  }
 ]

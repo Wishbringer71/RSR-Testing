@@ -492,8 +492,8 @@ public partial struct ActionTargetInfo
 				var along = specialType == SpecialActionType.FixedDistanceMoveBackward ? -distance : distance;
 				var landingPoint = new Vector3(playerPos.X + (MathF.Sin(facing) * along), playerPos.Y,
 					playerPos.Z + (MathF.Cos(facing) * along));
-				return (DataCenter.IsFixedDashSafe(playerPos, landingPoint),
-					"the landing point is in a danger zone", true);
+				return WithoutFloor(landingPoint, distance)
+					?? (DataCenter.IsFixedDashSafe(playerPos, landingPoint), "the landing point is in a danger zone", true);
 			}
 
 			case SpecialActionType.HostileMovingForward:
@@ -537,8 +537,8 @@ public partial struct ActionTargetInfo
 
 			case SpecialActionType.GroundTargetMove:
 				// The spot the area-move logic placed (FindTargetAreaMove) is where the move ends.
-				return (DataCenter.IsDashSafe(playerPos, destination),
-					"the way to the chosen spot crosses a danger zone", true);
+				return WithoutFloor(destination, Vector3.Distance(playerPos, destination))
+					?? (DataCenter.IsDashSafe(playerPos, destination), "the way to the chosen spot crosses a danger zone", true);
 
 			case SpecialActionType.HostileAttackBackstep:
 				// The attack itself does not move the player towards the target; the backstep carries
@@ -558,9 +558,10 @@ public partial struct ActionTargetInfo
 				}
 
 				var landing = playerPos + (away / length * action.Setting.BackstepDistance);
-				return DataCenter.IsFixedDashSafe(playerPos, landing)
-					? (true, string.Empty, true)
-					: (false, $"the backstep from {target.Name} lands in a danger zone", true);
+				return WithoutFloor(landing, action.Setting.BackstepDistance)
+					?? (DataCenter.IsFixedDashSafe(playerPos, landing)
+						? (true, string.Empty, true)
+						: (false, $"the backstep from {target.Name} lands in a danger zone", true));
 
 			default:
 				return (true, string.Empty, false);
@@ -602,6 +603,14 @@ public partial struct ActionTargetInfo
 		// Kept apart: a refusal without a target can repeat every frame (FindTargetAreaMove, TODO) and
 		// would otherwise hide the refusal of a dash that was actually measured.
 		var refusal = new DataCenter.MoveSafetyRefusal(action.Name, why, DateTime.Now);
+
+		// Concept 05, "Arenagrenzen ohne BossMod-Modul" (A934): each new refusal once in the trace, not every frame.
+		var previous = measured ? DataCenter.LastMoveSafetyRefusal : DataCenter.LastMoveSafetyUnmeasured;
+		if (previous is not { } last || last.Action != refusal.Action || last.Why != why)
+		{
+			DefenseTrace.Line($"movement check: {action.Name} held - {why}");
+		}
+
 		if (measured)
 		{
 			DataCenter.LastMoveSafetyRefusal = refusal;

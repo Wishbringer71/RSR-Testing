@@ -27049,6 +27049,11 @@ No Mercy, Double Down, Inner Release je 60 s, Manafication 110 s, Embolden 120 s
   Puppe in diesem Mitschnitt (Build 9036b6874) ist A818.
 - *Eigener Messfehler, berichtigt:* Der erste Entwurf der Konzeptzeile schrieb Life Surge auf Nebenfinishern dem
   Kampfbeginn zu, ungemessen; der Ablauf zeigte sie mitten im Burst.
+*Fremde Rotationen, dieselben Klassen:* Die 13 Churin- und Beiruta-Rotationen statisch auf die beiden Befundklassen
+geprüft: Life Surge hat keine (Dragoon nur Reborn); Reassemble in `ChurinMCH` nur auf Excavator, Drill und Air Anchor;
+die Beiruta-Heiler erneuern ihren DoT im Laufen erst unter eigener Restzeit (`MovingDiaRefreshSeconds` 11 s,
+`MovementCombustDue`, `MovementBiolysisDue`) – kein Befund derselben Klasse. Ihr Abgleich gegen den übrigen Katalog
+bleibt im TODO; er ordnet sich nach seiner Reihenfolge (Sicherheit vor Schaden, sein Profil) hinter die Arenagrenzen.
 *Umfang:* 21 von 23 Jobs mit Burstfenster gemessen (Weiser ohne Burst-Status, Blaumagier ohne Mitschnitt, Beastmaster
 nicht ausgewertet); Leisten (Kazematoi, Beast Gauge, Lilien und andere) stehen in keiner Mitschnittzeile, sie deckt der
 Code-Abgleich mit The Balance (A375 bis A414, A379).
@@ -27057,6 +27062,28 @@ Laufen, solange zwei Lilien bereitlagen, auf null (Messung wie hier: Position de
 im Dragoon-Burst trägt Life Surge Heavens' Thrust oder Drakesbane, einen Nebenfinisher nur in der letzten GCD von
 Battle Litany. Beides steht in keiner Zeile des `DefenseTrace.log`, deshalb ohne maschinenlesbare Vorhersage.
 *Prüfgrad:* Mitschnitte, Spielblätter, Job-Guide, The Balance; Code, Compile, CI; im Spiel nicht beobachtet.
+
+### A934 · Arenagrenzen ohne BossMod: Landepunkt mit Boden über vnavmesh, Prüfung ab Werk an (19.11.2026)
+
+*Anlass:* sein Auftrag vom 19.11.2026: „viele arenen in trials und raids und ally-raids haben umrandungen mit
+schadensflächen. … wie erkennt man aber diese umrandungen bei inhalten ohne bmr? über das gelände? über vnavmesh?
+konzept im vollen kritischen loop mit antithese und research“ (TODO, Konzept 05).
+*Grundlagen:* Code (wo RSR selbst bewegt: feste Sprünge, Rücksprünge, Orte am Boden; Rückstöße deckt Arm's
+Length/Surecast), vnavmesh 38d2a24 (06.11.2026: Netz aus Kollision, Arenalöcher, IPC `IsPointOnMesh`), BossModReborn
+8d5ff8e21 (Arena je Modul von Hand, ohne Modul ein Quadrat von 30 Yalm, Todeswand als Objekt und namenloser Ring ohne
+Wirkzeit), Spielblätter (Ring als `CastType` 10, innerer Radius fehlt), seine 20 Mitschnitte (kein Treffer einer
+bekannten Todeswand), sein Dalamud-Protokoll vom 16.11.2026 (vnavmesh läuft, lädt beim Gebietswechsel).
+*Befund nebenbei:* Die ganze Landepunkt-Prüfung lief nur mit „Check movement actions with BossModReborn
+(Experimental)“, ab Werk aus (Upstream 33e6acb1f); Konzept 05 schrieb „vor jeder Bewegungsaktion“. Text gegen Code.
+*Entscheidung:* Konzept 05, „Arenagrenzen ohne BossMod-Modul“: Prüfung ab Werk an, umbenannt in „Check where movement
+actions land“ (gespeicherter Name bleibt); dazu Boden unter dem Landepunkt nach vnavmesh, mit Gegenprobe am eigenen
+Standort; unbekannt gilt als sicher. Todeswand lernen (O3) offen bis zum ersten beobachteten Fall. Neue Ablehnungen
+schreibt die Spur einmal („movement check: … held - …“).
+*Kein unabhängiger Prüfer:* Die Regel bewegt nicht, sie hält eine Bewegung zurück.
+*Vorhersage:* `predictions/2026-11-19.json`, „movement-check-line-form“. Im Kampf: In einer Arena mit Abgrund (Rand ohne
+Wand) bleibt ein Rücksprung, der über die Kante landen würde, aus, und die Spur nennt „it lands where vnavmesh has no
+floor“; auf festem Boden keine solche Zeile. Widerlegt, wenn diese Zeile auf Boden erscheint, auf dem er steht.
+*Prüfgrad:* Quellen, Code, Compile, CI; im Spiel nicht beobachtet.
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

@@ -817,8 +817,8 @@ off.
 - **Fixed dashes check where they land.** Hell's Ingress, Hell's Egress, En Avant, Smudge, Aetherial Shift and Elusive
   Jump - the dashes without a target - went out on "Move Forward" or "Move Back" wherever they would land. With
   BossModReborn running they now wait while the landing point lies in a danger zone, for as long as the command lasts
-  ("Special state duration", 3 s by default), like every dash onto a target already did. "Skip BossModReborn
-  position-safety check for this movement action" in the action's settings turns it off for that action.
+  ("Special state duration", 3 s by default), like every dash onto a target already did. "Skip the check where
+  this movement action lands (BossModReborn, vnavmesh)" in the action's settings turns it off for that action.
 - **No ranged attack right after every dash to the target.** Lightning Shot after Trajectory, Writhing Snap after
   Slither, Tomahawk after Primal Rend, Piercing Talon after Stardiver or Winged Glide and Throwing Dagger after Forked
   Raiju are held for one action, as they already were after Intervene, Onslaught or Dragonfire Dive: the player stands
@@ -859,7 +859,7 @@ off.
   Mage) and Phantom Kick (Phantom Monk) leap onto the target. They now follow `Only use damaging gap
   closers within this distance` like every other damaging gap closer: from farther away they go out
   only on a move-forward command, in the countdown, or when you press them yourself. With
-  `Check movement actions with BossModReborn (Experimental)` on, their path is checked too. Occult Featherfoot
+  `Check where movement actions land` on, their path is checked too. Occult Featherfoot
   (15 yalms forward) has its landing point checked like En Avant.
 - **Moves to a spot on the ground go where you look, and your own press stays yours.** Loom (Blue
   Mage), Shukuchi (Ninja) and Cloud Skim (Beastmaster) were placed like a ground heal or an area

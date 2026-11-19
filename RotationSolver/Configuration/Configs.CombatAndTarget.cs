@@ -606,10 +606,12 @@ internal partial class Configs
 		Filter = AutoActionUsage)]
 	private static readonly bool _damageAreasWhereEnemiesStay = true;
 
-	[ConditionBool, UI("Check movement actions with BossModReborn (Experimental)",
-		Description = "Before RSR uses a movement action, or an action that moves you, on its own, ask BossModReborn whether the destination is safe.",
+	// Concept 05, "Arenagrenzen ohne BossMod-Modul" (A934): on by default - safety before damage; the saved name stays.
+	[ConditionBool, UI("Check where movement actions land",
+		Description = "In a fight: before RSR moves you with an action, it asks BossModReborn's danger zones and "
+			+ "vnavmesh's floor.\nA jump into a zone or over an abyss stays out.\nOff: it jumps unchecked.",
 		Filter = AutoActionUsage)]
-	private static readonly bool _bmrSafetyCheckAuto = false;
+	private static readonly bool _bmrSafetyCheckAuto = true;
 
 	[ConditionBool, UI("Use defensive actions", Filter = AutoActionUsage, Section = 2, Description = "Turn this off if you'd rather plan defensive actions yourself, for example in raids.")]
 	private static readonly bool _useDefenseAbility = true;

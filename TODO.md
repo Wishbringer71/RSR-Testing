@@ -46,17 +46,12 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
   die von the balance zu werden.“ – gemessen an Potenz über den Kampf; wo eine Sicherheitsregel bewusst Schaden kostet,
   zählt das nicht als schlechter (CLAUDE.md, „Spielweise“). *Wirkung im Kampf:* Wo ein Merkmal, ein Status oder eine
   Aktion eine andere verstärkt oder freischaltet und die Rotation das nicht nutzt, fehlt Schaden in jedem Kampf.
-  *Nächster Schritt:* je Job die Wirktexte aller Aktionen und Merkmale (Spielblätter, englisch) auf Querverweise
-  erheben, gegen die Rotation halten, Befunde im Loop. *Konzept:* 14 (je Job), 03 „F · Über den Augenblick hinaus“.
-- **Arenagrenzen ohne BossMod erkennen** (sein Auftrag vom 19.11.2026: „viele arenen in trials und raids und
-  ally-raids haben umrandungen mit schadensflächen. wenn man die arena verläßt fällt man runter und stirbt, kommt man in
-  schadenslfäche und stirbt oder kriegt einen starken debuff mit dot. bmr hat daher für seine module umrandungen der
-  arenen eingearbeitet. wie erkennt man aber diese umrandungen bei inhalten ohne bmr? über das gelände? über vnavmesh?
-  konzept im vollen kritischen loop mit antithese und research“). *Wirkung im Kampf:* Ein Rückstoß, ein eigener Schritt
-  oder ein Weg aus einer Fläche über den Rand tötet oder bringt einen starken DoT; ohne BossMod-Modul kennt RSR den Rand
-  nicht (`Hints.IsPositionSafe` antwortet dann nicht). *Nächster Schritt:* Grundlagenforschung – woran das Spiel den
-  Rand führt (Gelände, Kollision, Arena-Objekte, Statusflächen), was vnavmesh, BossMod und andere Werkzeuge daraus lesen;
-  danach Konzept mit Optionen, Antithese und Falsifikation. *Konzept:* 13 (Flächen), 02 (Bewegung).
+  *Stand:* drei Durchgänge über alle Rotationen, die er in den Mitschnitten vom 10. bis 19.11.2026 spielte (A931 bis
+  A933): Freischalter, Burst-Procs, Burstfenster und die messbaren Regeln von xivanalysis; gebaut daraus Lilie im Laufen
+  (Weißmagier) und Life Surge (Dragoon); diese beiden Klassen auch in den 13 Churin- und Beiruta-Rotationen geprüft,
+  ohne Befund. *Nächster Schritt:* die 13 statisch gegen den übrigen Katalog – zuerst je Rotation, ob die
+  Fork-Mechanik greift (CLAUDE.md), Befunde nur ohne Richtungsentscheidung –, dazu Blaumagier und Beastmaster am
+  nächsten Mitschnitt. *Konzept:* 14 (je Job), 03 „F · Über den Augenblick hinaus“.
 - **Rotationen aller Jobs über den Augenblick hinaus** (sein Auftrag vom 19.11.2026; A901). *Wirkung im Kampf:*
   Verstärker, Zeitgeber und DoTs laufen heute in vorhergesagte Pausen, Ressourcen bleiben beim Tod des Ziels übrig, der
   eigene Burst richtet sich nach der eigenen Uhr statt nach den Raidbuffs, die wirklich auf dir liegen. *Nächster
@@ -144,6 +139,12 @@ Reborn"); beides kostet im Spiel, solange nicht beide Installationen gebraucht w
 nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigter Name bleibt. *Konzept:* 24.
 
 ## Warten auf Daten oder Fremde
+
+- **Todeswand ohne BossMod-Modul lernen** (A934, O3 in Konzept 05, „Arenagrenzen ohne BossMod-Modul“). Abgrund und
+  Löcher prüft vnavmesh; eine Todeswand ohne Modul kennt RSR nicht – sie ist keine Kollision, und ihr Blatt nennt den
+  inneren Radius nicht. Im Kampf: Ein Sprung von RSR könnte in sie landen. Auflösung: der erste beobachtete Treffer
+  einer namenlosen Ringaktion ohne Wirkzeit auf ihn oder ein Mitglied ohne Modul (ACT-Mitschnitt); dann Lernregel je
+  Gebiet im Loop.
 
 - **Nebenprojekt: Charakterwerte, Stufen und Materia-Empfehlung** (A874, A875). Konzept 26 steht; seine Angabe
   (17.11.2026): „nebenthema zuende. wird irgendwann von mir neu angesprochen“. Auflösung: sein neuer Auftrag.

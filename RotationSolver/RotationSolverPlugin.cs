@@ -477,6 +477,7 @@ public sealed partial class RotationSolverPlugin : IAsyncDalamudPlugin
 		BMRInfo_IPCSubscriber.Dispose();
 		BMRTimeline_IPCSubscriber.Dispose();
 		BMRPlan_IPCSubscriber.Dispose();
+		Navmesh_IPCSubscriber.Dispose();
 		Wrath_IPCSubscriber.Dispose();
 
 		await saveLists;

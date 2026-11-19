@@ -61,6 +61,14 @@ What this release changes in the fight. For the whole distance from upstream, se
   check kept: the samurai's Kenki stall at the dummy would have cost one GCD instead of 28 seconds. Not during mudras,
   Ten Chi Jin or dance steps, not for limited jobs, not in PvP. The trace writes "dynamic rotation: ...".
 
+- **Jumps are checked for where they land, now by default, and for floor.** Before RSR uses an action that moves you
+  on its own - Elusive Jump, Hell's Egress and Ingress, Displacement, Repelling Shot, Hissatsu: Yaten, En Avant, Smudge,
+  Aetherial Shift, Shukuchi - it asks BossModReborn's danger zones and, with vnavmesh running, whether there is floor
+  where you land: a jump over an abyss or into a hole in the arena stays out, with or without a BossMod module. Where
+  vnavmesh has no mesh for the place you stand, nothing changes. The setting is now "Check where movement actions
+  land", on by default; it was off and named after BossModReborn alone. The trace writes
+  "movement check: ... held - ...".
+
 ## Single jobs
 
 - **White mage: a lily while moving instead of an early Dia.** While you move and no spell can start, a lily (Afflatus
