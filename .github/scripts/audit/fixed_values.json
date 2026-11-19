@@ -2769,6 +2769,16 @@
    "status": "exception",
    "loop": "A892",
    "reason": "XBMContentsBooty marks piece k taken at value 129 + k (his trace of 15.11.2026 (five windows, three pieces each), LazyCrucible cfc5ac5 Screens.ReadBooty, ECommons 7d50941 ReaderXBMContentsBooty). The game's layout of the window, not a tuned value; a piece that does not read as an item is left out."
+  },
+  {
+   "file": "RotationSolver/Configuration/Configs.CombatAndTarget.cs",
+   "code": "Filter = AutoItemUsage, Section = 4)]",
+   "values": [
+    "4"
+   ],
+   "status": "exception",
+   "loop": "A894",
+   "reason": "The section of the settings window's group Item Usage in which the deep dungeon's pomanders and magicite stand, after upstream's sections 0 to 3 (tincture, HP potions, MP potions, Phoenix Down; 78b43e656). An ordinal of the window's layout, not a figure of the game."
   }
  ]
 }

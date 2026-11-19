@@ -221,7 +221,7 @@ internal partial class Configs
 	Description = "In a fight: where your job drinks tinctures and holds one, HP and MP potions wait, so their "
 		+ "recast does not keep the tincture from its burst.\nAn HP potion against a tankbuster on you still "
 		+ "goes.\nOff: potions go at their threshold.",
-	Filter = AutoActionUsage, Section = 5, PvPFilter = JobFilterType.NoJob)]
+	Filter = AutoItemUsage, Section = 0, PvPFilter = JobFilterType.NoJob)]
 	private static readonly bool _holdPotionsForTincture = false;
 
 	[ConditionBool, UI("Use anti-knockback actions",
@@ -280,19 +280,19 @@ internal partial class Configs
 	[ConditionBool, UI("Use the deep dungeon's pomanders against bosses and in danger when alone",
 	Description = "In a fight: alone in a deep dungeon, Steel, Strength and Haste go against a boss, and Raising, "
 		+ "then Witching, when you are about to die.\nNever in a party, where the inventory is shared.",
-	Filter = AutoActionUsage, Section = 5)]
+	Filter = AutoItemUsage, Section = 4)]
 	private static readonly bool _useDeepDungeonPomanders = true;
 
 	[ConditionBool, UI("Use the deep dungeon's magicite, demiclones and incense against bosses and in danger when alone",
 	Description = "In a fight: alone in a deep dungeon, a magicite or incense that clears the floor saves you from "
 		+ "dying; Elder Magicite, demiclones and Barkbalm go against bosses.\nNever in a party.",
-	Filter = AutoActionUsage, Section = 5)]
+	Filter = AutoItemUsage, Section = 4)]
 	private static readonly bool _useDeepDungeonStones = true;
 
 	[ConditionBool, UI("Use the Limit Break when no other player is in the party",
 	Description = "In a fight: with only NPC companions, you use your full Limit Break: a damage dealer when safe, a "
 		+ "tank against big hits, a healer when several die.\nWith another player the bar stays theirs too.",
-	Filter = AutoActionUsage, Section = 5)]
+	Filter = AutoActionUsage)]
 	private static readonly bool _useLimitBreakWhenAlone = true;
 
 	[ConditionBool, UI("Use AoE on marked targets",
