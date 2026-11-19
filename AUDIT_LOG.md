@@ -26726,6 +26726,55 @@ Linien jetzt aus `DataCenter.PlainAreaShape`, mit unveränderten Zweigen und Rei
 sein Bildschirm. *Vorhersage:* „area display: connected to Splatoon“ in der Spur, wo Splatoon läuft
 (`area-display-connected`).
 
+### A921 · Flächenanzeige: Splatoons falsche Ringe gesperrt, BossMod und Splatoon vor RSR (19.11.2026)
+
+*Anlass:* sein Auftrag vom 19.11.2026: „kann rsr die nachweislich falschen anzeigen von splatoon unterbinden und nur die
+richtigen durchlassen oder das feature in splatoon ausschalten, wenn rsr die korrekte anzeige vorgeben kann? was ist mit
+den 3d anzeigen von bmr? interferieren die mit den eigenen? im vollen loop konzept optimieren“.
+*Quellen:* PunishXIV/Splatoon f396ef6 (13.11.2026, 3.9.2.32; `Services/Projection.cs` unverändert seit b85045e),
+FFXIV-CombatReborn/BossmodReborn 8d5ff8e21 (15.11.2026), beide Werkzeugquelle; Aktions- und Omen-Blatt; alle 19
+Mitschnitte seiner Uploads.
+*Widerlegt (C232):* A920 hielt Splatoons Kegel und Linien für zum Ziel gedreht und ihre Kreise für versetzt. `faceplayer`
+wirkt nur mit `FaceMe`, das die Projection nicht setzt; die Richtung kommt aus dem Wirkpaket. Kreise und Linien zeichnet
+sie wie RSR – auch Bodenkreise: Kein Bodenkreis in seinen Mitschnitten nannte ein Ziel (1.904 ohne, 2.347 um den
+Wirkenden, 736 auf ein anderes Ziel).
+*Belegt falsch:* Splatoons Ringe. Sie liest „sircle_XXYY“ als Yalm; der Modulcode von BossMod legt sechs Ringe fest
+(Bedrock Uplift 6–12/12–18/18–24, Flood 8–16/16–24, Aetherblight 16–60), alle passen zur Lesart als Anteil der
+Reichweite, keiner zur absoluten (Splatoon: 5–10, 20–30, 36–48, 10–20, 20–30, 8–30). Im Blatt 51 Ringaktionen mit
+Wirkzeit betroffen, in seinen Mitschnitten 46 von 380 Ringwirken, darunter sein Crucible-Brett 1. Kegel ohne
+„fanNNN“ zeichnet sie als 180° (874 ohne Omen, 181 mit) – Richtung richtig, Winkel unbelegt.
+*Steuerung:* Splatoon hat keine Schnittstelle für die Projection; nur ihre Einstellungen (`EnableProjection`,
+`ProjectionBlacklistedActions`, `ProjectionBlacklistedDuties`), erreichbar über das Plugin-Objekt, das ECommons'
+`SplatoonAPI` per Reflection verbindet. BossMod liest RSR über dessen Schnittstelle `Configuration`
+(`BossModuleConfig.ProjectRadarInto3DWorld`, ab Werk aus; zeichnet nur mit laufendem Modul).
+*Gemessen (BossMod):* 2.240 Kreise und Linien ohne Omen – 1.748 verwendet ein Modul in einer Komponente, 175 listet ein
+Modul ohne Komponente (fast alle Raidwides, 30 bis 100 Yalm), 317 kennt keines.
+*Nebenbefund am eigenen Bau (A920):* RSR zeichnete auch Raidwide-Kreise (Evil Mist 60, Mindjack 100 Yalm) über die ganze
+Arena.
+*Optionen und Entscheidung (Konzept 13, „Flächenanzeige: eine richtige Anzeige je Wirken“):* (0) nichts; (A) RSR sperrt
+die nachweislich falschen in Splatoons Liste – gewählt; (B) RSR schaltet die Projection ab und zeichnet alles –
+verworfen, verdoppelt die Markierung des Spiels und nimmt ihm seine Wahl; (C) Meldung an Splatoon – außerhalb seines
+Repositorys, nur mit seiner Freigabe; (D) Sperre nur für die Wirkdauer – mehr Code, gleiche Reflection, bleibt beim
+Speichern mitten im Wirken trotzdem.
+*Gebaut:* (1) Wirken mit Omen zeichnet das Spiel; ein Ring, dessen Omen-Außenradius nicht die Reichweite ist, geht beim
+Wirken in Splatoons Projection-Sperrliste (mit Gebiet, Gegner-, Namens- und Modell-Id wie Splatoons Knopf), nur solange
+die Projection dort zeichnet (`SplatoonProjection`). (2) Kreise und Linien ohne Omen: BossMod, wenn ein Modul läuft und
+es in die Welt projiziert; sonst Splatoons Projection, außer Kreisen ab ihrer `RaidwideSize`; sonst RSR. Eine Aktion in
+Splatoons Sperrliste zeichnet RSR nie; einen festen Kreis nur, wenn seine Tiefe am Platz des Spielers kleiner ist als
+BossMods Geschwindigkeit mal Restwirkzeit (ohne Geschwindigkeit jeden). (3) Kegel und Ringe ohne Omen weiter nicht.
+Was RSR nicht lesen kann, gilt als „aus“; eine Spurzeile nennt es einmal. Einstellungstext nachgezogen.
+*Falsifikation:* (1) kein Defekt – widerlegt am Modulcode; die übrigen 45 Ringe nach derselben Regel *[Schätzung]*, eine
+Sperre dort kostet höchstens eine Doppelung der Spielmarkierung. (2) Option falsch – die Sperre trifft nur Wirken mit
+Omen, die Markierung bleibt; behebt Splatoon die Lesart, bleiben die Einträge in seiner Liste sichtbar und löschbar.
+(3) ausgeliefert, nichts ändert sich – seine Projection ist aus (Splatoons Voreinstellung): dann zeigt sie keine
+falschen Ringe, RSR zeichnet wie bisher, ohne Raidwide-Kreise.
+*Nebenbefund für RSR:* A731 wählte den kleineren Innenradius nach den Kommentarzeilen der BossMod-Module, die dessen
+Analysewerkzeug aus demselben Blatt schreibt; der Modulcode belegt für die sechs Ringe die Anteil-Lesart. TODO, Defekte.
+*Prüfgrad:* statisch, Compile, Prüfskripte; Reflection gegen Splatoon f396ef6 nur am Quelltext geprüft, im Spiel nicht
+beobachtet. *Vorhersage:* bei eingeschalteter Projection je gesperrtem Ring eine Zeile „area display: … blocked in
+Splatoon's projection - it draws X-Y from the marker's name, the game lays the marker to R“ (Brett 1: Bedrock Uplift);
+keine Zeile „settings are not readable“ (`area-display-blocked-ring-line-form`, `area-display-settings-readable`).
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -27112,3 +27161,4 @@ geben den Stand vom 14.10.2026 wieder.
 | C229 | A885 und Konzept 21, „Abgleich mit Daedalus v0.1.124“ (Stand f6093e4ba): „the camp heals 90%“ sei unbelegt, die Campsite gebe 30 % | Allein ruhend heilt sie 90 % (Wiki zum ersten Brett, in Konzept 21 „Campsite“ und in RSRs Rast K10 geführt); 30 % je Teilnehmer gilt bei zwei Begleitern. Berichtigt am 18.11.2026; das Ergebnis „keine Änderung“ bleibt, weil eine feste Trankschwelle von 20 % seiner Sicherheitsregel widerspräche. |
 | C230 | A901 und Konzept 03, F (Stand 19.11.2026): Die vorhergesagte Bewegung lesen nur Paladin und Gelehrter | Beide lesen die vergangene Bewegungszeit (`MovingTime`, `StopMovingTime`). Die Vorhersage von BossMod (`Hints.MaxCastTime`) liest RSR zentral für alle Jobs: Kein Zauber beginnt, der länger wirkt, als bis zur nächsten Bewegung Zeit ist, und der Zaubernde nimmt dann einen Sofortzauber. Die Zählung je Rotation übersah die zentralen Stellen. | A902 |
 | C231 | A911 und TODO „Sirene (Brett 3)“ (Stand 3eae4b28a): Die Fessel des Crawling Piece endete vor seinem Tod, sein Vorrang verkürzte sie nicht | Die Fessel endete in beiden Fällen in derselben Zeile, in der seine LP auf 0 fielen (19:15:45.319, 19:17:12.170); ich las die Todeszeile (Typ 25), die der Mitschnitt 2 s später schreibt (A913) | widerrufen |
+| C232 | A920 und Konzept 13 (Stand e8d785b86): Splatoons Projection drehe Kegel und Linien mit Ziel jedes Bild zum Ziel und setze Kreise mit Ziel versetzt; RSR zeige sie dort, wo sie landen, Splatoon nicht | Am selben Quelltext (f396ef6) wirkt `faceplayer` nur mit `FaceMe`, das die Projection nicht setzt; die Richtung kommt aus dem Wirkpaket wie bei RSR. Kreise auf einem Ziel wandern bei beiden mit dem Ziel (A766). Ich las die Zuweisung, nicht ihre Auswertung im Zeichner. Nachweislich falsch sind Splatoons Ringe | A921 |

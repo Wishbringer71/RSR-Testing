@@ -638,7 +638,7 @@ internal static partial class DataCenter
 		=> (CastType)act.CastType is CastType.Cone or CastType.StraightLine or CastType.Unknown5 ? h.HitboxRadius : 0f;
 
 	/// <summary>
-	/// A920 (concept 13, "Flächen ohne BossMod-Modul"): a circle or a line as the game lays it for an enemy cast - a line
+	/// A920 (concept 13, "Flächenanzeige: eine richtige Anzeige je Wirken"): a circle or a line as the game lays it for an enemy cast - a line
 	/// from the caster in the direction the game keeps (A766), a circle on the place the game keeps, on the target it names
 	/// (moving with it) or around the caster. The reach is measured without the struck member's hitbox. Null for a cone by
 	/// its omen and a ring with its inner circle, which only the hit test knows.

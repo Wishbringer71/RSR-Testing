@@ -30,7 +30,13 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
 
 ## Defekte
 
-- Keine offenen Defekte.
+- **Innenradius der Ringe aus einem Abgleich, der keiner war** (A921, Nebenbefund). *Wirkung im Kampf:* Wo die absolute
+  Lesart des Omens kleiner ist als die als Anteil der Reichweite (Bedrock Uplift 5 statt 6, Aetherblight 8 statt 16
+  Yalm), zählt RSR einen Spieler im sicheren Innenkreis als getroffen – Abwehr, Surecast und Zaubersperre gehen dort
+  ohne Grund. A731 wählte die kleinere Lesart nach den Kommentarzeilen der BossMod-Module, die dessen Analysewerkzeug
+  aus demselben Blatt schreibt; der Modulcode belegt für sechs Ringe die Anteil-Lesart. *Ort:*
+  `DataCenter.OmenShape`. *Nächster Schritt:* alle Ringe mit Modulcode gegen beide Lesarten prüfen, dann die Lesart
+  wählen. *Konzept:* 13, „Wen die Form erreicht".
 
 ## Offene Arbeit
 

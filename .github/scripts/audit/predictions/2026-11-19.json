@@ -54,5 +54,19 @@
   "kind": "present",
   "situation": "area display:",
   "match": "area display: connected to Splatoon$"
+ },
+ {
+  "id": "area-display-blocked-ring-line-form",
+  "archive": "A921",
+  "kind": "each",
+  "situation": "area display: .+ blocked in Splatoon",
+  "match": "area display: .+ #[0-9]+ blocked in Splatoon's projection - it draws [0-9]+-[0-9]+ from the marker's name, the game lays the marker to [0-9]+$"
+ },
+ {
+  "id": "area-display-settings-readable",
+  "archive": "A921",
+  "kind": "absent",
+  "situation": "area display:",
+  "match": "area display: Splatoon's projection settings are not readable"
  }
 ]

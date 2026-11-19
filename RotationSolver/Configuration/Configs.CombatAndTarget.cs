@@ -134,7 +134,7 @@ internal partial class Configs
 	private static readonly bool _showInfoOnToast = false;
 
 	[ConditionBool, UI("Draw enemy areas without a ground marker through Splatoon",
-	Description = "In a fight: circles and lines an enemy casts without the game's ground marker are drawn where they land. Needs Splatoon.\nTurn off Splatoon's own projection, or both draw.",
+	Description = "In a fight: circles and lines an enemy casts without the game's ground marker are drawn where they land. Needs Splatoon.\nLeft to BossMod's world projection or Splatoon's projection where they draw; their blacklist is respected.\nWhile Splatoon's projection is on, a ring it draws against the game's marker goes into its blacklist.",
 	Filter = UiInformation)]
 	private static readonly bool _drawAreasWithoutMarker = true;
 

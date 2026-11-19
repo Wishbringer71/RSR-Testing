@@ -41,7 +41,7 @@
    "repo": "FFXIV-CombatReborn/BossmodReborn",
    "commit": "8d5ff8e21",
    "date": "2026-11-16",
-   "use": "Crucible-Module, Mechaniken, Vertrag mit RSR (Konzept 21, Code.md), Blickliste GazeActions.g.cs (Konzept 13)"
+   "use": "Crucible-Module, Mechaniken, Vertrag mit RSR (Konzept 21, Code.md), Blickliste GazeActions.g.cs (Konzept 13), Projektion in die 3D-Welt und Ringe im Modulcode (Konzept 13, A921)"
   },
   {
    "repo": "getsetmind/dalamudmcp",
@@ -234,6 +234,12 @@
    "commit": "301a95e",
    "date": "2026-11-13",
    "use": "PvP: Frontline-Strategie (Konzept 25, Quellen)"
+  },
+  {
+   "repo": "PunishXIV/Splatoon",
+   "commit": "f396ef6",
+   "date": "2026-11-19",
+   "use": "Projection, IPC, Einstellungen der Projection (Konzept 13, A920, A921)"
   }
  ]
 }

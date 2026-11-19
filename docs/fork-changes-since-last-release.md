@@ -28,8 +28,13 @@ What this release changes in the fight. For the whole distance from upstream, se
 
 ## Seeing what the enemies do
 
-- **Areas without a ground marker, drawn where they land (needs Splatoon).** Circles and lines an enemy casts without
-  the game's orange marker are drawn through Splatoon at the place and in the direction the game keeps for the cast,
-  until it lands; Splatoon's own projection turns them towards a target that has walked away. Cones and rings without a
-  marker are left out, as nothing names their angle or inner circle. Setting: "Draw enemy areas without a ground marker
-  through Splatoon", on by default.
+- **One right picture per enemy area (needs Splatoon).** Circles and lines an enemy casts without the game's orange
+  marker are drawn through Splatoon at the place and in the direction the game keeps for the cast, until it lands -
+  unless BossMod projects its running module into the world, or Splatoon's own projection already draws them. Circles
+  you cannot leave before they land, such as raidwides, are not drawn. Cones and rings without a marker are left out,
+  as nothing names their angle or inner circle. Setting: "Draw enemy areas without a ground marker through Splatoon", on
+  by default.
+- **Splatoon's wrong rings are blocked.** Splatoon's projection reads a ring's radii from the marker's name as yalms; the
+  game scales the marker to the action's reach. Where the two differ - Bedrock Uplift on the first Crucible board shows
+  36-48 yalms at Splatoon for a ring at 18-24 - RSR adds the action to Splatoon's projection blacklist while the
+  projection is on; the game's own marker stays. Actions in that blacklist are not drawn by RSR either.
