@@ -2696,6 +2696,92 @@ auf unsicherem Boden.
 - *3 – ausgeliefert, und nichts ändert sich:* ohne Option (ab Werk aus) oder ohne Fläche. Die Spurzeilen zeigen, ob und
   wie oft die Regel greift.
 
+## F · Über den Augenblick hinaus: Wechselwirkungen, Fenster, Pausen
+
+**Sein Auftrag (19.11.2026):** „kann man die rotationen weiter verbessern für alle jobs? the balance ist zwar hilfreich,
+gibt aber nur bekanntes. es geht mir darum, zu forschen, ob es noch bessere rotationen aufgrund der wechselwirkungen
+gibt, ob es bessere ausnutzung von synergieeffekten gibt. wie der erste schritt beim beastmaster von reinen kombos hin
+zu länderen aufbauenden abläufen. im loop mit antithese prüfen“; dazu: „und dass die rotationen evtl dynamisch auf das
+spielgeschehen reagieren und sich im kampf anpassen“. *Einordnung:* Vorgabe (Forschungsauftrag) für alle Jobs.
+
+**Grundlage: wie RSR heute entscheidet.** Je Frame genau eine Aktion aus einer festen Vorrangliste je Job (A, B). Die
+Liste schaut nicht voraus; was sie über den nächsten GCD hinaus weiß, steckt in einzelnen Bausteinen:
+- *Burst-Uhr* (`BurstClock`, alle Jobs): Takt des eigenen Bursts aus den Rufen nach der Tinktur (D, „Der Burst des
+  Jobs als Uhr").
+- *Kampfende:* `HoldCostsUse` (ein Warten kostet einen Einsatz bis zum Tod des Ziels, A464), kein DoT auf Gegner, die
+  bald sterben (D, „Wahl des DoT-Ziels").
+- *Ketten über mehrere Kombos:* nur der Beastmaster (A886) – das Vorbild seines Auftrags.
+- *Pause aus der Zeitleiste von BossMod* (`BMRDowntimeWithin`): gelesen von den Kanälen, dem Blaumagier und dem
+  Maschinisten.
+
+**Gemessen, welche Rotation welches Signal liest** (19.11.2026, 22 Reborn-Rotationen; *Surrogat:* gezählt ist, ob ein
+Bezeichner im Code steht, nicht ob er wirkt):
+
+| Signal | liest es | fehlt |
+|---|---|---|
+| vorhergesagte Pause (BossMod) | MCH | 21 übrige |
+| Kampfende (TTK) | BLU, BST, GNB, MCH, RDM, SCH | 16 (zentral wirkt die TTK-Prüfung der DoTs für alle) |
+| Burst-Uhr oder Burst-Schalter | 17 | BLU, BST, GNB, PLD, SAM, SGE, WHM |
+| Buffs der anderen in der Gruppe | RPR | 21 übrige |
+| vorhergesagte Bewegung | PLD, SCH | 20 übrige |
+| Raidwide (BossMod) | BRD, DNC, MCH, SMN | 18 übrige |
+
+**Die Klassen, in denen ein Plan über den nächsten GCD hinaus Schaden bringt, den eine Vorrangliste verliert:**
+1. *Pause und Phase (K1):* Ein Verstärker, ein Zeitgeber oder ein DoT, der in eine Pause läuft (Boss unangreifbar,
+   Zwischenphase), wirkt dort auf nichts. The Balance nennt das je Kampf in Zeitleisten von Hand; RSR kennt die Pause
+   aus BossMods Modul (`BMRDowntimeIn`, Ende `Timeline.NextDowntimeEndIn`) und kann sie für jeden Job lesen.
+2. *Kampfende (K2):* Ressourcen, die beim Tod des Ziels übrig sind, sind verloren; eine Abklingzeit, die vor dem Ende
+   noch einmal zurückkäme, ist ein Einsatz mehr. Teilweise gebaut (`HoldCostsUse`, DoT).
+3. *Fenster der Gruppe (K3):* Die Raidbuffs der anderen kommen nicht immer zum eigenen Takt – Tod, späte Wiederkehr,
+   andere Eröffnung. Wer sie am Spiel liest (Status der Gruppe), legt den eigenen Burst dorthin, wo sie wirklich liegen.
+4. *Bewegung (K4):* Sofortzauber und Bewegungsmittel für vorhergesagte Bewegung aufheben, Zauber wirken, solange man
+   steht (BossMod sagt Bewegung voraus; heute lesen das nur zwei Jobs).
+5. *Mehrere Ziele (K5):* ob sich AoE, DoT oder ein langer Aufbau lohnt, hängt an Zahl *und* Restleben des Rudels; die
+   Schwelle an der Aktion zählt nur Ziele (C3).
+6. *Aufbauende Abläufe (K6):* Ressourcen über mehrere GCDs so ordnen, dass die stärksten Aktionen im Fenster landen
+   (Beastmaster A886). Je Job verschieden, deshalb nach K1 bis K5, die für alle gleich gelten (CLAUDE.md, „Universell
+   zuerst").
+
+**Reihenfolge nach Wirkung im Kampf** [Schätzung, je Klasse zu belegen]: K1 vor K3 vor K2 vor K5 vor K4 vor K6. K1 trifft jede
+Zwischenphase in Prüfungen, Raids und Savage, und ein ganzer Burst in einer Pause kostet sein ganzes Fenster; K3 trifft
+jeden Kampf mit Gruppe; K2 jedes Kampfende, ist aber teilweise gebaut. *Gegenposition:* In Dungeons, seinem häufigsten
+Inhalt, gibt es kaum Pausen; dort wirken K2 und K5 öfter. Darum K1 zuerst als allgemeiner Mechanismus, aber K2 und K5 vor
+den jobweisen Abläufen.
+
+**K1, erster Schritt – Grundlagen** (in Arbeit, A901):
+- *Der Burst-Schalter ist kein Hebel.* `IsBurst` (`AutoStatus.Burst`, in `StateUpdater` gesetzt, solange „Auto Burst"
+  an ist) steht in 17 Rotationen an 54 Stellen, aber in zwei Bedeutungen: als Freigabe des Burstbeginns (Technical Step,
+  Devilment, Embolden, Divination, Brotherhood, Starry Muse, Arcane Circle, Serpent's Ire) und als „im Fenster
+  verbrauchen" (`usedUp: IsBurst` beim Maschinisten für Checkmate und Double Check, beim Astrologen für Astral Draw).
+  Ihn vor einer Pause zu senken, hielte also auch Ladungen zurück, die laufen sollen. *Nebenbefund für K6:* Weil der
+  Schalter ab Werk immer an ist, verbraucht der Maschinist seine Ladungen immer ganz; ein Halten für das eigene Fenster
+  findet nie statt (zu prüfen gegen Konzept 17).
+- *Der allgemeine Ort:* Jede Aktion nennt die Status, die sie gibt (`ActionSetting.StatusProvide`, 831 Stellen), und
+  `BasicCheck` prüft jede Aktion. Ein Verstärker ist erkennbar am englischen Wirktext seines Status („damage dealt is
+  increased", kritische Treffer, Direkttreffer; wie der DoT an „Sustaining damage over time", D), seine Dauer am Wirktext
+  der Aktion („Duration: 20s"), sein Takt an der Abklingzeit. Eine Prüfung dort deckt alle Jobs ohne eine Zeile in den
+  Rotationen.
+- *Die Rechnung (Modell, zu prüfen):* Fängt die Pause t s nach jetzt an und wirkt der Verstärker d s, trifft er jetzt
+  nur den Anteil f = t/d seines Fensters. Liegen gerade Raidbuffs der anderen auf dir (Summe P ihrer Schadensanteile,
+  am Status gelesen), wiegt das jetzige Fenster f · (1 + P), ein volles nach der Pause 1 – solange dort keine liegen.
+  Halten lohnt, wenn f · (1 + P) < 1 und das Warten bis zum Ende der Pause keinen Einsatz bis zum Kampfende kostet
+  (`HoldCostsUse`).
+- *Gegenthese 4 – Halten verschiebt jedes spätere Fenster gegen die Gruppe:* Drückt die Gruppe vor der Pause und du
+  danach, liegen alle folgenden Einsätze um die Wartezeit neben ihren. Belegt ist das nicht widerlegt; Gegengewicht:
+  Nach einer Pause sind alle Abklingzeiten, die in ihr ablaufen, bei der Rückkehr bereit, und Gruppen legen sie dann
+  gemeinsam. Bevor gebaut wird, muss ein Modell über einen ganzen Kampf (Pause, Rückkehr, folgende Fenster) zeigen, wann
+  das Halten trägt; bis dahin ist K1 in Gruppen mit Raidbuffs nicht entschieden.
+- *Allein* (Solo, Trust, Duty Support ohne Raidbuffs) entfällt Gegenthese 4; dort trägt die Rechnung ohne Modell.
+- *Gegenthese 1 – Die Gruppe drückt ohnehin:* Halten trennt den eigenen Burst von den Raidbuffs der anderen. Liegt nur
+  ein Teil des Fensters in der Pause, bringt das gemeinsame Fenster mehr als ein eigenes volles danach. Deshalb hält die
+  Regel nur, wenn die Pause einen größeren Teil des Fensters nimmt, als die Gruppe an Raidbuffs mitbringt; allein
+  (Duty Support, Trust, solo) zählt nur das eigene Fenster.
+- *Gegenthese 2 – Die Zeitleiste stimmt nicht:* Ohne Modul liefert BossMod nichts (`float.MaxValue`), dann gilt das
+  heutige Verhalten. Mit Modul ist die Pause je Kampf aus BossMods Zeitleiste; eine falsche Vorhersage kostet ein
+  verschobenes Fenster, nie Sicherheit.
+- *Gegenthese 3 – Halten kostet einen Einsatz:* Wie bei Phantom Aim zählt `HoldCostsUse` die Einsätze bis zum Kampfende;
+  kostet das Warten einen, wird nicht gehalten.
+
 ## E · Universelle Strukturschwächen
 
 | # | Schwäche | Beleg | Stand |

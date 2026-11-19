@@ -34,7 +34,12 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
 
 ## Offene Arbeit
 
-- Keine offene Arbeit.
+- **Rotationen aller Jobs über den Augenblick hinaus** (sein Auftrag vom 19.11.2026; A901). *Wirkung im Kampf:*
+  Verstärker, Zeitgeber und DoTs laufen heute in vorhergesagte Pausen, Ressourcen bleiben beim Tod des Ziels übrig, der
+  eigene Burst richtet sich nach der eigenen Uhr statt nach den Raidbuffs, die wirklich auf dir liegen. *Nächster
+  Schritt:* K1 (Pause): Modell über einen ganzen Kampf mit Pause und Gruppe (Konzept 03, F, Gegenthese 4), dann die
+  allgemeine Prüfung in `BasicCheck`; danach K3, K2, K5, K4, K6 in dieser Reihenfolge. *Konzept:* 03, „F · Über den
+  Augenblick hinaus".
 
 ## Technische Schuld
 

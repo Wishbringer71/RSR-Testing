@@ -26276,6 +26276,31 @@ nach Potenz, Auffüllen von Nicht-Tanks – gehen als Fragen in die Untersuchung
 
 *Ergebnis:* nichts zu bauen; Quelle auf d1e376bdd eingetragen (`--record`). *Prüfgrad:* statisch, am Code des Forks.
 
+### A901 · Rotationen aller Jobs über den Augenblick hinaus: Grundlagen und Klassen (19.11.2026)
+
+*Anlass:* sein Auftrag vom 19.11.2026: „kann man die rotationen weiter verbessern für alle jobs? … zu forschen, ob es noch
+bessere rotationen aufgrund der wechselwirkungen gibt, ob es bessere ausnutzung von synergieeffekten gibt. wie der erste
+schritt beim beastmaster von reinen kombos hin zu länderen aufbauenden abläufen. im loop mit antithese prüfen“ und „dass die
+rotationen evtl dynamisch auf das spielgeschehen reagieren und sich im kampf anpassen“.
+
+*Grundlagen (Konzept 03, „F · Über den Augenblick hinaus“):* RSR wählt je Frame aus einer festen Vorrangliste; über den
+nächsten GCD hinaus wissen nur die Burst-Uhr, `HoldCostsUse`, die TTK-Prüfung der DoTs und die Ketten des Beastmasters
+(A886). Gemessen an den 22 Reborn-Rotationen (Surrogat: Bezeichner im Code): die vorhergesagte Pause liest nur der
+Maschinist, die Buffs der anderen nur der Schnitter, vorhergesagte Bewegung nur Paladin und Gelehrter.
+
+*Klassen:* K1 Pause und Phase, K2 Kampfende, K3 Fenster der Gruppe, K4 Bewegung, K5 mehrere Ziele, K6 aufbauende Abläufe
+je Job; Reihenfolge nach Wirkung K1, K3, K2, K5, K4, K6 [Schätzung, je Klasse zu belegen].
+
+*K1, erster Befund:* Der Burst-Schalter `IsBurst` ist kein Hebel, weil er in zwei Bedeutungen gelesen wird (Burstbeginn,
+und „im Fenster verbrauchen“ beim Maschinisten und Astrologen). Allgemeiner Ort ist `BasicCheck` mit den Status, die jede
+Aktion angibt (`StatusProvide`). Nicht gebaut: Gegenthese 4 (Halten verschiebt jedes spätere Fenster gegen die Gruppe) ist
+nicht widerlegt; zuerst ein Modell über einen ganzen Kampf.
+
+*Nebenbefund:* Weil „Auto Burst“ ab Werk an ist, ist `usedUp: IsBurst` beim Maschinisten immer wahr; seine Ladungen halten
+nie für das eigene Fenster (zu prüfen in K6 gegen Konzept 17).
+
+*Prüfgrad:* statisch (Code, Zählung). Noch nichts im Spiel geändert.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
