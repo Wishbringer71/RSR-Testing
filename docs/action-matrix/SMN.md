@@ -1,6 +1,6 @@
 # SMN — Abhängigkeitsmatrix
 
-Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-02; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
+Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-19; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `SummonerRotation`
 - Rotation: `RotationSolver/Rotations/Magical/Summoner/SMN_Reborn.cs`
@@ -268,8 +268,25 @@ direkt: 72 · nur gelesen: 1 · ungenutzt: 10 · über andere Aktion: 3
 | Painflare | Regel sperrt vorher | Searing Flash |
 | Painflare | Regel sperrt vorher | Summon Bahamut |
 | Painflare | Regel sperrt vorher | Sunflare |
+| Ruby Rite | Regel sperrt vorher | Deathflare |
+| Ruby Rite | Regel sperrt vorher | Energy Drain |
+| Ruby Rite | Regel sperrt vorher | Energy Siphon |
+| Ruby Rite | Regel sperrt vorher | Enkindle Bahamut |
+| Ruby Rite | Regel sperrt vorher | Enkindle Phoenix |
+| Ruby Rite | Regel sperrt vorher | Enkindle Solar Bahamut |
+| Ruby Rite | Regel sperrt vorher | Fester |
+| Ruby Rite | Regel sperrt vorher | Mountain Buster |
+| Ruby Rite | Regel sperrt vorher | Necrotize |
+| Ruby Rite | Regel sperrt vorher | Painflare |
+| Ruby Rite | Regel sperrt vorher | Ruby Outburst |
+| Ruby Rite | Regel sperrt vorher | Ruby Ruin II |
+| Ruby Rite | Regel sperrt vorher | Ruby Ruin III |
+| Ruby Rite | Regel sperrt vorher | Ruby Ruin |
+| Ruby Rite | Regel sperrt vorher | Searing Flash |
+| Ruby Rite | Regel sperrt vorher | Searing Light |
 | Ruby Rite | Regel sperrt vorher | Slipstream |
-| Ruby Rite | Regel prüft | Swiftcast |
+| Ruby Rite | Regel sperrt vorher | Summon Bahamut |
+| Ruby Rite | Regel sperrt vorher | Sunflare |
 | Ruby Ruin | Regel prüft | Summon Ifrit |
 | Ruin II | Regel prüft | Ruin III |
 | Ruin IV | StatusNeed FurtherRuin_2701 | Status FurtherRuin_2701 |
@@ -287,7 +304,26 @@ direkt: 72 · nur gelesen: 1 · ungenutzt: 10 · über andere Aktion: 3
 | Searing Flash | StatusNeed RubysGlimmer | Status RubysGlimmer |
 | Searing Flash | Regel sperrt vorher | Summon Bahamut |
 | Searing Flash | Regel sperrt vorher | Sunflare |
+| Slipstream | Regel sperrt vorher | Deathflare |
+| Slipstream | Regel sperrt vorher | Energy Drain |
+| Slipstream | Regel sperrt vorher | Energy Siphon |
+| Slipstream | Regel sperrt vorher | Enkindle Bahamut |
+| Slipstream | Regel sperrt vorher | Enkindle Phoenix |
+| Slipstream | Regel sperrt vorher | Enkindle Solar Bahamut |
+| Slipstream | Regel sperrt vorher | Fester |
+| Slipstream | Regel sperrt vorher | Mountain Buster |
+| Slipstream | Regel sperrt vorher | Necrotize |
+| Slipstream | Regel sperrt vorher | Painflare |
+| Slipstream | Regel sperrt vorher | Ruby Outburst |
+| Slipstream | Regel sperrt vorher | Ruby Rite |
+| Slipstream | Regel sperrt vorher | Ruby Ruin II |
+| Slipstream | Regel sperrt vorher | Ruby Ruin III |
+| Slipstream | Regel sperrt vorher | Ruby Ruin |
+| Slipstream | Regel sperrt vorher | Searing Flash |
+| Slipstream | Regel sperrt vorher | Searing Light |
+| Slipstream | Regel sperrt vorher | Summon Bahamut |
 | Slipstream | StatusNeed GarudasFavor | Summon Emerald |
+| Slipstream | Regel sperrt vorher | Sunflare |
 | Slipstream | Regel prüft | Swiftcast |
 | Summon Emerald | Regel prüft | Summon Garuda |
 | Summon Garuda | Regel prüft | Summon Garuda II |
