@@ -2487,6 +2487,26 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
       Begleitern 48 (9.000 Punkte). Bei halber Größe ist das genau das Doppelte, bei weniger Punkten. Dasselbe sagen
       die Guides („a smaller roster earns more per familiar", FullBoosts, gelesen 19.11.2026; Werkzeugquelle). Nur
       dieses eine Paar trennt die Größe vom Rang [Schätzung: Teilung durch die Größe, belegt an einem Paar].
+    - *Sein Hauptkriterium (19.11.2026: „prüfen, ob bei weniger begleitern die erfahrung stärker steigt als bei vielen
+      begleitern. das ist das hauptkriterium bem leveln"; sein Hinweis: „pro rang gibt es auch einen aufzufüllenden
+      erfahrungsbalken, also entweder werte oder prozent"):*
+      - *Datengrundlage:* alle 16 Abrechnungen seiner Uploads vom 14. bis 18.11.2026, 182 Begleiter. Der Balken
+        steht im Fenster auf einer Skala bis 100: In allen 182 Einträgen liegen davor und danach zwischen 0 und 98.
+      - *Gleiches Brett, gleicher Rang, verschiedene Größe:* Brett 2, Rang 12, ohne Rangaufstieg. Mit 12 Begleitern
+        stieg der Balken um 24 (32→56, 54→78, 27→51); mit 6 Begleitern um 48 (10→58, 36→84, 12→60, 32→80, 15→63),
+        bei 9.000 gegen 9.424 und 9.615 Punkte. Bei halber Größe ist es genau das Doppelte, auf demselben Balken, ob
+        der in Prozent oder in Punkten zählt. Die Summe über das Team blieb gleich (6 × 48 = 12 × 24).
+      - *Antwort:* Ja. Bei weniger Begleitern steigt die Erfahrung je Begleiter stärker, bei halber Größe auf das
+        Doppelte. Belegt ist das an diesem einen Vergleich; andere Bretter und Größen gibt sein Bestand nicht her
+        (Brett 1 nur mit 10, Brett 3 nur mit 14 Begleitern).
+      - *Was die Größe des Balkens offen lässt:* Über einen Rangaufstieg hinweg sind Zuwächse nur vergleichbar, wenn
+        jeder Rang denselben Balken hat. Die Blätter (`XBMPetParamGrow`, `XBMScoreRank`) nennen keine benannte Spalte
+        dazu, und `XBMPetParamGrow` liefert bei xivapi nur Nullen (gelesen 19.11.2026). Ob höhere Ränge mehr
+        Erfahrung je Balken brauchen: weiß nicht. Es fehlt die Erfahrung je Rang aus dem Spiel. Die Werte über
+        Ränge hinweg (Rang 1 255, Rang 11 22) stehen deshalb in der Einheit des Balkens, nicht in Erfahrungspunkten.
+      - *Obergrenze:* 255 erreichten nur Begleiter ab einem Rang unter dem Brett (Brett 1 Rang 1; Brett 2 Rang 1
+        und 3). Ein sehr kleiner Kader aus sehr niedrigen Begleitern läuft gegen sie, und was darüber geht, verfällt
+        [Schätzung: die Grenze aus CrucibleSux, A796].
     - *Folge für seine Vorgabe:* „alle hinzugefügten begleiter bekommen erfahrung" stimmt. Der Schluss, eine
       Begrenzung widerspreche dem Leveln, stimmt nicht: Jeder weitere Begleiter nimmt den zurückliegenden einen
       gleichen Teil, und je höher sein Rang, desto weniger nützt ihm sein eigener Teil. Die Vorgabe ist deshalb nicht

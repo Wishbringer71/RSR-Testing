@@ -26192,6 +26192,19 @@ beastmaster da sind"). Die Logs kamen am selben Abend (Upload 994f52d8).
   Nicht umgesetzt; Vorlage mit Optionen und Empfehlung im TODO („Level füllt jeden Platz – Vorlage an ihn"). Die
   Empfehlung lautet, es bei A806 zu belassen.
 - *Prüfgrad:* Abrechnungen ausgewertet; die Teilung stützt ein Paar [Schätzung über dieses Paar hinaus].
+- *Nachtrag am selben Tag (seine Frage, ob bei weniger Begleitern die Erfahrung stärker steigt, „das hauptkriterium";
+  sein Hinweis auf den Balken je Rang, „werte oder prozent"):*
+  - Alle 16 Abrechnungen vom 14. bis 18.11.2026 (182 Begleiter) ausgewertet. Der Balken steht im Fenster auf einer
+    Skala bis 100 (0 bis 98 in allen Einträgen).
+  - Gleicher Rang, gleiches Brett: Rang 12 auf Brett 2 stieg mit 6 Begleitern um 48, mit 12 um 24, also bei halber
+    Größe um das Doppelte. Die Antwort ist ja.
+  - Ob höhere Ränge größere Balken haben, weiß ich nicht; die Blätter nennen es nicht (`XBMPetParamGrow` liefert bei
+    xivapi Nullen). Mein erster Vergleich über Ränge hinweg rechnete 100 je Rang und mischte damit möglicherweise
+    Einheiten; korrigiert im Konzept.
+  - Vorlage um (C) ergänzt: so wenige wie sicher, die niedrigsten zuerst. Empfehlung jetzt (C).
+  - Dabei lief versehentlich ein `git fetch` und `checkout` im RSR-Repository statt im Schema-Klon. Es entstand ein
+    lokaler Branch `latest` auf `main`, ohne Verlust, und `origin` blieb unberührt. Zurückgewechselt und mit
+    `git branch -d` entfernt.
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
