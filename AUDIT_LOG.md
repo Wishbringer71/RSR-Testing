@@ -26255,6 +26255,27 @@ ein höheres Brett Nachzügler hat; widerlegt, wenn die Zeile fehlt oder eine an
 „die Größe verteilt nur“: Die nächste Abrechnung mit gleichem Brett, gleichem Rang ohne Rangaufstieg und anderer Größe
 zeigt Zuwachs × Größe gleich (±1 je Begleiter, Rundung); widerlegt, wenn der kleinere Kader in der Summe mehr bekommt.
 
+### A900 · Quelle Beiruta 5307993f: Swiftcast in Bewegung, Wiederbelebung, Heiler – nichts zu bauen (19.11.2026)
+
+*Anlass:* Am Auftragsende meldete `check_source_updates.py` BeirutaNa1na/RotationSolverReborn auf d1e376bdd (ausgewertet war
+aa03eb9e2). Neu ist nur 5307993f („Beiruta healers rework + settings/notes cleanup", 19.11.2026), der Rest ist Upstream und
+schon gemergt (c170c9cd5, 78b43e656).
+
+*Beschwörer (`SMN_Reborn`):* (1) *Swiftcast in Bewegung nie, solange eine Wiederbelebung ansteht* (`ShouldHoldRaiseSwift`).
+Im Fork ohne Gewinn: Mit „Raise with Swiftcast or Dualcast" an nimmt die Wiederbelebung einen laufenden Swiftcast mit dem
+nächsten GCD (`RaiseSpell`, `RunningSwiftGoesToRaise`), wer ihn auch gedrückt hat; Konzept 11 („Swiftcast auf die
+Wiederbelebung entscheidet nur …") führt das als dieselbe Aktion in derselben Lage. Ohne die Einstellung hat der Spieler die
+Wiederbelebung mit Swiftcast abgewählt. (2) *Bewegung erst nach 0,3 s, Swiftcast erst nach 1,5 s Bewegung und nur ohne
+billigeren Sofortzauber* (`MovingPastGrace`, `SwiftcastMovementPriority`): wirkt nur mit „Swiftcast for movement uptime", ab
+Werk aus und für ihn kein Vorschlag (CLAUDE.md, „Spielweise"). Wo die Schwelle ab Werk wirkte – Crimson Cyclone in den
+ersten 0,3 s einer Bewegung –, wäre sie ein Sprung zum Ziel, während er ausweicht; verworfen (Sicherheit vor Schaden). Kommt
+die Änderung über Upstream, wird sie beim Sync gegen diese Punkte geprüft.
+*Heiler:* nur die Beiruta-Rotationen (fremde Rotationen, Konzept 11: erfasst, nicht geändert). Die Ideen – AoE-Schwellen
+nach Potenz, Auffüllen von Nicht-Tanks – gehen als Fragen in die Untersuchung der Rotationen aller Jobs (sein Auftrag vom
+19.11.2026); Swiftcast nur für Heilung haben die Reborn-Heiler schon.
+
+*Ergebnis:* nichts zu bauen; Quelle auf d1e376bdd eingetragen (`--record`). *Prüfgrad:* statisch, am Code des Forks.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
