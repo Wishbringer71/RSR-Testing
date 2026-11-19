@@ -38,6 +38,9 @@ def todo_open(text):
             continue
         if section and line.startswith("### "):
             out.append("- " + line[4:])
+        # An entry written as a bullet with a bold title (A905: two open items stood so and the brief showed none).
+        elif section and line.startswith("- **") and "**" in line[4:]:
+            out.append("- " + line[4:line.index("**", 4)])
         elif section and line.strip() and not line.startswith(("*", "-", " ")) and out[-1].endswith(":"):
             out.append("- " + line.strip())
     return out
@@ -112,5 +115,21 @@ def main(argv):
     return 0
 
 
+def self_test():
+    sample = "\n".join([
+        "## Defekte", "", "- Keine offenen Defekte.", "",
+        "## Offene Arbeit", "", "- **Bullet title** (his order). *Wirkung:* text", "  continued line", "",
+        "### Heading title · R", "*Kosten:* text", "",
+        "## Technische Schuld", "", "### Debt not listed", "- **Bullet not listed** text",
+    ])
+    got = todo_open(sample)
+    assert got == ["Defekte:", "Offene Arbeit:", "- Bullet title", "- Heading title · R"], got
+    print("self-test ok: bold bullets and headings under the open sections are listed, other sections and "
+          "continuation lines left out")
+
+
 if __name__ == "__main__":
+    if "--self-test" in sys.argv:
+        self_test()
+        sys.exit(0)
     sys.exit(main(sys.argv[1:]))

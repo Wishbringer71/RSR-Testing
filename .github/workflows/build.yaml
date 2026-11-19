@@ -352,6 +352,9 @@ jobs:
       - name: Check the archive parses whole, its table of revocations unbroken
         run: python3 .github/scripts/audit/archive.py recent 1
 
+      - name: Check the session brief's TODO reader against constructed entries
+        run: python3 .github/scripts/audit/session_brief.py --self-test
+
       - name: Check the session brief still finds the open TODO items
         run: python3 .github/scripts/audit/session_brief.py --no-sync
 

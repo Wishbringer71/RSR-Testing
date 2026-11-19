@@ -26370,6 +26370,29 @@ Arcane Circle, Starry Muse und Battle Voice steht „recast 120 s“, bei Techni
 etwa 120 s. Widerlegt, wenn ein Raidbuff fehlt, eine Zeile für Standard Finish oder eine Karte steht, oder der Takt
 deutlich von 120 s abweicht.
 
+### A905 · Sitzungsbrief übersah offene TODO-Punkte in Aufzählungsform (19.11.2026)
+
+*Befund:* Beim Sitzungsbeginn am 19.11.2026 meldete der Sitzungsbrief „Offene Arbeit:“ ohne Eintrag, obwohl dort zwei
+Punkte standen („Rotationen aller Jobs über den Augenblick hinaus“, „Splatoons Flächenanzeige …“). `todo_open` las nur
+Einträge mit `###`-Überschrift und freie Zeilen; Einträge der Form `- **Titel** …` übersprang es. Wirkung: Eine Sitzung,
+die nur dem Brief folgt, hält das TODO für leer. Die Prüfung in der CI (`--no-sync`) schlug nicht an, weil sie nur prüft,
+dass die Abschnitte gefunden werden, nicht ihre Einträge.
+
+*Behoben:* `todo_open` listet auch fett betitelte Aufzählungen unter Defekte und Offene Arbeit. Neuer Selbsttest
+(`--self-test`, in `build.yaml`) mit Aufzählung, Überschrift, Folgezeile und einem fremden Abschnitt; am Stand davor fehlt
+die Aufzählung.
+*Klasse geprüft:* `check_todo_open.py` liest jede Zeile unter der ersten Überschrift auf Wörter erledigter Arbeit, nicht
+die Titel der Einträge (`defects`); die Form eines Eintrags spielt dort keine Rolle. `check_concept_links.py` liest die
+Verweise „Konzept:“ je Eintrag, nicht seinen Titel.
+
+*Dieselbe Klasse in `check_concept_links.py`:* `todo_by_concept` kannte nur `###`-Einträge und eine Zeile, die mit
+`**Konzept:**` beginnt. Das TODO schreibt `*Konzept:* 03, „…“` im Eintrag oder „Konzept 08, …“ in Prosa. Gemeldet waren
+14 Einträge „ohne Konzept“ und bei jedem Konzept 0 offene Punkte; der Lauf blieb grün. Jetzt liest es beide
+Eintragsformen, beide Markierungen und eine Nummer statt eines Dateinamens; Selbsttest mit fünf Formen. Danach blieben
+fünf Einträge ohne jede Nennung; ihr Konzept ist nachgetragen (19, 03, 19, 24, 19).
+
+*Prüfgrad:* Selbsttests; Lauf am heutigen TODO (beide offenen Punkte gelistet, jeder Eintrag mit Konzept).
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

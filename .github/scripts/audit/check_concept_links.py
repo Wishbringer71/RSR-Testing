@@ -118,27 +118,52 @@ def check_outside(known, paths=OUTSIDE):
     return broken, planned
 
 
-def todo_by_concept(path=Path('TODO.md')):
+# An entry of TODO.md: a heading `### Titel`, or a bullet with a bold title `- **Titel** …` (A905: the reader knew only the
+# first form and a bold `**Konzept:**` line, while the TODO writes `*Konzept:* 03, „Abschnitt"` inside the entry - every
+# entry counted as one without a concept, and the report said nothing wrong).
+ENTRY = re.compile(r'^(?:### (?P<heading>.+)|- \*\*(?P<bullet>[^*]+)\*\*)')
+CONCEPT_MARK = re.compile(r'(?:\*{1,2}Konzept:\*{1,2}|\bKonzept)\s*(?P<refs>(?:\d\d\b|`?\d\d-[a-z0-9-]+\.md`?)[^*]{0,80})')
+NUMBER = re.compile(r'\b(\d\d)\b')
+
+
+def todo_by_concept(path=Path('TODO.md'), names=None):
     """Which open points name which concept.
 
     The binding lives in TODO.md and only there - a copy of the titles inside each concept would be
-    a second place to age. Entries carry a `**Konzept:**` line under their heading; this reads it
-    back so the assignment can be seen without opening both files.
+    a second place to age. An entry names its concept with `*Konzept:*` (or `**Konzept:**`) followed by
+    the concept's number or file name; this reads it back so the assignment can be seen without opening
+    both files. `names` are the concept files, to resolve a bare number.
     """
-    if not path.exists():
+    text = path.read_text(encoding='utf-8') if isinstance(path, Path) and path.exists() else (
+        path if isinstance(path, str) and not isinstance(path, Path) else None)
+    if text is None:
         return {}, []
+    names = sorted(names if names is not None else (p.name for p in CONCEPT_DIR.glob('*.md')))
+    by_number = {n[:2]: n for n in names if NUMBERED.match(n)}
     assigned, unassigned = {}, []
-    heading = None
-    for line in path.read_text(encoding='utf-8').split('\n'):
-        if line.startswith('### '):
-            heading = line[4:].strip()
-            unassigned.append(heading)
-        elif heading and line.startswith('**Konzept:**'):
-            for ref in concept_refs(line):
-                assigned.setdefault(ref, []).append(heading)
-            if unassigned and unassigned[-1] == heading:
-                unassigned.pop()
-            heading = None
+    entries = []
+    for line in text.split('\n'):
+        if line.startswith('## '):
+            entries.append(None)
+            continue
+        match = ENTRY.match(line)
+        if match:
+            entries.append([(match.group('heading') or match.group('bullet')).strip(), line])
+        elif entries and entries[-1] is not None:
+            entries[-1][1] += '\n' + line
+    for entry in entries:
+        if entry is None:
+            continue
+        title, body = entry
+        refs = set()
+        for mark in CONCEPT_MARK.finditer(body):
+            refs |= concept_refs(mark.group('refs'))
+            refs |= {by_number[n] for n in NUMBER.findall(mark.group('refs')) if n in by_number}
+        if refs:
+            for ref in refs:
+                assigned.setdefault(ref, []).append(title)
+        else:
+            unassigned.append(title)
     return assigned, unassigned
 
 
@@ -183,6 +208,14 @@ def selftest():
         raise AssertionError('a reference to an existing concept was reported')
     if any('loop-evaluation' in ref for _, _, ref in broken + planned):
         raise AssertionError('a reference into another docs folder was measured against the concepts')
+
+    sample = ('# TODO\n\n## Offene Arbeit\n\n- **Bullet** text *Konzept:* 03, „F".\n\n### Heading\n*Auflösung:* x.\n'
+              '*Konzept:* 12.\n\n### Without\ntext only, a Konzept without number\n\n### Bold form\n**Konzept:** `13-aoe.md`\n'
+              '\n### Prose\nsee Konzept 13, „Abschnitt".\n')
+    assigned, unassigned = todo_by_concept(sample, names=['03-universal.md', '12-searing.md', '13-aoe.md'])
+    if assigned != {'03-universal.md': ['Bullet'], '12-searing.md': ['Heading'], '13-aoe.md': ['Bold form', 'Prose']} \
+            or unassigned != ['Without']:
+        raise AssertionError('the TODO reader missed a form of entry or of concept mark: %s %s' % (assigned, unassigned))
 
     print('self-test ok: a linked pair passes; a dangling reference and a concept without an '
           'inbound\n  link are each caught, and a self-reference does not count as one; a dangling '

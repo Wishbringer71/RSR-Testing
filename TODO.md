@@ -58,7 +58,7 @@ jede solche Änderung trägt im selben Commit die Anpassung des Modus „plugin"
 
 ### Status-Einstellungen auf der falschen Seite der Aktion · N, U
 Fundstellen in Bozja (`scan11.py`), außerhalb seines Profils; je eine Richtungsentscheidung, die eine Beobachtung im
-Inhalt verlangt. *Auflösung:* erst, wenn er Bozja nennt.
+Inhalt verlangt. *Auflösung:* erst, wenn er Bozja nennt. *Konzept:* 19.
 
 ### Die Beiruta-Heiler lesen das Ziel des letzten Erfolgs · N, R
 BeirutaAST, BeirutaWHM und BeirutaSGE lesen `X.Target.Target` vor `X.CanUse`, an 17 Stellen, und prüfen so das Ziel des
@@ -83,7 +83,7 @@ Fehler in die gefährliche Richtung. *Auflösung:* eine Quelle für die Aufteilu
 
 ### Die Aquapolis fehlt in der Zielpriorisierung der Schatzkarten-Dungeons · N, U
 `IsInTheAquapolis` ohne Zweig in `TreasureDungeonPrio`. Außerhalb seines Profils. *Auflösung:* die Vorrang-Gegner aus
-den Spieldaten des Gebiets.
+den Spieldaten des Gebiets. *Konzept:* 03, „Inhalt eines Gebiets".
 
 ### Doppelte Zustandswahl in den Zustandskommandos · N
 `AdjustStateType` und die fünf `Cycle*`-Methoden lösen dieselbe Aufgabe; `DTRAllAuto` mit `ToggleAuto` kollabiert auf
@@ -95,7 +95,7 @@ Ordinalvertrag. `AutodutyUpdateState` dupliziert `UpdateState` und löst sich mi
 *Auflösung:* beim Tooltip belassen, solange kein zweiter Fall auftritt. *Konzept:* 10.
 
 ### VPR: leerer Zweig einer Struktur, die anderswo entscheidet · U
-`VPR_Reborn.GeneralGCD`, Swiftskin's Bite und Sting. *Auflösung:* Adressat Upstream; bewusst nicht gelöscht (A11).
+`VPR_Reborn.GeneralGCD`, Swiftskin's Bite und Sting. *Auflösung:* Adressat Upstream; bewusst nicht gelöscht (A11). *Konzept:* 19.
 
 ### Die Modelle von Maschinist, Samurai und Monk bilden ihre Rotation von Hand nach · R
 *Kosten:* Ändert sich der Ruf der Königin oder die GCD-Folge in `MCH_Reborn`, die GCD-Folge oder der Meikyo-Zweig in
@@ -120,7 +120,7 @@ auszuschließen; bis dahin bleibt die Vorhersage `burstwatch-no-general-actions`
 `manifest.json` unverändert (`InternalName`, URLs). Ein eigener interner Name verlegt den Ordner mit Einstellungen und
 gelernten Tabellen, ein eigener angezeigter Name nimmt BossModReborn die Verbindung (es erkennt RSR an „Rotation Solver
 Reborn"); beides kostet im Spiel, solange nicht beide Installationen gebraucht werden (A533). *Auflösung:* wenn er beide
-nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigter Name bleibt.
+nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigter Name bleibt. *Konzept:* 24.
 
 ## Warten auf Daten oder Fremde
 
@@ -137,7 +137,7 @@ nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigt
 - **Absturz einer zweiten Installation am 11.11.2026, 21:18** (A736). Das Spiel endete als Dunkelritter in der
   Azim-Steppe 0,5 s nach Kampfbeginn, ohne die Plugins zu entladen; Build b184ee7fc (08.11.2026). Das `DefenseTrace.log`
   nennt keinen Fehler. Auflösung: das Dalamud-Protokoll dieser Minuten (und ein Bericht des Absturzbehandlers, falls
-  vorhanden) – zeigt es eine Ausnahme aus RSR, Loop an der Stelle; sonst Punkt schließen.
+  vorhanden) – zeigt es eine Ausnahme aus RSR, Loop an der Stelle; sonst Punkt schließen. *Konzept:* 19.
 
 - **Crucible: Flucht, Tötungsstapel und Zauberbücher an seinem Log nachprüfen** (A671, A677, A678; seine Vorgabe vom
   07.11.2026: „vorab im vollen kritischen loop prüfen, und auch nach einspielung der logs"). Lager, Weg, Endkampfplan
