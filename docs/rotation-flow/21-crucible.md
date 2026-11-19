@@ -1751,6 +1751,36 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
       Schaden. Atomic Ray der Durga (49272, „pet cover will not take it", Daedalus nach icy-veins): RSR löst
       Zähnefletschen nach LP aus, nicht nach angekündigten Flächen (K9), und rechnet nirgends mit der Deckung gegen sie.
 
+- *K12a – Das Crawling Piece der Sirene* (A913; Brett 3, Namensblatt 14586, deutsch „kriechendes Ebenbild“). *Was
+  gilt:* Upstreams Einstellung „Crucible of the Unbroken - Siren logic“ (ab Werk an) setzt es an die Spitze der Ziele,
+  solange es dich gebunden hat (Status Fessel 5710 auf dir); sonst wählt die allgemeine Zielwahl nach Gefahr (Konzept
+  03), wie bei jedem Gegner. Die Spur schreibt je Fessel einmal „crucible siren: bound - …“.
+  - *Mechanik (sein Lauf vom 18.11.2026, zwei Stücke; Spielblätter, xivapi v2, 19.11.2026):* Es erscheint bei der
+    Beschwörung der Sirene, hat dich als Ziel (BossModReborn: Haltestrick 17 vom Stück zu dir) und kriecht auf dich zu.
+    Bei Berührung – 1,3 Yalm und rund 3 Yalm Abstand in den beiden Fällen – wirkt es Agonales Klammern (Death Throes,
+    48568, ohne Wirkzeit) und legt Fessel (5710, „Bewegungsunfähig“, Dauer 9.999 s). Die Fessel endet mit seinem Tod: in
+    beiden Fällen in derselben Zeile, in der seine LP auf 0 fielen (19:15:45.319 und 19:17:12.170); die Todeszeile des
+    Mitschnitts folgt 2 s später. Gebunden weichst du weder Feral Lunge (Rechteck 50 × 16) noch Dead Man's Dirge (Kreis
+    12, Ring 3–43) aus. Gebunden war er 5,7 s und 7,4 s.
+  - *Optionen:* (0) wie Upstream: immer an der Spitze. (A) an der Spitze nur, solange du gebunden bist (BossMod
+    02a16b442, das ihm sonst mit seiner KI ausweicht). (B) wie A, ungebunden zusätzlich nie Ziel. (C) wie A, ungebunden
+    an der Spitze nur, wenn es ohne Schritt in deiner Reichweite steht.
+  - *Abwägung im Kampf:* Gebunden ist sein Tod der einzige Weg aus der Fessel – alle Optionen außer keiner Regel
+    nehmen es dann zuerst. Ungebunden zieht (0) den Schaden von den shambling pieces ab, die dich mit Wallop treffen
+    (5 und 6 % deiner LP je Treffer in diesem Lauf, Gefahr 15,8 LP/s gegen 7,2 bis 7,5 LP/s des Crawling Piece in RSRs
+    Schätzung): Um 19:15:38.124 wählte die Zielwahl nach Gefahr das shambling piece, die Regel setzte 0,5 s später das
+    Crawling Piece. Folgt deine Bewegung dem Ziel – du oder eine KI –, führt (0) dich zu ihm: Im zweiten Fall wechselte
+    das Ziel um 19:17:03.123, und 1,0 s später band es dich. Der Gewinn von (0), Schaden vor der Berührung, war ein
+    Treffer (341 von 3.365 LP) in zwei Fällen. (B) verschenkt den Schaden eines Gegners, der dich ohnehin erreicht. (C)
+    trifft fast nur den Augenblick der Berührung selbst. (A) überwiegt.
+  - *Falsifikation:* (1) *Kein Defekt:* Die Regel kostet nichts. Widerlegt: Sie übersteuerte die Gefahrenwahl
+    (19:15:38.124 → 38.641). (2) *Option falsch:* Ohne Vorrang erreicht es dich später mit voller LP, und die Fessel
+    dauert länger. Die Fessel dauert ab Berührung bis zu seinem Tod; der Vorrang davor brachte einen Treffer.
+    *Preis:* rund 10 % längere Fessel, wo der Schaden davor ein Treffer gewesen wäre. (3) *Ausgeliefert, und nichts ändert
+    sich:* RSR erkennt die Fessel nicht – dann fehlt der Vorrang, wenn er zählt, und es ist schlechter als vorher. RSR
+    prüft den Status 5710 auf dir, von wem auch immer (`PlayerHasStatus`); die Spurzeile zeigt je Fessel, dass er griff,
+    Vorhersage `crucible-siren-bound`.
+
 - *K11 – Begleiter über das Brett planen* (sein Hinweis und seine Vorgabe vom 05.11.2026: „da begleiter über die
   spielfelder des brettes hinweg schaden ansammeln und hp sinkt, auch strategische planung, falls begleiter mehrfach
   eingesetzt werden sollen, damit diese an den spielfeldern, wo sie unbedingt notwendig sind, auch bereitstehen").

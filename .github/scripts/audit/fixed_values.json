@@ -1320,6 +1320,16 @@
    "reason": "Percent to share: the gear's effect text states its figures in percent; the divisor is the definition of the unit, as for the item texts and the rest prompt (A551, A564)."
   },
   {
+   "file": "RotationSolver/Engine/Helpers/ObjectHelper.PriorityAndImmunity.cs",
+   "code": "14586 => Service.Config.CrucibleSiren && BoundByCrawlingPiece(), // Crawling Piece",
+   "values": [
+    "14586"
+   ],
+   "status": "exception",
+   "loop": "A913",
+   "reason": "Upstream's row of the crawling piece in the game's BNpcName sheet (xivapi v2, 19.11.2026: \"crawling piece\"); an identifier of the game, not a tuned value. The fork adds only the bind condition to upstream's line."
+  },
+  {
    "file": "RotationSolver/Engine/Helpers/ObjectHelper.Jobs.cs",
    "code": "private const uint ZuPieceNameId = 14572;",
    "values": [

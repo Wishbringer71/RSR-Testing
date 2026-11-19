@@ -19,5 +19,12 @@
   "kind": "each",
   "situation": "crucible items read:",
   "match": "crucible items read: [0-9]+, token and loot boosts: (?=.*\\(TokenBoost\\))(?=.*\\(LootBoost\\)).+$"
+ },
+ {
+  "id": "crucible-siren-bound",
+  "archive": "A913",
+  "kind": "each",
+  "situation": "crucible siren:",
+  "match": "crucible siren: bound - the crawling piece comes first until it falls, its fall ends the bind$"
  }
 ]

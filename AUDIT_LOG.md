@@ -26591,6 +26591,25 @@ und Löschungen").
   gesperrt).
 *Prüfgrad:* Workflow-Läufe und Release-API gelesen, Prüfskripte; die Übergabe gegen den Release-Text abgeglichen.
 
+### A913 · Sirene, Brett 3: das Crawling Piece nur gebunden zuerst (19.11.2026)
+
+*Anlass:* TODO „Sirene (Brett 3): Vorrang des Crawling Piece ohne gemessenen Nutzen“ (A911), sein Auftrag „todo weiter im
+loop abarbeiten“ (19.11.2026).
+*Grundlagen (Konzept 21, K12a):* Spielblätter (xivapi v2, 19.11.2026): Death Throes 48568 ohne Wirkzeit, Fessel 5710
+„Unable to move.“; BossModReborn 8d5ff8e (15.11.2026): Vorrang 3 für das Crawling Piece, Haltestrick 17 zu dir; BossMod
+02a16b442: Vorrang nur gebunden, sonst Ausweichen. Sein Mitschnitt vom 18.11.2026 (zwei Stücke): Fessel bei Berührung
+(1,3 Yalm und rund 3 Yalm), Dauer 9.999 s, Ende in derselben Zeile wie seine LP 0; gebunden 5,7 und 7,4 s.
+*Widerruf:* Meine Aussage in A911, die Fessel ende vor seinem Tod, las die Todeszeile statt der LP-Zeile (C231). Damit
+fällt auch „verkürzte sie nicht“: Sein Tod ist der einzige Weg aus der Fessel.
+*Entscheidung:* Option A – Upstreams „Siren logic“ setzt es nur noch an die Spitze, solange du die Fessel 5710 trägst;
+ungebunden wählt die Gefahrenreihenfolge. Gemessen übersteuerte die alte Regel sie (19:15:38.124 shambling piece, 0,5 s
+später das Crawling Piece), und im zweiten Fall folgte 1,0 s nach dem Zielwechsel die Fessel. Preis: der Schaden vor der
+Berührung, in zwei Fällen ein Treffer (341 von 3.365 LP). Verworfen: B (ungebunden nie Ziel; verschenkt Schaden), C
+(ungebunden nur in Reichweite; trifft fast nur die Berührung selbst). Upstream-Datei, eine Bedingung und der Text der
+Einstellung geändert.
+*Prüfgrad:* statisch, Compile, Prüfskripte; Mitschnitt ausgewertet. *Vorhersage:* je Fessel eine Zeile „crucible siren:
+bound - …“ (`crucible-siren-bound`); widerlegt, wenn Fessel 5710 im Mitschnitt liegt und die Zeile fehlt.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -26976,3 +26995,4 @@ geben den Stand vom 14.10.2026 wieder.
 | C228 | A740 und Konzept 24, „Fork-Code in eigenen Teildateien“ (Stand A740): Statische Felder, deren Startwert ein anderes liest, bleiben in ihrer Datei – das schütze die Reihenfolge | `_channelSince` und `_channelSeen` blieben in `DataCenter.cs`, `KeptChannels` zog nach `DataCenter.Channels.cs`; richtig nur durch die Dateireihenfolge, gebrochen durch Upstreams Aufteilung. Die Grenze ist „in derselben Datei hinter dem Gelesenen“ (A878) |
 | C229 | A885 und Konzept 21, „Abgleich mit Daedalus v0.1.124“ (Stand f6093e4ba): „the camp heals 90%“ sei unbelegt, die Campsite gebe 30 % | Allein ruhend heilt sie 90 % (Wiki zum ersten Brett, in Konzept 21 „Campsite“ und in RSRs Rast K10 geführt); 30 % je Teilnehmer gilt bei zwei Begleitern. Berichtigt am 18.11.2026; das Ergebnis „keine Änderung“ bleibt, weil eine feste Trankschwelle von 20 % seiner Sicherheitsregel widerspräche. |
 | C230 | A901 und Konzept 03, F (Stand 19.11.2026): Die vorhergesagte Bewegung lesen nur Paladin und Gelehrter | Beide lesen die vergangene Bewegungszeit (`MovingTime`, `StopMovingTime`). Die Vorhersage von BossMod (`Hints.MaxCastTime`) liest RSR zentral für alle Jobs: Kein Zauber beginnt, der länger wirkt, als bis zur nächsten Bewegung Zeit ist, und der Zaubernde nimmt dann einen Sofortzauber. Die Zählung je Rotation übersah die zentralen Stellen. | A902 |
+| C231 | A911 und TODO „Sirene (Brett 3)“ (Stand 3eae4b28a): Die Fessel des Crawling Piece endete vor seinem Tod, sein Vorrang verkürzte sie nicht | Die Fessel endete in beiden Fällen in derselben Zeile, in der seine LP auf 0 fielen (19:15:45.319, 19:17:12.170); ich las die Todeszeile (Typ 25), die der Mitschnitt 2 s später schreibt (A913) | widerrufen |

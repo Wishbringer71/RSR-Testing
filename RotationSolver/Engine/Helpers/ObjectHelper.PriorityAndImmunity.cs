@@ -346,7 +346,7 @@ public static partial class ObjectHelper
 			14571 => Service.Config.CrucibleYmir && !battleChara.HasStatus(false, StatusID.ParalyzingSpikes), // Sahagin Piece
 			14570 => Service.Config.CrucibleYmir && !HasUnspikedSahagin(), // Ymir Shell
 			14569 => Service.Config.CrucibleYmir && !HasUnspikedSahagin() && !AnyLivingHostile(14570), // Ymir Piece
-			14586 => Service.Config.CrucibleSiren, // Crawling Piece
+			14586 => Service.Config.CrucibleSiren && BoundByCrawlingPiece(), // Crawling Piece
 			_ => false,
 		};
 
