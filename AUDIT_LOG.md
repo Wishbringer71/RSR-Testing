@@ -26043,6 +26043,30 @@ Seine Meldung (18.11.2026): „brett 3, kampf gegen vogel: es erscheint kein vor
 - *Prüfgrad:* Compile und Prüfskripte. Das Fenster läuft auf der Basis, die `window_layout_model.py` misst. Im Spiel
   ist es nicht beobachtet.
 
+### A893 · CI-Minuten: ein Linux-Job, Build nur bei geänderter Eingabe (19.11.2026)
+
+Seine Vorgaben (19.11.2026): „Die usagelimits von GitHub für November (2000 Minuten CI) sind mit 1850 fast
+aufgebraucht … Im Loop prüfen", sein Hinweis „Die linux Aktionen sind 40% günstiger als die Windows Aktionen" und
+„ci minuten generell senken durch optimierungen und synergien".
+- *Gemessen (Lauf 44317596603, 18.11.2026):* Die Prüfungen auf Linux brauchten 40 s (1 Minute abgerechnet), der Build
+  auf Windows 99 s (2 Minuten, im Kontingent doppelt). Das sind 5 Minuten je Push, davon 80 % für den Windows-Build. Die
+  Prüfskripte selbst brauchen unter 30 s; die vier Selbsttests der Compilerschalter 16 s.
+- *Gebaut (Konzept 24, „Kosten der CI"):*
+  - Ein Job auf Linux: zuerst die Prüfungen, dann der Build. Jeder Build-Schritt läuft auch nach einem
+    fehlgeschlagenen Prüfschritt (`!cancelled()`).
+  - Der Build entfällt, wenn der Push keine Build-Eingabe ändert (`build_inputs.py`, Selbsttest mit beiden Seiten).
+  - Die Selbsttests der Schalter laufen nur, wenn sich `build.yaml` oder `ci_switch_probe.sh` ändert, und bei
+    unbekanntem Vorstand. Dieses Skript ersetzt viermal denselben PowerShell-Ablauf. Lokal geprüft: Eine Defektprobe
+    besteht, eine saubere lässt den Selbsttest scheitern.
+  - Ein neuerer Push bricht den laufenden Lauf ab (`concurrency`).
+  - Gepusht wird je abgeschlossenem Auftragspunkt (CLAUDE.md, „Commits und Branches").
+  - Auf Linux gemessen (19.11.2026): Plugin, `latest.zip` mit genau den 5 Dateien, die Commit-Kennung in der
+    Baugruppe und der Datengenerator. Der Release-Lauf baut weiter auf Windows.
+- *Erwartet:* je Push mit Code 2 Minuten statt 5 [Schätzung: Build auf Linux rund 60 s], je Push ohne Build-Eingabe
+  1 Minute statt 5.
+- *Prüfgrad:* lokal die Prüfskripte, YAML und das Probe-Skript. Der erste Lauf auf GitHub misst Dauer und
+  Überspringen.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

@@ -462,6 +462,57 @@ bevor RSR neu erscheint; dasselbe gilt heute schon für jeden der übrigen Clien
 
 ## Wie es gemessen bleibt
 
+### Kosten der CI
+
+*Anlass (seine Vorgabe vom 19.11.2026):* „Die usagelimits von GitHub für November (2000 Minuten CI) sind mit 1850 fast
+aufgebraucht. Evtl. die Scripte weniger aufblähen und effizienter gestalten. Im Loop prüfen", dazu sein Hinweis „Die
+linux Aktionen sind 40% günstiger als die Windows Aktionen".
+
+*Gemessen am 18.11.2026 (Lauf 44317596603):* `build.yaml` startete auf jedem Push in einen PR zwei Jobs.
+`DispatchChain` lief auf Linux mit allen Prüfskripten 40 s; abgerechnet wird je Job auf volle Minuten aufgerundet,
+also 1 Minute. `Build` lief auf Windows 99 s, also 2 Minuten. Windows-Minuten zählen im Kontingent doppelt
+[Schätzung: Faktor 2 aus GitHubs Abrechnungsregeln für private Repositories; sein Hinweis nennt 40 % Preisunterschied],
+macht 4. Zusammen 5 Kontingentminuten je Push, davon 80 % für den Windows-Build. Die Prüfskripte selbst brauchen
+unter 30 s; sie aufzublähen ist nicht die Ursache.
+
+*Optionen:*
+- (0) *Nullvariante:* bleibt bei 5 Minuten je Push. Das Kontingent reicht dann noch rund 30 Pushes.
+- (1) *Build auf Linux:* Der Build läuft hier im Container seit A331 auf Linux. Gemessen am 19.11.2026 auf Linux:
+  Plugin, `latest.zip` (genau die 5 Dateien), die Commit-Kennung in der Baugruppe und der Datengenerator.
+  Ersparnis: 2 von 5 Minuten.
+- (2) *Build nur, wenn der Push eine Build-Eingabe ändert:* Docs, Archiv, TODO, Prüfskripte, Regeln und Hooks
+  übersetzt der Compiler nicht. Ein solcher Push braucht den Build nicht; er kostet dann nur die Prüfungen
+  (1 Minute).
+- (3) *Neuere Läufe brechen ältere ab:* Zwei Pushes kurz nacheinander bezahlen den ersten nicht ganz.
+- (4) *Ein Job statt zwei* (seine Vorgabe vom 19.11.2026: „ci minuten generell senken durch optimierungen und
+  synergien"): ein Checkout statt zwei, einmal Aufrunden statt zweimal. Der Einwand, die Hälften verdeckten einander,
+  entfällt: Jeder Schritt des Builds läuft auch nach einem fehlgeschlagenen Prüfschritt (`!cancelled()`). Die
+  Prüfungen laufen zuerst, ihr Befund kommt also nicht später.
+- (5) *Selbsttests der Compilerschalter nur bei Änderung:* Die vier Proben prüfen, ob die Schalter wirken. Das kann
+  sich nur mit `build.yaml` oder `ci_switch_probe.sh` ändern; gemessen kosteten sie 16 s je Lauf. Sie laufen bei
+  Änderung und bei unbekanntem Vorstand, wie die Modelle (A323).
+- (6) *Seltener pushen:* ein Push je abgeschlossenem Auftragspunkt statt je Commit. Das ist eine Arbeitsregel
+  (CLAUDE.md, „Commits und Branches").
+
+*Abwägung:*
+- (1) verliert die Gleichheit mit dem Release, das `publish.yaml` weiter auf Windows baut. *Bedrohung:* ein Fehler,
+  der nur unter Windows auftritt. Linux unterscheidet Groß- und Kleinschreibung in Pfaden; was dort baut, findet
+  seine Dateien auch unter Windows. Den Rest fängt der Release-Lauf, bevor etwas ausgeliefert wird.
+- (2) verliert nichts: Ohne Änderung an einer Eingabe baut derselbe Code wie im letzten Lauf. Ist der vorige Stand
+  unbekannt (neuer PR, Force-Push, Handstart), baut es immer.
+
+*Gewählt:* alle außer (0). Je Push mit Code: ein Linux-Job, Prüfungen rund 40 s und Build rund 60 s
+[Schätzung: Linux-Build wie der Windows-Build ohne dessen langsameres Einrichten], also 2 Minuten statt 5. Je Push
+ohne Build-Eingabe: 1 Minute statt 5. Der Release-Lauf (`publish.yaml`, Windows) bleibt; er läuft nur bei einem
+Release.
+*Falsifikation:*
+- *Kein Defekt:* Er hat ihn gemessen (1.850 von 2.000).
+- *Option falsch:* Ein Linux-Lauf kostet so viel wie ein Windows-Lauf. Widerlegt durch seinen Hinweis und die
+  Abrechnung je Minute und Job.
+- *Ausgeliefert, und nichts ändert sich:* Die Entscheidung über den Build fiele immer auf „bauen". Messweg: Die
+  Zeile „build inputs changed: …" im Lauf nennt die Dateien; ein Push nur mit Docs zeigt „none", und die Schritte
+  des Builds stehen als übersprungen da. Die Dauer des Jobs zeigt, ob er unter zwei Minuten bleibt.
+
 - Die Arbeitsregeln daraus stehen in `.claude/rules/code.md`, „Struktur und Kosten", und greifen schon im Konzept: Die
   Definition of Ready verlangt für Code seinen Ort und, läuft er je Frame, seine Kosten (CLAUDE.md, A742).
 - `check_fork_placement.py` (CI) lehnt einen neuen Fork-Member in einer Datei von Upstream ab. Fork-Member erkennt

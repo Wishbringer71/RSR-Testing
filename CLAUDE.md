@@ -241,7 +241,9 @@ Gilt für jede Regel, im Code wie im Konzept (seine Vorgabe, 26.09.2026; für di
 
 **Commits und Branches**
 - Der Arbeits-Branch heißt `claude/fixes-after-<letztes Fork-Release>`, etwa `claude/fixes-after-7.5.6.13` (seine Vorgabe); nach einem neuen Release ein neuer Branch mit dessen Nummer. Grund: Der Name sagt, auf welchem Release-Stand gearbeitet wird. Gibt die Sitzungsumgebung einen anderen Namen vor, gilt seine Vorgabe, und ich sage es ihm.
-- Klein geschnitten, zeitnah gepusht; ein eigener Branch je Vorhaben ist nicht nötig.
+- Klein geschnitten committet. Gepusht wird je abgeschlossenem Auftragspunkt, nicht je Commit, denn jeder Push kostet
+  einen CI-Lauf aus seinem Kontingent (seine Vorgabe, 19.11.2026: „ci minuten generell senken“, A893). Ein eigener
+  Branch je Vorhaben ist nicht nötig.
 - Vollständig gemergte Branches sind Löschfälle; ich melde sie ihm.
 - Bleibt ein CI-Lauf aus: zuerst `mergeable_state` messen und die Basis mergen.
 - Commit-Identität nicht überschreiben (`user.name = Claude`, `user.email = noreply@anthropic.com`; kein `git -c user.name=… -c user.email=…`). Sein Klarname und seine private Adresse gehören in keinen Commit; `.githooks/pre-commit` (für Merges ohne Konflikt über `pre-merge-commit`) und `check_commit_identity.py` sperren fremde Adressen und Namen; `core.hooksPath` setzt der Sitzungsbrief.

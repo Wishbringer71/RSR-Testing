@@ -8,10 +8,15 @@ on:
   # equals a tree some pull request run already built. That holds, but it stops holding the moment
   # anything lands on main directly.
   workflow_dispatch:
+# A newer push to the same pull request cancels the run still going for the older one (A893): its result no longer
+# describes the head.
+concurrency:
+  group: build-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 jobs:
   DispatchChain:
-    # Separate from Build: needs no .NET and no Dalamud, so it reports in
-    # seconds instead of waiting on the full Windows build.
+    # The checks first, then the build in the same job (A893, section 6): one checkout, one job's rounding up to the
+    # minute, on Linux.
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
@@ -20,6 +25,29 @@ jobs:
           # Full history, because the fork version check asks `git describe` which upstream release
           # this code sits on, and the default checkout is one commit deep.
           fetch-depth: 0
+
+      # A893 (concept 24, "Kosten der CI"): the build (section 6) runs only when this push changes what the compiler reads. Docs,
+      # archive, TODO, the audit scripts, rules and hooks are not compiled; a push of only those builds the same code as
+      # the run before. Unknown previous head (a new pull request, a force push) or a manual run: build.
+      - name: Check the build-input filter against constructed paths
+        run: python3 .github/scripts/audit/build_inputs.py --self-test
+
+      - name: Decide whether this push changes a build input
+        id: inputs
+        if: ${{ !cancelled() }}
+        run: |
+          before="${{ github.event.before }}"
+          after="${{ github.event.pull_request.head.sha || github.sha }}"
+          if [ "${{ github.event_name }}" != "pull_request" ] || [ -z "$before" ] || ! git cat-file -e "$before^{commit}" 2>/dev/null; then
+            echo "build inputs changed: previous head unknown - build"
+            { echo "build=true"; echo "switches=true"; } >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          inputs="$(git diff --name-only "$before" "$after" | python3 .github/scripts/audit/build_inputs.py)"
+          echo "build inputs changed: ${inputs:-none}"
+          if [ -n "$inputs" ]; then echo "build=true" >> "$GITHUB_OUTPUT"; else echo "build=false" >> "$GITHUB_OUTPUT"; fi
+          if git diff --name-only "$before" "$after" -- .github/workflows/build.yaml .github/scripts/ci_switch_probe.sh | grep -q .; then
+            echo "compiler switches changed - their self-tests run"; echo "switches=true" >> "$GITHUB_OUTPUT"
+          fi
 
       # ---- 0. Prerequisite: the upstream remote. Five checks read it (commit identities, fixed values, fork
       # version, release note, setting tooltips); it has to come before all of them, whatever their section.
@@ -38,14 +66,14 @@ jobs:
       # and stands for a defect class that happened here (its comment names it).
 
       # First, because it is the cheapest answer to the most expensive failure: a file that does not
-      # parse fails the Windows build after a minute and a half, and there is no local .NET here to
+      # parse fails the build after a minute and a half, and there is no local .NET here to
       # catch it sooner. A move that left two method bodies without their signatures cost exactly
       # that round trip.
       - name: Check the C# files are structurally intact
         run: python3 .github/scripts/audit/check_cs_structure.py
 
       # MSBuild imports these before compiling anything, so a parse error fails every project.
-      # Catching it here costs a second; the same finding in the Windows job costs a minute.
+      # Catching it here costs a second; the same finding in the build costs a minute.
       - name: Check the MSBuild files are well-formed XML
         run: python3 .github/scripts/audit/check_msbuild_xml.py
 
@@ -420,29 +448,33 @@ jobs:
             fi
           done
 
-  Build:
-    runs-on: windows-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v7
-        with:
-          submodules: true
+      # ---- 6. The build (A893, concept 24, "Kosten der CI"): in this job since 19.11.2026, on Linux. A Windows minute counts
+      # twice against the CI quota, and the Windows build was 80 % of each push's minutes; a second job paid a second
+      # checkout and its own rounding up to the minute. The release (publish.yaml) still builds on Windows, so whatever
+      # only Windows rejects is caught before anything ships. Each step runs after a failed check too (!cancelled()),
+      # so a check and the build never hide each other's result; it runs when this push changes a build input. The
+      # switch self-tests run when the switches can have changed - build.yaml or the probe script - like the models.
+      - name: Fetch the submodules
+        if: ${{ !cancelled() && steps.inputs.outputs.build == 'true' }}
+        run: git submodule update --init
 
       - name: Set up .NET
+        if: ${{ !cancelled() && steps.inputs.outputs.build == 'true' }}
         uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '10.0.x'
 
       - name: Download Dalamud Latest
+        if: ${{ !cancelled() && steps.inputs.outputs.build == 'true' }}
         # Same track as publish.yaml, always. Upstream moved the release build to the
         # staging channel in 7.5.6.0 and back to the release channel in the Beastmaster
         # commit; this line follows, because a check against a different channel than the
-        # release builds against no longer measures what is shipped.
-        run: |
-          Invoke-WebRequest -Uri https://goatcorp.github.io/dalamud-distrib/latest.zip -OutFile latest.zip
-          Expand-Archive -Force latest.zip -DestinationPath "$env:AppData\XIVLauncher\addon\Hooks\dev"
+        # release builds against no longer measures what is shipped. On Linux the projects
+        # look for it in ~/.xlcore/dalamud/Hooks/dev (DalamudLibPath); cloud_build.sh fetches it there.
+        run: bash .github/scripts/cloud_build.sh --fetch
 
       - name: Restore NuGet Packages
+        if: ${{ !cancelled() && steps.inputs.outputs.build == 'true' }}
         run: dotnet restore RotationSolver/RotationSolver.csproj
 
       # A member Dalamud, ClientStructs or ECommons marks [Obsolete] has often changed meaning, not
@@ -450,45 +482,29 @@ jobs:
       # until upstream switched after a Dalamud update. The compiler says so as CS0618/CS0612, and a
       # warning in a green run is read by nobody, so here - and only here, not in the projects, where
       # it would stop the owner's own build on the next Dalamud release - it fails the check.
-      # Self-test first: a probe that calls an obsolete member must fail with the same switch, or a
-      # clean run below would not tell a tree without obsolete use from a switch that does nothing.
+      # Every self-test below first builds its probe without the switch: if that fails, a failure with the
+      # switch would prove nothing about it. Then the switch must fail the probe, with each expected code.
       - name: Self-test the obsolete-use switch
+        if: ${{ !cancelled() && steps.inputs.outputs.build == 'true' && steps.inputs.outputs.switches == 'true' }}
         run: |
-          $probe = Join-Path $env:RUNNER_TEMP 'obsolete-probe'
-          New-Item -ItemType Directory -Force $probe | Out-Null
-          Set-Content (Join-Path $probe 'Probe.csproj') '<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net10.0</TargetFramework><OutputType>Library</OutputType></PropertyGroup></Project>'
-          Set-Content (Join-Path $probe 'Probe.cs') 'public static class P { [System.Obsolete("probe")] public static void Old() { } [System.Obsolete] public static void Bare() { } public static void Use() { Old(); Bare(); } }'
-          # Without the switch the probe must build - otherwise a failure below could come from
-          # anything (restore, SDK) and prove nothing about the switch.
-          dotnet build $probe | Out-Host
-          if ($LASTEXITCODE -ne 0) { throw 'The probe does not build even without the switch; the self-test measures nothing.' }
-          $out = dotnet build $probe --no-incremental -warnaserror:CS0618,CS0612 2>&1 | Out-String
-          Write-Host $out
-          if ($LASTEXITCODE -eq 0) { throw 'The obsolete-use switch let a call to an [Obsolete] member through.' }
-          foreach ($code in 'CS0618', 'CS0612') {
-            if ($out -notmatch "error $code") { throw "The probe failed, but not with error $code." }
-          }
-          $global:LASTEXITCODE = 0
+          probe="$RUNNER_TEMP/obsolete-probe"; mkdir -p "$probe"
+          echo '<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net10.0</TargetFramework><OutputType>Library</OutputType></PropertyGroup></Project>' > "$probe/Probe.csproj"
+          echo 'public static class P { [System.Obsolete("probe")] public static void Old() { } [System.Obsolete] public static void Bare() { } public static void Use() { Old(); Bare(); } }' > "$probe/Probe.cs"
+          bash .github/scripts/ci_switch_probe.sh "$probe" "-warnaserror:CS0618,CS0612" CS0618 CS0612
 
       # The projects ban LINQ through BannedSymbols.txt, found as $(SolutionDir)BannedSymbols.txt. The
       # owner builds the solution, where SolutionDir is set; this job builds a project, where it is empty,
       # the list is not found, and the analyzer bans nothing - so a LINQ call reached the owner's build
       # as RS0030 while every run here stayed clean (A250). SolutionDir is passed explicitly, and RS0030
-      # fails the check like an obsolete call. The self-test wires a probe exactly like the projects and
-      # builds it with the same arguments: if the list is not found, the probe builds and the step fails.
+      # fails the check like an obsolete call. The probe is wired exactly like the projects and built with the same
+      # arguments: if the list is not found, the probe builds and the step fails.
       - name: Self-test the banned-API switch
+        if: ${{ !cancelled() && steps.inputs.outputs.build == 'true' && steps.inputs.outputs.switches == 'true' }}
         run: |
-          $probe = Join-Path $env:RUNNER_TEMP 'banned-probe'
-          New-Item -ItemType Directory -Force $probe | Out-Null
-          Set-Content (Join-Path $probe 'Probe.csproj') '<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net10.0</TargetFramework><OutputType>Library</OutputType></PropertyGroup><ItemGroup><PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="5.6.0"><PrivateAssets>all</PrivateAssets><IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets></PackageReference><AdditionalFiles Include="$(SolutionDir)BannedSymbols.txt" /></ItemGroup></Project>'
-          Set-Content (Join-Path $probe 'Probe.cs') 'public static class P { public static int First(int[] a) => System.Linq.Enumerable.FirstOrDefault(a); }'
-          dotnet build $probe | Out-Host
-          if ($LASTEXITCODE -ne 0) { throw 'The probe does not build even without the switch; the self-test measures nothing.' }
-          $out = dotnet build $probe --no-incremental "-p:SolutionDir=$env:GITHUB_WORKSPACE/" -warnaserror:RS0030 2>&1 | Out-String
-          Write-Host $out
-          if ($LASTEXITCODE -eq 0) { throw 'The banned-API switch let a LINQ call through: BannedSymbols.txt was not found or RS0030 did not fail.' }
-          if ($out -notmatch 'error RS0030') { throw 'The probe failed, but not with error RS0030.' }
-          $global:LASTEXITCODE = 0
+          probe="$RUNNER_TEMP/banned-probe"; mkdir -p "$probe"
+          echo '<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net10.0</TargetFramework><OutputType>Library</OutputType></PropertyGroup><ItemGroup><PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="5.6.0"><PrivateAssets>all</PrivateAssets><IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets></PackageReference><AdditionalFiles Include="$(SolutionDir)BannedSymbols.txt" /></ItemGroup></Project>' > "$probe/Probe.csproj"
+          echo 'public static class P { public static int First(int[] a) => System.Linq.Enumerable.FirstOrDefault(a); }' > "$probe/Probe.cs"
+          bash .github/scripts/ci_switch_probe.sh "$probe" "-p:SolutionDir=$GITHUB_WORKSPACE/ -warnaserror:RS0030" RS0030
 
       # The XML documentation is part of what derived rotations read, and its warnings went unread here
       # as well: a cref that named two overloads (CS0419, A230) and a record whose doc comment covered four
@@ -496,43 +512,36 @@ jobs:
       # the check like an obsolete call. The probe raises each listed code once, so a code missing from the
       # switch, or a probe that writes no documentation, fails this step.
       - name: Self-test the documentation switch
+        if: ${{ !cancelled() && steps.inputs.outputs.build == 'true' && steps.inputs.outputs.switches == 'true' }}
         run: |
-          $probe = Join-Path $env:RUNNER_TEMP 'doc-probe'
-          New-Item -ItemType Directory -Force $probe | Out-Null
-          Set-Content (Join-Path $probe 'Probe.csproj') '<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net10.0</TargetFramework><OutputType>Library</OutputType><GenerateDocumentationFile>true</GenerateDocumentationFile><NoWarn>CS1591</NoWarn></PropertyGroup></Project>'
-          Set-Content (Join-Path $probe 'Probe.cs') @(
-            'public static class P',
-            '{',
-            '    /// <summary>Missing one, CS1573.</summary>',
-            '    /// <param name="a">a</param>',
-            '    public static void Missing(int a, int b) { }',
-            '    /// <summary>No such parameter, CS1572.</summary>',
-            '    /// <param name="z">z</param>',
-            '    public static void Unknown() { }',
-            '    /// <summary>Twice, CS1571.</summary>',
-            '    /// <param name="a">a</param>',
-            '    /// <param name="a">again</param>',
-            '    public static void Twice(int a) { }',
-            '    /// <summary>Unresolved, CS1574: <see cref="Nowhere"/>; paramref, CS1734: <paramref name="q"/></summary>',
-            '    public static void Refs() { }',
-            '    /// <summary>Ambiguous, CS0419: <see cref="Over"/></summary>',
-            '    public static void Ambiguous() { }',
-            '    /// <summary>One.</summary>',
-            '    public static void Over(int a) { }',
-            '    /// <summary>Two.</summary>',
-            '    public static void Over(string a) { }',
-            '    /// <summary>Badly formed, CS1570.</sumary>',
-            '    public static void Broken() { }',
-            '}')
-          dotnet build $probe | Out-Host
-          if ($LASTEXITCODE -ne 0) { throw 'The probe does not build even without the switch; the self-test measures nothing.' }
-          $out = dotnet build $probe --no-incremental -warnaserror:CS0419,CS1570,CS1571,CS1572,CS1573,CS1574,CS1734 2>&1 | Out-String
-          Write-Host $out
-          if ($LASTEXITCODE -eq 0) { throw 'The documentation switch let a broken doc comment through.' }
-          foreach ($code in 'CS0419', 'CS1570', 'CS1571', 'CS1572', 'CS1573', 'CS1574', 'CS1734') {
-            if ($out -notmatch "error $code") { throw "The probe failed, but not with error $code." }
+          probe="$RUNNER_TEMP/doc-probe"; mkdir -p "$probe"
+          echo '<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net10.0</TargetFramework><OutputType>Library</OutputType><GenerateDocumentationFile>true</GenerateDocumentationFile><NoWarn>CS1591</NoWarn></PropertyGroup></Project>' > "$probe/Probe.csproj"
+          cat > "$probe/Probe.cs" <<'EOF'
+          public static class P
+          {
+              /// <summary>Missing one, CS1573.</summary>
+              /// <param name="a">a</param>
+              public static void Missing(int a, int b) { }
+              /// <summary>No such parameter, CS1572.</summary>
+              /// <param name="z">z</param>
+              public static void Unknown() { }
+              /// <summary>Twice, CS1571.</summary>
+              /// <param name="a">a</param>
+              /// <param name="a">again</param>
+              public static void Twice(int a) { }
+              /// <summary>Unresolved, CS1574: <see cref="Nowhere"/>; paramref, CS1734: <paramref name="q"/></summary>
+              public static void Refs() { }
+              /// <summary>Ambiguous, CS0419: <see cref="Over"/></summary>
+              public static void Ambiguous() { }
+              /// <summary>One.</summary>
+              public static void Over(int a) { }
+              /// <summary>Two.</summary>
+              public static void Over(string a) { }
+              /// <summary>Badly formed, CS1570.</sumary>
+              public static void Broken() { }
           }
-          $global:LASTEXITCODE = 0
+          EOF
+          bash .github/scripts/ci_switch_probe.sh "$probe" "-warnaserror:CS0419,CS1570,CS1571,CS1572,CS1573,CS1574,CS1734" CS0419 CS1570 CS1571 CS1572 CS1573 CS1574 CS1734
 
       # A static initializer that reads a member of its class not yet set - later in the file, or in a part file the
       # compiler reads later - throws in the type initializer, and the class fails at the first action after loading;
@@ -541,62 +550,60 @@ jobs:
       # c170c9cd5 that way (concept 24, A878). Like the switches above, here and not in the projects: a Dalamud release
       # with changed annotations must not stop the owner's own build. The probe reads a field of another part file.
       - name: Self-test the initialization-order switch
+        if: ${{ !cancelled() && steps.inputs.outputs.build == 'true' && steps.inputs.outputs.switches == 'true' }}
         run: |
-          $probe = Join-Path $env:RUNNER_TEMP 'init-order-probe'
-          New-Item -ItemType Directory -Force $probe | Out-Null
-          Set-Content (Join-Path $probe 'Probe.csproj') '<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net10.0</TargetFramework><OutputType>Library</OutputType><Nullable>enable</Nullable></PropertyGroup></Project>'
-          Set-Content (Join-Path $probe 'A.cs') @(
-            'public static partial class P',
-            '{',
-            '    public static readonly int[] Assigned = Later;',
-            '    public static readonly int Length = Other.Length;',
-            '    public static readonly int[] Copied = Copy(Third);',
-            '    private static int[] Copy(int[] x) => x;',
-            '}')
-          Set-Content (Join-Path $probe 'B.cs') @(
-            'public static partial class P',
-            '{',
-            '    private static readonly int[] Later = [1];',
-            '    private static readonly int[] Other = [1];',
-            '    private static readonly int[] Third = [1];',
-            '}')
-          dotnet build $probe | Out-Host
-          if ($LASTEXITCODE -ne 0) { throw 'The probe does not build even without the switch; the self-test measures nothing.' }
-          $out = dotnet build $probe --no-incremental -warnaserror:CS8600,CS8601,CS8602,CS8603,CS8604 2>&1 | Out-String
-          Write-Host $out
-          if ($LASTEXITCODE -eq 0) { throw 'The initialization-order switch let a read before the field was set through.' }
-          foreach ($code in 'CS8601', 'CS8602', 'CS8604') {
-            if ($out -notmatch "error $code") { throw "The probe failed, but not with error $code." }
+          probe="$RUNNER_TEMP/init-order-probe"; mkdir -p "$probe"
+          echo '<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net10.0</TargetFramework><OutputType>Library</OutputType><Nullable>enable</Nullable></PropertyGroup></Project>' > "$probe/Probe.csproj"
+          cat > "$probe/A.cs" <<'EOF'
+          public static partial class P
+          {
+              public static readonly int[] Assigned = Later;
+              public static readonly int Length = Other.Length;
+              public static readonly int[] Copied = Copy(Third);
+              private static int[] Copy(int[] x) => x;
           }
-          $global:LASTEXITCODE = 0
+          EOF
+          cat > "$probe/B.cs" <<'EOF'
+          public static partial class P
+          {
+              private static readonly int[] Later = [1];
+              private static readonly int[] Other = [1];
+              private static readonly int[] Third = [1];
+          }
+          EOF
+          bash .github/scripts/ci_switch_probe.sh "$probe" "-warnaserror:CS8600,CS8601,CS8602,CS8603,CS8604" CS8601 CS8602 CS8604
 
       - name: Build Plugin
-        run: dotnet build --no-restore -c Release RotationSolver/RotationSolver.csproj "-p:SolutionDir=$env:GITHUB_WORKSPACE/" -warnaserror:CS0618,CS0612,RS0030,CS0419,CS1570,CS1571,CS1572,CS1573,CS1574,CS1734,CS8600,CS8601,CS8602,CS8603,CS8604
+        if: ${{ !cancelled() && steps.inputs.outputs.build == 'true' }}
+        run: dotnet build --no-restore -c Release RotationSolver/RotationSolver.csproj "-p:SolutionDir=$GITHUB_WORKSPACE/" -warnaserror:CS0618,CS0612,RS0030,CS0419,CS1570,CS1571,CS1572,CS1573,CS1574,CS1734,CS8600,CS8601,CS8602,CS8603,CS8604
 
       # latest.zip holds the plugin and nothing else: the packager zips every file of the output folder unless
       # RotationSolver/DalamudPackager.targets gives it the list (A474). The release workflow runs the same check.
       - name: Check latest.zip holds only the plugin
-        run: python .github/scripts/audit/check_plugin_zip.py bin/Release/RotationSolver/latest.zip
+        if: ${{ !cancelled() && steps.inputs.outputs.build == 'true' }}
+        # Multi-line on purpose: run_ci_checks.py runs every one-line audit step locally, and this one needs the build.
+        run: |
+          python3 .github/scripts/audit/check_plugin_zip.py bin/Release/RotationSolver/latest.zip
 
       # DefenseTrace.log names the commit it was written by, so an uploaded trace can be matched to
       # its code. The commit comes from a git call in Directory.Build.props; if that call fails the
       # build still succeeds and the trace says "unknown". This step makes the failure visible: the
       # generated assembly info has to carry exactly the commit that was checked out.
       - name: Check the build names its commit
+        if: ${{ !cancelled() && steps.inputs.outputs.build == 'true' }}
         run: |
-          $expected = git rev-parse --short=9 HEAD
-          $info = Get-ChildItem RotationSolver/obj -Recurse -Filter 'RotationSolver.AssemblyInfo.cs' | Select-Object -First 1
-          if (-not $info) { throw 'No generated assembly info found for RotationSolver.' }
-          $text = Get-Content $info.FullName -Raw
-          if ($text -notmatch "AssemblyMetadataAttribute\(`"SourceCommit`", `"$expected`"\)") {
-            Write-Host $text
-            throw "RotationSolver.dll does not name commit $expected."
-          }
-          Write-Host "RotationSolver.dll names commit $expected."
+          expected="$(git rev-parse --short=9 HEAD)"
+          info="$(find RotationSolver/obj -name 'RotationSolver.AssemblyInfo.cs' | head -n 1)"
+          if [ -z "$info" ]; then echo "No generated assembly info found for RotationSolver."; exit 1; fi
+          if ! grep -qF "AssemblyMetadataAttribute(\"SourceCommit\", \"$expected\")" "$info"; then
+            cat "$info"; echo "RotationSolver.dll does not name commit $expected."; exit 1
+          fi
+          echo "RotationSolver.dll names commit $expected."
 
       # The generator is in the solution and in no build. Nothing referenced it, so a compile error
       # in it reached the user instead of the CI - a missing `using Lumina` for LuminaOptions did
       # exactly that. It needs the game files to *run*, not to compile, so building it here costs a
       # restore and closes the gap for every future change to it.
       - name: Build the game-data generator
+        if: ${{ !cancelled() && steps.inputs.outputs.build == 'true' }}
         run: dotnet build -c Release RotationSolver.GameData/RotationSolver.GameData.csproj -warnaserror:CS0618,CS0612,CS0419,CS1570,CS1571,CS1572,CS1573,CS1574,CS1734
