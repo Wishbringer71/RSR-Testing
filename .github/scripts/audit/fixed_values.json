@@ -2779,6 +2779,26 @@
    "status": "exception",
    "loop": "A894",
    "reason": "The section of the settings window's group Item Usage in which the deep dungeon's pomanders and magicite stand, after upstream's sections 0 to 3 (tincture, HP potions, MP potions, Phoenix Down; 78b43e656). An ordinal of the window's layout, not a figure of the game."
+  },
+  {
+   "file": "RotationSolver/Engine/Helpers/GroupBurstWatch.cs",
+   "code": "if (status == 0 || (!onEnemy && members <= 2))",
+   "values": [
+    "2"
+   ],
+   "status": "exception",
+   "loop": "A904",
+   "reason": "The caster and one other member: Standard Finish reaches the dancer and the dance partner, a card one member; a raid buff reaches more. A count of who a pairing reaches, not a tuned figure (A904)."
+  },
+  {
+   "file": "RotationSolver/Engine/Helpers/GroupBurstWatch.cs",
+   "code": "var recast = action.Recast100ms / 10f;",
+   "values": [
+    "10f"
+   ],
+   "status": "exception",
+   "loop": "A904",
+   "reason": "The action sheet counts recast in tenths of a second (Recast100ms); the conversion to seconds, not a figure of the game (A904)."
   }
  ]
 }

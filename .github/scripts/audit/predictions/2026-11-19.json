@@ -5,5 +5,12 @@
   "kind": "each",
   "situation": "crucible team: Level is not offered",
   "match": "crucible team: Level is not offered: no familiar of known rank stands below [0-9]+, this board's cap or the next board's recommended rank; plays as \\w+\\.( [0-9]+ level on the board recommended for rank [0-9]+ \\(sync from [0-9]+\\)\\.)?$"
+ },
+ {
+  "id": "group-burst-line-form",
+  "archive": "A904",
+  "kind": "each",
+  "situation": "group burst:",
+  "match": "group burst: [A-Z]{3} used .+, status #[0-9]+ (on the enemy|on [0-9]+ members), recast ([0-9]+ s|unknown) - next group buff in ([0-9]+ s|unknown)$"
  }
 ]

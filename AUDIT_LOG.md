@@ -26348,6 +26348,28 @@ widerlegt hat; sie gilt in RSR nur nach dem gemessenen Verhalten der Gruppe.
 
 *Prüfgrad:* statisch, Quelltext beider Projekte.
 
+### A904 · K3, erster Schritt: die Raidbuffs der Gruppe aus ihren Aktionen beobachten (19.11.2026)
+
+*Anlass:* sein Forschungsauftrag vom 19.11.2026 (A901), Reihenfolge K3 vor K1 (A901, Modell), Bauart nach A903.
+
+*Gebaut (Konzept 03, F, K3, „Gebaut, erster Schritt“):* `GroupBurstWatch` liest jedes Aktionsereignis eines anderen
+Gruppenmitglieds im Kampf. Es zählt, wenn die Aktion einen Status mit dem Text eines Raidbuffs auf mehr Mitglieder als
+den Wirkenden und einen weiteren legt, oder einen „taken is increased“-Status auf einen Gegner
+(`StatusHelper.RaisesDamageDealt`, `RaisesDamageTaken`, englische Statustexte). Die Wiederkehr kommt aus `Recast100ms`
+oder, wenn die Aktion selbst ein GCD ist (Technical Finish), aus dem gemessenen Abstand. `NextIn` gibt die Sekunden bis
+zum frühesten erwarteten Raidbuff an. Noch wartet nichts darauf.
+
+*Verworfen:* eine feste Mindestwiederverwendung (60 s) gegen Standard Finish und die Karten. Die Zahl der Getroffenen
+trennt sie ohne feste Zahl.
+
+*Prüfgrad:* Compile; im Spiel nicht beobachtet.
+
+*Vorhersage:* `group-burst-line-form` (`predictions/2026-11-19.json`). In einem Kampf mit Raidbuff-Jobs der Gruppe steht
+je Raidbuff eine Zeile „group burst: JOB used …“. Bei Divination, Battle Litany, Brotherhood, Embolden, Searing Light,
+Arcane Circle, Starry Muse und Battle Voice steht „recast 120 s“, bei Technical Finish beim ersten Mal „unknown“, danach
+etwa 120 s. Widerlegt, wenn ein Raidbuff fehlt, eine Zeile für Standard Finish oder eine Karte steht, oder der Takt
+deutlich von 120 s abweicht.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

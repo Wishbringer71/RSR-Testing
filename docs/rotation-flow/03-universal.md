@@ -2870,6 +2870,19 @@ den jobweisen Abläufen.
   des Astrologen fallen damit von selbst heraus, wenn nur Aktionen ab 60 s zählen; die Abgrenzung über zwei Status
   oben braucht es dann nicht. *Neue Bauart für K3:* die Vorhersage aus den Aktionen; der Status bestätigt nur, dass
   das Fenster liegt (Anteil P, Ende).
+- *Gebaut, erster Schritt (A904, `GroupBurstWatch`): die Beobachtung mit Spurzeile, noch ohne Warten.*
+  - *Was zählt:* Eine Aktion eines anderen Gruppenmitglieds, die einen Status mit dem Text eines Raidbuffs auf einen
+    Gegner legt (Chain Stratagem, Dokumori), oder auf mehr Gruppenmitglieder als den Wirkenden und einen weiteren. Das
+    schließt ohne eigene Zahl aus, was nur Tänzer und Partner trifft (Standard Finish), und was nur einen trifft (die
+    Karten). In einer Gruppe aus zwei misst die Uhr deshalb nur Debuffs auf dem Gegner.
+  - *Wann sie wiederkommt:* nach der Wiederverwendung der Aktion aus dem Aktionsblatt (`Recast100ms`). Ist die Aktion
+    selbst ein GCD (Technical Finish; die Abklingzeit trägt Technical Step), nach dem gemessenen Abstand zwischen den
+    letzten beiden Anwendungen desselben Status durch denselben Wirkenden; vorher ist sie unbekannt.
+  - *Vorhersage:* `NextIn` – Sekunden bis zum frühesten erwarteten Raidbuff der Gruppe in diesem Kampf; unbekannt,
+    solange keiner beobachtet ist. Neuer Kampf, neue Liste.
+  - *Spur:* je Raidbuff eine Zeile „group burst: JOB used AKTION, status #ID on N members, recast R s - next group buff
+    in X s“ (Job statt Name). Sein nächster Upload aus einer Gruppe mit Raidbuffs zeigt, ob Erkennung und Takt stimmen;
+    erst dann wartet ein eigener Verstärker darauf (Gegenthese 6).
 - *Die Uhr der Gruppe:* wie die eigene Burst-Uhr (D, „Der Burst des Jobs als Uhr"): Ein Burst der Gruppe beginnt, wenn
   ein solcher Status nach einer Lücke kommt; der Takt ist der Median der Abstände im Kampf, der Anteil P die Summe der
   Schadensanteile, solange sie liegen *[die Prozentwerte stehen nicht im Statustext; bis zur Messung zählt jeder

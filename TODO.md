@@ -37,7 +37,8 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
 - **Rotationen aller Jobs über den Augenblick hinaus** (sein Auftrag vom 19.11.2026; A901). *Wirkung im Kampf:*
   Verstärker, Zeitgeber und DoTs laufen heute in vorhergesagte Pausen, Ressourcen bleiben beim Tod des Ziels übrig, der
   eigene Burst richtet sich nach der eigenen Uhr statt nach den Raidbuffs, die wirklich auf dir liegen. *Nächster
-  Schritt:* K3 – die Raidbuffs der anderen aus ihren Aktionen voraussagen (Wiederverwendung aus dem Blatt, A903); danach K1 mit
+  Schritt:* K3 – Beobachtung gebaut (A904); nach seinem nächsten Upload aus einer Gruppe mit Raidbuffs die Spur
+  „group burst:“ auswerten, dann eigene Verstärker auf den Gruppenburst warten lassen; danach K1 mit
   Rechnung über den Rest des Kampfes in `BasicCheck`, dann K2, K5, K4, K6. *Konzept:* 03, „F · Über den
   Augenblick hinaus".
 

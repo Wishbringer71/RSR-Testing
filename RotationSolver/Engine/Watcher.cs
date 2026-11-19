@@ -190,6 +190,8 @@ public static partial class Watcher
 			ActionPenaltyWatch.ObserveLanding(set);
 			// A783: whether a gaze RSR turned for still harmed the player.
 			GazeWatch.ObserveLanding(set);
+			// Concept 03, F, K3 (A904): the raid buffs of the other members, for when the group's next window comes.
+			GroupBurstWatch.Observe(set, playerObject.GameObjectId);
 
 			// Concept 21, K12 (A675): the roulette needle's Death, for where its beat falls before the needle turns.
 			if (set.Action is { } observed)
