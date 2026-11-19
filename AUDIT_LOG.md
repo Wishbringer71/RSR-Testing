@@ -26167,7 +26167,16 @@ Build f2643919e, 69 Kämpfe, Crucible auf Brett 1 und 2, sonst Gold Saucer, Tief
   - *Teilweise:* `team-start-event` (A821) und `bst-chain-carried` (A886) traten in der Sitzung ab 18:23 ein, in der
     Sitzung ab 12:57 nicht.
   - *Ohne Gegenbeleg:* alle übrigen PASS. Für A885, A890, A892 und A896 ist dieser Upload zu alt.
-- *Prüfgrad:* Spur ausgewertet, Code und Konzept geändert, Compile.
+- *Übrige Kämpfe (Mitschnitte 12:56 bis 16:11 und 17:07 bis 20:25; 191 Kampfbeginne):*
+  - Er starb nie.
+  - In Yuweyawata fiel um 18:42:03 der Tank (Gunbreaker), er spielte Weißmagier. Um 18:41:55 hatte der Tank volle
+    LP. Dann kamen „Schlabber" (4,7 s Zauber auf ihn), „Brutaler Einschlag" und „Knallender Stoß"; kein
+    aufgezeichneter Treffer senkte seine LP vor dem Tod. RSR legte auf den Tankbuster-Marker „Göttlicher Segen" auf
+    ihn. Ein Heilfenster gab es nicht; der Tod folgt einer Mechanik.
+  - Um 20:00:17 starb ein fremder Spieler in der offenen Welt.
+  - Die Zeilenarten der Spur zeigen nichts Neues: am häufigsten „single defence open, nothing chosen" (970) und
+    „request without an answer" (537), wie in den Uploads davor.
+- *Prüfgrad:* Spur und Mitschnitte ausgewertet, Code und Konzept geändert, Compile.
 
 ### A898 · „Level" füllt jeden Platz: an den Abrechnungen geprüft, als Vorlage an ihn (19.11.2026)
 
