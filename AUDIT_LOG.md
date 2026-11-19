@@ -26014,6 +26014,35 @@ TODO-Punkt „Tooltips kürzer und verständlich" (sein Auftrag vom 18.11.2026).
   entfernten 101 sind 63 Einstellungen und 38 Startwerte.
 - *Prüfgrad:* Prüfskripte und Compile; das Fensterbild nicht gemessen (die Texte umbrechen nach `ReadableText`).
 
+### A892 · Crucible: Empfehlung für die Beute nach dem Kampf (18.11.2026)
+
+Seine Meldung (18.11.2026): „brett 3, kampf gegen vogel: es erscheint kein vorschlag, was als loot zu nehmen ist".
+- *Einordnung:* Defekt, dieselbe Klasse wie K13 vor A578 (Schatz ohne Empfehlung). Ursache am Code: Kein Code las das
+  Beutefenster `XBMContentsBooty` für eine Empfehlung, auf keinem Brett; nur der Weg wartete auf sein Schließen (A821),
+  und die Ausrüstung las es mit (A808).
+- *Grundlage:* Aufbau des Fensters aus seiner Spur vom 15.11.2026: fünf Fenster, je drei Stücke (Zauberbuch 130 bis
+  132, Tome of the Impervious 137, Temporal Sand 138) und 1.200 Marken; gehalten je ein Gegenstand (G3 Beast Potion),
+  eine Ausrüstung. Gegengeprüft an LazyCrucible cfc5ac5 (18.11.2026, `Screens.ReadBooty`; Werkzeugquelle) und ECommons
+  7d50941 (`ReaderXBMContentsBooty`). LazyCrucible nimmt alles, was passt; den Bonus „Mit leeren Händen" kennt es
+  nicht.
+- *Gebaut (Konzept 21, K17):* `FollowCrucibleSpoils` liest die offenen Stücke und empfiehlt sie nach den Regeln von
+  K17.
+  - Getragene Ausrüstung scheidet aus.
+  - Ausrüstung bleibt liegen, solange „Mit leeren Händen" steht und der Spieler den Weg ohne sie trägt.
+  - Dann gilt die Rangfolge des Ladens, danach jeder übrige Gegenstand und jede nicht schadende Ausrüstung, je nach
+    freien Plätzen.
+  - Passt alles, heißt die Empfehlung „Take all".
+
+  Das Fenster „RSR - Crucible spoils" zeigt jedes Stück mit „take" oder „leave" und dem Grund; nehmen bleibt sein Klick
+  im Spiel. Den Rückruf für ein einzelnes Stück belegt keine Quelle. Die Einstellung des Schatzes gilt für beide:
+  „Recommend what to take from a Crucible treasure or spoils". Inventar und Ausrüstung liest für Schatz und Beute eine
+  Funktion (`ReadHoldings`), vorher stand das Lesen im Schatz.
+- *Vorhersage:* Im nächsten Crucible-Upload ab diesem Build steht je geöffnetem Beutefenster eine Zeile
+  „crucible spoils: … - take all" oder „take …; leave …" (`crucible-spoils-line-form`). Bei seinen Ständen wie am
+  15.11.2026 heißt sie „take all". Fehlt sie bei offenem Beutefenster, liest RSR das Fenster nicht.
+- *Prüfgrad:* Compile und Prüfskripte. Das Fenster läuft auf der Basis, die `window_layout_model.py` misst. Im Spiel
+  ist es nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

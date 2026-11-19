@@ -1639,7 +1639,7 @@ off.
 - **The next horn comes first (Crucible)** after a familiar leaves, ahead of other abilities.
 - **The way shows when it is settled (Crucible)**: only once no window of the board is open (shop, treasure, loot
   after a fight, campsite, result, team screen) and you can move.
-- **What to take from a treasure (Crucible).** `Recommend what to take from a Crucible treasure`, **on by
+- **What to take from a treasure (Crucible).** `Recommend what to take from a Crucible treasure or spoils`, **on by
   default**: while a treasure is open, a window names the offer to take and why, in the order of the shop
   recommendation with no price - a second life, cover against a deadly status of the board, the gear that
   leaves you the most HP after a stretch of fights, cover against the other statuses, healing, then

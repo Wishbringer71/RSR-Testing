@@ -19,6 +19,14 @@ What this release changes in the fight. For the whole distance from upstream, se
   with the finisher. In your runs no finisher came at all. Setting: "Hold the axes for a finisher on a pack while it is
   worth more", on by default. The trace writes "bst finisher: axes held ...".
 
+## Crucible
+
+- **Spoils after a fight.** A window "RSR - Crucible spoils" now shows which spoils to take and why. It says "Take all"
+  when everything fits and nothing costs more than it brings. It names a piece to leave when your slots are full, when
+  you already wear it, when it would harm you, or when gear would cost the bonus Mit leeren Händen while you carry the
+  way without it. You take the pieces in the game's window. Setting: "Recommend what to take from a Crucible treasure
+  or spoils".
+
 ## Settings
 
 - **Shorter explanations.** Every setting this fork adds now explains itself in at most three short lines: what RSR does

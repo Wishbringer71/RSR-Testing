@@ -1386,7 +1386,7 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
   das zuletzt aufgefrischte Fenster des Bretts zeigt, das sie führt (A808, unten „Was du trägst").
   *Fenster:* „RSR – Crucible treasure" mit der Empfehlung, dem Grund und einem Knopf „Take", der genau sie nimmt; ohne
   Klick nimmt RSR nichts (wie Laden und Kader, Entscheidung C, A533). Einstellung „Recommend what to take from a
-  Crucible treasure", ab Werk an.
+  Crucible treasure or spoils" (seit A892 auch für die Beute, K17), ab Werk an.
   *Eine Skala für Ausrüstung und Gegenstände (A656; seine Fragen vom 07.11.2026 zu einem Schatz mit
   Ninja-Augenklappe, Mystischen Schuhen, Bestien-Pulver III und Flammenschild, empfohlen war das Pulver: „warum ein
   verbrauchsgegenstand, warum kein permanentes item für alle noch anstehenden kämpfe? ist die auswahl korrekt? und
@@ -1537,6 +1537,75 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
   zweite.
   *Gegenthese 3 (Wahl von Hand mit Diebesmesser):* Nimmt er die erste Wahl selbst, weiß RSR nicht, welche Zeile genommen
   ist, und kann sie erneut empfehlen. Nicht widerlegt; das Spiel gibt sie nicht zweimal, und die zweite Wahl trifft er.
+
+- *K17 – Beute nach dem Kampf* (A892; seine Meldung vom 18.11.2026: „brett 3, kampf gegen vogel: es erscheint kein
+  vorschlag, was als loot zu nehmen ist"; Einordnung: Defekt, dieselbe Klasse wie K13 vor A578). *Fehlerbild:* Nach
+  jedem Kampf mit Beute bleibt RSR stumm. Er nannte den Vogelkampf des dritten Bretts (Montisaurus mit Hahn und Henne).
+  *Ursache:* Kein Code liest das Beutefenster für eine Empfehlung, auf keinem Brett. Nur der Weg wartet, bis es zu ist
+  (A821), und die Ausrüstung liest es mit (A808).
+  *Mechanik:* Das Fenster `XBMContentsBooty` („Du hast Beute gefunden. Nimm sie gesammelt entgegen oder wähle einzelne
+  Beutestücke aus.") bietet die Marken des Kampfs (Wert 4, genommen 5) und bis zu vier Stücke. Je Stück k steht an
+  6 + 5·k, ob es da ist, an 9 + 5·k seine `XBMItem`-Zeile und an 129 + k, ob es genommen ist. Belegt durch:
+  - seine Spur vom 15.11.2026, fünf Fenster mit je drei Stücken und 1.200 Marken: ein Zauberbuch (Zeilen 130 bis 132,
+    2.000 Potenz auf 12 Yalm), „Tome of the Impervious" (137), „Temporal Sand" (138);
+  - LazyCrucible cfc5ac5 (18.11.2026), `Screens.ReadBooty`;
+  - ECommons 7d50941, `ReaderXBMContentsBooty`.
+
+  „Alle nehmen" ist der Knoten 46 (LazyCrucible, `ActuationGuard`, Werkzeugquelle). Den Rückruf für ein einzelnes
+  Stück belegt keine Quelle.
+  *Was das Nehmen im Kampf und in der Wertung ändert:*
+  - Ein Gegenstand kostet nur einen der Plätze im Inventar des Bretts. Er bringt Sicherheit, Schaden oder nichts, und
+    gehalten zählt er für „Sammelleidenschaft" (zehn gehalten, 1.000). „Sparsamkeit" verwirkt erst das Benutzen, nicht
+    das Nehmen.
+  - Marken zählen für „Talerregen" (2.000 gehalten, 500).
+  - Ausrüstung kostet „Mit leeren Händen" (750), solange in diesem Lauf noch keine erworben ist. Sie zählt für „zehn
+    Teile gehalten" (500), und manches Stück schadet dir (`SelfHarm`).
+  - Nehmen kostet also nie Sicherheit, außer bei schadender Ausrüstung. Einen Preis hat es nur über die Plätze und den
+    einen Bonus.
+  *Optionen:*
+  - (0) *Nullvariante:* keine Empfehlung. Das ist sein Fehlerbild.
+  - (1) *Empfehlung im Fenster:* nach der Rangfolge von Schatz und Laden, mit Grund je Stück; nehmen bleibt sein Klick
+    im Spiel.
+  - (2) *Wie (1), dazu ein Knopf „Take all":* klickt Knoten 46 und verlangt die Bestätigung des Spiels.
+  - (3) *Selbst nehmen ohne Klick:* wie LazyCrucible.
+  *Abwägung:* (3) widerspricht Entscheidung C (A533: ohne Klick nimmt RSR nichts). (2) spart einen Klick gegenüber
+  dem Knopf im Spielfenster. Es braucht aber eine Bestätigung, deren Text RSR nur englisch prüfen könnte; beim deutschen
+  Client sperrt LazyCrucible sie aus diesem Grund. Der Klick im Spiel ist gleich teuer. (1) bringt die Entscheidung
+  ohne neue Eingabe ins Spiel. *Gewählt:* (1). Der Knopf kommt nach, sobald der Rückruf eines einzelnen Stücks belegt
+  ist; dann lohnt er, weil RSR auch eine Teilmenge nehmen könnte.
+  *Wahl:*
+  1. Stücke, die schon gehalten oder getragen werden, scheiden aus, ebenso alles schon Genommene.
+  2. Steht „Mit leeren Händen" noch (keine Ausrüstung in diesem Lauf) und trägt der Spieler den schwersten Weg bis zum
+     Endkampf ohne sie (`CarriesToFinal`, wie beim Schatz, A690), bleibt jede Ausrüstung liegen. Grund: 750 Punkte ohne
+     Verlust an Sicherheit.
+  3. Dann die Rangfolge des Ladens (`RankOffers`, Preis null, eine Skala): zweites Leben, Schutz gegen einen tödlichen
+     Zustand des Bretts, Ausrüstung nach LP nach der Strecke, übrige Zustände, Heilung, Schutz.
+  4. Danach jeder übrige Gegenstand, solange ein Platz frei ist. Danach jede übrige Ausrüstung, die dir nicht schadet,
+     solange ein Ausrüstungsplatz frei ist.
+  5. Schadende Ausrüstung kommt nur über die Rangfolge mit, als zweites Leben.
+  6. Passt alles, was übrig bleibt, heißt die Empfehlung „Take all". Sonst nennt sie, was zu nehmen und was liegen zu
+     lassen ist, mit Grund: kein Platz frei, schon getragen, schadet dir, oder der Bonus.
+  7. Die Marken nimmt jede Wahl mit: Das Fenster gibt sie mit jedem Stück.
+  *Fenster und Einstellung:* „RSR - Crucible spoils" zeigt jedes Stück mit „take" oder „leave" und dem Grund. Die
+  Einstellung des Schatzes gilt für beide: „Recommend what to take from a Crucible treasure or spoils", ab Werk an. Es
+  ist dieselbe Entscheidung auf derselben Skala, und eine zweite Einstellung trüge keinen eigenen Grund.
+  *Im Kampf:* Nach dem Vogelkampf des dritten Bretts sieht er „Take all" mit Zauberbuch, Tome of the Impervious und
+  Temporal Sand. Bei vollem Inventar sieht er das Zauberbuch (Schaden) hinter dem Tome (Schutz gegen physische
+  Treffer) und dass es liegen bleibt. Bei einer Ausrüstung in der Beute, ohne dass er im Lauf schon eine trägt und
+  während er den Weg ohne sie trägt, sieht er sie mit „leave: keeps Mit leeren Händen (750)".
+  *Falsifikation:*
+  - *Kein Defekt:* Er sieht die Beute ja im Spiel. Widerlegt: Gemeldet ist die fehlende Empfehlung, und für Schatz und
+    Laden gilt seine Vorgabe vom 07.11.2026 („solche empfehlungen gehören auch ingame rein").
+  - *Option falsch, „alles nehmen" ist immer richtig:* Das hält, solange Plätze frei sind und keine Ausrüstung liegt
+    (seine fünf Fenster vom 15.11.2026). Es fällt bei vollem Inventar (welcher Gegenstand bleibt) und bei Ausrüstung
+    (Bonus, schadende Stücke).
+  - *Ausgeliefert, und nichts ändert sich:* Erscheint das Fenster nicht, liest RSR die Werte falsch, oder das
+    Beutefenster öffnet erst nach dem Lauf der Regel. Messweg: die Spurzeile „crucible spoils: …" je geöffnetem Fenster,
+    Vorhersage `crucible-spoils-line-form`.
+  *Gegenthese (Tausch gegen Gehaltenes):* Bei vollem Inventar könnte ein Stück der Beute mehr wert sein als ein
+  gehaltenes; das Spiel lässt Gehaltenes wegwerfen. Nicht umgesetzt: Die Empfehlung nennt dann „no free slot", und er
+  entscheidet den Tausch. Der Preis ist ein schwächeres Stück im Inventar, wenn er nicht tauscht. In seinen Spuren war
+  das Inventar nie voll (gemessen: ein Gegenstand gehalten in jedem der fünf Fenster).
 
 - *K12 – Die Eier des Zu* (A572, aus Daedalus 74659a6, v0.1.112: „Every egg broken before it hatches makes the Zu
   stronger, and a run died there after three were broken: a weaponskill went straight into an egg, Shield Charge (it hits

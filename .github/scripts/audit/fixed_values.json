@@ -2719,6 +2719,56 @@
    "status": "exception",
    "loop": "A889",
    "reason": "Action rows of the Beastmaster's combos (Instinctual Combo: Volant, Rampant, Durant, Eldritch; Intentional Combo: Sunstrider, Moonstalker; Infinitive Combo: Universality; xivapi v2, 18.11.2026): identities of game rows the source generator lists no enum entry for, not figures (concept 01, A889)."
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BeastmasterCrucibleSpoils.cs",
+   "code": "private const int SpoilsFirstPresent = 6;",
+   "values": [
+    "6"
+   ],
+   "status": "exception",
+   "loop": "A892",
+   "reason": "The spoils window XBMContentsBooty marks its first piece present at value 6 (his trace of 15.11.2026 (five windows, three pieces each), LazyCrucible cfc5ac5 Screens.ReadBooty, ECommons 7d50941 ReaderXBMContentsBooty). The game's layout of the window, not a tuned value; a piece that does not read as an item is left out."
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BeastmasterCrucibleSpoils.cs",
+   "code": "private const int SpoilsFirstRow = 9;",
+   "values": [
+    "9"
+   ],
+   "status": "exception",
+   "loop": "A892",
+   "reason": "XBMContentsBooty lists its first piece's XBMItem row at value 9 (his trace of 15.11.2026 (five windows, three pieces each), LazyCrucible cfc5ac5 Screens.ReadBooty, ECommons 7d50941 ReaderXBMContentsBooty). The game's layout of the window, not a tuned value; a piece that does not read as an item is left out."
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BeastmasterCrucibleSpoils.cs",
+   "code": "private const int SpoilsStride = 5;",
+   "values": [
+    "5"
+   ],
+   "status": "exception",
+   "loop": "A892",
+   "reason": "Each further piece of XBMContentsBooty sits five values after the one before (his trace of 15.11.2026 (five windows, three pieces each), LazyCrucible cfc5ac5 Screens.ReadBooty, ECommons 7d50941 ReaderXBMContentsBooty). The game's layout of the window, not a tuned value; a piece that does not read as an item is left out."
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BeastmasterCrucibleSpoils.cs",
+   "code": "private const int SpoilsPieces = 4;",
+   "values": [
+    "4"
+   ],
+   "status": "exception",
+   "loop": "A892",
+   "reason": "XBMContentsBooty holds up to four pieces (his trace of 15.11.2026 (five windows, three pieces each), LazyCrucible cfc5ac5 Screens.ReadBooty, ECommons 7d50941 ReaderXBMContentsBooty). The game's layout of the window, not a tuned value; a piece that does not read as an item is left out."
+  },
+  {
+   "file": "RotationSolver/Rotations/Limited/Beastmaster/BeastmasterCrucibleSpoils.cs",
+   "code": "private const int SpoilsFirstTaken = 129;",
+   "values": [
+    "129"
+   ],
+   "status": "exception",
+   "loop": "A892",
+   "reason": "XBMContentsBooty marks piece k taken at value 129 + k (his trace of 15.11.2026 (five windows, three pieces each), LazyCrucible cfc5ac5 Screens.ReadBooty, ECommons 7d50941 ReaderXBMContentsBooty). The game's layout of the window, not a tuned value; a piece that does not read as an item is left out."
   }
  ]
 }

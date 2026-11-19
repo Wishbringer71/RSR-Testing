@@ -36,4 +36,6 @@ public sealed partial class RotationSolverPlugin : IAsyncDalamudPlugin
 	private static CarnivaleSetWindow? _carnivaleSetWindow;
 
 	private static CrucibleTreasureWindow? _crucibleTreasureWindow;
+
+	private static CrucibleSpoilsWindow? _crucibleSpoilsWindow;
 }

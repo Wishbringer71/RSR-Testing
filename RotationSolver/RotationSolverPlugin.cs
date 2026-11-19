@@ -71,6 +71,7 @@ public sealed partial class RotationSolverPlugin : IAsyncDalamudPlugin
 		_crucibleRouteWindow = new();
 		_carnivaleSetWindow = new();
 		_crucibleTreasureWindow = new();
+		_crucibleSpoilsWindow = new();
 		_easterEggWindow = new();
 		_firstStartTutorialWindow = new();
 		_updateNotesWindow = new();
@@ -90,6 +91,7 @@ public sealed partial class RotationSolverPlugin : IAsyncDalamudPlugin
 		windowSystem.AddWindow(_crucibleRouteWindow);
 		windowSystem.AddWindow(_carnivaleSetWindow);
 		windowSystem.AddWindow(_crucibleTreasureWindow);
+		windowSystem.AddWindow(_crucibleSpoilsWindow);
 		windowSystem.AddWindow(_easterEggWindow);
 		windowSystem.AddWindow(_firstStartTutorialWindow);
 		windowSystem.AddWindow(_updateNotesWindow);

@@ -75,5 +75,12 @@
   "kind": "each",
   "situation": "phantom attacks: held",
   "match": "phantom attacks: held for the burst in [0-9.,]+ s \\| [0-9]+ ready \\| fight [0-9]+ s left \\| \\w+$"
+ },
+ {
+  "id": "crucible-spoils-line-form",
+  "archive": "A892",
+  "kind": "each",
+  "situation": "crucible spoils:",
+  "match": "crucible spoils: [0-9]+ pieces, [0-9]+ item and [0-9]+ gear slots free - (take all|take .+; leave .+)$"
  }
 ]

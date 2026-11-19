@@ -133,10 +133,16 @@ public partial class BeastmasterRotation
 		DefenseTrace.Line($"crucible treasure: took offer {row + 1}");
 	}
 
-	private static unsafe void Recommend(List<(int Row, ushort Item, int Price)> offers)
+	/// <summary>
+	/// K13, K17: what the player holds on the board - the items of the board's inventory and its slots, the gear as the board's
+	/// windows last listed it and its slots (before the first shop one free slot is assumed, concept 21, K13, Gegenthese 1),
+	/// and the board being run.
+	/// </summary>
+	private static unsafe void ReadHoldings(out List<ushort> heldItems, out int itemSlots, out List<CrucibleGear> owned, out int gearSlots,
+		out uint board)
 	{
-		var heldItems = new List<ushort>();
-		var itemSlots = 0;
+		heldItems = [];
+		itemSlots = 0;
 		var director = EventFramework.Instance() is var framework && framework != null ? framework->GetInstanceContentDirector() : null;
 		if (director != null && director->InstanceContentType == InstanceContentType.CrucibleOfTheUnbroken)
 		{
@@ -152,8 +158,8 @@ public partial class BeastmasterRotation
 		}
 
 		var gear = CrucibleGearTable;
-		var owned = new List<CrucibleGear>();
-		var gearSlots = 0;
+		owned = [];
+		gearSlots = 0;
 		if (_gearSeen is { } seen && seen.Run == CrucibleBoard.Run)
 		{
 			gearSlots = seen.Slots;
@@ -166,14 +172,19 @@ public partial class BeastmasterRotation
 			}
 		}
 
-		// Before the first shop on the board the slots are unknown: one free is assumed (concept 21, K13, Gegenthese 1).
 		if (gearSlots <= owned.Count)
 		{
 			gearSlots = owned.Count + 1;
 		}
 
-		var board = FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentXBMStageDetailList.Instance() is var stages && stages != null
+		board = FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentXBMStageDetailList.Instance() is var stages && stages != null
 			? stages->ContentId : 0;
+	}
+
+	private static void Recommend(List<(int Row, ushort Item, int Price)> offers)
+	{
+		ReadHoldings(out var heldItems, out var itemSlots, out var owned, out var gearSlots, out var board);
+		var gear = CrucibleGearTable;
 		var key = $"{string.Join(",", offers)}|{heldItems.Count}|{owned.Count}|{board}|{CrucibleBoard.FightsPerStretch}";
 		if (key == _treasureKey)
 		{

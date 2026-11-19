@@ -71,9 +71,10 @@ public sealed partial class BST_Reborn : BeastmasterRotation
 	private bool RecommendCrucibleShop { get; set; } = true;
 
 	// K13 (concept 21, "K13 – Schatz", A578): his report of 05.11.2026, no recommendation at a treasure.
-	[RotationConfig(CombatType.PvE, Name = "Recommend what to take from a Crucible treasure",
-		Tooltip = "In a fight: nothing. At a board's treasure, a window names the offer that adds the most "
-			+ "safety, else damage; \"Take\" takes it.\nOff: no window, RSR takes nothing.")]
+	[RotationConfig(CombatType.PvE, Name = "Recommend what to take from a Crucible treasure or spoils",
+		Tooltip = "In a fight: nothing. At a treasure, a window names the offer that adds the most safety, else "
+			+ "damage; \"Take\" takes it.\nAfter a fight, it names the spoils worth taking and why.\nOff: no window, "
+			+ "RSR takes nothing.")]
 	private bool RecommendCrucibleTreasure { get; set; } = true;
 
 	// K10 "Weg" (concept 21, A632): his rule of 06.11.2026 - route hints for the next step, from the run's progress.
@@ -1687,6 +1688,7 @@ public sealed partial class BST_Reborn : BeastmasterRotation
 		FollowCampsite(PickCampsiteRest);
 		FollowCrucibleShop(RecommendCrucibleShop);
 		FollowCrucibleTreasure(RecommendCrucibleTreasure);
+		FollowCrucibleSpoils(RecommendCrucibleTreasure);
 		FollowCrucibleRoute(RecommendCrucibleRoute);
 	}
 
