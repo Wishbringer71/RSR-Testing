@@ -86,6 +86,7 @@ internal static class MajorUpdater
 		Run("TankbusterForecast.Update", TankbusterForecast.Update);
 		Run("StunWatch.Update", StunWatch.Update);
 		Run("SleepInterruptWatch.Update", SleepInterruptWatch.Update);
+		Run("AreaDisplay.Update", AreaDisplay.Update);
 
 		UpdateCost.Step("rotation state");
 		StateUpdate();

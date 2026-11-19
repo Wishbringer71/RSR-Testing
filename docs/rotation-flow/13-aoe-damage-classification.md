@@ -1095,10 +1095,46 @@ Vorschlag; Prüfaufgabe im Loop.
   (`CastType`, `EffectRange`, Kegelwinkel und Innenradius aus dem Omen, Richtung aus `Character.CastRotation`; oben,
   „Wen ein gelisteter Flächencast erreicht"). Mehrere der Fehler, die er bei Splatoon sieht – Kegel als Kreis, versetzte
   Linien, Ringe ohne Innenkreis –, sind solche, die RSR dort an Mitschnitten berichtigt hat (A731, A766).
-- *Offen:* Splatoons Quelltext lesen (PunishXIV/Splatoon, Werkzeugquelle), seine Mängel an RSRs Formen messen und
-  klären, wofür RSR die eigenen Formen dort nutzt, wo BossMod kein Modul hat. Kandidaten sind die Wirkzeitsperre und
-  die Bewegungssperre, die heute ohne Modul nur reaktiv wirken. Eine Anzeige zeichnet RSR heute nicht; ob es eine
-  braucht, gehört zur Prüfung (TODO, „Splatoons Flächenanzeige").
+- *Splatoons „Projection“ am Quelltext (PunishXIV/Splatoon f396ef6, 13.11.2026, `Services/Projection.cs`;
+  Werkzeugquelle):* Für jeden Gegner, der wirkt, errät sie die Form aus dem Aktionsblatt (`CastType`, `EffectRange`,
+  `XAxisModifier`, Kegelwinkel aus „fan…“, Ring aus „sircle_XXYY“ im Pfad des Omens) und zeichnet sie gefüllt, außer
+  Kreisen ab 30 Yalm. Ihre Mängel, an RSRs Formen gemessen:
+  - *Versetzt:* Kegel und Linien, deren Wirken ein Ziel nennt, dreht sie jedes Bild zu diesem Ziel
+    (`faceplayer <objectid>`), und Kreise mit Ziel setzt sie auf dessen aktuelle Position. Das Spiel legt Richtung und
+    Ort beim Wirkbeginn fest (`Character.CastRotation`, `CastInfo.TargetLocation`); läuft das Ziel weg, zeigt Splatoon
+    die Fläche dort, wo sie nicht landet. RSR misst seit A766 nach Richtung und Ort des Spiels.
+  - *Falsch:* den Ring liest sie aus „sircle_XXYY“ immer als absolute Radien; RSR fand die Zahlen bald absolut, bald als
+    Anteil der Reichweite und nimmt die kleinere Lesart (A731). Ein Kegel ohne Omen wird bei ihr 180°.
+  - *Fehlend:* Wirkformen 6, 7 und 8 (eigene Formen, Bodenkreise der Spieler, Ansturm).
+- *Was RSR schon hat:* Die Wirkzeitsperre, der Abbruch eines Zaubers und die Kanalsperre fragen `MovementLock.Danger`,
+  das über `RaiseProtection.FirstDodgeableWithin` jedes gegnerische Wirken prüft, dessen Form dich erreicht
+  (`CastReachesPlayer`) – mit oder ohne BossMod-Modul. Die frühere Annahme, beide Sperren wirkten ohne Modul nur
+  reaktiv, ist damit widerlegt: Für RSRs eigene Entscheidungen ist der Ersatz schon da. Was fehlt, ist die Anzeige für
+  ihn.
+- *Gemessen (alle 19 Mitschnitte, 19.11.2026; Wirkform und Omen aus dem Aktionsblatt):* rund 10.400 gegnerische
+  Flächenwirken, rund 7.850 mit Omen – die zeichnet das Spiel selbst –, rund 2.600 ohne: 1.733 Kreise (Typ 2), 417 und
+  69 Linien (Typen 12 und 4), 21 Kreise um den Wirkenden (Typ 5), 271 Kegel (Typ 13), 17 Kegel (Typ 3), 32 Ringe (Typ
+  10), dazu 35 der Typen 6, 7 und 14. Kreise und Linien ohne Omen sind ganz bekannt; bei Kegeln und Ringen ohne Omen
+  fehlt jeder Quelle der Winkel oder der Innenkreis.
+- *Optionen:* (0) nichts – er nutzt Splatoons Projection mit ihren Mängeln. (A) RSR zeichnet selbst. (B) RSR gibt seine
+  Form an Splatoon (ECommons `SplatoonAPI`, in der eingebundenen Fassung 3.2.1.26 vorhanden), nur für Wirken ohne Omen,
+  deren Form ganz bekannt ist: Kreise und Linien. (C) wie B, auch Kegel und Ringe ohne Omen mit einer Annahme.
+- *Abwägung im Kampf:* (0) zeigt eine Linie oder einen Kreis dort, wohin das Ziel inzwischen lief; wer danach ausweicht,
+  läuft hinein. (A) braucht einen eigenen Zeichner (Projektion, Clipping hinter der Kamera, Kosten je Bild) für dieselbe
+  Aufgabe, die Splatoon schon kann. (C) zeichnet 288 Kegel und 32 Ringe mit geratener Form – falsch wie bei Splatoon,
+  nur anders. (B) zeigt 2.240 der 2.600 Wirken ohne Omen an der Stelle, an der sie landen, ohne einen Zeichner zu bauen.
+  (B) überwiegt.
+- *Was gilt (A920):* Einstellung „Draw enemy areas without a ground marker through Splatoon", ab Werk an. Beim Beginn
+  eines gegnerischen Wirkens ohne Omen, dessen Form ein Kreis oder eine Linie ist, gibt RSR sie an Splatoon, aus
+  derselben Geometrie wie `CastReachesPlayer` (`DataCenter.PlainAreaShape`): Linien und Bodenkreise an den Koordinaten
+  des Wirkbeginns, Kreise um ein Ziel mit dem Ziel mitwandernd. Das Element endet mit der Wirkzeit. Ohne Splatoon
+  geschieht nichts. Kegel und Ringe ohne Omen zeichnet RSR nicht.
+  - *Gegenthese 1 – doppelt:* Zeichnet Splatoons Projection dasselbe Wirken, liegen zwei Flächen übereinander, eine
+    davon versetzt. Er schaltet Splatoons Projection ab; Wirken mit Omen zeichnet das Spiel ohnehin.
+  - *Gegenthese 2 – BossMod hat ein Modul:* Dann zeichnet BossMod seine Formen dazu. Liegen sie richtig, decken sich
+    beide; die Einstellung gilt deshalb unabhängig vom Modul, weil „teilweise vorliegt" nicht erkennbar ist.
+  - *Gegenthese 3 (ausgeliefert, und nichts ändert sich):* Splatoon ist nicht verbunden oder ändert seine Schnittstelle.
+    Dann zeigt nichts etwas; die Spur nennt einmal je Sitzung, ob RSR mit Splatoon verbunden ist.
 
 ## Was gemessen wird, und was nicht
 

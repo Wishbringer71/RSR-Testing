@@ -133,6 +133,11 @@ internal partial class Configs
 	Filter = UiInformation)]
 	private static readonly bool _showInfoOnToast = false;
 
+	[ConditionBool, UI("Draw enemy areas without a ground marker through Splatoon",
+	Description = "In a fight: circles and lines an enemy casts without the game's ground marker are drawn where they land. Needs Splatoon.\nTurn off Splatoon's own projection, or both draw.",
+	Filter = UiInformation)]
+	private static readonly bool _drawAreasWithoutMarker = true;
+
 	[ConditionBool, UI("Lock movement while casting",
 	Description = "Stops your character from moving while casting, until the spell can no longer be interrupted, and while using the actions ticked below. It never holds you in danger: BossMod's AI and you can still move out. A ticked party mitigation holds against BossMod's AI only while it covers a party member in danger before an announced hit and no other party mitigation is ready.",
 	Filter = Extra)]

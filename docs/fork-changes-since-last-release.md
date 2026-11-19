@@ -25,3 +25,11 @@ What this release changes in the fight. For the whole distance from upstream, se
 - **Area attacks count only who lives to be hit.** An enemy that dies, by its estimated time to kill, before an area
   attack lands - its cast and the rest of the GCD - no longer counts toward the number of enemies the area needs. A
   Holy III that would have landed on two, because the third fell during the cast, becomes Glare.
+
+## Seeing what the enemies do
+
+- **Areas without a ground marker, drawn where they land (needs Splatoon).** Circles and lines an enemy casts without
+  the game's orange marker are drawn through Splatoon at the place and in the direction the game keeps for the cast,
+  until it lands; Splatoon's own projection turns them towards a target that has walked away. Cones and rings without a
+  marker are left out, as nothing names their angle or inner circle. Setting: "Draw enemy areas without a ground marker
+  through Splatoon", on by default.

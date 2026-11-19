@@ -45,11 +45,6 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
   Bewegungsmitteln (K4, A919: allgemein geprüft, kein gemessener Verlust). *Konzept:* 03, „F · Über den
   Augenblick hinaus".
 
-- **Splatoons Flächenanzeige als Ersatz, wo BossMod kein Modul hat** (sein Vorschlag vom 19.11.2026). *Wirkung im
-  Kampf:* Ohne Modul wirken Wirkzeitsperre und Bewegungssperre nur reaktiv. *Nächster Schritt:* Splatoons Quelltext
-  lesen, seine Fehler (falsch, versetzt) an RSRs eigenen Formen aus den Blättern messen, Nutzen im Loop prüfen.
-  *Konzept:* 13, „Flächen ohne BossMod-Modul".
-
 ## Technische Schuld
 
 Ohne Wirkung im Kampf oder bewusst eingegangen; je Kosten und Auflösungsbedingung.

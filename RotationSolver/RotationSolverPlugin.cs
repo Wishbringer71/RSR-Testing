@@ -45,7 +45,7 @@ public sealed partial class RotationSolverPlugin : IAsyncDalamudPlugin
 
 	public RotationSolverPlugin(IDalamudPluginInterface pluginInterface)
 	{
-		ECommonsMain.Init(pluginInterface, this, ECommons.Module.DalamudReflector, ECommons.Module.ObjectFunctions);
+		ECommonsMain.Init(pluginInterface, this, ECommons.Module.DalamudReflector, ECommons.Module.ObjectFunctions, ECommons.Module.SplatoonAPI);
 
 		M3.ElementBaseline = 0.75f;
 		M3.Initialize(pluginInterface, Service.Config);

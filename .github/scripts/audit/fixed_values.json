@@ -657,7 +657,7 @@
   },
   {
    "file": "RotationSolver/Engine/State/DataCenter.Universal.cs",
-   "code": "&& across <= (act.XAxisModifier / 2f) + member.HitboxRadius;",
+   "code": "return new(true, h.Position, Vector3.Normalize(direction), act.EffectRange + casterRadius, act.XAxisModifier / 2f, 0);",
    "values": [
     "2"
    ],

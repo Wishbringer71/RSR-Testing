@@ -26705,6 +26705,27 @@ fehlenden Sofortzauber in der Bewegung.
 Bewegungsmittel sind, ist je Job verschieden – zu K6. Gebaut wird, sobald ein Mitschnitt den Verlust zeigt.
 *Prüfgrad:* Mitschnitte ausgewertet, Code gelesen; kein Code geändert.
 
+### A920 · Splatoon: RSR gibt Kreise und Linien ohne Omen an Splatoon (19.11.2026)
+
+*Anlass:* sein Vorschlag vom 19.11.2026 (Splatoons experimentelle Flächenanzeige als Ersatz, wo BossMod kein Modul hat),
+TODO „Splatoons Flächenanzeige als Ersatz, wo BossMod kein Modul hat“.
+*Quelle:* PunishXIV/Splatoon f396ef6 (13.11.2026), `Services/Projection.cs` (Werkzeugquelle). Mängel an RSRs Formen
+gemessen: Kegel und Linien mit Ziel dreht sie jedes Bild zum Ziel, Kreise mit Ziel setzt sie auf dessen aktuelle
+Position (versetzt, wenn das Ziel läuft); Ringe liest sie aus dem Omen immer absolut; Kegel ohne Omen werden 180°.
+*Widerlegt:* Die Annahme in Konzept 13 und im TODO, Wirkzeit- und Bewegungssperre wirkten ohne BossMod-Modul nur
+reaktiv. Beide fragen über `FirstDodgeableWithin` RSRs eigene Formen (`CastReachesPlayer`) für jedes Wirken, mit oder
+ohne Modul.
+*Gemessen (alle 19 Mitschnitte):* rund 10.400 gegnerische Flächenwirken, rund 7.850 mit Omen; ohne Omen 1.733 Kreise,
+486 Linien, 21 Kreise um den Wirkenden, 288 Kegel, 32 Ringe, 35 übrige.
+*Gebaut (Konzept 13, „Flächen ohne BossMod-Modul“):* Einstellung „Draw enemy areas without a ground marker through
+Splatoon“, ab Werk an. RSR gibt beim Beginn eines Wirkens ohne Omen einen Kreis oder eine Linie an Splatoon (ECommons
+`SplatoonAPI`, Modul jetzt in `ECommonsMain.Init`), an Ort und Richtung des Wirkbeginns, endend mit der Wirkzeit; Kegel
+und Ringe ohne Omen nicht. Die Geometrie ist dieselbe wie die der Trefferprüfung: `AreaShapeReaches` liest Kreise und
+Linien jetzt aus `DataCenter.PlainAreaShape`, mit unveränderten Zweigen und Reihenfolge.
+*Prüfgrad:* statisch, Compile, Prüfskripte. Im Spiel nicht beobachtet; ob Splatoon die Elemente so zeichnet, zeigt erst
+sein Bildschirm. *Vorhersage:* „area display: connected to Splatoon“ in der Spur, wo Splatoon läuft
+(`area-display-connected`).
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
