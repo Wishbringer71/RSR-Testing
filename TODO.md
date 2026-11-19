@@ -34,7 +34,13 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
 
 ## Offene Arbeit
 
-- Keine offene Arbeit.
+- **Quelle Beiruta (5307993f, 19.11.2026) auswerten:** Beschwörer: Swiftcast für die Bewegung erst nach 1,5 s
+  Bewegung, nur ohne billigere Sofortzauber und nie, solange eine Wiederbelebung ansteht; Bewegung erst nach 0,3 s
+  gezählt (gegen Trippelschritte). Heiler: AoE-Schwellen nach Potenz, Swiftcast nur für Heilung, Auffüllen von
+  Nicht-Tanks. *Wirkung im Kampf:* Beschwörer und Heiler können Swiftcast und Sofortzauber bei kurzer Bewegung sparen,
+  und die Wiederbelebung behält Swiftcast. *Nächster Schritt:* gegen Konzept 03 („Swiftcast bleibt für
+  Wiederbelebungen bereit“, A503), die Bewegungsregeln des Forks und die Heilkonzepte im Loop prüfen, dann
+  `check_source_updates.py --record`. *Konzept:* 03 und das Heilkonzept.
 
 ## Technische Schuld
 
