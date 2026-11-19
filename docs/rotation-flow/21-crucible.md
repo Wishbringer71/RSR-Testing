@@ -2477,6 +2477,20 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
       *Gegenposition:* Die Erfahrung folgt der Punktzahl, höchstens 255 je Begleiter und Brett. Füllt der volle Kader
       die Grenze nicht und kostet In Unterzahl Punkte, verliert jeder einzelne Begleiter Erfahrung, auch wenn die Summe
       über alle steigt.
+  - *Beantwortet an seinem Upload vom 18.11.2026 (A898):*
+    - *Frage 1:* Die „Mindestgrenze des nächsten Bretts" ist dessen empfohlener Rang (Brett 3: 11), und das ist die
+      Grenze aus A822 (`LevelLimit`: auf Brett 2 max(10, 11) = 11).
+    - *Frage 2:* Acht Abrechnungen. Jeder mitgenommene Begleiter bekam Erfahrung, zwischen 22 und 255. Sie hängt am
+      Rang gegenüber dem Brett: Brett 1 gab Rang 1 255 (die Obergrenze), Rang 3 193, Rang 5 159, Rang 11 und 12 je 22;
+      Brett 2 gab Rang 7 166, Rang 10 121, Rang 11 60; Brett 3 gab Rang 11 142, Rang 12 118. Und sie wird durch die
+      Größe des Kaders geteilt: Rang 12 auf Brett 2 bekam mit 12 Begleitern zweimal 24 (9.424 und 9.615 Punkte), mit 6
+      Begleitern 48 (9.000 Punkte). Bei halber Größe ist das genau das Doppelte, bei weniger Punkten. Dasselbe sagen
+      die Guides („a smaller roster earns more per familiar", FullBoosts, gelesen 19.11.2026; Werkzeugquelle). Nur
+      dieses eine Paar trennt die Größe vom Rang [Schätzung: Teilung durch die Größe, belegt an einem Paar].
+    - *Folge für seine Vorgabe:* „alle hinzugefügten begleiter bekommen erfahrung" stimmt. Der Schluss, eine
+      Begrenzung widerspreche dem Leveln, stimmt nicht: Jeder weitere Begleiter nimmt den zurückliegenden einen
+      gleichen Teil, und je höher sein Rang, desto weniger nützt ihm sein eigener Teil. Die Vorgabe ist deshalb nicht
+      umgesetzt. Sie steht als Vorlage im TODO („Level füllt jeden Platz"), mit Empfehlung.
   *Im Kampf (sein Bild vom 14.11.2026, Brett 2, Build vor A805):* zehn Begleiter ab Rang 10 im Kern, Salamander und Worm
   (Rang 6) auf den zwei übrigen Plätzen, obwohl 42 zurücklagen; er wählte danach selbst zwölf niedrige und schaffte das
   Brett (die Abrechnung hob sie auf Rang 8). *Gegenthese (schwächer im Kampf):* durch seinen Lauf widerlegt; die

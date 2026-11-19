@@ -113,13 +113,19 @@ nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigt
 
 ## Warten auf Daten oder Fremde
 
-- **Beastmaster, Crucible: „Level“ füllt jeden Platz, bis zur Mindestgrenze des nächsten Bretts** (seine Vorgabe vom
-  18.11.2026). *Heute:* Unter „Level“ kommen nur Begleiter unter der Levelgrenze mit, über ihr nur gegen Gefährdung.
-  Die übrigen Plätze bleiben leer, und diese Begleiter bekommen keine Erfahrung. *Künftig:* Jeder Platz geht an einen
-  Begleiter, der noch Erfahrung bekommt, der rangniedrigste zuerst, bis zur Mindestgrenze des nächsten Bretts. *Ort:*
-  `BeastmasterCrucibleTeam.cs`, `LevelTeam` und `LevelLimit`. *Auflösung:* sein nächster Beastmaster-Upload (seine
-  Vorgabe: „abarbeiten, sobald neue logs für beastmaster da sind“). Dann der Loop mit den zwei offenen Fragen aus
-  Konzept 21. Konzept 21, K7, „Leveln“.
+- **Beastmaster, Crucible: „Level“ füllt jeden Platz – Vorlage an ihn** (seine Vorgabe vom 18.11.2026; A898).
+  *Kontext:* Er will unter „Level" jeden Platz füllen, weil jeder Mitgenommene Erfahrung bekommt. Seine Abrechnungen
+  vom 18.11.2026 zeigen dazu zweierlei. Die Erfahrung wird durch die Größe des Kaders geteilt (Rang 12 auf Brett 2:
+  24 bei 12 Begleitern, 48 bei 6). Und sie fällt mit dem Rang über dem Brett (Brett 1: Rang 1 255, Rang 11 22).
+  *Optionen im Kampf:*
+  - (A) *jeden Platz füllen:* Brett 2 mit 12 statt 5. Die fünf zurückliegenden (Rang 10) bekommen je rund 50 statt 121
+    [Schätzung: geteilt wie gemessen]. Die sieben Aufgefüllten (Rang 11 bis 13) bekommen je 24 bis 60, die sie kaum
+    brauchen. Dazu mehr Sicherheit und kein In Unterzahl.
+  - (B) *wie heute (A806):* Mitgenommen werden die unter der Grenze, darüber nur gegen Gefährdung. Die
+    zurückliegenden bekommen den größten Teil.
+
+  *Empfehlung:* (B). Der Zweck des Levelns ist, dass die zurückliegenden aufholen; (A) halbiert ihren Zuwachs.
+  *Auflösung:* seine Entscheidung. Konzept 21, K7, „Leveln".
 
 - **Nebenprojekt: Charakterwerte, Stufen und Materia-Empfehlung** (A874, A875). Konzept 26 steht; seine Angabe
   (17.11.2026): „nebenthema zuende. wird irgendwann von mir neu angesprochen“. Auflösung: sein neuer Auftrag.

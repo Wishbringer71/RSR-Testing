@@ -26165,6 +26165,21 @@ Build f2643919e, 69 Kämpfe, Crucible auf Brett 1 und 2, sonst Gold Saucer, Tief
   - *Ohne Gegenbeleg:* alle übrigen PASS. Für A885, A890, A892 und A896 ist dieser Upload zu alt.
 - *Prüfgrad:* Spur ausgewertet, Code und Konzept geändert, Compile.
 
+### A898 · „Level" füllt jeden Platz: an den Abrechnungen geprüft, als Vorlage an ihn (19.11.2026)
+
+Seine Vorgabe vom 18.11.2026 („alle hinzugefügten begleiter bekommen erfahrung, also widerspricht eine begrenzung der
+anzahl dem zweck des levelns … bis zur mindestgrenze des nächsten brettes … abarbeiten, sobald neue logs für
+beastmaster da sind"). Die Logs kamen am selben Abend (Upload 994f52d8).
+- *Mindestgrenze:* der empfohlene Rang des nächsten Bretts, wie in A822 (`LevelLimit`).
+- *Abrechnungen (acht, `XBMResult`; Werte 72 Größe, 89/105 Erfahrung, 121/137 Rang davor und danach):* Jeder
+  Mitgenommene bekam Erfahrung, zwischen 22 und 255, fallend mit dem Rang über dem Brett. Rang 12 auf Brett 2 bekam mit
+  12 Begleitern 24 (zweimal), mit 6 Begleitern 48, bei weniger Punkten. Die Guides bestätigen die Teilung (FullBoosts,
+  „a smaller roster earns more per familiar"; Werkzeugquelle).
+- *Folge:* Die Prämisse stimmt, der Schluss nicht. Jeder weitere Begleiter verkleinert den Teil der zurückliegenden.
+  Nicht umgesetzt; Vorlage mit Optionen und Empfehlung im TODO („Level füllt jeden Platz – Vorlage an ihn"). Die
+  Empfehlung lautet, es bei A806 zu belassen.
+- *Prüfgrad:* Abrechnungen ausgewertet; die Teilung stützt ein Paar [Schätzung über dieses Paar hinaus].
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
