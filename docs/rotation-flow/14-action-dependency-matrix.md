@@ -291,7 +291,7 @@ Silken Symmetry und Silken Flow 30 s. Der Code braucht sie nicht: Er liest die R
 Jeder eigene Status, den der Wirktext einer Aktion als Bedingung nennt („while under the effect of …“, „while … is
 active“), gegen das Statusblatt der Englischfassung; gezählt, wie oft er ablief, ohne dass in den letzten 0,6 s eine
 eigene Aktion kam, in allen ACT-Mitschnitten vom 10. bis 19.11.2026.
-- *Umfang:* 20 Jobs mit Daten; Weiser und Blaumagier kommen in den Mitschnitten nicht vor.
+- *Umfang:* 20 von 23 Jobs gemessen; Weiser und Blaumagier kommen in den Mitschnitten nicht vor, der Beastmaster (Crucible) ist nicht ausgewertet.
 - *Beschwörer:* Refulgent Lux 11 von 39, Further Ruin 7 von 66, Ruby's Glimmer 4 von 37 verfallen. Am Mitschnitt fiel
   jeder Verfall von Further Ruin und Ruby's Glimmer in eine Strecke ohne angreifbares Ziel (12 bis 38 s ohne eigenen
   Treffer auf einen Gegner: Phasenwechsel im Final Coil, Shinryu); Refulgent Lux verfiel sonst, wenn im Radius niemand

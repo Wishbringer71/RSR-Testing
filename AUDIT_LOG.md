@@ -27009,7 +27009,7 @@ nächsten eigenen Treffer auf einen Gegner. Die Skripte stehen nicht im Reposito
 *Ergebnis:* Konzept 14, „Werden die Fenster genutzt?“. Kein Defekt: Die Verfälle des Beschwörers lagen in Strecken ohne
 angreifbares Ziel oder ohne Verletzte (Lux Solaris, seine Regel). Alle eigenen Aktionen jedes Jobs fragt seine
 Rotation; die mechanisch „fehlenden“ heißen im Code anders (Bezeichner mit Zusatz).
-*Umfang:* 20 von 22 Jobs mit Daten (ohne Weiser und Blaumagier); jede Rotation je Job im Code durchsucht.
+*Umfang:* 20 von 23 Jobs gemessen; Weiser und Blaumagier ohne Mitschnitt, der Beastmaster (in den Crucible-Mitschnitten) nicht ausgewertet. Ungenutzte eigene Aktionen: 21 Kampfjobs im Code durchsucht, Blaumagier und Beastmaster nicht.
 *Prüfgrad:* Mitschnitte und Wirktexte; Code nur für die Verfallsregeln des Beschwörers.
 
 ### A932 · Kaskaden aller Jobs, Durchgang 2: Burst-Procs im eigenen Burst; sein Ziel „besser als The Balance“ (19.11.2026)
@@ -27022,7 +27022,7 @@ freigeschalteten Aktion, ob ein eigener Burst-Status lag.
 die übrigen messtechnisch nicht tragend oder vom Ablauf bedingt; Comet in Black am Code und an The Balance geprüft.
 *Schluss für sein Ziel:* Die feste Folge deckt sich mit The Balance (A375 bis A414); übertreffen kann RSR den Guide nur
 in dem, was eine feste Folge nicht kennt – K1 bis K6 (Konzept 03, „F · Über den Augenblick hinaus“).
-*Umfang:* 20 von 22 Jobs mit Daten; Weiser und Blaumagier ohne Mitschnitt.
+*Umfang:* 20 von 23 Jobs gemessen; Weiser und Blaumagier ohne Mitschnitt, der Beastmaster nicht ausgewertet.
 *Prüfgrad:* Mitschnitte und Wirktexte; Code für Pictomancer.
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
