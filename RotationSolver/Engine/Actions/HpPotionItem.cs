@@ -34,7 +34,7 @@ internal partial class HpPotionItem : BaseItem
 	{
 		item = this;
 
-		if (Player.Object == null)
+		if (!Player.Available || Player.Object == null || Player.Object.CurrentHp == 0)
 		{
 			return false;
 		}
@@ -53,7 +53,7 @@ internal partial class HpPotionItem : BaseItem
 	{
 		item = this;
 
-		if (Player.Object == null)
+		if (!Player.Available || Player.Object == null || Player.Object.CurrentHp == 0)
 		{
 			return false;
 		}
