@@ -26820,6 +26820,17 @@ Puppe zieht keinen Kampf; was die Einstellung schützt, gibt es an ihr nicht. (3
 Stillstand hat eine zweite Ursache als den Kegel; dann nennt ihn die Sonde.
 *Nebenbefund:* Ohne Countdown eröffnet der Samurai mit Gyofu und zieht Meikyo erst im Kampf (`AttackAbility`); The Balance
 (7.4) setzt Meikyo vor den Pull. Gilt für jeden Job, der Vorbereitungen nur im Countdown macht – TODO.
+*Seine Rüge (19.11.2026):* „wenn man in der offenen welt einen gegner angreift ist das immer ein pull ohne countdown. also
+eigentlich der standard. und den kennst du nicht? weil sonde im spiel nur der letzte ausweg ist: konzepte und umsetzung
+erneut vollständig prüfen … du hast anscheinend nicht ausreichend genug geplant. mangelhaft.“ Berechtigt: Der Pull ohne
+Countdown ist der Normalfall, und die Sonde ersetzt die Analyse nicht („Erreichbarer Prüfgrad“). *Nachgeprüft am Code
+(Auswahl `CustomRotation.Invoke`/`GCD`, `SAM_Reborn.GeneralGCD`, Zielwertung `GetMostCanTargetObjects`, `IsAttackable`,
+Drücken `RSCommands.DoAction`/`BaseAction.Use`):* Mit seiner Einstellung „Previously engaged targets“ sind Puppen nie
+angreifbar (kein Ziel); eine Nachbarpuppe ist kein Mittelpunkt, Ogi hat dann kein Ziel, und die Auswahl fällt auf Gekko.
+Widerlegt sind damit die Wege über eine Nachbarpuppe als Mittelpunkt, über den Zielwechsel (der Mitschnitt zeigt ihn
+nicht) und über K1, K2, K5 und A880 (sie greifen hier nicht). Der Weg zum Stillstand ist am Code nicht gefunden; der
+Auslöser (A884 an der Puppenreihe) ist belegt und behoben. Dazu seine Vorgabe vom selben Abend: Eine dynamische Rotation
+wählt eine Alternative, wenn etwas gerade nicht geht – das schließt diese Klasse unabhängig vom Weg (TODO).
 *Prüfgrad:* Compile, Prüfskripte; im Spiel nicht beobachtet. *Vorhersage:* an seiner Puppenreihe kommen Ogi Namikiri und
 Zanshin nach jedem Ikishoten, keine GCD-Lücke über 4 s außer Bewegung; jede Zeile „gcd idle:“ in der Form
 `gcd-idle-line-form`.

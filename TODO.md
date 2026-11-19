@@ -38,6 +38,12 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
 
 ## Offene Arbeit
 
+- **Dynamische Rotation: geht eine Aktion gerade nicht, kommt eine Alternative** (seine Vorgabe vom 19.11.2026: „und
+  dynamische rotationen zeichnen sich dadurch aus: wenn etwas gerade nicht möglich ist, wird eine alternative gewählt.
+  nur für später als todo.“). *Wirkung im Kampf:* Eine gewählte Aktion, die das Spiel nicht ausführt, hält heute jeden
+  GCD an, bis ihre Bedingung abläuft (Samurai an der Puppe: 28 s Auto-Attacke, A923). *Nächster Schritt:* für alle Jobs
+  am allgemeinen Ort (Auswahl und Drücken) eine Aktion, deren Druck scheitert, für die Auswahl ausschließen. *Konzept:*
+  03.
 - **Pull ohne Countdown: Vorbereitungen vor dem ersten GCD** (A923, Nebenbefund an seinem Samurai). *Wirkung im Kampf:*
   Ohne Countdown eröffnet der Samurai mit Gyofu und zieht Meikyo erst danach – ein GCD ohne Sen, die Eröffnung von The
   Balance verschiebt sich um ihn; dasselbe gilt für jede Vorbereitung, die RSR nur im Countdown macht (`CountDownAction`).
