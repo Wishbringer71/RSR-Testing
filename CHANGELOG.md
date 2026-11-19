@@ -23,6 +23,15 @@ are not reconstructed here.
 
 ## Unreleased
 
+## 7.5.8.7+wsh1
+
+### Addition to RotationSolver: the spoils of a Crucible fight
+
+New public members of `BeastmasterRotation`: `CrucibleSpoilsOpen`, whether the spoils of a fight are open and the
+recommendation runs; `CrucibleSpoilsTakeAll`, whether every piece left is worth taking and fits; and
+`CrucibleSpoilsOffers`, every piece left as a `CrucibleOfferVerdict`, those to take marked, empty while no spoils are
+open. No signature changed or went away.
+
 ## 7.5.8.5+wsh1
 
 ### Change in RotationSolver: the TP of Rallying Cheer
