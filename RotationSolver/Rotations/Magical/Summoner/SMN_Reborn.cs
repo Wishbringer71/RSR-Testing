@@ -1,4 +1,4 @@
-﻿namespace RotationSolver.Rotations.Magical.Summoner;
+namespace RotationSolver.Rotations.Magical.Summoner;
 
 [Rotation("Reborn", CombatType.PvE, GameVersion = "7.58", RotationType = RotationType.Reborn)]
 [SourceCode(Path = "main/Rotations/Magical/Summoner/SMN_Reborn.cs")]
@@ -76,6 +76,18 @@ public sealed partial class SMN_Reborn : SummonerRotation
 
 	[RotationConfig(CombatType.PvE, Name = "Swiftcast for movement uptime: only use it on Ruby Rite/Slipstream while moving")]
 	public bool SwiftcastMovementUptime { get; set; } = false;
+
+	public enum SwiftcastMovementPriority : byte
+	{
+		[Description("Last resort (spend Ruin IV / instant attunements first)")]
+		LastResort = 0,
+
+		[Description("Highest priority (Swiftcast as soon as movement is sustained)")]
+		First = 2,
+	}
+
+	[RotationConfig(CombatType.PvE, Name = "    > Swiftcast movement priority", Parent = nameof(SwiftcastMovementUptime))]
+	public SwiftcastMovementPriority SwiftcastMovement { get; set; } = SwiftcastMovementPriority.LastResort;
 
 	#endregion
 
@@ -836,17 +848,13 @@ public sealed partial class SMN_Reborn : SummonerRotation
 		// The potion is in GeneralAbility, after the defence passes (A497).
 		if (SwiftcastPvE.CanUse(out act))
 		{
-			if (SwiftcastMovementUptime && !HasSwift)
+			if (SwiftcastMovementUptime && !HasSwift && !ShouldHoldRaiseSwift)
 			{
-				if (IsMoving && AttunementCount == 0 && SlipstreamPvE.CanUse(out _, skipCastingCheck: true))
+				if (ShouldSwiftcastForMovement())
 				{
 					return true;
 				}
-				if (IsMoving && RubyRitePvE.CanUse(out _, skipCastingCheck: true))
-				{
-					return true;
-				}
-				if (nextGCD.IsTheSameTo(false, RubyRitePvE, SlipstreamPvE) && !IsGarudaReady && !IsIfritReady)
+				if (!MovingPastGrace && nextGCD.IsTheSameTo(false, RubyRitePvE, SlipstreamPvE) && !IsGarudaReady && !IsIfritReady)
 				{
 					return true;
 				}
@@ -1047,13 +1055,15 @@ public sealed partial class SMN_Reborn : SummonerRotation
 	{
 		// Slipstream's windstorm stays where it is laid; until the enemies around its target have stayed there for a GCD
 		// it waits for the Emerald Rites left, and goes once they are spent - the hit outweighs the area (A350).
-		if (SlipstreamPvE.CanUse(out act, skipCastingCheck: !SwiftcastMovementUptime && AddSwiftcastOnGaruda && ((!SwiftcastPvE.Cooldown.IsCoolingDown && IsMoving) || HasSwift))
+		if (SlipstreamPvE.CanUse(out act, skipCastingCheck: !SwiftcastMovementUptime && AddSwiftcastOnGaruda && ((!SwiftcastPvE.Cooldown.IsCoolingDown && MovingPastGrace) || HasSwift))
 			&& (!Service.Config.DamageAreasWhereEnemiesStay || !EmeraldAttunement
 				|| DamageAreaSettled(SlipstreamPvE, SlipstreamPvE.Target.Target)))
 		{
 			return true;
 		}
 
+		// Crimson Cyclone stays on IsMoving, not upstream's 0.3 s grace: in the first steps of a dodge it would dash to the
+		// target (A900).
 		if ((!IsMoving || AddCrimsonCycloneMoving) && CrimsonCyclonePvE.CanUse(out act) && (AddCrimsonCyclone || GapCloserAllowed(CrimsonCyclonePvE.Target.Target, CrimsonCycloneDistance)))
 		{
 			return true;
@@ -1401,6 +1411,65 @@ public sealed partial class SMN_Reborn : SummonerRotation
 		}
 		return false;
 	}
+
+	#region Movement
+
+	private const float MovementGraceSeconds = 0.3f;
+	private const float MovementTimeThreshold = 1.0f;
+	private const float MovementLeadSeconds = 0.5f;
+
+	// Ignore stutter-steps / slidecast adjustments.
+	private bool MovingPastGrace =>
+		InCombat &&
+		IsMoving &&
+		MovingTime > MovementGraceSeconds;
+
+	// Movement long enough to justify spending a resource.
+	private bool HasSufficientMovement =>
+		InCombat &&
+		IsMoving &&
+		MovingTime > MovementTimeThreshold;
+
+	private bool ShouldHoldRaiseSwift =>
+		(HasSwift || IsLastAction(ActionID.SwiftcastPvE)) &&
+		MergedStatus.HasFlag(AutoStatus.Raise);
+
+	private bool SwiftcastReadyForMovement =>
+		SwiftcastMovementUptime &&
+		HasSufficientMovement &&
+		MovingTime > MovementTimeThreshold + MovementLeadSeconds &&
+		!HasSwift &&
+		SwiftcastPvE.EnoughLevel &&
+		SwiftcastPvE.IsEnabled &&
+		!SwiftcastPvE.Cooldown.IsCoolingDown &&
+		!ShouldHoldRaiseSwift;
+
+	// Instants that cover movement without burning Swiftcast.
+	private bool HasCheaperMovementOption =>
+		HasFurtherRuin ||
+		HasCrimsonStrike ||
+		TopazAttunement ||
+		EmeraldAttunement ||
+		InBahamut || InPhoenix || InSolarBahamut ||
+		(AddCrimsonCycloneMoving && HasIfritFavor);
+
+	private bool HasSwiftcastMovementTarget =>
+		(AttunementCount == 0 && SlipstreamPvE.CanUse(out _, skipCastingCheck: true)) ||
+		RubyRitePvE.CanUse(out _, skipCastingCheck: true);
+
+	private bool ShouldSwiftcastForMovement()
+	{
+		if (!SwiftcastReadyForMovement ||
+			IsLastAction(ActionID.SwiftcastPvE) ||
+			!HasSwiftcastMovementTarget)
+		{
+			return false;
+		}
+
+		return SwiftcastMovement == SwiftcastMovementPriority.First || !HasCheaperMovementOption;
+	}
+
+	#endregion
 
 	#endregion
 }
