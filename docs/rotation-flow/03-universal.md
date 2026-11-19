@@ -2740,6 +2740,28 @@ vorhergesagte bewegungen nicht von allen jobs gelesen? gründe?"; an der Version
   fehlt, ist die umgekehrte Richtung: Sofortzauber für eine kommende Bewegung aufheben, solange man noch steht (K4). Das
   ist je Job verschieden, weil jeder andere Sofortzauber hat.
 
+**Vorbild: die Kampfrotationen von BossMod** (seine Frage, 19.11.2026: „bringt eigentlich der ai-kampf modus in bossmod
+reborn oder in bossmod was? ist da was, dass rsr verbessern könnte? … ich meine die dortige kampfrotation";
+Werkzeugquelle, gelesen am Quelltext, BSD-3-Lizenz; Ideen, kein übernommener Code):
+- *BossModReborn* (8d5ff8e21, 15.11.2026) hat keine Kampfrotation mehr – kein Rotationsmodul, keine `RaidCooldowns`. Es
+  liefert RSR nur Zeitleiste und Hinweise.
+- *BossMod* (awgil, 1758cc8e, 17.11.2026) hat sie (`BossMod.Autorotation`, Rotationen der Autoren xan, akechi, kage,
+  veyn für alle Jobs). Was RSR davon fehlt:
+  - *Gemeinsame Planungsgrößen in einer Basisklasse* (`Basexan`): Raidbuffs in/übrig, Pause in, Rückkehr in, nächste
+    Stellung. Jede Rotation liest dieselben Größen (xan: 8 von 37 Dateien die kommenden Raidbuffs, 7 die Pause; kage:
+    11 von 12 die Raidbuffs, 12 die Pause, 12 die Zeit bis zum Tod). Das ist „universell zuerst" für den Schaden; RSR hat
+    es für Minderung und Heilung, nicht für Schaden.
+  - *Raidbuffs aus den Aktionen der anderen* (K3, oben).
+  - *Pause und Rückkehr:* Der Mönch drückt Brotherhood und Riddle of Fire nur, wenn die Pause später als in 20 s
+    beginnt, und nutzt die Pause, um auf die Rückkehr vorzubereiten (Form, Perfect Balance bis zur Rückkehr, `UptimeIn`).
+    *Antithese, an unserem Modell:* Ihre Haltebedingung ist die örtliche Regel aus K1. Sie stimmt, wenn die Gruppe
+    ebenso hält – in geplanten Gruppen üblich –, und kostet, wenn die Gruppe bei Abklingzeit drückt. Darum hängt sie in
+    RSR an der gemessenen Gruppe (K3). Das *Vorbereiten in der Pause auf die Rückkehr* ist neu für RSR und gehört zu K1.
+  - *Strategien je Aktion und Pläne je Kampf* (`Strategy`, `Plan`, `PlanDatabase`): Der Spieler kann je Kampf festlegen,
+    wann ein Verstärker kommt; ohne Plan entscheidet „Automatic". Für ihn verworfen: Ein Plan je Kampf ist ein Fenster,
+    das er erst einrichten muss (code.md, „Oberfläche"), und RSR rechnet dieselbe Frage aus der Zeitleiste selbst.
+  - *Nicht übernommen:* die feste Annahme 120 s und die Liste von Hand – das Spielblatt nennt beides.
+
 **Bauart: Plan, Vorrangliste oder beides** (seine Frage, 19.11.2026: „sind pläne vor vorranglisten für alle jobs
 sinnvoll? gibt es ein besseres optimum? hybrid?"):
 - *Nur Vorrangliste (heute):* reagiert je Frame auf alles Neue, kostet wenig. Aber sie schaut nicht voraus: Sie kann nicht
@@ -2837,6 +2859,17 @@ den jobweisen Abläufen.
   wenn mindestens zwei *verschiedene* solche Status anderer zugleich auf dir oder deinem Ziel liegen, und Standard
   Finish zählt nicht mit, solange er seit dem letzten Burst ununterbrochen lag. In einer Gruppe mit nur einem
   Raidbuff-Job misst die Uhr dann nichts, und nichts wartet – das heutige Verhalten.
+- *Besser als der Status: die Aktion der anderen* (Vorbild BossMod, `RaidCooldowns`, awgil/ffxiv_bossmod 1758cc8e,
+  17.11.2026; Werkzeugquelle, nur als Idee). BossMod merkt sich, wann ein Gruppenmitglied seinen Raidbuff *drückt*, und
+  sagt daraus den nächsten voraus (`NextDamageBuffIn2`). Das kennt das Fenster der Gruppe, *bevor* es beginnt – der
+  Status zeigt es erst, wenn es schon läuft, und dann ist es für Halten oder Sparen zu spät. BossMod führt dafür eine
+  Liste von elf Aktionen und nimmt für jede 120 s an. RSR kann beides aus dem Spiel lesen: Jede Aktion eines anderen
+  kommt durch dasselbe Ereignis, das RSR für Gegner und für sich schon liest (`ActionEffect.ActionEffectEvent`,
+  `Watcher`). Legt sie einen Status mit dem Text eines Raidbuffs auf dich oder dein Ziel, ist sie ein Raidbuff, und
+  ihre Wiederverwendung steht im Aktionsblatt (`Recast100ms`). Standard Finish (Wiederverwendung 30 s) und die Karten
+  des Astrologen fallen damit von selbst heraus, wenn nur Aktionen ab 60 s zählen; die Abgrenzung über zwei Status
+  oben braucht es dann nicht. *Neue Bauart für K3:* die Vorhersage aus den Aktionen; der Status bestätigt nur, dass
+  das Fenster liegt (Anteil P, Ende).
 - *Die Uhr der Gruppe:* wie die eigene Burst-Uhr (D, „Der Burst des Jobs als Uhr"): Ein Burst der Gruppe beginnt, wenn
   ein solcher Status nach einer Lücke kommt; der Takt ist der Median der Abstände im Kampf, der Anteil P die Summe der
   Schadensanteile, solange sie liegen *[die Prozentwerte stehen nicht im Statustext; bis zur Messung zählt jeder

@@ -26326,6 +26326,28 @@ einem Modell mit zwei Fragen.
 
 *Berichtigt:* meine Tabelle in A901 („vorhergesagte Bewegung nur Paladin und Gelehrter“) – C230.
 
+### A903 · Seine Frage: die Kampfrotation von BossMod und BossModReborn als Vorbild (19.11.2026)
+
+*Frage (19.11.2026):* „bringt eigentlich der ai-kampf modus in bossmod reborn oder in bossmod was? ist da was, dass rsr
+verbessern könnte?“, präzisiert: „ich meine die dortige kampfrotation“.
+
+*Gelesen am Quelltext:* BossModReborn 8d5ff8e21 (15.11.2026) hat keine Kampfrotation mehr. BossMod (awgil) 1758cc8e
+(17.11.2026) hat sie: Rotationen der Autoren xan, akechi, kage, veyn mit gemeinsamen Planungsgrößen (`Basexan`: Raidbuffs
+in und übrig, Pause in, Rückkehr in) und einer Vorhersage der Raidbuffs aus den Aktionen der anderen (`RaidCooldowns`:
+elf Aktionen, je 120 s angenommen).
+
+*Was RSR daraus nimmt (Konzept 03, F, „Vorbild“, K3):* K3 sagt das Fenster der Gruppe aus den Aktionen der anderen
+voraus, nicht aus ihren Status. Das Ereignis dazu liest RSR schon (`ActionEffect`), die Wiederverwendung kommt aus dem
+Aktionsblatt statt aus einer Annahme, und die Raidbuffs erkennt es an ihrem Statustext statt an einer Liste. Neu für K1
+ist das Vorbereiten auf die Rückkehr in der Pause.
+
+*Antithese:* BossMods Haltebedingung vor einer Pause ist die örtliche Regel, die das Modell K1 in Gruppen mit Abklingzeit
+widerlegt hat; sie gilt in RSR nur nach dem gemessenen Verhalten der Gruppe.
+
+*Verworfen für ihn:* Pläne je Kampf (ein Fenster, das er erst einrichten muss).
+
+*Prüfgrad:* statisch, Quelltext beider Projekte.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
