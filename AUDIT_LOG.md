@@ -26900,6 +26900,32 @@ belassen.
 *Widerruf:* C235.
 *Prüfgrad:* statisch am Quelltext und an der Spur; Compile und Prüfskripte für die Review-Korrekturen.
 
+### A927 · Upload 19.11.2026: normale Auswertung der Sitzungen 18:30 und 19:07 (19.11.2026)
+
+*Gegenstand:* `DefenseTrace.log` (Sitzungen 18:30, Build 3eae4b28a, und 19:07, Build c93ec988b), ACT-Mitschnitt
+19.11.2026, gelernte Tabellen gegen den Upload vom 18.11. Die Puppensitzung (Monk, Samurai) ist in A923 bis A926
+ausgewertet.
+*Vorhersagen (`evaluate_predictions.py`, Builds vom 19.11.):* beobachtet `positional-learns` (A819), `exception-none`
+(A798), `raise-no-enemy-label` (A788), `group-burst-line-form` (A904), `out-of-combat-heal-line-form` (A915),
+`fight-end-charges-line-form` (A916), `burstwatch-no-general-actions` (A855); offen (Inhalt nicht gespielt)
+`downtime-hold-line-form` (A914), `crucible-siren-bound` (A913) und die Blick-, Kreszentia- und Tiefen-Gewölbe-Vorhersagen;
+keine widerlegt. Die Vorhersagen von A920 bis A925 sind im gespielten Build noch nicht enthalten (UNBOUND).
+*Tod (18:48:15, Dungeon):* ein Gruppenmitglied bei 89 % durch einen einzigen Treffer einer Bodenmechanik; der Weißmagier
+belebte es 3 s danach wieder. Keine Heilfrage.
+*Kritische Klasse (19:26, Vierergruppe, Weißmagier):* Der Tank stand nach einer Tankbuster-Serie in der Vorhersage bei
+0 % und 6 %, tatsächlich bei 45 %; RSR legte zweimal Regen auf andere Mitglieder statt Cure II auf ihn. Ursache am Code:
+Regen sucht sein Ziel unter den Mitgliedern ohne Regen, und der GCD-Pfad prüft nicht, ob der Heil-GCD ein Mitglied der
+kritischen Klasse erreicht. Als Defekt ins TODO („Kritische Klasse ohne Heil-GCD auf das Mitglied“).
+*Zauber im Lauf abgebrochen:* dreimal Glare III 0,6 bis 1,0 s nach Beginn (Sitzung 18:30, Dungeon); A880 zählte 113
+im Shinryu-Mitschnitt vom 17.11. – anderer Inhalt, die Zahlen vergleichen nichts. Die Bewegungsvorhersage lernte weiter
+(Zeilen „move forecast“, Vorhersagen `move-forecast-*` beobachtet).
+*Außerhalb des Kampfes:* „out-of-combat heal held“ einmal je Aktion und Pause, auch für Tengentsu und Riddle of Earth –
+beide heilen erst bei Treffern; zurückgehalten ist richtig.
+*Tabellen:* fünf neue Flächen in `AreaPotentialUnmitigated`, fünf Anteile in `HostileCastingAreaPotential` gestiegen
+(etwa 36596 von 0,63 auf 0,76 bei gemessenen 40 % unter Minderung), ein Tankbuster mit Anteil unter Verwundbarkeit
+(36597: 0,127, Spurzeile „unmitigated 13 % under a vulnerability“). Plausibel am Mitschnitt.
+*Prüfgrad:* Spur, Mitschnitt und Tabellen; Code nur für die Ursache der kritischen Klasse gelesen.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
