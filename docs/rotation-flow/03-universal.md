@@ -1468,6 +1468,39 @@ nicht kämpft (eine Fläche um dich hat dich als Ziel, A883) –, schreibt die S
 je Annäherung eine Zeile „pull: RSR opened …“ mit Aktion, Gegner, Einstellung, Countdown und offener Anfrage; die gehaltene
 Anfrage schreibt „pull: held …“ einmal je Anfrage.
 
+*Pull ohne Countdown: die Vorbereitung vor dem ersten GCD (A924):* Wer in der offenen Welt, in einem Dungeon oder an der
+Puppe einen Gegner angreift, pullt ohne Countdown – das ist der Normalfall (seine Rüge, 19.11.2026: „wenn man in der offenen
+welt einen gegner angreift ist das immer ein pull ohne countdown. also eigentlich der standard.“).
+- *Befund am Code:* Außerhalb des Kampfes wählt `CustomRotation.Invoke` bei freiem GCD nur den GCD (eine Fähigkeit davor
+  nur als Notfallheilung); was der Countdown-Pfad einer Rotation vor dem Pull vorbereitet (`CountDownAction`), läuft nur mit
+  Countdown. Die erste Aktion eines Pulls ohne Countdown ist deshalb immer ein GCD, und die Vorbereitung kommt danach oder
+  nie. *Gemessen (sein Mitschnitt 19.11.2026):* Der Samurai eröffnete an der Puppe mit Gyofu und zog Meikyo Shisui erst
+  danach; The Balance (7.4) legt Meikyo vor den Pull, damit die ersten drei GCDs Sen geben – ein GCD ohne Sen ist der Preis.
+- *Erhoben (alle 21 eigenen Countdown-Pfade, 19.11.2026):* Vorbereitung ohne Schaden und ohne Bewegung – Samurai Meikyo und
+  True North, Maschinist Reassemble, Tänzer Standard Step und Schritte, Monk Meditation und Form Shift, Schnitter Soulsow,
+  Piktomant Striking Muse, Beschwörer und Gelehrter ihr Begleiter, Astrologe Earthly Star und Astral Draw, Weiser
+  Eukrasia, Dunkelritter The Blackest Night, Paladin Divine Veil (Option), Gelehrter Recitation (Option), Tinkturen (nur wo
+  „Tincture usage“ sie zulässt). Angriffe, die den Pull selbst bilden: vorgewirkte Zauber (Malefic, Stone, Ruin, Fire III,
+  Veraero, Holy Spirit), Harpe, Air Anchor, Tomahawk, Lightning Shot, Unmend, Lückenschließer.
+- *Gilt:* Außerhalb des Kampfes, ohne Countdown, wenn der gewählte GCD einen Gegner angreift (der Pull steht an), fragt RSR
+  vor ihm den Countdown-Pfad der Rotation so, als endete der Countdown jetzt (Restzeit 0), und lässt dabei nur Aktionen zu,
+  die keinen Schaden angeben und den Spieler nicht bewegen. Was der Pfad dann liefert, geht vor dem ersten GCD; danach
+  fragt er erneut, bis nichts mehr kommt. Für jeden Job an derselben Stelle, ohne eine Zeile in den Rotationen.
+- *Ausgenommen, mit Grund:* Fenster mit Untergrenze (Weißmagier Regen und Benison bei 3 bis 5 s, Gelehrter Adloquium bei 6
+  bis 7 s und Deployment bei 3 bis 4 s) erreicht Restzeit 0 nicht; für den Tank vor dem Pull gibt es die vorbeugenden
+  Heilungen (V1, Konzept 15). Der Ninja: Sein Countdown-Pfad setzt beim Fragen sein Ninjutsu-Ziel (Suiton), das dann
+  außerhalb des Pfads Mudras auslöste; Suiton selbst ist ein Angriff und bliebe ausgesperrt – die Mudras liefen ins Leere.
+- *Im Kampf:* Der Samurai eröffnet mit Meikyo und Gekko, Kasha, Yukikaze wie in der Eröffnung von The Balance; der
+  Maschinist mit Reassemble vor Air Anchor; der Tänzer mit Standard Step. Der erste Treffer kommt um die Sperre je
+  Vorbereitung später (eine Fähigkeit rund 0,6 s; Standard Step und zwei Schritte rund 3,5 s, die der Countdown ebenso
+  kostet).
+- *Falsifikation:* (1) *Kein Defekt* – widerlegt am Mitschnitt (Gyofu vor Meikyo) und am Code. (2) *Option falsch: Die
+  Verzögerung kostet mehr, als die Vorbereitung bringt* – an einem Gegner, der in Sekunden fällt (Dungeon-Rudel), kommt
+  der erste Treffer später; die Vorbereitung ist aber dieselbe, die der Autor für den Countdown gewählt hat, und eine
+  Fähigkeit kostet eine Sperre. *Preis:* bei Rudeln, die vor dem Ende der Vorbereitung fallen, die Sperre ohne Nutzen.
+  (3) *Ausgeliefert, und nichts ändert sich:* Liefert der Pfad bei Restzeit 0 nichts Zulässiges, bleibt alles wie bisher;
+  die Spur schreibt je Pull „pull prepared: …“ mit den Aktionen, sodass das Ausbleiben sichtbar ist.
+
 *Anlass (A877):* Shinryu (Unreal), 17.11.2026: Bereitschaftsanfrage des Tanks um 19:14:33, kein Countdown, 19:14:35,975
 Ruinga des Beschwörers auf Shinryus Herz, das seit seinem Erscheinen (19:14:19) kein Ziel hielt (Mitschnitt, Zeile 261
 `NPCTargetID` E0000000). Beide Schwingen schlugen ihn, Tod nach 8 s, danach die Gruppe. RSR war aktiv (Sprint 1,6 s vorher

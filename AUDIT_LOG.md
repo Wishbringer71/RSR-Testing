@@ -26835,6 +26835,28 @@ wählt eine Alternative, wenn etwas gerade nicht geht – das schließt diese Kl
 Zanshin nach jedem Ikishoten, keine GCD-Lücke über 4 s außer Bewegung; jede Zeile „gcd idle:“ in der Form
 `gcd-idle-line-form`.
 
+### A924 · Pull ohne Countdown: die Vorbereitung des Countdown-Pfads vor dem ersten GCD (19.11.2026)
+
+*Anlass:* seine Rüge vom 19.11.2026 („wenn man in der offenen welt einen gegner angreift ist das immer ein pull ohne
+countdown. also eigentlich der standard. und den kennst du nicht?“) und der Befund aus A923: Der Samurai eröffnete an der
+Puppe mit Gyofu und zog Meikyo danach. Seine Frage dazu: „der erste angriff erfolgt also ohne schaden? ist das dann noch
+ein angriff?“ – nein: Die Vorbereitung ist kein Angriff und startet keinen Kampf (der Countdown setzt sie bis 15 s vorher
+ein, außerhalb des Kampfes); der erste GCD mit Schaden folgt ihr und ist der Angriff.
+*Ursache am Code:* `CustomRotation.Invoke` wählt außerhalb des Kampfes bei freiem GCD nur den GCD; `CountDownAction` läuft
+nur mit Countdown. Für jeden Job.
+*Erhoben:* alle 21 eigenen Countdown-Pfade (Konzept 03, „Pull ohne Countdown“): Vorbereitung ohne Schaden und Bewegung
+gegen Angriffe, die den Pull bilden; Fenster mit Untergrenze (Weißmagier, Gelehrter) erreicht Restzeit 0 nicht.
+*Gebaut:* Außerhalb des Kampfes, ohne Countdown, mit einem GCD gegen einen Gegner fragt RSR den Countdown-Pfad mit
+Restzeit 0 und lässt dabei nur Aktionen zu, die keinen Schaden angeben (`ActionTooltip.TryStatedPotency`) und den
+Spieler nicht bewegen (`SpecialActionType.None`); was kommt, geht vor dem GCD, je Frame erneut. Nicht für den Ninja
+(sein Pfad setzt beim Fragen sein Ninjutsu-Ziel). Spur „pull prepared: …“ einmal je Pull.
+*Falsifikation:* (1) kein Defekt – widerlegt am Mitschnitt und am Code. (2) Option falsch – die Vorbereitung verzögert
+den ersten Treffer um eine Sperre je Fähigkeit (Tänzer: Standard Step und Schritte rund 3,5 s); an Rudeln, die vorher
+fallen, ohne Nutzen; es ist dieselbe Vorbereitung, die der Autor für den Countdown gewählt hat. (3) ausgeliefert, nichts
+ändert sich – liefert der Pfad bei Restzeit 0 nichts Zulässiges, bleibt alles wie bisher; die Spurzeile fehlt dann.
+*Prüfgrad:* Compile, Prüfskripte; im Spiel nicht beobachtet. *Vorhersage:* Samurai an der Puppe ohne Countdown: „pull
+prepared: Meikyo Shisui before …“, danach Gekko, Kasha, Yukikaze ohne Gyofu (`pull-prepared-line-form`).
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

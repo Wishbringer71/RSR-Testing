@@ -75,5 +75,12 @@
   "kind": "each",
   "situation": "gcd idle:",
   "match": "gcd idle: [0-9]+[.,][0-9] s without a GCD - chosen [^;]+(; refused .+)?$"
+ },
+ {
+  "id": "pull-prepared-line-form",
+  "archive": "A924",
+  "kind": "each",
+  "situation": "pull prepared:",
+  "match": "pull prepared: .+ before .+, no countdown$"
  }
 ]

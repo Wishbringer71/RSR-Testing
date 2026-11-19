@@ -32,6 +32,12 @@ What this release changes in the fight. For the whole distance from upstream, se
   areas hit past it as at a single dummy. When no weaponskill or spell comes for longer than a GCD although one could,
   the trace now writes "gcd idle: ..." with what was chosen and why each one was refused.
 
+- **A pull without a countdown is prepared like one with it.** Attacking an enemy in the open world, in a dungeon or at a
+  dummy, RSR now first uses what the rotation prepares at the end of a countdown, as long as it deals no damage and does
+  not move you: the samurai opens with Meikyo Shisui and then Gekko instead of Hakaze, the machinist with Reassemble, the
+  dancer with Standard Step. The first damaging weaponskill or spell follows. Not for the ninja. The trace writes
+  "pull prepared: ...".
+
 ## Seeing what the enemies do
 
 - **One right picture per enemy area (needs Splatoon).** Circles and lines an enemy casts without the game's orange
