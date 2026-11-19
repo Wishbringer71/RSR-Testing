@@ -41,7 +41,8 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
   „group burst:“ auswerten, dann eigene Verstärker auf den Gruppenburst warten lassen; K1 erster Schritt gebaut
   (A914: allein jede Pause im Fenster, in der Gruppe nur im ersten GCD), K2 gebaut (A916: gehaltene Ladungen vor dem
   Tod des Bosses frei), K5 erster Schritt gebaut (A917: Flächen zählen nur, wer den Treffer erlebt), danach K1 mit der
-  Uhr der Gruppe aus K3, dann der Rest von K5 (lange Aufbauten auf sterbenden Rudeln), K4, K6. *Konzept:* 03, „F · Über den
+  Uhr der Gruppe aus K3, dann K6 je Job – mit den Leisten und Aufbauten am Ende eines Rudels (K5, A918) und den
+  Bewegungsmitteln (K4, A919: allgemein geprüft, kein gemessener Verlust). *Konzept:* 03, „F · Über den
   Augenblick hinaus".
 
 - **Splatoons Flächenanzeige als Ersatz, wo BossMod kein Modul hat** (sein Vorschlag vom 19.11.2026). *Wirkung im

@@ -2859,7 +2859,32 @@ den jobweisen Abläufen.
   einem GCD. *Preis:* derselbe kleine Betrag in die andere Richtung, wo die Schätzung irrt (Konzept 03, D: drei von 34
   Verzichten beim DoT lagen falsch). (3) *Ausgeliefert, und nichts ändert sich:* Ohne Schätzung (Pullbeginn) zählt
   alles wie bisher. Messweg: die Zählung je Wurf im Mitschnitt, wie oben.
-- *Offen in K5:* lange Aufbauten auf einem Rudel, das vor ihrem Abschluss fällt (Flächenkombo, Leiste).
+- *Lange Aufbauten auf einem Rudel, das vor ihrem Abschluss fällt – auf der Stufe „alle" geprüft, keine Regel (A918):*
+  Eine angefangene Flächenkombo hat am Ende eines Rudels keine Alternative, die mehr bringt: Ihr nächster Schritt ist
+  die stärkste Fläche, und ob überhaupt eine Fläche geht, entscheidet die Zählung oben. Ob eine Leiste oder ein Aufbau
+  mit dem Rudel verfällt, hängt am Job – manche Leisten bleiben zwischen zwei Kämpfen stehen, andere laufen ab –; seine
+  Mitschnitte belegen es nur für den Weißmagier (619 von 764 Übergängen unverändert, die übrigen an der Lilien-Uhr) und
+  für drei weitere Fälle. Das gehört deshalb zu K6, je Job mit dessen Wirktexten. Gebaut ist auf der Stufe „alle", was
+  für jeden Job gleich gilt: die Zählung der Flächen (oben), kein DoT auf Gegner, die bald sterben (D), freie Ladungen vor
+  dem Tod des Bosses (K2).
+
+**K4 – Bewegung: Sofortzauber für eine vorhergesagte Bewegung aufheben** (geprüft, nicht gebaut, A919):
+- *Was RSR schon weiß:* wann eine Fläche auf deinem Platz aktiv wird (`MovementLock.SpotDangerIn`, aus BossModReborns
+  Zonen, `Hints.ForbiddenZonesNextActivation`), und wie lange gezaubert werden darf (`Hints.MaxCastTime`). Passt kein
+  Zauber mehr, nimmt die Rotation einen Sofortzauber (C6, `NoCastFitsNow`). Was fehlt, ist die Gegenrichtung: einen
+  begrenzten Sofortzauber (aus einem Proc, einer Leiste, Ladungen) im Stehen nicht verbrauchen, wenn gleich bewegt werden
+  muss.
+- *Gemessen (alle 19 Mitschnitte):* Der Beschwörer wirkte 105 Ruin III, 26 Ruin IV, 4 Ruinator und kein Ruin II – das
+  schwache Sofort-Ruin, das fällt, wenn in der Bewegung kein besserer Sofortzauber bereitliegt. Ein Verlust aus
+  verbrauchten Sofortzaubern ist in seinen Daten nicht zu sehen.
+- *Erwogen, allgemein:* „Ein Sofortzauber-GCD, der einen von einer anderen Aktion gegebenen Status braucht, wartet,
+  solange ein Zauber passt und eine Bewegung auf deinem Platz vor dem Ende des Status vorhergesagt ist.“ Er träfe Ruin
+  IV, Hammer Stamp und Holy in White, nicht Xenoglossy oder Toxikon (Leiste) – welche Sofortzauber Bewegungsmittel sind,
+  ist je Job verschieden, wie oft sie nachkommen auch. *Nicht gebaut:* kein gemessener Schaden, gegen den die Regel
+  schützt (CLAUDE.md, „Prüfgrad“: ein neuer Mechanismus nur gegen eine schriftliche Anforderung mit Schaden ohne ihn);
+  das Halten im Burst verlöre den Burst-Aufschlag des einen GCD. Die Frage geht je Job zu K6, mit dessen
+  Bewegungsmitteln, und wird gebaut, sobald ein Mitschnitt den Verlust zeigt (Ruin II, Jolt in der Bewegung, ein
+  ausgefallener GCD beim Gehen).
 
 **K1, erster Schritt – Grundlagen** (in Arbeit, A901):
 - *Der Burst-Schalter ist kein Hebel.* `IsBurst` (`AutoStatus.Burst`, in `StateUpdater` gesetzt, solange „Auto Burst"

@@ -26684,6 +26684,27 @@ drei getroffen hätte.
 sinkt der Anteil der Holy-Würfe mit weniger als drei Getroffenen, bei denen ein Gegner in den 3 s davor starb, unter die
 28 von 845 dieser Messung (Messweg: dieselbe Zählung am Mitschnitt).
 
+### A918 · K5, Rest: lange Aufbauten am Ende eines Rudels gehören zu K6 (19.11.2026)
+
+*Gemessen:* Leiste des Spielers (ACT Zeile 31) am Ende eines Kampfes gegen die zu Beginn des nächsten, alle 19
+Mitschnitte: Weißmagier 619 von 764 unverändert (die übrigen an der Lilien-Uhr), Gunbreaker 2 und Rotmagier 2
+unverändert, Beschwörer 2 von 3, Dunkelritter 0 von 1, Beastmaster 0 von 8 (Brettwechsel). Für Nahkampf-Leisten zu
+wenige Fälle.
+*Schluss (Konzept 03, F, K5):* Auf der Stufe „alle" keine Regel – eine Flächenkombo hat am Rudelende keine stärkere
+Alternative, ob Fläche überhaupt, zählt A917; Leisten und Aufbauten verfallen je Job verschieden und gehen zu K6.
+*Prüfgrad:* Mitschnitte ausgewertet, statische Prüfung; kein Code.
+
+### A919 · K4: Sofortzauber für vorhergesagte Bewegung – allgemein geprüft, nicht gebaut (19.11.2026)
+
+*Grundlagen:* RSR liest die kommende Bewegung schon (`MovementLock.SpotDangerIn` aus BossModReborns Zonen; `MaxCastTime`);
+die Rotationen nehmen einen Sofortzauber, wo kein Zauber mehr passt (`NoCastFitsNow`). Die Gegenrichtung – begrenzte
+Sofortzauber im Stehen aufheben – fehlt.
+*Gemessen (alle 19 Mitschnitte):* Beschwörer 105 Ruin III, 26 Ruin IV, 4 Ruinator, 0 Ruin II. Kein Hinweis auf einen
+fehlenden Sofortzauber in der Bewegung.
+*Entscheidung (Konzept 03, F, K4):* kein allgemeiner Mechanismus ohne gemessenen Schaden; welche Sofortzauber
+Bewegungsmittel sind, ist je Job verschieden – zu K6. Gebaut wird, sobald ein Mitschnitt den Verlust zeigt.
+*Prüfgrad:* Mitschnitte ausgewertet, Code gelesen; kein Code geändert.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
