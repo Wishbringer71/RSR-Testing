@@ -110,6 +110,8 @@ internal sealed partial class OtherConfiguration
 	public static List<Job> TheBalancePriority = [];
 	public static List<Job> KardiaTankPriority = [];
 
+	public static List<Job> AdloquiumTankPriority = [];
+
 	/// <summary>
 	/// The largest share of a party member's maximum HP that each listed area action has ever been
 	/// observed to take from a member who could survive it, keyed by action id - at most his whole
@@ -409,6 +411,7 @@ internal sealed partial class OtherConfiguration
 
 	/// <summary>Guards <see cref="ActionPenaltyCasts"/> and <see cref="ActionPenaltySightings"/>.</summary>
 	internal static readonly object ActionPenaltyGate = new();
+
 
 	public static RotationSolverRecord RotationSolverRecord = new();
 
@@ -886,6 +889,7 @@ internal sealed partial class OtherConfiguration
 		new OrderList(nameof(TheSpearPriority), JobPriorityLists.TheSpearPriority, () => TheSpearPriority, v => TheSpearPriority = v),
 		new OrderList(nameof(TheBalancePriority), JobPriorityLists.TheBalancePriority, () => TheBalancePriority, v => TheBalancePriority = v),
 		new OrderList(nameof(KardiaTankPriority), JobPriorityLists.KardiaTankPriority, () => KardiaTankPriority, v => KardiaTankPriority = v),
+		new OrderList(nameof(AdloquiumTankPriority), JobPriorityLists.AdloquiumTankPriority, () => AdloquiumTankPriority, v => AdloquiumTankPriority = v),
 		new MapList<string>(nameof(NoHostileNames), TerritoryLists.NoHostileNames, () => NoHostileNames, v => NoHostileNames = v),
 		new MapList<string>(nameof(NoProvokeNames), TerritoryLists.NoProvokeNames, () => NoProvokeNames, v => NoProvokeNames = v),
 		// Upstream's list and the casts cactbot announces (concept 13, "Die mitgelieferten Listen", A620).
@@ -1497,6 +1501,10 @@ internal sealed partial class OtherConfiguration
 	public static Task SaveTheBalancePriority() => SaveList(nameof(TheBalancePriority));
 
 	public static Task SaveKardiaTankPriority() => SaveList(nameof(KardiaTankPriority));
+
+	public static void ResetAdloquiumTankPriority() => ResetFile(nameof(AdloquiumTankPriority));
+
+	public static Task SaveAdloquiumTankPriority() => SaveList(nameof(AdloquiumTankPriority));
 
 	public static Task SaveNoHostileNames() => SaveList(nameof(NoHostileNames));
 
