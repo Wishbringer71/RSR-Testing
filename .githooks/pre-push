@@ -8,4 +8,9 @@ if [ -z "$PYTHON" ]; then
 	echo "pre-push: no working Python found - commit identities not checked here; the CI checks them" >&2
 	exit 0
 fi
-exec $PYTHON "$(dirname "$0")/../.github/scripts/audit/check_commit_identity.py" --pre-push
+# Both read git's lines on stdin; it is read once and handed to each.
+input="$(cat)"
+printf '%s\n' "$input" | $PYTHON "$(dirname "$0")/../.github/scripts/audit/check_commit_identity.py" --pre-push || exit 1
+# The CI's checks and build here, before the push (A895, pre_push_gate.py): on GitHub the CI runs only when a pull
+# request opens or is marked ready, and on request.
+printf '%s\n' "$input" | $PYTHON "$(dirname "$0")/../.github/scripts/audit/pre_push_gate.py"

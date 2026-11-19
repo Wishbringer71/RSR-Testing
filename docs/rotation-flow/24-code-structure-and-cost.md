@@ -493,6 +493,21 @@ unter 30 s; sie aufzublähen ist nicht die Ursache.
   Änderung und bei unbekanntem Vorstand, wie die Modelle (A323).
 - (6) *Seltener pushen:* ein Push je abgeschlossenem Auftragspunkt statt je Commit. Das ist eine Arbeitsregel
   (CLAUDE.md, „Commits und Branches").
+- (7) *Prüfen in dieser Umgebung statt auf GitHub* (seine Frage vom 19.11.2026: „kann eigentlich auch was in der
+  claude code eigenen umgebung im netz laufen, oder ist alles auf github notwendig im ablauf?"):
+  - Auf GitHub nötig ist nur das Release (`publish.yaml`): Es erzeugt die Veröffentlichung und `latest.zip`, und Tags
+    kann diese Sitzung nicht pushen.
+  - Prüfungen und Build liefen hier schon vor jedem Commit. Der GitHub-Lauf je Push wiederholte sie und brachte nur
+    eines dazu: einen sauberen Checkout genau des gepushten Commits. Ohne ihn kann ein Stand, der nur lokal besteht,
+    eine Prüfung grün machen (A891: eine ungetrackte Datei).
+  - Das Pre-Push-Gate (`pre_push_gate.py`, aus `.githooks/pre-push`) bringt das hierher. Es lässt nur `HEAD` aus
+    einem sauberen Arbeitsbaum durch, dann alle Prüfungen, den Build mit den Schaltern der CI (`cloud_build.sh`, für
+    Gate und CI ein Ort), `latest.zip` und den Generator, wenn der Push ihn ändert.
+  - `build.yaml` läuft danach beim Öffnen, Wiedereröffnen und Fertigmelden eines PR und auf Anforderung vor jedem
+    Release. Ein Push kostet dann keine Minute.
+  - *Bedrohung:* Diese Umgebung ist ein Linux-Container, kein frischer Läufer. Ein Werkzeug, das hier liegt und dort
+    fehlt, fiele erst beim nächsten GitHub-Lauf auf, spätestens vor dem Release. Auf `main` lässt das Gate
+    `check_release_note` aus: Dort steht nach einem Release bis zum nächsten Merge der Text des vorigen.
 
 *Abwägung:*
 - (1) verliert die Gleichheit mit dem Release, das `publish.yaml` weiter auf Windows baut. *Bedrohung:* ein Fehler,
@@ -501,7 +516,7 @@ unter 30 s; sie aufzublähen ist nicht die Ursache.
 - (2) verliert nichts: Ohne Änderung an einer Eingabe baut derselbe Code wie im letzten Lauf. Ist der vorige Stand
   unbekannt (neuer PR, Force-Push, Handstart), baut es immer.
 
-*Gewählt:* alle außer (0). Je Push mit Code: ein Linux-Job, Prüfungen rund 40 s und Build rund 60 s
+*Gewählt:* alle außer (0); mit (7) entfällt der Lauf je Push ganz, (1) bis (5) gelten für die Läufe, die bleiben. Je Push mit Code: ein Linux-Job, Prüfungen rund 40 s und Build rund 60 s
 [Schätzung: Linux-Build wie der Windows-Build ohne dessen langsameres Einrichten], also 2 Minuten statt 5. Je Push
 ohne Build-Eingabe: 1 Minute statt 5. Der Release-Lauf (`publish.yaml`, Windows) bleibt; er läuft nur bei einem
 Release.

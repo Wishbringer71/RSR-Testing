@@ -7,6 +7,7 @@
 #
 #   .github/scripts/cloud_build.sh            fetch what is missing, build
 #   .github/scripts/cloud_build.sh --fetch    only fetch
+#   .github/scripts/cloud_build.sh --generator  fetch what is missing, build the game-data generator
 set -euo pipefail
 root="$(cd "$(dirname "$0")/../.." && pwd)"
 export PATH="$HOME/.dotnet:$PATH" DOTNET_CLI_TELEMETRY_OPTOUT=1 DOTNET_NOLOGO=1
@@ -29,4 +30,12 @@ echo "dotnet $(dotnet --version), Dalamud in $dalamud"
 [ "${1:-}" = "--fetch" ] && exit 0
 
 cd "$root"
-dotnet build -c Release RotationSolver/RotationSolver.csproj "-p:SolutionDir=$root/" -nologo -v q
+# The CI's compiler switches (build.yaml calls this script too, A895): obsolete members, banned APIs, the documentation
+# and reads before initialization fail the build here as there.
+if [ "${1:-}" = "--generator" ]; then
+	dotnet build -c Release RotationSolver.GameData/RotationSolver.GameData.csproj -nologo -v q \
+		-warnaserror:CS0618,CS0612,CS0419,CS1570,CS1571,CS1572,CS1573,CS1574,CS1734
+	exit
+fi
+dotnet build -c Release RotationSolver/RotationSolver.csproj "-p:SolutionDir=$root/" -nologo -v q \
+	-warnaserror:CS0618,CS0612,RS0030,CS0419,CS1570,CS1571,CS1572,CS1573,CS1574,CS1734,CS8600,CS8601,CS8602,CS8603,CS8604

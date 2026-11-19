@@ -1,6 +1,10 @@
 name: Build
 on:
+  # Not on every push (A895, concept 24, "Kosten der CI"): the checks and the build run in the session before each push
+  # (.githooks/pre-push, pre_push_gate.py), on exactly the pushed commit from a clean tree. Here they run when a pull
+  # request is opened, reopened or marked ready, and on request - before every release.
   pull_request:
+    types: [opened, reopened, ready_for_review]
     branches:
       - main
   # Manual trigger, because the pull_request event leaves main itself unbuilt: once a branch is
@@ -29,6 +33,9 @@ jobs:
       # A893 (concept 24, "Kosten der CI"): the build (section 6) runs only when this push changes what the compiler reads. Docs,
       # archive, TODO, the audit scripts, rules and hooks are not compiled; a push of only those builds the same code as
       # the run before. Unknown previous head (a new pull request, a force push) or a manual run: build.
+      - name: Check the pre-push gate against constructed pushes
+        run: python3 .github/scripts/audit/pre_push_gate.py --self-test
+
       - name: Check the build-input filter against constructed paths
         run: python3 .github/scripts/audit/build_inputs.py --self-test
 
@@ -575,7 +582,8 @@ jobs:
 
       - name: Build Plugin
         if: ${{ !cancelled() && steps.inputs.outputs.build == 'true' }}
-        run: dotnet build --no-restore -c Release RotationSolver/RotationSolver.csproj "-p:SolutionDir=$GITHUB_WORKSPACE/" -warnaserror:CS0618,CS0612,RS0030,CS0419,CS1570,CS1571,CS1572,CS1573,CS1574,CS1734,CS8600,CS8601,CS8602,CS8603,CS8604
+        # The same script and switches as the pre-push gate (A895): one place for both.
+        run: bash .github/scripts/cloud_build.sh
 
       # latest.zip holds the plugin and nothing else: the packager zips every file of the output folder unless
       # RotationSolver/DalamudPackager.targets gives it the list (A474). The release workflow runs the same check.
@@ -606,4 +614,4 @@ jobs:
       # restore and closes the gap for every future change to it.
       - name: Build the game-data generator
         if: ${{ !cancelled() && steps.inputs.outputs.build == 'true' }}
-        run: dotnet build -c Release RotationSolver.GameData/RotationSolver.GameData.csproj -warnaserror:CS0618,CS0612,CS0419,CS1570,CS1571,CS1572,CS1573,CS1574,CS1734
+        run: bash .github/scripts/cloud_build.sh --generator

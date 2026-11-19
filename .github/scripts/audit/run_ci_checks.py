@@ -96,6 +96,17 @@ def main():
         print('workflow steps unreadable or pointing at missing scripts:', missing or 'none found')
         return 2
 
+    # --skip NAME leaves out the step whose script is NAME.py, said out loud (the pre-push gate on main: the release text
+    # lives in the working branch until it merges, A895).
+    args = sys.argv[1:]
+    skip = {args[i + 1] for i, a in enumerate(args) if a == '--skip' and i + 1 < len(args)}
+    if '--skip' in args and not skip:
+        print('--skip needs the name of a check')
+        return 2
+    for name in sorted(skip):
+        print(f'skipped on request: {name}')
+    found = [s for s in found if pathlib.Path(shlex.split(s)[1]).stem not in skip]
+
     failed = []
     for command in found:
         print(f'-- {command}', flush=True)

@@ -26091,6 +26091,27 @@ aufgebraucht … Im Loop prüfen", sein Hinweis „Die linux Aktionen sind 40% g
   Arbeits-Branch alles grün.
 - *Prüfgrad:* Compile und Prüfskripte; im Spiel nicht beobachtet.
 
+### A895 · Prüfen vor dem Push in dieser Umgebung, GitHub-CI nur bei PR und vor Release (19.11.2026)
+
+Seine Frage (19.11.2026): „kann eigentlich auch was in der claude code eigenen umgebung im netz laufen, oder ist alles
+auf github notwendig im ablauf?" Dazu seine Vorgabe „ci minuten generell senken durch optimierungen und synergien".
+- *Antwort:* Auf GitHub nötig ist nur das Release (`publish.yaml`). Prüfungen und Build liefen hier schon vor jedem
+  Commit; der Lauf je Push wiederholte sie. Er brachte nur den sauberen Checkout des gepushten Commits dazu.
+- *Gebaut (Konzept 24, „Kosten der CI", Option 7):*
+  - `pre_push_gate.py` aus `.githooks/pre-push` lässt nur `HEAD` aus einem sauberen Arbeitsbaum durch. Dann laufen
+    alle Prüfungen (`run_ci_checks.py`), der Build mit den Schaltern der CI und `latest.zip`; den Generator baut es,
+    wenn der Push ihn ändert.
+  - `cloud_build.sh` trägt die Schalter jetzt für Gate und CI zugleich (`--generator` für den Datengenerator).
+  - `run_ci_checks.py --skip NAME` lässt einen Schritt hörbar aus. Das Gate braucht es auf `main` für
+    `check_release_note`, dessen Text bis zum Merge des Arbeits-Branchs vom vorigen Release stammt.
+  - `build.yaml` läuft beim Öffnen, Wiedereröffnen und Fertigmelden eines PR und auf Anforderung.
+  - CLAUDE.md: Vor jedem Release starte ich `build.yaml` per `workflow_dispatch`.
+- *Selbsttest:* Ein Push von `HEAD` aus sauberem Baum geht durch. Ein anderer Commit, eine geänderte, eine
+  vorgemerkte und eine ungetrackte Datei werden abgewiesen; der Generator baut bei eigener Änderung, auf einem neuen
+  Branch und bei unbekanntem Bereich. Die konstruierten Pushes von `check_commit_identity.py` laufen weiter durch
+  denselben Hook (dort greift das Gate nicht: keine Prüfskripte im Baum).
+- *Prüfgrad:* Selbsttests und lokal alle Prüfungen; der erste echte Push misst das Gate.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

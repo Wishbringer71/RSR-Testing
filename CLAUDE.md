@@ -104,7 +104,7 @@ Diese Datei gilt in jeder Lage. Die übrigen Regeln stehen je genau einmal im Re
 - Nach einer Abweisung durch einen Hook oder eine Prüfung im selben Zug `git diff --cached --stat` gegen die Nachricht halten – sonst trägt der Commit eine Beschreibung ohne ihren Inhalt (Fall: e28c95e beschreibt eine Änderung an BurstWatch und ändert nur Konzept 03, A841).
 - Nach einem Merge-Commit die Prüfungen erneut laufen lassen, vor dem Push: Die Merge-Basis wechselt, und was vorher als Fork-Zeile zählte, ist danach Upstreams (A324).
 - Release-Text: Unterschied zum letzten Release, englisch.
-- Nach dem Push den CI-Lauf abwarten – über das Ereignis des PR-Abonnements, nie über eine zeitgesteuerte Kontrolle (→ „Vorlagen an ihn"); bleibt er aus, `mergeable_state` messen. Fehlt er oder ist er rot, messe ich die Ursache im Log, statt „zum Probieren“ neu zu pushen (Fall: 33778ad29 rot, weil der Download von Dalamud an einer GitHub-Störung scheiterte, 17.11.2026).
+- Die Prüfung eines Pushs ist das Pre-Push-Gate (`.githooks/pre-push`, `pre_push_gate.py`): alle Prüfungen und der Build hier, am gepushten Commit aus sauberem Arbeitsbaum. Auf GitHub läuft `build.yaml` nur beim Öffnen oder Fertigmelden eines PR und auf Anforderung; vor jedem Release starte ich es per `workflow_dispatch` und warte das Ereignis ab, nie über eine zeitgesteuerte Kontrolle (→ „Vorlagen an ihn"). Grund: Jeder Lauf kostet sein CI-Kontingent (seine Frage, 19.11.2026, ob es in dieser Umgebung laufen kann; A895). Ist ein Lauf rot, messe ich die Ursache im Log, statt „zum Probieren“ neu zu starten (Fall: 33778ad29 rot, weil der Download von Dalamud an einer GitHub-Störung scheiterte, 17.11.2026).
 
 # Loop
 
@@ -245,7 +245,7 @@ Gilt für jede Regel, im Code wie im Konzept (seine Vorgabe, 26.09.2026; für di
   einen CI-Lauf aus seinem Kontingent (seine Vorgabe, 19.11.2026: „ci minuten generell senken“, A893). Ein eigener
   Branch je Vorhaben ist nicht nötig.
 - Vollständig gemergte Branches sind Löschfälle; ich melde sie ihm.
-- Bleibt ein CI-Lauf aus: zuerst `mergeable_state` messen und die Basis mergen.
+- Bleibt ein angeforderter CI-Lauf aus: zuerst `mergeable_state` messen und die Basis mergen.
 - Commit-Identität nicht überschreiben (`user.name = Claude`, `user.email = noreply@anthropic.com`; kein `git -c user.name=… -c user.email=…`). Sein Klarname und seine private Adresse gehören in keinen Commit; `.githooks/pre-commit` (für Merges ohne Konflikt über `pre-merge-commit`) und `check_commit_identity.py` sperren fremde Adressen und Namen; `core.hooksPath` setzt der Sitzungsbrief.
 
 **Grenzen und Löschungen**
