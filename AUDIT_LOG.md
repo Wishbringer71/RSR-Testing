@@ -26667,6 +26667,23 @@ Burst warteten – etwa Gnashing Fang, Double Check und Checkmate, Fleche-artige
 fragen, zeigt die Spur]*.
 *Prüfgrad:* statisch, Compile, Prüfskripte. Im Spiel nicht beobachtet.
 
+### A917 · K5, erster Schritt: Flächen zählen nur, wer den Treffer erlebt (19.11.2026)
+
+*Anlass:* TODO „Rotationen aller Jobs über den Augenblick hinaus“, K5; sein Auftrag „todo weiter im loop abarbeiten“.
+*Gemessen (alle 19 Mitschnitte):* je Flächenaktion die Zahl getroffener Gegner. Holy und Holy III (Schwelle 3, Wirkzeit
+1,5 s): 56 von 845 Würfen trafen weniger als drei; in 28 davon starb ein Gegner in den 3 s vor dem Treffer.
+*Ursache am Code:* Die Liste der Getroffenen (`ActionTargetInfo.GetCanAffects`) prüft die Zeit bis zum Tod nur gegen
+`TimeToKill` der Aktion, ab Werk 0.
+*Gebaut (Konzept 03, F, K5):* Für eine Fläche zählt ein Gegner nicht, dessen geschätzte Zeit bis zum Tod kürzer ist als
+die Zeit bis zum Treffer (`NeededStatusMargin`: Wirkzeit, bei einem GCD plus Rest des GCD). Nicht für Einzelziele,
+freundliche Aktionen und Gegner ohne Schätzung.
+*Größe:* klein [Schätzung: unter einem Promille]; gebaut, weil es eine Bedingung an der allgemeinen Stelle für jede
+Fläche jedes Jobs ist. *Preis:* Wo die Schätzung im Burst zu kurz liegt, geht die Einzelaktion statt einer Fläche, die
+drei getroffen hätte.
+*Prüfgrad:* statisch, Compile, Prüfskripte; Mitschnitte ausgewertet. *Vorhersage:* Im nächsten Upload mit Weißmagier
+sinkt der Anteil der Holy-Würfe mit weniger als drei Getroffenen, bei denen ein Gegner in den 3 s davor starb, unter die
+28 von 845 dieser Messung (Messweg: dieselbe Zählung am Mitschnitt).
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

@@ -2839,6 +2839,28 @@ jeden Kampf mit Gruppe; K2 jedes Kampfende, ist aber teilweise gebaut. *Gegenpos
 Inhalt, gibt es kaum Pausen; dort wirken K2 und K5 öfter. Darum K1 zuerst als allgemeiner Mechanismus, aber K2 und K5 vor
 den jobweisen Abläufen.
 
+**K5 – Mehrere Ziele: wer noch lebt, wenn der Treffer ankommt** (erster Schritt gebaut, A917):
+- *Gemessen (alle 19 Mitschnitte seiner Uploads, 19.11.2026):* Holy und Holy III des Weißmagiers (Wirkzeit 1,5 s,
+  Schwelle 3) trafen in 56 Würfen weniger als drei Gegner; in 28 davon starb ein Gegner in den 3 s vor dem Treffer. Die
+  Zielwahl zählt für die Schwelle jeden Gegner in der Fläche, dessen Zeit bis zum Tod über `TimeToKill` der Aktion liegt
+  – ab Werk 0, also jeden, auch einen, der vor dem Eintreffen fällt.
+- *Gebaut:* Für einen Angriff zählt ein Gegner nicht zu den Getroffenen, wenn seine geschätzte Zeit bis zum Tod
+  (`GetTTK`) kürzer ist als die Zeit bis zum Treffer – Wirkzeit plus, bei einem GCD, der Rest des laufenden GCD
+  (`NeededStatusMargin`). Gilt für jede Fläche jedes Jobs an derselben Stelle wie `TimeToKill`; ohne Schätzung zählt
+  er wie bisher. Das Ziel eines Einzelangriffs bleibt unberührt.
+- *Wirkung im Kampf:* Ein Holy III auf drei Gegner, von denen einer in der Wirkzeit fällt, wird zur Einzelaktion
+  (Glare), die auf zwei Gegner kaum weniger und auf einen deutlich mehr bringt. *Größe:* klein – 28 Fälle in allen
+  Mitschnitten *[Schätzung: unter einem Promille des Schadens]*; gebaut, weil der Eingriff eine Bedingung an der
+  allgemeinen Stelle ist und jede Fläche jedes Jobs trifft.
+- *Falsifikation:* (1) *Kein Defekt:* Die übrigen 28 Fälle ohne Tod lagen an Gegnern, die aus der Fläche liefen, oder an
+  der Betäubungsstreckung des Weißmagiers (Holy für den Stun) – die Regel ändert dort nichts. (2) *Option falsch – die
+  Schätzung ist im Burst zu kurz:* Dann zählt ein Gegner nicht, der den Treffer erlebt hätte, und die Einzelaktion geht;
+  auf drei Gegner verliert sie den Anteil der Fläche über dem Einzelangriff, im Fenster von höchstens einer Wirkzeit und
+  einem GCD. *Preis:* derselbe kleine Betrag in die andere Richtung, wo die Schätzung irrt (Konzept 03, D: drei von 34
+  Verzichten beim DoT lagen falsch). (3) *Ausgeliefert, und nichts ändert sich:* Ohne Schätzung (Pullbeginn) zählt
+  alles wie bisher. Messweg: die Zählung je Wurf im Mitschnitt, wie oben.
+- *Offen in K5:* lange Aufbauten auf einem Rudel, das vor ihrem Abschluss fällt (Flächenkombo, Leiste).
+
 **K1, erster Schritt – Grundlagen** (in Arbeit, A901):
 - *Der Burst-Schalter ist kein Hebel.* `IsBurst` (`AutoStatus.Burst`, in `StateUpdater` gesetzt, solange „Auto Burst"
   an ist) steht in 17 Rotationen an 54 Stellen, aber in zwei Bedeutungen: als Freigabe des Burstbeginns (Technical Step,

@@ -22,3 +22,6 @@ What this release changes in the fight. For the whole distance from upstream, se
 - **No charges lost when the boss dies.** A cooldown with charges that waits only so as not to waste them now goes when
   the boss, the last enemy in range, will fall before its charges are full and before your next burst. Not for heals,
   protection or movement. The trace writes "fight end: ... charges released".
+- **Area attacks count only who lives to be hit.** An enemy that dies, by its estimated time to kill, before an area
+  attack lands - its cast and the rest of the GCD - no longer counts toward the number of enemies the area needs. A
+  Holy III that would have landed on two, because the third fell during the cast, becomes Glare.
