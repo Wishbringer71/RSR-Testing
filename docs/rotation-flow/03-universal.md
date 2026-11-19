@@ -2740,6 +2740,23 @@ vorhergesagte bewegungen nicht von allen jobs gelesen? gründe?"; an der Version
   fehlt, ist die umgekehrte Richtung: Sofortzauber für eine kommende Bewegung aufheben, solange man noch steht (K4). Das
   ist je Job verschieden, weil jeder andere Sofortzauber hat.
 
+**K2 – Kampfende: Grundlagen** (in Arbeit, A904):
+- *Gemessen (19.11.2026, Bezeichner im Code):* Das nahe Kampfende (`IsDying`, Zeit bis zum Tod, `HoldCostsUse`) lesen
+  SMN (12 Stellen), BST (7), BLU (4), MCH (3), RPR und SCH (je 2), GNB, RDM, SAM und VPR (je 1); die übrigen elf nicht.
+- *Der zentrale Hebel ist da:* Jede Fähigkeit mit Ladungen behält eine zurück, solange `usedUp` falsch ist
+  (`ActionCooldownInfo.CooldownCheck`, „Cooldown:ChargesKept"); 147 Stellen in den Reborn-Rotationen setzen es selbst.
+  RSR gibt zentral schon alle Ladungen frei, wenn er Heilung befiehlt (`IBaseAction.AllEmpty`). Für das Kampfende
+  kann dieselbe Prüfung je Aktion fragen, ob eine zurückgehaltene Ladung vor dem Tod des Ziels überhaupt noch in ein
+  eigenes Fenster käme. Wenn nicht, ist sie frei. Kein Eingriff in die Rotationen.
+- *Wofür eine Ladung zurückgehalten wird:* für den eigenen Burst (Burst-Uhr). Frei ist sie, wenn der Boss stirbt, bevor
+  der nächste eigene Burst kommt (`BurstClock.SecondsToNext`, `GetCorrectedTTK`).
+- *Gegenthese 7 – Dungeon:* Nach einem Rudel kommt das nächste, und die Ladung trägt hinüber. Darum nur am Ende eines
+  Bosses (`IsBossFromTTK`), nicht beim Rudel; dort lädt sie in der Pause zwischen zwei Rudeln ohnehin nach.
+- *Gegenthese 8 – Die Zeit bis zum Tod schätzt zu früh:* Stirbt der Boss später, als die Schätzung sagt, fehlt die
+  verbrauchte Ladung im nächsten Burst. `GetCorrectedTTK` steuert ihren Fehler nach; was bleibt, ist eine Ladung,
+  die eine Abklingzeit früher wiederkommt – der Preis ist klein, weil die Ladung bis zum Burst ohnehin nachlädt,
+  wenn der Burst mehr als eine Ladezeit entfernt ist. Zu prüfen am Modell, bevor gebaut wird.
+
 **Vorbild: die Kampfrotationen von BossMod** (seine Frage, 19.11.2026: „bringt eigentlich der ai-kampf modus in bossmod
 reborn oder in bossmod was? ist da was, dass rsr verbessern könnte? … ich meine die dortige kampfrotation";
 Werkzeugquelle, gelesen am Quelltext, BSD-3-Lizenz; Ideen, kein übernommener Code):
