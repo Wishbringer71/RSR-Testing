@@ -2782,6 +2782,38 @@ den jobweisen Abläufen.
   wird nur, wo die Pause gleich nach dem Beginn des Fensters kommt.
 - *Allein* (Solo, Trust, Duty Support ohne Raidbuffs) entfällt Gegenthese 4: Halten, wann immer die Pause ins Fenster
   fällt und das Warten keinen Einsatz kostet.
+
+**K3 – Fenster der Gruppe am Spiel messen** (in Arbeit, A901):
+- *Erkennbar für alle Jobs* (Status-Wirktexte, xivapi v2, 19.11.2026): Die Raidbuffs tragen allgemeine Texte – „Damage
+  dealt is increased." (Divination 1878, Brotherhood 1185, Embolden 1297, Technical Finish 1822, Searing Light 2703, Arcane
+  Circle 2599, Radiant Finale 2964, Starry Muse 3685), „Critical hit rate is increased." (Battle Litany 786), „Direct hit
+  rate is increased." (Battle Voice 141), beides (Devilment 1825); auf dem Gegner „Damage taken is increased." (Dokumori
+  3849) und „Rate at which critical hits are taken is increased." (Chain Stratagem 1221). Derselbe Text steht auch an
+  eigenen Verstärkern; ein Raidbuff ist er, wenn ein *anderes* Gruppenmitglied ihn auf dich legt (oder auf dein Ziel).
+  Eine Liste der Ids braucht das nicht; der Schnitter führt heute eine eigene (`burstStatusIds`).
+- *Störquellen mit demselben Text* (xivapi v2, 19.11.2026): Standard Finish (1821, „Damage dealt is increased.") liegt
+  auf dem Tanzpartner fast ständig, weil der Tänzer es alle 30 s erneuert; die Karten des Astrologen The Balance (3887)
+  und The Spear (3889) tragen ihn je Minute einzeln. Eine Uhr, die jeden solchen Status zählt, sähe beim Tanzpartner
+  einen einzigen Dauerburst und beim Astrologen einen Takt von 60 s. *Abgrenzung:* Ein Burst der Gruppe beginnt erst,
+  wenn mindestens zwei *verschiedene* solche Status anderer zugleich auf dir oder deinem Ziel liegen, und Standard
+  Finish zählt nicht mit, solange er seit dem letzten Burst ununterbrochen lag. In einer Gruppe mit nur einem
+  Raidbuff-Job misst die Uhr dann nichts, und nichts wartet – das heutige Verhalten.
+- *Die Uhr der Gruppe:* wie die eigene Burst-Uhr (D, „Der Burst des Jobs als Uhr"): Ein Burst der Gruppe beginnt, wenn
+  ein solcher Status nach einer Lücke kommt; der Takt ist der Median der Abstände im Kampf, der Anteil P die Summe der
+  Schadensanteile, solange sie liegen *[die Prozentwerte stehen nicht im Statustext; bis zur Messung zählt jeder
+  Raidbuff mit einem Schadensanteil, die Größe nur in K1]*.
+- *Nutzung, gleiche Regel wie Phantom Aim:* Ein eigener Verstärker (eigener Status mit diesem Text, Abklingzeit ab 60 s)
+  ist bereit, die Gruppe ist nicht im Burst, ihr nächster Burst kommt nach ihrer Uhr in w s: Er wartet, wenn das bis zum
+  Kampfende keinen Einsatz kostet (`HoldCostsUse`), und höchstens bis w plus einen GCD. Das richtet den eigenen Burst an
+  den wirklichen der Gruppe aus, wo sie verschoben ist (Tod, späte Rückkehr, andere Eröffnung).
+- *Gegenthese 5 – Wer wartet auf wen?* Spielen zwei mit dieser Regel, wartet keiner auf den anderen ewig: Gewartet wird
+  nur auf eine *vorhergesagte* Ankunft, und das Warten endet einen GCD nach ihr. Gibt ein Raidbuff-Job (du selbst bist
+  der, nach dem sich die Gruppe richtet) seinen Burst ab, richten sich Menschen meist nach ihm; darum wartet ein
+  Verstärker, der selbst auf die Gruppe wirkt, nur, wo die Uhr der Gruppe ohne ihn gemessen ist *[offen bis zum Bau:
+  wie RSR seinen eigenen Beitrag aus der Uhr der Gruppe trennt]*.
+- *Gegenthese 6 – Erst messen:* Die Regel baut auf einem Mechanismus, der nie beobachtet wurde. Darum zuerst die Uhr mit
+  einer Spurzeile je Gruppenburst (Beginn, Quelle als Job, Takt), dann das Warten, sobald sein Upload die Uhr belegt
+  (archiv-todo, „billiger erster Kontakt").
 - *Gegenthese 1 – Die Gruppe drückt ohnehin:* Halten trennt den eigenen Burst von den Raidbuffs der anderen. Liegt nur
   ein Teil des Fensters in der Pause, bringt das gemeinsame Fenster mehr als ein eigenes volles danach. Deshalb hält die
   Regel nur, wenn die Pause einen größeren Teil des Fensters nimmt, als die Gruppe an Raidbuffs mitbringt; allein
