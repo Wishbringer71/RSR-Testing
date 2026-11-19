@@ -40,12 +40,10 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
   GCD an, bis ihre Bedingung abläuft (Samurai an der Puppe: 28 s Auto-Attacke, A923). *Nächster Schritt:* für alle Jobs
   am allgemeinen Ort (Auswahl und Drücken) eine Aktion, deren Druck scheitert, für die Auswahl ausschließen. *Konzept:*
   03.
-- **Positionals an der Trainingspuppe: keine minimale Bewegung zur richtigen Stellung** (seine Meldung vom 19.11.2026:
-  „sollten nicht die positionals richtig erfolgen durch minimale bewegungen zu den richtigen positionen? das scheint
-  nicht zu klappen. gefährliche flächen können das bei einer trainingspuppe ja wohl nicht verhindern, da keine da
-  sind.“). *Wirkung im Kampf:* Gekko und Kasha verlieren ihren Positionsbonus, wo ein Schritt ihn gäbe. *Nächster
-  Schritt:* Spur „positional:“ und Stellung an der Puppe (Upload ea095631) gegen Konzept „Positionals“ prüfen, Ursache
-  am Code. *Konzept:* 03, Positionals.
+- **Positionals: RSR macht den minimalen Schritt selbst** (seine Meldung und Rüge vom 19.11.2026; A926). *Wirkung im
+  Kampf:* An der Kante verfehlen Demolieren, Kasha und Gekko, sobald True North leer ist; BossMod bewegt ohne eingeschaltete
+  KI nie. *Nächster Schritt:* unabhängige Prüfung des Konzepts, dann Bau (Eingriff in die Gehsteuerung, Sicherheit,
+  Selbstkontrolle) und die Berichtigung der Lernregel. *Konzept:* 02, „B1 neu bewertet“.
 - **Rotationen aller Jobs über den Augenblick hinaus** (sein Auftrag vom 19.11.2026; A901). *Wirkung im Kampf:*
   Verstärker, Zeitgeber und DoTs laufen heute in vorhergesagte Pausen, Ressourcen bleiben beim Tod des Ziels übrig, der
   eigene Burst richtet sich nach der eigenen Uhr statt nach den Raidbuffs, die wirklich auf dir liegen. *Nächster

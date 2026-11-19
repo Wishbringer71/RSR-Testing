@@ -291,16 +291,17 @@ public partial class CustomRotation
 			gcdAction = GCD();
 			IBaseAction.IgnoreClipping = false;
 
-			// A924: before the first GCD of a pull without a countdown, the rotation's countdown preparation.
-			if (PullPreparation(gcdAction) is { } preparation)
-			{
-				return preparation;
-			}
-
 			IBaseAction.TargetOverride = null;
 			IBaseAction.ShouldEndSpecial = false;
 
 			IBaseAction.AutoHealCheck = false;
+
+			// A924: before the first GCD of a pull without a countdown, the rotation's countdown preparation - after the
+			// resets above, which the GCD's choice may have set.
+			if (PullPreparation(gcdAction) is { } preparation)
+			{
+				return preparation;
+			}
 
 			if (gcdAction != null)
 			{

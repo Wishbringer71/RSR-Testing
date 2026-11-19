@@ -904,6 +904,20 @@ ohne dass eine Alternative kommt – deckt seine Vorgabe zur dynamischen Rotatio
 *Falsifikation:* (1) kein Defekt – widerlegt an Leiste und Spur. (2) Option falsch, Zanshin fehlt dann Kenki – nein: es
 bleiben immer seine Kosten. (3) ausgeliefert, nichts ändert sich – Shinten selbst kann nicht gehen (außer Nahkampfreichweite);
 dann geht auch die Kombo nicht, die Lage ist eine andere.
+*Audit und Code-Review (19.11.2026, sein Auftrag „ebenso für samurai: audit, codereview“, A926):*
+- *Kenki-Wege am Code:* Jeder Stand, in dem die Kombo sich sperrt (über 85, 90 oder 95 Kenki), hat seit A925 einen
+  Verbraucher: Zanshin ab 50 (bereit), Shinten oder Kyuten ab 50, Senei oder Guren ab 25 bei laufendem Ikishoten. Keiner
+  dieser Wege hängt noch an einer Sperre, die die Kombo zugleich hält.
+- *Pull ohne Countdown (A924):* Der Countdown-Pfad liefert Meikyo Shisui (bis 14 s vor dem Pull) und True North (bis 5 s);
+  beide nennen keine Potenz und gehen vor dem ersten GCD. Ein Trank geht dort nicht: `UseBurstMedicine` lehnt außerhalb
+  des Kampfes ohne Countdown für jede Rotation ab (A433).
+- *Puppenreihe (A923):* Zanshin, Kyuten, Guren und die Flächen-Iaijutsu zählen die Nachbarpuppen jetzt als Ziele.
+- *Behoben im Review:* Die Pull-Vorbereitung kehrte vor dem Zurücksetzen von Zielvorgabe, Sonderende und Heilprüfung
+  zurück, die die Wahl des GCD gesetzt haben kann; sie läuft jetzt danach. Ein Kommentar stand vor der falschen Methode.
+- *Geprüft, nicht geändert (Upstream-Zeilen ohne Wirkung im Kampf):* `MeleeMeditationcheck` nennt Tendo Goken doppelt;
+  der Meikyo-Zweig prüft `!HasFugetsuAndFuka` ein zweites Mal, nachdem der erste Zweig dafür schon zurückkehrt.
+- *Positionals:* Gekko und Kasha wählt die Rotation nach Stellung; die Stellung selbst macht der Schritt aus Konzept 02,
+  „B1 neu“.
 
 
 ### Barde: Lieder und Burst

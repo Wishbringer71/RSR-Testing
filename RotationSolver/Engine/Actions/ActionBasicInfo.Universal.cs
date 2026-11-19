@@ -262,8 +262,6 @@ public readonly partial struct ActionBasicInfo
 		}
 	}
 
-	// A status the action gives that raises your damage, critical or direct hit rate, or the damage the target takes - by
-	// its English text, as the group's raid buffs are known (K3).
 	/// <summary>
 	/// Concept 03, "Den Kampf eröffnen", pull without a countdown (A924): whether this action may go before the first GCD of a pull without a
 	/// countdown - it states no damage and does not move the player; an attack or a gap closer is the pull itself.
@@ -271,6 +269,8 @@ public readonly partial struct ActionBasicInfo
 	private bool PreparesPull()
 		=> !ActionTooltip.TryStatedPotency(AdjustedID, out _) && _action.Setting.SpecialType == SpecialActionType.None;
 
+	// A status the action gives that raises your damage, critical or direct hit rate, or the damage the target takes - by
+	// its English text, as the group's raid buffs are known (K3).
 	private bool IsOwnDamageBuff()
 	{
 		if (_ownDamageBuff.TryGetValue(AdjustedID, out var known))

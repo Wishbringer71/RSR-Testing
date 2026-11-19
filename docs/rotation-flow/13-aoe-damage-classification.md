@@ -637,7 +637,7 @@ und an seinen Mitschnitten; im Spiel ist kein Teil der Blickwache beobachtet.
 | B3 | Kein Supergau, im Spiel lernen (14.11.) | ein falsches Modell kostet je Blick höchstens zwei Treffer je Build | „Im Spiel auswerten und lernen“ | statisch | „hit despite“, „hit again“ |
 | B4 | Sicherheit vor Schaden, nach Wahrscheinlichkeit | gesperrt wird nur, wo keine sichere Richtung trifft | „Sperre“ | statisch | Zahl der „holding“-Zeilen |
 | B5 | Alle Jobs (Universell zuerst) | jede Aktion mit Richtung, Nahkampf eingeschlossen | „Was ein Blick ist“ | Blatt (Reichweite −1) | Waffenfertigkeit in „turned … for an action“ |
-| B6 | Keine Bewegung (Spielweise) | RSR dreht, bewegt aber nie | „Drehen“ | Code | – |
+| B6 | Keine Bewegung (Spielweise) | Die Blickwache dreht, bewegt aber nie; der Positional-Schritt (Konzept 02, „B1 neu“) ruht, solange ein Blick ansteht | „Drehen“ | Code | – |
 
 *Mechanik, je mit Anforderung und Preis:*
 - *Sperre* (B1, B4): nimmt Ziele aus der Wahl. Preis: Schaden, wo kein sicheres Stück trifft.

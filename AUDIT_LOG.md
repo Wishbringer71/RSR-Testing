@@ -26879,6 +26879,27 @@ Sperre daneben; den Rest deckt seine Vorgabe zur dynamischen Rotation (TODO).
 *Prüfgrad:* statisch am Mitschnitt und am Code, Compile, Prüfskripte; im Spiel nicht beobachtet. *Vorhersage:* An der
 Puppenreihe keine GCD-Lücke über einen GCD nach Ikishoten; mit „Zanshin Ready“ kommt Shinten ab 75 Kenki.
 
+### A926 · Positionals: B2 stand auf einer ungeprüften Voraussetzung, B1 neu; Samurai-Audit und Code-Review (19.11.2026)
+
+*Anlass:* seine Rüge vom 19.11.2026: „bei den positionals hatte ich dir eine klare vorgabe gegeben, mit dem hinweis auf
+zittern also minimalste bewegungen in die richtige position. du meintest du kriegst das über befehle an bmr hin. also war
+das auch gelogen. erbärmlich. auch im vollen loop und konzept verbessern. ebenso für samurai: audit, codereview.“
+*Befund am Quelltext (BossModReborn 8d5ff8e21):* `GoToPositional` setzt nur Zielgebiete; bewegt wird allein über die KI
+(`ForcedMovement` → `MovementOverride`). Ohne KI bewegt BossMod nie, und keine Schnittstelle nimmt einen Schritt von einem
+anderen Plugin an. Meine Aussage, BossMod mache den Schritt, war falsch, weil ich die Voraussetzung (KI an) nie prüfte.
+*Gemessen (seine Spur, Living Memory):* Monk zehnmal Demolieren an der Diagonale, viermal ohne True North mit 0 %; Samurai
+dreimal Kasha mit 56 % statt 61 %. RSRs 45°-Grenze und das Urteil des Spiels stimmen auf 0,1° überein; es fehlten Ladungen,
+nicht die Messung. Die Lernregel urteilte an der Grenze nie (Band 0,0°).
+*Entscheidung (Konzept 02, „B1 neu“):* RSR macht den minimalen Schritt selbst über einen Hook auf die Gehsteuerung, mit
+Sicherheitsprüfung des Zielpunkts, Vorrang seiner Eingabe und der KI, Sperre nach Fehlschlag; die Lernregel urteilt auch
+an der Grenze. Vor dem Bau eine unabhängige Prüfung (CLAUDE.md, „Prüfgrad“).
+*Samurai (Konzept 14, „Kenki-Verklemmung“):* Audit der Kenki-Wege, der Pull-Vorbereitung und der Puppenreihe; Code-Review
+über A923 bis A925: Die Pull-Vorbereitung lief vor dem Zurücksetzen von Zielvorgabe, Sonderende und Heilprüfung und
+läuft jetzt danach; ein Kommentar stand vor der falschen Methode. Zwei Upstream-Redundanzen ohne Wirkung geprüft und
+belassen.
+*Widerruf:* C235.
+*Prüfgrad:* statisch am Quelltext und an der Spur; Compile und Prüfskripte für die Review-Korrekturen.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -27268,3 +27289,4 @@ geben den Stand vom 14.10.2026 wieder.
 | C232 | A920 und Konzept 13 (Stand e8d785b86): Splatoons Projection drehe Kegel und Linien mit Ziel jedes Bild zum Ziel und setze Kreise mit Ziel versetzt; RSR zeige sie dort, wo sie landen, Splatoon nicht | Am selben Quelltext (f396ef6) wirkt `faceplayer` nur mit `FaceMe`, das die Projection nicht setzt; die Richtung kommt aus dem Wirkpaket wie bei RSR. Kreise auf einem Ziel wandern bei beiden mit dem Ziel (A766). Ich las die Zuweisung, nicht ihre Auswertung im Zeichner. Nachweislich falsch sind Splatoons Ringe | A921 |
 | C233 | A921, Konzept 13, `SplatoonProjection.MisreadRing` und Release-Text (Stand 3d54ef332): Das Spiel skaliere jedes Omen auf die Reichweite, die Anteil-Lesart des Innenradius sei richtig; RSRs kleinere Lesart ein Defekt | Am Modulcode aller 120 Ringe: Der Außenrand ist immer die Reichweite, der Innenradius achtmal Anteil, zweimal Zahl. Ich hatte aus sechs Ringen auf alle geschlossen | A922 |
 | C234 | A923, Konzept 03 und TODO (Stand 95d7f89db): Nach dem abgelehnten Ogi falle die Rotation auf Gekko, der Weg zum Stillstand sei am Code nicht zu finden | Gekko war selbst gesperrt: Kenki stand auf 100, jeder Kombo-Schlag sperrt sich gegen Überlauf, und der Verbrauch wartete auf Zanshin, das kein Ziel hatte. Die Leistenzeile des Mitschnitts zeigte es; ich hatte nur die Auswahl gelesen, nicht die Bedingungen der Aktionen selbst | A925 |
+| C235 | A819 und Konzept 02 (15.11.2026), meine Aussage an ihn: BossModReborn bewege ihn nach RSRs Seite (B2), RSR müsse deshalb nicht selbst bewegen (B1 verworfen) | BossMod bewegt nur mit eingeschalteter KI; an der Puppe lief sie nicht (er stand still auf der Diagonale), und keine Schnittstelle nimmt einen Schritt an. Die Voraussetzung war nie geprüft | A926 |
