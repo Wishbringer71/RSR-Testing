@@ -505,6 +505,10 @@ unter 30 s; sie aufzublähen ist nicht die Ursache.
     Gate und CI ein Ort), `latest.zip` und den Generator, wenn der Push ihn ändert.
   - `build.yaml` läuft danach beim Öffnen, Wiedereröffnen und Fertigmelden eines PR und auf Anforderung vor jedem
     Release. Ein Push kostet dann keine Minute.
+  - *Gemessen am ersten Handstart (Lauf 44485713822, 19.11.2026):* 8:41 Minuten, davon 7:24 für alle Modelle, 30 s für
+    die Prüfungen, 41 s für den Build-Teil (Build allein 10 s; unter Windows 16 s). Seither laufen ohne Vorstand nur
+    die Modelle, deren Skript von `main` abweicht, wie bei einem Push die geänderten. So kostet ein Handstart rund
+    2 Minuten [Schätzung: ohne geänderte Modelle].
   - *Bedrohung:* Diese Umgebung ist ein Linux-Container, kein frischer Läufer. Ein Werkzeug, das hier liegt und dort
     fehlt, fiele erst beim nächsten GitHub-Lauf auf, spätestens vor dem Release. Auf `main` lässt das Gate
     `check_release_note` aus: Dort steht nach einem Release bis zum nächsten Merge der Text des vorigen.

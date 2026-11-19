@@ -432,8 +432,9 @@ jobs:
       # ---- 5. The models (concepts 03, 04, 09, 12 and 14). They read no plugin code: each simulates the rules it was written
       # from and holds its own invariants and self-test against constructed defects. A run therefore says something
       # new only when the model itself changed - and on every push the tankbuster model alone took 5:37 of the
-      # job's 6:54 (run of 17.10.2026, A323). Each runs when its own script changed in this push, and all of them
-      # on a manual run or when the previous head is unknown (a new pull request, a force push).
+      # job's 6:54 (run of 17.10.2026, A323). Each runs when its own script changed in this push; without a previous
+      # head (a manual run, a new pull request, a force push) when it changed against main (A895), all of them only
+      # when not even main can be found.
       - name: Run the models whose script changed
         shell: bash
         run: |
@@ -441,7 +442,15 @@ jobs:
           before="${{ github.event.before }}"
           after="${{ github.event.pull_request.head.sha || github.sha }}"
           if [ "${{ github.event_name }}" != "pull_request" ] || [ -z "$before" ] || ! git cat-file -e "$before^{commit}" 2>/dev/null; then
-            changed="all"
+            # A895: without a previous head - a manual run, a new pull request - the models whose script differs from main.
+            # All of them took 7:24 of the 8:41 of run 44485713822 (19.11.2026) and say nothing new about unchanged code.
+            git fetch --quiet --no-recurse-submodules origin main || true
+            base="$(git merge-base "$after" origin/main 2>/dev/null || true)"
+            if [ -n "$base" ]; then
+              changed="$(git diff --name-only "$base" "$after" -- .github/scripts/audit/)"
+            else
+              changed="all"
+            fi
           else
             changed="$(git diff --name-only "$before" "$after" -- .github/scripts/audit/)"
           fi

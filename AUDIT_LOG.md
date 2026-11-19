@@ -26110,7 +26110,11 @@ auf github notwendig im ablauf?" Dazu seine Vorgabe „ci minuten generell senke
   vorgemerkte und eine ungetrackte Datei werden abgewiesen; der Generator baut bei eigener Änderung, auf einem neuen
   Branch und bei unbekanntem Bereich. Die konstruierten Pushes von `check_commit_identity.py` laufen weiter durch
   denselben Hook (dort greift das Gate nicht: keine Prüfskripte im Baum).
-- *Prüfgrad:* Selbsttests und lokal alle Prüfungen; der erste echte Push misst das Gate.
+- *Gemessen (19.11.2026):*
+  - *Erster echter Push durch das Gate:* 63 s für alle Prüfungen, Build und Zip.
+  - *Erster Handstart von `build.yaml` (Lauf 44485713822):* grün, 8:41 Minuten. Davon 7:24 für alle Modelle, die ohne
+    Vorstand liefen. Seither laufen dann nur die gegenüber `main` geänderten.
+- *Prüfgrad:* Selbsttests, lokal alle Prüfungen, ein Lauf auf GitHub.
 
 ### A896 · Empfehlungsfenster kommen nach dem Schließen mit dem nächsten Anlass zurück (19.11.2026)
 
