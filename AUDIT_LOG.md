@@ -27123,7 +27123,9 @@ Swiftcast im Laufen ab Werk aus (BeirutaAST, BeirutaSGE, BeirutaWHM, ChurinSMN n
 `SwiftcastForDamage`.
 *Befunde ohne Vorlage (inhaltlich, Richtung des Autors):* ChurinSMN setzt Searing Light erst in den letzten fünf GCDs
 der großen Beschwörung; die Burstfolgen aller 13 folgen ihrem Autor, ohne Mitschnitt nicht gemessen.
-*Nicht erfasst:* ob jeder Tooltip der 13 seinem Code entspricht (157 Einstellungen) – offen im TODO.
+*Text gegen Code:* 157 Einstellungen, 53 nennen Zahlen. Geprüft und deckungsgleich: BeirutaRDM (2 s Warten, 17 s,
+73|73, Lücke 11, unter 50 Mana; „about 3 GCDs“ sind 5 s ab Embolden), BeirutaPCT (Countdown bis 5,5 s, 10 s um Starry
+Muse, 2 s Zeit bis zum Tod, Stufe 92). Die übrigen 11 Dateien offen im TODO.
 *Prüfgrad:* Code, Compile, CI; im Spiel nicht beobachtet (er spielt sie nicht).
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
