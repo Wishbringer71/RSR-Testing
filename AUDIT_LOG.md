@@ -2441,7 +2441,7 @@ Dazu kam der Überholfehler des **Selbst-Kurzschlusses**, der bis dahin nur für
 
 **Gesamtheitlichkeit, erhoben statt angenommen:** `RecordedHP` hat genau **einen** Leser (`GetTTK`), und jeder `GetTTK`-Aufrufer waehlt sein Objekt selbst — `AverageTTK` iteriert ueber `AllHostileTargets`, `IsBossFromTTK` und `IsDying` werden auf Gegnern gerufen. Zusaetzliche Ids in der Reihe brechen keinen davon. Der einzige Aufrufer, der seine Menge **nicht** selbst einschraenkt, war `CheckTimeToKill` — und genau der ist abgesichert.
 
-**Prueфmittel erweitert:** `check_heal_target_order.py` prueft die Ausnahme fuer freundliche Ziele mit, samt Selbsttest gegen beide Verlustformen — entfernt, oder hinter den `GetTTK`-Aufruf gerutscht.
+**Pruefmittel erweitert:** `check_heal_target_order.py` prueft die Ausnahme fuer freundliche Ziele mit, samt Selbsttest gegen beide Verlustformen — entfernt, oder hinter den `GetTTK`-Aufruf gerutscht.
 
 **Konzept 08 im selben Zug neu gefasst.** Der Abschnitt „Ergebnis" trug einen Stand von mehreren Runden zuvor: Zweck, Grenzwertvorgabe, „Heilung vor Minderung", Stunbarkeit und die Laufzeitbeobachtung fehlten dort saemtlich, obwohl sie weiter unten standen. Ausserdem trugen drei Abschnitte den Titel „Vorgabe des Auftraggebers" — eine Chronik der Ergaenzungen statt einer geordneten Darstellung. Beides ist behoben; das Ergebnis traegt jetzt die vier Vorgaben und den vollstaendigen Baustein-Stand.
 
@@ -27154,6 +27154,105 @@ lehnte ab, und die eigene Rotation stand 13 bis 25 s. RSR führt sie als Angriff
 nur auf Gegner, 30 Yalm), die Zielwahl gibt einen Gegner; eine Ablehnung nähme die dynamische Rotation aus der Wahl
 (A930). Nichts zu bauen. priestkos/FrontlineAdvisor weiter nicht erreichbar.
 *Prüfgrad:* Code, Compile, CI.
+
+### A938 · Hochgeladenes LLM-Regelgrundgerüst kritisch bewertet; drei Regelstellen berichtigt (20.11.2026)
+
+*Anlass:* sein Auftrag vom 20.11.2026: „inhalt der datei kritisch analysieren, kein quell der wahrheit, aber evtl.
+verbesserungsvorschläge für eigene struktur. alles und jeden einzelaspekt davon kritisch im vollen loop mit antithese,
+audit und codereview bewerten und weiter verbessern“. Eingeordnet als Vorgabe mit Prüfauftrag; das Gerüst ist Text
+eines LLM und damit Behauptung (CLAUDE.md, „Bevor ich etwas zu einem Thema behaupte“).
+*Gegenstand:* `LLM-Regelgrundgeruest.7z`, ein lokales Git-Repository (34 Commits vom 12. bis 18.11.2026, kein Remote):
+Immer-Schicht `KERN.md` (20 Regeln), fünf Anlassdateien `regeln/` und drei `methoden/` (174 Regeln mit Kennung und
+Zeile „Prüfung:“), Zustand (`zustand/`), Prüfmittel `check_regelwerk.py` (C1 bis C14 mit Selbsttest) und das
+unverdrahtete Zugriffstor `regel_gate.py`, 17 Analysedokumente, darunter zwei über dieses Repository (Stand 12.11. und
+17.11.). Herkunft: zum großen Teil Regeln dieses Repositorys, umformuliert.
+*Umfang:* 42 von 42 Dateien außerhalb von `.git` erfasst – 40 Textdateien ganz gelesen (in `check_regelwerk.py`
+waren in zwei Abschnitten Zeilen über 140 Zeichen am Ende abgeschnitten, nur Meldetexte), die 2 `.pyc` als übersetzter
+Code nicht ausgeführt, ihre Quelle ganz gelesen; die Git-Geschichte über 34 von 34 Commit-Köpfen, die 416 Objektdateien
+unter `.git` nicht einzeln (sie tragen frühere Fassungen derselben Dateien).
+*Vorgehen je Aspekt:* Idee, Antithese, Prüfung am eigenen Artefakt (CLAUDE.md, `.claude/`, Hooks, Prüfskripte,
+Transkript dieser Sitzung), Entscheidung. Dazu nach CLAUDE.md der neueste Stand des LLM-Frameworks gelesen
+(`actual-work-since-2026-11-16` an `c63995d`, 20.11.2026, darin ADR 0063 über dasselbe Archiv): als Ideenquelle,
+jede Idee unten am eigenen Fall geprüft.
+*Übernommen, weil der Fall hier am Artefakt steht:*
+- *Behauptete Prüfung prüfen, die das Prüfmittel nicht leistet* (dort `analyse/08`: sieben Stellen). Hier jede Aussage
+  der Form „Skript X prüft Y“ in CLAUDE.md, `.claude/rules/` und den Skills gegen den Code gehalten: 22 genannte
+  Skripte, alle vorhanden; `review_once.py`, `stop_check.py`, `concept_first.py`, `pre_push_gate.py`, `session_brief.py`
+  tun, was der Text sagt. Ein Befund: CLAUDE.md sagte, `check_rule_files.py` finde „keine Regel doppelt“; es findet nur
+  wortgleiche Aufzählungspunkte ab 40 Zeichen (`bullets`). Berichtigt.
+- *Durchsetzung nach dem zweiten Bruch selbst nachgehalten* (Idee aus ADR 0063 U1 des Frameworks). Hier: drei
+  mehrfach gerügte Regeln. „Zug nur mit Ergebnis beenden“ (zweimal) setzt `stop_check.py` durch und die Tabelle nennt
+  es. Die Rückfrageregel (zweimal, 02.10. und 18.10.2026) stand ohne Hook und ohne Grund; ein Skript kann nicht
+  entscheiden, ob eine Quelle die Frage beantwortet – gemessen 08. bis 20.11.2026: keine Rückfrage über AskUserQuestion.
+  Die Sprachregel (dreimal) setzt `stop_check.py` nur an der Schlussmeldung durch, ohne dass die Regel es sagte.
+  Gemessen am Transkript dieser Sitzung (08. bis 20.11.2026): 1.989 Textblöcke, 1 englisch (16.11.); 8.952
+  Tool-Beschreibungen, eine Wortliste meldet 5, davon 2 englisch und 3 deutsche mit englischen Eigennamen („Lord of
+  Crowns“, „The Balance“, eine Einstellung). Eine Erweiterung des Hooks brächte mehr Fehlalarme als Treffer – nicht
+  gebaut. Beide Regeln nennen jetzt den Grund; `regeldateien.md` verlangt das für jede Teil- oder Nicht-Durchsetzung.
+- *Art des Lesens einer Webquelle* (dort R-AUFG-6 [G]/[S]/[V]/[M]). Eigener Fall heute: Das Gerüst führte „40.000
+  Zeichen je Anweisungsdatei bei 200K-Fenster“ als Grenze für alle Anweisungsdateien. Geprüft an
+  code.claude.com/docs/en/memory (20.11.2026; das Abrufwerkzeug lieferte die ersten 39.949 von 55.393 Zeichen wörtlich,
+  den Rest zusammengefasst): Die Grenze gilt laut Zusammenfassung für Unterordner-CLAUDE.md und bei Anlass ladende
+  Dateien; die Wurzel-CLAUDE.md lädt bis 4 MiB ganz (ebenfalls Zusammenfassung). Gemessen: CLAUDE.md 47.082 Zeichen, 257 Zeilen, stand in dieser
+  Sitzung bis zur letzten Zeile im Kontext; größte Regeldatei `code.md` 12.817 Zeichen. Kein Defekt. Regel in
+  `konzepte.md`: Webquelle mit Datum und Art des Lesens, Zusammenfassung des Abrufs gilt als Behauptung.
+- *Fremdschrift im deutschen Text* (dort A1, C1). Gemessen über 767 versionierte Textdateien: ein Defekt – „Prueфmittel“
+  mit kyrillischem ф im Archiv, Zeile 2444, seit 2c52091f8 (16.09.2026); berichtigt. Die übrigen Treffer sind gewollt
+  (chinesische Oberfläche von Upstream, japanische Spaltenwerte des Blatts AttackType im Archiv). Ein Fall in drei
+  Monaten: kein Prüfskript (Eskalation erst nach zweitem Bruch).
+*Am eigenen Artefakt geprüft, ohne Befund:*
+- *Ein Hook bricht offen ab:* Hook-Referenz (code.claude.com/docs/en/hooks.md, 20.11.2026, Abschnitt „Block the action
+  when a hook fails“ wörtlich): ohne `"onFailure": "block"` läuft der Aufruf weiter. Gesetzt an `concept_first.py` und
+  `review_once.py`; an `rule_inject.py` bewusst nicht (A838, A840: Reparaturweg über Bash); `stop_check.py` schreibt je
+  Lauf eine Zeile (A426), damit ein nicht laufender Hook von einem befundlosen zu unterscheiden ist.
+- *Selbsttest schreibt in den echten Zustand* (Ursache dort: alle 33 Zeilen „offen abgebrochen: JSONDecodeError“ in
+  `protokoll.log` stammen vom Selbsttest selbst, Eingabe `{ unvollstaendig`, sekundengleich mit den Commits; das Gerüst
+  las sie als Abbrüche echter Hook-Aufrufe). Hier arbeiten die Selbsttests von `rule_inject.py`, `review_once.py`,
+  `stop_check.py` und `concept_first.py` in temporären Ordnern oder ohne Sitzungskennung.
+- *Selbsttest mit anderer Eingabeform als der echte Aufrufer* (dort relative Pfade, Claude Code sendet absolute): Der
+  Selbsttest von `rule_inject.py` sendet absolute Pfade.
+- *Übersprungener Prüfschritt still:* `run_ci_checks.py` nennt übergangene Modelle und `--skip` laut.
+- *Weichmacher in Regeltexten* (dort C14): drei Treffer in CLAUDE.md und den Regeldateien, alle keine weichen
+  Anweisungen (ein Konjunktiv in der Plateau-Definition, seine Präzisierung „möglicherweise Untergruppen“, „beheben
+  sollte“ als Absicht im Grund). Eine Wortliste hätte drei Fehlalarme gebracht; kein Prüfskript.
+- *`--no-verify`-Sperre* (KMD `git_guard.py`): kein Fall im Archiv; Text- und Pre-Push-Regel genügen.
+*Verworfen, mit Grund:*
+- *Hartes Zeichenbudget je Schicht* (9.600/13.000/64.000): gegen seine Vorgabe vom 27.10.2026 (Umfang folgt dem Inhalt).
+  Die Gegenposition steht: Claude-Code-Dokumentation „target under 200 lines … reduce adherence“ (Wortlaut, 20.11.2026),
+  in `regeldateien.md` schon als Richtwert genannt. Das Gerüst selbst belegt den Preis des Budgets: elf Vorschläge
+  zurückgestellt, die eigene Endberichtsregel nach zwei Fällen nicht aufgenommen, weil 158 Zeichen fehlten (`analyse/16`,
+  `analyse/17`); die Zahl wurde Ziel und steuerte die Arbeit.
+- *Regelkennung und Zeile „Prüfung:“ je Regel:* C5 lässt „Mensch“, „Zahl“, „Beleg“ als Mechanismus gelten, alle 174
+  Regeln bestehen – während `analyse/08` sieben falsch behauptete Prüfungen fand. Die Form misst nicht, was sie
+  behauptet; die einmalige Prüfung der Behauptungen am Code (oben) trifft die Klasse.
+- *Löschen nach Frist ohne Wirkung* (R-KONT-14, R-MESS-16): gegen CLAUDE.md, „Bevor ich etwas Gebautes entferne“.
+- *Feste Schwellen aus der Literatur* (McCabe 10/20, Mutation 70 %, Review 400 Zeilen, Eichung mit 30 Fällen): an
+  diesem Gegenstand nie gemessen, die eigene R-QUAL-17 des Gerüsts verbietet genau das.
+- *Abstraktion erst ab zwei Aufrufern* (R-CODE-15): gegen seine Vorgabe „Universell zuerst“.
+- *Hart abbrechen an der Systemgrenze* (R-CODE-18): ein Plugin im Spielthread stürzt damit ab (Konzept 24,
+  „Fehlertoleranz“).
+- *„SWOT fehlt bewusst“* (R-VERF-18): gegen seine Vorgabe vom 25.10.2026.
+- *Fork- und Upstreamverfahren draußen halten* (R-PROJ-21): hier ist der Fork der Gegenstand.
+- *Anti-Ziele je Auftrag, Sechs-Zeilen-Abgabe, Modus je Dokument, Begriffsregister, Prüfpunkt je Nachricht:* REGEL
+  („Substitution“, „Complete“), Loop Stufe 4 und Prüfgrad tragen dasselbe; im eigenen Anwendungsnachweis des Gerüsts
+  griff das Auftragsblatt nicht (`analyse/11` Punkt 7).
+- *Regeltexte englisch für weniger Token:* er muss sie lesen; Sprache ist seine Vorgabe.
+*Code-Review der Prüfmittel des Gerüsts* (nachgestellt, wo markiert):
+- `regel_gate.py`: der Selbsttest schreibt ins echte Protokoll (Ursache der Fehldeutung oben); `lstrip("./")` streicht
+  den Punkt von `.githooks/`, solche Pfade fallen nicht unter die Regelwerksregel (nachgestellt); Muster mit Ordner wie
+  `src/**/*.ts` treffen absolute Pfade nie, der Selbsttest nutzt nur relative (nachgestellt); ein Read wird nie als
+  gelesen vermerkt, verdrahtet sperrte das Tor seinen Anlass dauerhaft; `--json-format` schreibt
+  `permissionDecision` auf oberster Ebene und endet mit Exit 2, Claude Code liest dann nur stderr – der Grund ginge
+  verloren (Hook-Referenz: Entscheidung unter `hookSpecificOutput`).
+- `check_regelwerk.py`: C14 nimmt nur „…" mit geradem Schlusszeichen aus, „…“ nicht, und der Ausschlussfall im
+  Selbsttest nutzt genau die erkannte Form (nachgestellt); C5 und C8 sind Surrogate (Mechanismus- und Herkunftswörter
+  wie „Mensch“, „Zeile“, „.md“); C8 wurde mit ausgeschriebenen Zahlwörtern umgangen (Commit `2fd1e07`, „Zahlangaben …
+  ohne Ziffern gefasst“) – gegen die eigene R-QUAL-19; C9 deckt nur Regeltexte: in `analyse/12` stehen fünf Abschnitte
+  doppelt; Teil C des Archivs sagt „(keine)“ neben den Widerrufen C1 und C2.
+- Sprache: selbst gebildete und verschriebene Wörter („Baiform“, „Tieferenschicht“, „fremdedes“, „entkopft“,
+  „Fremolvergabe“, „Lagendentabelle“, „Princip“, „ruert“) gegen die eigene Regel gegen erfundene Fachwörter.
+*Prüfgrad:* Lesen jeder Datei; drei Befunde am Gerüst durch Ausführen nachgestellt; Messungen an Transkript, Repository
+und Dokumentation wie genannt; `check_rule_files.py` und alle Prüfungen nach den Änderungen.
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
