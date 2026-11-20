@@ -8,7 +8,7 @@ Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-20; nic
 
 ## Nutzung
 
-direkt: 118 · ungenutzt: 19
+direkt: 120 · ungenutzt: 17
 
 | Stufe | Aktion | Id | Art | Nutzung |
 |---|---|---|---|---|
@@ -46,7 +46,7 @@ direkt: 118 · ungenutzt: 19
 | Job | Cold Fog (`ColdFogPvE`) | 23267 | Spell | direkt |
 | Job | Condensed Libra (`CondensedLibraPvE`) | 18321 | Spell | direkt |
 | Job | Conviction Marcato (`ConvictionMarcatoPvE`) | 34574 | Spell | direkt |
-| Job | Deep Clean (`DeepCleanPvE`) | 34570 | Spell | ungenutzt |
+| Job | Deep Clean (`DeepCleanPvE`) | 34570 | Spell | direkt |
 | Job | Devour (`DevourPvE`) | 18320 | Spell | direkt |
 | Job | Diamondback (`DiamondbackPvE`) | 11424 | Spell | direkt |
 | Job | Dimensional Shift (`DimensionalShiftPvE`) | 34573 | Spell | direkt |
@@ -98,7 +98,7 @@ direkt: 118 · ungenutzt: 19
 | Job | Nightbloom (`NightbloomPvE`) | 23290 | Ability | direkt |
 | Job | Northerlies (`NortherliesPvE`) | 18297 | Spell | direkt |
 | Job | Off-guard (`OffguardPvE`) | 11411 | Spell | direkt |
-| Job | Peat Pelt (`PeatPeltPvE`) | 34569 | Spell | ungenutzt |
+| Job | Peat Pelt (`PeatPeltPvE`) | 34569 | Spell | direkt |
 | Job | Peculiar Light (`PeculiarLightPvE`) | 11421 | Spell | direkt |
 | Job | Peripheral Synthesis (`PeripheralSynthesisPvE`) | 23286 | Spell | direkt |
 | Job | Perpetual Ray (`PerpetualRayPvE`) | 18314 | Spell | ungenutzt |
@@ -364,12 +364,10 @@ Maschinelle Liste; die Bewertung je Eintrag steht im Konzept.
 - Aetheric Mimicry (`AethericMimicryPvE_19240`, Spell): ungenutzt
 - Apokalypsis (`ApokalypsisPvE`, Ability): ungenutzt
 - Avail (`AvailPvE`, Spell): ungenutzt
-- Deep Clean (`DeepCleanPvE`, Spell): ungenutzt
 - Final Sting (`FinalStingPvE`, Spell): ungenutzt
 - Force Field (`ForceFieldPvE`, Spell): ungenutzt
 - Laser Eye (`LaserEyePvE`, Spell): ungenutzt
 - Mind Blast (`MindBlastPvE`, Spell): ungenutzt
-- Peat Pelt (`PeatPeltPvE`, Spell): ungenutzt
 - Perpetual Ray (`PerpetualRayPvE`, Spell): ungenutzt
 - Right Round (`RightRoundPvE`, Spell): ungenutzt
 - Ruby Dynamics (`RubyDynamicsPvE`, Spell): ungenutzt

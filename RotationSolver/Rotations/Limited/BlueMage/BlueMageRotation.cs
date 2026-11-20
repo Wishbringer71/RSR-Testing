@@ -1286,7 +1286,6 @@ public partial class BlueMageRotation
 
 	static partial void ModifyPeatPeltPvE(ref ActionSetting setting)
 	{
-		//Need data
 		setting.AttackTypeOverride = AttackType.Magic;
 		setting.AspectOverride = Aspect.Earth;
 		setting.TargetStatusProvide = [StatusID.Begrimed];
@@ -1299,11 +1298,11 @@ public partial class BlueMageRotation
 
 	static partial void ModifyDeepCleanPvE(ref ActionSetting setting)
 	{
-		//Need data
 		setting.AttackTypeOverride = AttackType.Physical;
 		setting.AspectOverride = Aspect.Blunt;
 		setting.TargetStatusNeed = [StatusID.Begrimed];
-		setting.ActionCheck = () => StatusHelper.PlayerStatusStack(true, StatusID.Spickandspan) < 6;
+		// The ceiling the Status sheet gives instead of a fixed 6 (A942).
+		setting.ActionCheck = static () => StatusHelper.PlayerStatusStack(true, StatusID.Spickandspan) < SpickAndSpanMaxStacks;
 		setting.IsFriendly = false;
 		setting.CreateConfig = () => new ActionConfig()
 		{

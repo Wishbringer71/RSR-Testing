@@ -626,6 +626,23 @@ statt Reihenfolge" und „Mondflöte"):
 - Synergie: Bestialischer Zorn aus 51 bis 69 % LP führt unter die Schwelle; das bleibt Sache der Option, die nur prüft,
   dass die LP über seinen Kosten liegen.
 
+**Matschkuchen und Reinemachen: Erhaltung des Tanks aus dem Rudel** (Befund 20.11.2026, A942)
+- Wirktexte: Mjam Mjam Matschkuchen (34569) 100 Potenz auf Ziel und Umgebung, jeder weitere 50 % weniger, dazu Begrimed
+  (10 Potenz je Tick, 9 s). Großes Reinemachen (34570) 220 auf alle nahen Gegner, jeder weitere 50 % weniger; je Gegner
+  mit Begrimed ein Stapel Spick-and-span (Regen 50, mit den Stapeln bis 300, 15 s; weitere Stapel verlängern nicht),
+  Begrimed endet. Vorher fragte der Code keinen der beiden (Aktionsmatrix: „ungenutzt“).
+- *Regel:* Reinemachen, sobald ein Gegner in Reichweite die eigene Begrimed trägt und die Stapel unter der Höchstzahl
+  liegen, die das Statusblatt nennt (`Status.MaxStacks`; Upstream hielt sie als feste 6). Matschkuchen nur unter
+  Tank-Mimikry, nur mit Reinemachen im Set und auf Stufe, nur auf mehr als einen Gegner (sonst bringen zwei Füller mehr
+  Schaden und das Regen nur einen Stapel), und nur, solange Spick-and-span fehlt oder vor dem Ende von Matschkuchen und
+  Reinemachen ausläuft. Beide stehen nach Göttlichem Katarakt im Zweig für Hilfe und Schwächung. Die Setverbesserung
+  nimmt zu einem von beiden im Set den anderen auf; einer allein wirkt nicht.
+- *Im Kampf:* Der Tank-Blaumagier vor einem Rudel aus drei Gegnern gibt zwei GCDs mit 200 + 90 und 440 Potenz statt
+  zweier Flächenfüller und erhält Regen mit drei Stapeln für 15 s; gegen einen einzelnen Boss ändert sich nichts.
+- *Nicht als DPS:* Ohne Tank-Mimikry trägt das Regen keinen Druck, und zwei GCDs mit 100er-Einstieg schlagen die
+  Flächenzauber nicht; Reinemachen geht dort nur, wenn Begrimed schon liegt.
+- *Unbelegt:* wie die Heilwirkung mit den Stapeln wächst (der Text nennt nur 50 bis 300); die Regel hängt nicht daran.
+
 **Ewige Flammen: eine Wirkung, die bis zum Tod brennt** (Befund 20.11.2026, A940). Die Ziel-Rotation nennt Ewige Flammen,
 `MaintainDoTs` fragte ihn nie (Aktionsmatrix: „ungenutzt"); legte der Spieler ihn ins Set, ging er nie, und in jedem
 längeren Kampf fehlte sein Schaden über Zeit.
@@ -761,7 +778,7 @@ längeren Kampf fehlte sein Schaden über Zeit.
   - *Hinzu kommen*, in dieser Reihenfolge, auf freie oder ersetzbare Plätze: Schallwelle als Füllzauber, wenn sie fehlt;
     die Partner der Ketten, deren einer Teil schon im Set steht (Dreizack mit Pfeife und Kribbeln, Schwinge mit Mette,
     Stimme des Widders mit Ultravibration, ein Rösselsprung mit dem anderen, Replikator mit Senfbombe, Matra-Magie mit
-    Borstigkeit); dann gelernte Schadenszauber mit Abklingzeit aus Abklinggruppen ohne Vertreter im Set, nach Potenz je
+    Borstigkeit, Matschkuchen und Reinemachen je mit dem anderen, A942); dann gelernte Schadenszauber mit Abklingzeit aus Abklinggruppen ohne Vertreter im Set, nach Potenz je
     Sekunde.
   - Ein Platz wird nur überschrieben, wenn sein Zauber nicht abklingt; UltimateCombo tauscht ebenso nur bereite Zauber.
   - *Sein Set ist seine Entscheidung:* Ändert der Spieler das Set selbst (ein gespeichertes Set geladen, ein Zauber für

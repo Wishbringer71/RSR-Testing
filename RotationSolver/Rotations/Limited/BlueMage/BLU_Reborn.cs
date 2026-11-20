@@ -360,6 +360,18 @@ public sealed class BLU_Reborn : BlueMageRotation
 			return true;
 		}
 
+		// Deep Clean turns each enemy under the own Begrimed into a stack of Regen; Peat Pelt lays Begrimed on a pack for the
+		// tank (concept 01, "Matschkuchen und Reinemachen", A942).
+		if (DeepCleanPvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		if (PeatPeltPvE.CanUse(out act) && PeatPeltOpensDeepClean(PeatPeltPvE))
+		{
+			return true;
+		}
+
 		if (GobskinSpam && GobskinPvE.CanUse(out act))
 		{
 			return true;

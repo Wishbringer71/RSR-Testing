@@ -268,6 +268,26 @@ public partial class BlueMageRotation
 	}
 
 	/// <summary>
+	/// The most stacks of Spick-and-span the Status sheet allows, 0 without a row (Deep Clean then never goes).
+	/// </summary>
+	protected static byte SpickAndSpanMaxStacks => _spickAndSpanMaxStacks ??=
+		Service.GetSheet<Lumina.Excel.Sheets.Status>().TryGetRow((uint)StatusID.Spickandspan, out var row) ? row.MaxStacks : (byte)0;
+
+	private static byte? _spickAndSpanMaxStacks;
+
+	/// <summary>
+	/// Whether Peat Pelt opens a Deep Clean for the tank (concept 01, "Matschkuchen und Reinemachen", A942): Deep Clean in
+	/// the set and at level, Peat Pelt reaching more than one enemy, and Spick-and-span missing or ending before both land.
+	/// </summary>
+	/// <param name="pelt">Peat Pelt, asked after its <c>CanUse</c> chose its targets.</param>
+	protected bool PeatPeltOpensDeepClean(IBaseAction pelt)
+	{
+		return IsTank && DeepCleanPvE.Info.IsOnSlot && DeepCleanPvE.EnoughLevel
+			&& (pelt.Target.AffectedTargets?.Length ?? 0) > 1
+			&& StatusHelper.PlayerWillStatusEnd(SpellTime(pelt) + SpellTime(DeepCleanPvE), true, StatusID.Spickandspan);
+	}
+
+	/// <summary>
 	/// Whether the player's HP, shields left out, is below the share the text of <paramref name="action"/> states ("when your
 	/// HP is below 20%", Revenge Blast): the game reads HP, a shield does not lift it. False without a figure in the text.
 	/// </summary>
@@ -524,6 +544,8 @@ public partial class BlueMageRotation
 		Pair(PeripheralSynthesisPvE, MustardBombPvE, "Mustard Bomb on Lightheaded");
 		Pair(MatraMagicPvE, BristlePvE, "Bristle before Matra Magic");
 		Pair(SongOfTormentPvE, BristlePvE, "Bristle before Song of Torment");
+		Pair(PeatPeltPvE, DeepCleanPvE, "Deep Clean after Peat Pelt");
+		Pair(DeepCleanPvE, PeatPeltPvE, "Peat Pelt before Deep Clean");
 
 		var groupsInSet = new HashSet<byte>();
 		foreach (var action in inSet.Values)

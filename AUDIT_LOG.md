@@ -27349,6 +27349,30 @@ er nie fällt, obwohl er unter 20 % ohne Heilung im Set lag. Ohne Zeile im `Defe
 maschinenlesbar.
 *Prüfgrad:* Wirktexte, Code, Compile, Prüfskripte; Laufzeit nicht beobachtet.
 
+### A942 · Blaumagier: Matschkuchen und Reinemachen für den Tank (20.11.2026)
+
+*Anlass:* TODO „Blaumagier: ungenutzte Zauber“; Konzept 01 nannte beide als Erhaltung des Tanks, der Code fragte keinen
+(Aktionsmatrix: „ungenutzt“).
+*Wirktexte* (`ActionId.resx`, 20.11.2026): Mjam Mjam Matschkuchen (34569) 100 Potenz, jeder weitere Gegner 50 % weniger,
+Begrimed 10 je Tick über 9 s; Großes Reinemachen (34570) 220 auf alle nahen Gegner, jeder weitere 50 % weniger, je Gegner
+mit Begrimed ein Stapel Spick-and-span (Regen 50 bis 300, 15 s), „Maximum Stacks: 6“.
+*Gebaut:* Reinemachen, sobald die eigene Begrimed auf einem Gegner liegt und die Stapel unter der Höchstzahl des
+Statusblatts liegen (`SpickAndSpanMaxStacks`, ersetzt Upstreams feste 6). Matschkuchen nur unter Tank-Mimikry, mit
+Reinemachen im Set, auf mehr als einen Gegner, solange Spick-and-span fehlt oder vor dem Ende beider Zauber ausläuft
+(`PeatPeltOpensDeepClean`). Ort: nach Göttlichem Katarakt in `UseUtilityAndDebuffs`.
+*Im Kampf anders:* Der Tank-Blaumagier vor einem Rudel erhält über zwei GCDs ein Regen mit einem Stapel je getroffenem
+Gegner; gegen einen einzelnen Gegner und ohne Tank-Mimikry legt er keinen Matschkuchen.
+*Falsifikation:* Kein Defekt? Widerlegt: Das Konzept sieht beide vor, kein Aufruf. Option falsch? Ein DPS mit Matschkuchen
+gäbe zwei GCDs mit 100er-Einstieg für ein Regen, das er nicht braucht; die Regel lässt ihn aus. Reinemachen auf voller
+Stapelzahl gäbe Schaden ohne Regen; die Einstellung sperrt das wie bei Upstream. Ausgeliefert, und nichts ändert sich?
+Wenn keiner von beiden im Set liegt. Liegt einer darin, nimmt die Setverbesserung den anderen als Kettenpartner auf
+(`Pair`, in beide Richtungen; einer allein wirkt nicht).
+*Unbelegt:* der Verlauf der Heilwirkung zwischen 50 und 300 je Stapel; die Regel hängt nicht daran.
+*Vorhersage:* In einem ACT-Mitschnitt eines Tank-Blaumagiers vor einem Rudel folgt auf Zeile 22 mit 34569 (mehrere Ziele)
+binnen eines GCD Zeile 22 mit 34570, danach Zeile 26 mit Spick-and-span auf dem Spieler; widerlegt, wenn 34569 auf ein
+einzelnes Ziel fällt oder 34570 ausbleibt. Ohne Zeile im `DefenseTrace.log`, deshalb nicht maschinenlesbar.
+*Prüfgrad:* Wirktexte, Code, Compile, Prüfskripte; Laufzeit nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
