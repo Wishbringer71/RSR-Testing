@@ -547,6 +547,13 @@ public partial class BlueMageRotation
 		Pair(PeatPeltPvE, DeepCleanPvE, "Deep Clean after Peat Pelt");
 		Pair(DeepCleanPvE, PeatPeltPvE, "Peat Pelt before Deep Clean");
 
+		// Mortal Flame pays from about six ticks on, on any target living longer; whether it goes on a target the rotation
+		// decides in the fight (concept 01, "Ewige Flammen", A945).
+		if (learned.Contains(MortalFlamePvE) && !inSet.ContainsKey(MortalFlamePvE.ID) && !wanted.Exists(w => w.Spell == MortalFlamePvE))
+		{
+			wanted.Add((MortalFlamePvE, 0f, "damage over time until the target dies"));
+		}
+
 		var groupsInSet = new HashSet<byte>();
 		foreach (var action in inSet.Values)
 		{

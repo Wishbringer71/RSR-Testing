@@ -39,7 +39,6 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
   - Apokalypsis: lohnt der Kanal gegen vier GCDs? Hängt am Tickabstand, den Text und Blatt nicht nennen; nächster
     Schritt: Tickabstand an einem Mitschnitt (ACT Zeile 24 oder FFLogs-Ticks) messen (Konzept 01, „Angriffs- und
     Kontrollzauber“);
-  - die Setverbesserung für Ewige Flammen (heute nur Zauber mit Abklingzeit).
   Bewusst nicht: Schlussstich, Selbstzerstörung, Rotation (stößt die Gruppe weg), Absichern (lenkt Schaden auf ein
   Mitglied, A943), Laserauge, Perpetueller Strahl, Eichelbombe (A944); Äther-Mimikry wählt der Spieler.
   *Nächster Schritt:* je Zauber Wirktext, Konzept 01, Loop. *Konzept:* 01, „Blaumagier".

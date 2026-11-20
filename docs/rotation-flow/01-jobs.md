@@ -697,9 +697,12 @@ längeren Kampf fehlte sein Schaden über Zeit.
   Füllzauber.
 - *Im Kampf anders:* Gegen einen Boss trägt Ewige Flammen vom zweiten GCD an bis zum Ende; über zehn Minuten sind das
   200 Ticks, 8.000 Potenz für einen GCD. Ein Gegner, der stirbt, bevor sich der GCD bezahlt macht, bekommt ihn nicht.
-- *Nicht geändert:* Die Setverbesserung ergänzt nur Füllzauber, Kettenpartner und Zauber mit eigener Abklingzeit;
-  Ewige Flammen ohne Abklingzeit nimmt sie nicht auf. Ob sie ihn aufnehmen soll, ist offen (TODO, „Blaumagier:
-  ungenutzte Zauber").
+- *Setverbesserung* (A945): Ist Ewige Flammen gelernt und fehlt im Set, nimmt sie ihn nach den Kettenpartnern und vor
+  den Zaubern mit Abklingzeit auf, nur auf einen freien Platz oder den eines Füllers, den RSR nicht wirkt. Grund: Er
+  macht sich ab etwa sechs Ticks bezahlt (Überschallknall 210 gegen 40 je Tick), also auf jedem Ziel, das länger als
+  rund 18 s lebt; ob er auf ein Ziel geht, entscheidet die Regel oben im Kampf, der Platz kostet sonst nichts. Als
+  Schaden über Zeit ist er kein schlichter Füller (`IsPlainFiller` liest „over time“ als Bedingung) und macht später
+  keinem anderen Zauber Platz.
 - *Gegenthese:* „Ewige Flammen lohnt nur im Boss" – trifft die Regel, weil sie an der Lebenszeit rechnet, nicht an der
   Gegnerart. „Zauberatem trägt dieselbe Einschränkung und verschiebt sich ebenso" – Zauberatem dauert 60 s und erneuert
   sich über `TargetStatusProvide` am Ziel; ein Umzug kostet dort einen GCD, gewinnt aber eine volle Dauer am neuen
@@ -814,7 +817,8 @@ längeren Kampf fehlte sein Schaden über Zeit.
   - *Hinzu kommen*, in dieser Reihenfolge, auf freie oder ersetzbare Plätze: Schallwelle als Füllzauber, wenn sie fehlt;
     die Partner der Ketten, deren einer Teil schon im Set steht (Dreizack mit Pfeife und Kribbeln, Schwinge mit Mette,
     Stimme des Widders mit Ultravibration, ein Rösselsprung mit dem anderen, Replikator mit Senfbombe, Matra-Magie mit
-    Borstigkeit, Matschkuchen und Reinemachen je mit dem anderen, A942); dann gelernte Schadenszauber mit Abklingzeit aus Abklinggruppen ohne Vertreter im Set, nach Potenz je
+    Borstigkeit, Matschkuchen und Reinemachen je mit dem anderen, A942); Ewige Flammen, wenn gelernt (A945); dann
+    gelernte Schadenszauber mit Abklingzeit aus Abklinggruppen ohne Vertreter im Set, nach Potenz je
     Sekunde.
   - Ein Platz wird nur überschrieben, wenn sein Zauber nicht abklingt; UltimateCombo tauscht ebenso nur bereite Zauber.
   - *Sein Set ist seine Entscheidung:* Ändert der Spieler das Set selbst (ein gespeichertes Set geladen, ein Zauber für

@@ -27422,6 +27422,21 @@ Schlaf und Repose wechselten auf „direkt“.
 des Überschallknalls, wo ihre Potenz über die Ziele je Zeit höher liegt; gegen ein Ziel ändert sich nichts.
 *Prüfgrad:* Wirktexte, Blatt, Code, Compile, Prüfskripte; Laufzeit nicht beobachtet.
 
+### A945 · Blaumagier: Setverbesserung nimmt Ewige Flammen auf (20.11.2026)
+
+*Anlass:* TODO „Blaumagier: ungenutzte Zauber“, letzter Unterpunkt aus A940.
+*Befund:* `ImproveActiveSet` ergänzt Füller, Kettenpartner und Schadenszauber mit eigener Abklingzeit (`CooldownValue`
+ist für Zauber ohne Abklingzeit 0); Ewige Flammen kam nie hinein, und ohne ihn im Set greift die Regel aus A940 nicht.
+*Gebaut:* Ist er gelernt und fehlt, steht er nach den Kettenpartnern in der Liste; geschrieben wird wie bei allen nur auf
+einen freien Platz oder den eines Füllers, den RSR nicht wirkt. `IsPlainFiller` liest ihn nicht als schlichten Füller
+(„over time“ ist eine Bedingung in `TryPlainPotency`), also gibt er seinen Platz später nicht wieder frei.
+*Rechnung:* Überschallknall 210 je GCD gegen 40 je Tick alle 3 s – nach sechs Ticks (18 s) bezahlt; auf kürzer lebenden
+Zielen wirkt die Kampfregel ihn nicht, der Platz kostet dann nur, was ein ungenutzter Füller kostete: nichts.
+*Falsifikation:* Kein Defekt? Widerlegt: Die Regel aus A940 wirkte ohne Set nie. Option falsch? Verdrängt er einen
+Zauber, den RSR wirkt? Nein, nur freie oder nicht gewirkte Plätze. Ausgeliefert, und nichts ändert sich? Wenn der
+Spieler das Set selbst geändert hat (dann schreibt RSR in dieser Sitzung nichts) oder kein Platz frei ist.
+*Prüfgrad:* Code, Compile, Prüfskripte; Laufzeit nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
