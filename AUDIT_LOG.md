@@ -27520,6 +27520,25 @@ seine Ids von dort hat, prüft kein Hook. Probe: Goka Mekkyaku ist 16491 (406B);
 `EmergencyAbility` löscht das Ninjutsu-Ziel unter mehreren Bedingungen.
 *Prüfgrad:* keiner; wartet auf Daten.
 
+### A950 · Seine These: alle optimierten Rotationen schlechter als The Balance – Beweislage (20.11.2026)
+
+*These:* „meine these ist nun, dass alle von dir optimierten rotas schlechter als die von the balance sind. beweise das
+gegenteil!“
+*Gemessen (heute ausgeführt):* `samurai_balance_model.py`: The Balances Meikyo-Regel gegen `SAM_Reborn` über 60
+Kombinationen im Mittel +0,29 % Potenz (−0,59 % bis +1,60 %, in 4 Fällen weniger). `monk_balance_model.py`: The Balances
+Regel gegen `MNK_Reborn` über 156 Kombinationen im Mittel +0,03 % (−0,25 % bis +0,15 %, in 12 Fällen weniger).
+`machinist_balance_model.py`: Zeitpunkte und Ladung der Königin gegen The Balance, ohne Potenzurteil; RSR legt die
+volle Batterie nicht auf die Zwei-Minuten-Marken wie The Balance (233, 280 s gegen 240,75 s).
+*Weitere Belege:* A932 und A933 maßen in seinen Mitschnitten, ob Freischalter und Burstfenster genutzt werden (17
+Kaskaden zu 100 % im Fenster, eigene Burstfenster voll) – das zeigt keine Lücke, aber keinen Vergleich in Potenz.
+„Die feste Folge deckt sich mit The Balance“ (A932) beruht auf dem Abgleich der Folgen am Code (A375 bis A414), nicht auf
+einer Messung.
+*Urteil:* Das Gegenteil ist nicht bewiesen. Wo gemessen, liegt The Balance vorn (Samurai, Monk), klein; für 20 Jobs gibt
+es keinen Vergleich. Seine These ist damit für zwei Jobs belegt und für die übrigen weder belegt noch widerlegt.
+*Folge:* TODO „Jede Rotation gegen The Balance messen“; die Entscheidung „nicht gebaut“ zur Meikyo-Regel (Konzept 14)
+stammt von mir und fiel vor seinem Ziel vom 19.11.2026 – nach ihm gilt ein Rückstand auch im Promillebereich.
+*Umfang:* 3 von 23 Jobs mit einem Modell gegen The Balance, 2 davon mit Potenzurteil.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

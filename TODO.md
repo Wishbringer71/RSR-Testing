@@ -39,7 +39,15 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
 
 ## Offene Arbeit
 
-- Keine offene Arbeit.
+- **Jede Rotation gegen The Balance messen** (seine These, 20.11.2026: „meine these ist nun, dass alle von dir optimierten
+  rotas schlechter als die von the balance sind. beweise das gegenteil!“; A950). *Im Kampf:* Wo die Rotation weniger
+  Potenz über den Kampf bringt als der Guide, fehlt Schaden in jedem Kampf. *Stand:* Ein Vergleich in Potenz über den
+  Kampf besteht nur für Samurai (The Balance im Mittel +0,29 %), Monk (+0,03 %) und – ohne Potenzurteil – den
+  Maschinisten (Batterie); für 20 Jobs keiner. *Nächster Schritt:* je Job ein Modell nach dem Muster von
+  `samurai_balance_model.py` (Folge von The Balance gegen die der Rotation, ein Boss, Potenzen aus dem Job-Guide, Kampflänge
+  und GCD variiert), Boss-Jobs seines Profils zuerst; wo The Balance vorn liegt, die Regel verbessern, bis sie nicht mehr
+  dahinter liegt (sein Ziel vom 19.11.2026). Samurai zuerst: die Meikyo-Regel liegt im Mittel 0,29 % zurück
+  (Konzept 14, „Samurai: Meikyo Shisui und Higanbana“, dort „nicht gebaut“ vor seinem Ziel). *Konzept:* 14.
 
 ## Technische Schuld
 
