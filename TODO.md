@@ -30,7 +30,12 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
 
 ## Defekte
 
-- Keine offenen Defekte.
+- **Ninja stellt irgendwann die Rotation ein** (seine Meldung, 20.11.2026, A949). *Im Kampf:* Der Ninja hört mitten im
+  Kampf auf, GCDs zu wirken. *Ort, am Code möglich:* `NIN_Reborn.GeneralGCD` gibt während des Mudra-Status nichts aus
+  (`IsExecutingMudra`), und `EmergencyAbility` löscht das Ninjutsu-Ziel unter mehreren Bedingungen mitten in einer Folge –
+  unbelegt, welche greift. *Nächster Schritt:* sein `DefenseTrace.log` und ACT-Mitschnitt nach der Sitzung: Zeilen
+  „gcd idle“ (`GcdIdleWatch`, A923) mit Ablehnungsgründen, Mudra- und Ninjutsu-Folge im Mitschnitt (Ids aus der
+  Aktionsmatrix, nicht aus dem Gedächtnis); dann Ursache und Klasse im Loop. *Konzept:* 14 (Ninja).
 
 ## Offene Arbeit
 

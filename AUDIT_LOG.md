@@ -27504,6 +27504,22 @@ nicht läuft, eine eigene Voreinstellung aktiv ist oder die Voreinstellung abgel
 nur die Id der Puppe, die er anvisiert (Flächen ausgenommen); widerlegt, wenn ein Einzelzielangriff eine andere trifft.
 *Prüfgrad:* Code, Compile, Prüfskripte; Laufzeit nicht beobachtet.
 
+### A949 · Seine Meldung: Ninja stellt die Rotation ein; eine Auswertung mit Ids aus dem Gedächtnis verworfen (20.11.2026)
+
+*Meldung:* „ninja stellt auch irgendwann die rotation ein“; dazu: „ich spiele schließlich noch, die logs gibt es immer
+danach“. Eingetragen als Defekt (TODO), wartet auf sein Log.
+*Eigener Fehler:* Ich begann, ältere Mitschnitte nach GCD-Lücken des Ninja zu durchsuchen, und setzte die Aktions-Ids aus
+dem Gedächtnis – derselbe Fehler wie in A940. Die Ausgabe (Lücken von 30 bis 60 s zwischen „Goka Mekkyaku“) war
+offensichtlich eine falsche Zuordnung; verworfen, kein Schluss daraus. Seine Rüge: „idiot“. Regel dafür steht schon
+(CLAUDE.md, „Namen“: Zuordnung vor jeder Suche belegen; die Aktionsmatrix führt Name und Id je Job); sie war zum
+zweiten Mal an einem Tag gebrochen. Nach regeldateien.md (Eskalation nach zwei Brüchen) gebaut: `action_ids.py <JOB>
+<Name>` liefert Id, Hex (wie ACT sie schreibt) und Bezeichner aus der Aktionsmatrix und bricht bei einem Namen ohne Treffer
+ab; Selbsttest in der CI. CLAUDE.md, „Namen“, nennt das Werkzeug und was es nicht erzwingt: Ob ein Skript im Notizordner
+seine Ids von dort hat, prüft kein Hook. Probe: Goka Mekkyaku ist 16491 (406B); ich hatte 16535 gesetzt.
+*Am Code (ohne Log, unbelegt welche greift):* `NIN_Reborn.GeneralGCD` gibt während des Mudra-Status nichts aus;
+`EmergencyAbility` löscht das Ninjutsu-Ziel unter mehreren Bedingungen.
+*Prüfgrad:* keiner; wartet auf Daten.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

@@ -231,6 +231,7 @@ Gilt für jede Regel, im Code wie im Konzept (seine Vorgabe, 26.09.2026; für di
 - Er spielt mit deutschem Client: seine Namen sind deutsche Spielnamen, die Bezeichner englisch. Vor jeder Suche oder Aussage über ein Fehlen die Zuordnung belegen.
 - Zuerst nachschlagen: `.github/scripts/audit/action_names_de.json`; `check_action_names.py` hält jeden Eintrag in der CI gegen die deutschen Spielblätter (xivapi v2, `language=de`).
 - Was dort steht, nicht erneut fragen. Einen neuen Namen von ihm im selben Zug eintragen.
+- Eine Aktions-Id für eine Suche in seinen Mitschnitten oder Spuren nehme ich nur aus `action_ids.py <JOB> <Name>` (liest die Aktionsmatrix), nie aus dem Gedächtnis. Zweimal gebrochen (A940, A949); durchgesetzt ist nur, dass das Werkzeug richtig liest (Selbsttest in der CI) – ob ein Skript im Notizordner seine Ids von dort hat, prüft kein Hook, weil es beliebige Zahlen enthalten darf.
 - Einen deutschen Namen nie selbst bilden. Belegt ist er nur durch seine Angabe, den deutschen Job-Guide (`de.finalfantasyxiv.com/jobguide/`) oder die deutschen Spielblätter (xivapi v2, `language=de`, mit Zeilen-Id); sonst den englischen Bezeichner benutzen.
 
 # Versionskontrolle und Umgebung
