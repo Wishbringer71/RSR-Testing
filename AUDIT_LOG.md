@@ -27470,6 +27470,40 @@ zuvor). dajoey/lalalazy cfc5ac54e → 8264d021d (PvPSolver 0.1.2.21): überträg
 996f28183 enthalten; `UseHpPotion` und `UseMpPotion` sperren PvP (`CustomRotation_Items.cs`). Kein Nutzen für RSR;
 aufgezeichnet.
 
+### A948 · Seine Meldungen: andere Puppen angegriffen, Positionals ohne Schritt (20.11.2026)
+
+*Meldungen:* „warum werden andere trainingspuppen für angriffe anvisiert?“; „positionals funktionieren immer noch nicht,
+es erfolgt keine bewegung, selbst wenn man direkt bei 0y“; „hast du eine trainingspuppe hartverdrahtet? da er immer
+wieder auf eine weiter entfernte puppe switcht, die ich beim letzten mal benutzt habe“; sein Hinweis: „puppen halten
+einen nach ausloggen und einloggen nicht im target“; seine Frage: „warum erwartet ein konzept, dass sich ein gegner
+dreht? wenn es korrekt läuft steht der tank vor dem gegner und der damagedealer irgendwo hinter dem tank“. Ohne Log
+geprüft (Skill „upload-auswertung“: sofort, und erneut mit dem Log).
+*Positionals, Ursache am Code:* `PositionalMove.Wanted` öffnete kein Fenster, solange das Ziel den Spieler als Ziel hielt
+(„the target faces you“). Konzept 02 begründete das mit „allein in der offenen Welt dreht es sich mit“ – angenommen, nicht
+gemessen. Die Puppe hält im Kampf ihren Angreifer als Ziel (A818, `StateUpdater`) und dreht sich nie: Die Sperre traf
+genau die Puppe, an der er übt, gleich in welcher Entfernung. In der Gruppe hält der Gegner den Tank, dort griff sie nie.
+*Gebaut:* Gesperrt wird nur ein Ziel, das ihn hält und dessen Blickrichtung sich in diesem Gebiet seit dem ersten Sehen
+geändert hat (`TurnsWithPlayer`, `_firstFacing`, beim Gebietswechsel geleert). Dreht sich ein Gegner erst im Fenster,
+endet es beim nächsten Blick auf die Bedingung.
+*Zielwahl an Puppen:* Hart verdrahtet ist keine Puppe (`IsDummy` = NameId 541 für alle), RSR speichert kein früheres Ziel
+(gesucht: `_lastTarget`, `PreviousTarget`, Speicherdateien; nur `MacroItem` merkt sich kurz ein Ziel). Im Auto-Modus
+wählt RSR je Aktion unter allen angreifbaren Gegnern (`FindHostileRaw`). Warum gerade die Puppe vom letzten Mal: weiß ich
+nicht; möglich sind eine gleichbleibende Reihenfolge der Objektliste [Schätzung], ein fremdes Ziel der Puppe oder eine
+Vorrangregel. *Eigener Fehler:* Ich nannte ihm zuerst als Ursache, die Puppe halte ihn aus dem letzten Durchgang als
+Ziel – aus A818 übertragen, ohne Beleg über Sitzungen hinweg; sein Hinweis widerlegt es. *Gebaut, unabhängig von der
+Ursache:* Eine Puppe ist für RSRs Zielwahl nur angreifbar, wenn sie sein aktuelles Ziel ist (`ObjectHelper.IsAttackable`,
+vor Countdown, Halten als Ziel und Einstellung). Flächen treffen Nachbarpuppen weiter (A923).
+*Falsifikation:* Kein Defekt? Widerlegt: Die Sperre greift an jeder Puppe, die ihn hält; die Zielwahl nahm eine Puppe,
+die er nicht anvisierte. Option falsch? Ein Gegner, der ihn hält und sich mitdreht, ließe BossMod im Kreis laufen – die
+Messung schließt ihn nach der ersten Drehung aus; eine Puppe, die nicht sein Ziel ist, fällt aus der Zielwahl, ein
+Vielziel-Test an Puppen verliert das Verteilen. Ausgeliefert, und nichts ändert sich? Bei den Positionals, wenn BossMod
+nicht läuft, eine eigene Voreinstellung aktiv ist oder die Voreinstellung abgelehnt wird – die Spur nennt den Grund
+(„positional move: not now – …“).
+*Vorhersage:* `positional-move-opens` – in der nächsten Spur mit Zeilen „positional move:“ steht mindestens ein
+„BossMod walks you to the rear/flank“. Zielwahl: im ACT-Mitschnitt an einer Puppenreihe tragen Zeile 21/22 des Spielers
+nur die Id der Puppe, die er anvisiert (Flächen ausgenommen); widerlegt, wenn ein Einzelzielangriff eine andere trifft.
+*Prüfgrad:* Code, Compile, Prüfskripte; Laufzeit nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

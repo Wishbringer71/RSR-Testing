@@ -35,6 +35,11 @@ internal static class PositionalMove
 
 	private static readonly HashSet<ulong> _stoppedTargets = [];
 
+	// Concept 02 (A948): the facing each enemy had when first seen in this area. One that holds the player as its target
+	// and has turned since turns with him; a training dummy holds him and never turns. Exact comparison: a facing nobody
+	// changes is the same float frame after frame.
+	private static readonly Dictionary<ulong, float> _firstFacing = [];
+
 	// code.md, "Entscheidung zur Laufzeit": the first failure stops the move for its target, the next for the area.
 	private static bool _failedInArea, _offInArea;
 	private static string? _tracedWhyNot;
@@ -94,6 +99,7 @@ internal static class PositionalMove
 	{
 		Close("area changed");
 		_stoppedTargets.Clear();
+		_firstFacing.Clear();
 		_failedInArea = _offInArea = false;
 		_judgeAction = 0;
 		_tracedWhyNot = null;
@@ -115,6 +121,11 @@ internal static class PositionalMove
 			return null;
 		}
 
+		if (!_firstFacing.ContainsKey(target.GameObjectId))
+		{
+			_firstFacing[target.GameObjectId] = target.Rotation;
+		}
+
 		var keep = _active && gcd.ID == _windowAction && target.GameObjectId == _windowTarget && side == _windowSide;
 		if (!keep && target.FindEnemyPositional() == side)
 		{
@@ -131,7 +142,7 @@ internal static class PositionalMove
 
 		why = _offInArea ? "a second failure in this area"
 			: _stoppedTargets.Contains(target.GameObjectId) ? "a failure at this target"
-			: target.TargetObjectId == player.GameObjectId ? "the target faces you"
+			: TurnsWithPlayer(target, player) ? "the target turns with you"
 			: !BMRInfo_IPCSubscriber.IsEnabled ? "BossMod is not running"
 			: _refused ? "BossMod refused the preset"
 			: DataCenter.BMRIsNavigating ? "BossMod's AI walks you"
@@ -145,6 +156,12 @@ internal static class PositionalMove
 		}
 
 		return new Window(gcd.ID, target.GameObjectId, side, gcd.Name);
+	}
+
+	private static bool TurnsWithPlayer(IBattleChara target, IGameObject player)
+	{
+		return target.TargetObjectId == player.GameObjectId
+			&& _firstFacing.TryGetValue(target.GameObjectId, out var first) && target.Rotation != first;
 	}
 
 	private static string? ForeignPreset()

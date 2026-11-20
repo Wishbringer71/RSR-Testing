@@ -1452,6 +1452,23 @@ greift nicht an; eine Fläche, die sie streift, zieht nichts in den Kampf. *Im K
 Flächen- und Kegelangriffe wie an einer einzelnen Puppe. *Folge:* Ohne Zanshin stieg Kenki auf 100, und jeder Kombo-Schlag sperrte sich gegen den Überlauf – 28 s und 16 s ohne
 GCD (Konzept 14, „Samurai: Kenki-Verklemmung“, A925).
 
+*Welche Puppe dein Kampf ist (seine Meldungen 20.11.2026, A948):* „warum werden andere trainingspuppen für angriffe
+anvisiert?“; „da er immer wieder auf eine weiter entfernte puppe switcht, die ich beim letzten mal benutzt habe“; sein
+Hinweis: „puppen halten einen nach ausloggen und einloggen nicht im target“. Hart verdrahtet ist keine Puppe: Erkannt
+werden alle gleich (`IsDummy`, NameId 541), und RSR speichert kein früheres Ziel. Im Auto-Modus wählt RSR für jede Aktion
+selbst unter allen angreifbaren Gegnern (`FindHostileRaw`: Sortierung der Einstellung, Verteilen von Schaden über Zeit,
+bestes Flächenziel). *Warum gerade die Puppe vom letzten Mal:* weiß ich nicht; dazu fehlt eine Spur der Zielwahl. Am
+Code möglich: (a) Bei gleichen Puppen entscheidet die Reihenfolge der Objektliste, die zwischen Sitzungen gleich
+bleiben kann [Schätzung]; (b) die Puppe hält ein Ziel, etwa einen anderen Spieler – mit „Previously engaged targets“
+reicht irgendein Ziel; (c) eine Vorrangregel nimmt sie an. Meine erste Begründung – die Puppe halte dich aus dem
+letzten Durchgang – widerlegt sein Hinweis. *Gilt, unabhängig von der Ursache:* Eine Puppe ist für RSRs Zielwahl nur
+angreifbar, wenn sie dein aktuelles Ziel ist (`ObjectHelper.IsAttackable`, vor Countdown, dem Halten als Ziel und der
+Einstellung). Grund: Eine Puppe kämpft nicht; welche du übst, sagt nur dein Ziel. Flächen treffen Nachbarpuppen weiter
+(A923); sie zählen nur nicht als eigenes Ziel. *Im Kampf:* An einer Puppenreihe bleibt jeder Angriff und jeder Schaden
+über Zeit auf der Puppe, die du anvisierst. *Gegenthese:* „Das Verteilen von Schaden über Zeit an mehreren Puppen ist
+nicht mehr testbar.“ Trifft zu; Puppen bilden kein Rudel nach (sie kämpfen nicht, sterben nicht). Ohne Ziel greift RSR
+keine Puppe an.
+
 *Gegenthese 2 (ein Gegner ohne Ziel kämpft doch):* Ein Gegner kann im Kampf kurz kein Ziel halten (Wirken auf den
 Boden, Phasenwechsel). Bis A833 wartete die Fläche dann. *Widerlegt seit A833:* Als „kämpft noch nicht" gilt ein Gegner
 nur, wenn er weder ein Ziel hält noch im Kampf steht (das Kampfkennzeichen seiner Figur, `ObjectHelper.InCombat`) – für

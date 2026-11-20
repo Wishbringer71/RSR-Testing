@@ -418,8 +418,15 @@ die Teile gilt N.
     einmal, und es gilt N.
 
 *Was gilt (gebaut, A928, Ebene Nahkämpfer; `PositionalMove`, Einstellung „Move into positionals through BossMod“):*
-- *Fenster:* Der nächste GCD ist positional, True North deckt ihn nicht, sein Ziel hat ein Positional und sieht nicht
-  ihn an (allein in der offenen Welt dreht es sich mit), und er steht nicht 0,5 y tief in der Seite. Das Fenster endet
+- *Fenster:* Der nächste GCD ist positional, True North deckt ihn nicht, sein Ziel hat ein Positional und dreht sich
+  nicht mit ihm, und er steht nicht 0,5 y tief in der Seite. *Dreht sich mit* heißt gemessen, nicht angenommen (seine
+  Meldung 20.11.2026, A948: „positionals funktionieren immer noch nicht, es erfolgt keine bewegung, selbst wenn man direkt
+  bei 0y“): Es hält ihn als Ziel und seine Blickrichtung hat sich in diesem Gebiet seit dem ersten Sehen geändert. Bis
+  A948 sperrte schon das Halten als Ziel – die Trainingspuppe hält im Kampf ihren Angreifer als Ziel (A818), dreht sich aber nie;
+  die Sperre traf so genau den Ort, an dem er Positionals übt, und jede Spur schrieb „not now – the target faces you“.
+  Dreht sich ein Gegner erst während des Fensters mit, zählt er ab dann als drehend: Das laufende Fenster endet beim
+  nächsten Blick auf die Bedingung, und es öffnet für ihn keines mehr – der Preis ist ein Schritt, den ein
+  mitdrehender Gegner einmal zunichtemacht. Das Fenster endet
   mit dem Druck dieses GCD oder wenn eine Bedingung fällt. Ein positionaler oGCD, der vor diesem GCD ansteht (Trick
   Attack), hält das Fenster zu, bis er gedrückt ist.
 - *Voraussetzungen:* BossMod läuft, seine KI navigiert nicht, keine andere Voreinstellung ist aktiv, und kein Blick
