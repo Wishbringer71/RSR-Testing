@@ -27148,6 +27148,11 @@ Jetzt je Aktion der zuletzt geschriebene Grund, geleert beim Gebietswechsel (Kon
 Befund: Bodenfrage (Gegenprobe am eigenen Standort, Höhe aus der Sprungweite), Randtreffer (namenlos, ohne Wirkzeit,
 Ring, Gruppenmitglied), Lilie im Laufen (Kosten aus dem Blatt, Raidwide-Halt), Life Surge, Swiftcast-Rücklage und
 Ziel aus `CurrentTarget` in den fremden Rotationen.
+*Auftragsende:* Upstream ohne neue Commits. Quelle ofnature/Daedalus fdb0811 → 8b4ce0506 ausgewertet: v0.1.128 (Kämpfe
+für das Plugin Orion) betrifft RSR nicht; v0.1.127 drückte die vier Schritte des Phantomtänzers ohne Ziel, das Spiel
+lehnte ab, und die eigene Rotation stand 13 bis 25 s. RSR führt sie als Angriffe (`IsFriendly = false`; Spielblatt:
+nur auf Gegner, 30 Yalm), die Zielwahl gibt einen Gegner; eine Ablehnung nähme die dynamische Rotation aus der Wahl
+(A930). Nichts zu bauen. priestkos/FrontlineAdvisor weiter nicht erreichbar.
 *Prüfgrad:* Code, Compile, CI.
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
