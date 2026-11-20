@@ -27254,6 +27254,37 @@ jede Idee unten am eigenen Fall geprüft.
 *Prüfgrad:* Lesen jeder Datei; drei Befunde am Gerüst durch Ausführen nachgestellt; Messungen an Transkript, Repository
 und Dokumentation wie genannt; `check_rule_files.py` und alle Prüfungen nach den Änderungen.
 
+### A939 · Größe einer Regel in Tokens, nicht in Zeichen; Framework-ADR 0065 nachgemessen (20.11.2026)
+
+*Anlass:* seine Vorgabe vom 20.11.2026: „zeichen und zeilen bei regeln ist ein symptom, keine grundlage für
+entscheidungen. grundlage sind die genutzten tokens. ein ähnlicher auftrag ging ans llm-framwork. kannst du analysieren
+und prüfen, wenn das seine arbeit abgeschlossen hat. ist aber kein quell der wahrheit“. Eingeordnet als Vorgabe mit
+Prüfauftrag; eingetragen in `regeldateien.md` („Umfang folgt dem Inhalt“). Dazu seine Angabe desselben Tages: die
+unverschlüsselten Zugangsdaten aus A938 sind widerrufen und entfernt.
+*Framework:* `actual-work-since-2026-11-16` an `ac47f5c` (20.11.2026, 11:01), ADR 0065 „Kontextkosten in Token, nicht in
+Zeichen“, Status angenommen: Größen, die eine Entscheidung tragen, in Token per CLI messen; Zeichen nur als Driftsignal
+derselben Datei. Als Behauptung gelesen und hier nachgemessen.
+*Messung hier (20.11.2026):* `claude -p --output-format json` (Claude Code 2.1.329) in einem leeren Ordner ohne
+CLAUDE.md, Eingabetokens samt Zwischenspeicher als Differenz zum Grundprompt „Antworte nur mit OK.“ (zweimal gemessen,
+Abweichung 3 Token). Haiku 5.5: CLAUDE.md 47.458 Zeichen = 23.205 Token; `code.md` 6.398; `konzepte.md` 3.480;
+`regeldateien.md` 2.032 (vor dem Satz über das Messverfahren); `archiv-todo.md` 1.987; `pruefmittel.md` 1.025;
+`release-texte.md` 344; Skills `upstream-sync` 2.969, `upload-auswertung` 2.040, `spielpatch` 1.118. Opus 5.5 als
+Gegenprobe: CLAUDE.md 23.201, `code.md` 6.399 (Abweichung unter 0,1 %). Unsere deutschen Regeltexte: 1,86 bis 2,06
+Zeichen je Token.
+*Bewertung des ADR 0065:* Seine Zahl für unsere CLAUDE.md (23.004 Token an `d3f40bd`, 47.082 Zeichen) deckt sich mit der
+Messung hier (376 Zeichen mehr, 201 Token mehr); ebenso der Befund, dass „Zeichen durch vier“ (Regelgerüst,
+`analyse/03`) deutsche Regeltexte um etwa die Hälfte unterschätzt. Nicht hier nachgemessen: sein Vergleich Deutsch
+gegen Englisch (+65 % Token bei gleichem Inhalt) – er gilt für seinen Text; für unsere Regeln unbelegt, und die Sprache
+ist seine Vorgabe (er liest die Regeln).
+*Gegenposition:* Token messen den Preis, nicht die Befolgung; ob eine lange Regeldatei schlechter befolgt wird, hängt an
+Zahl und Lage der Anweisungen, nicht am Tokenpreis allein (Claude-Code-Dokumentation zu CLAUDE.md: „Longer files consume
+more context and reduce adherence“, gelesen 20.11.2026). Für Entscheidungen über Lage und Form einer Regel bleibt der
+Tokenpreis deshalb ein Maß unter mehreren; Zeichen und Zeilen sind keines.
+*Folge für A938:* Dort stand die Ladegrenze von 40.000 Zeichen – eine technische Grenze des Werkzeugs in Zeichen, keine
+Kostenaussage; sie bleibt. Die Bewertung des Zeichenbudgets im Regelgerüst stützte sich auf seine Vorgabe vom 27.10.2026,
+nicht auf Zeichen; sie bleibt.
+*Prüfgrad:* Messung mit der CLI, zwei Modelle; `check_rule_files.py`.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
