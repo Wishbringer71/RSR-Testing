@@ -27568,6 +27568,30 @@ bleibt beim Wirken (The Balance: dort „not worthwhile“).
 Blizzard III (9A) nach Transpose (95); widerlegt, wenn Swiftcast weiter nur vereinzelt kommt.
 *Prüfgrad:* Mitschnitt, Wirktext, Blatt, Code, Compile, Prüfskripte; Laufzeit nicht beobachtet.
 
+### A952 · Seine Meldung: Beschwörer nutzt Miasma-Nova und Schmerzensflare nicht (20.11.2026)
+
+*Meldung:* „beschwörer nutzt miasma-nova bzw. schmerzensflare nicht“; seine Frage dazu: „schmerzflare und miasma stehen
+alle 60 sekunden bereit … sollen aber nur alle 120 sekunden genutzt werden? verschwendung?“. Namen belegt (xivapi v2,
+`language=de`, 20.11.2026): Miasma-Nova = Necrotize (36990), Schmerzensflare = Painflare (3578), Schwäre = Fester (181);
+in `action_names_de.json` eingetragen.
+*Mitschnitte:* Die Zählung je Sitzung (Ids aus `action_ids.py SMN`) trägt kein Urteil – am 10.11. 33 Miasma-Nova ohne
+Zeile für Energieentzug; Zuordnung der Sitzung unsicher, kein Schluss gezogen.
+*Am Code:* `SMN_Reborn.AttackAbility` hielt die Leiste für das Zwei-Minuten-Fenster (A375), solange Burst-Beschwörung und
+Searing Light spätestens mit Energieentzug bereit sind – ohne Ende, wenn das Fenster dann nicht öffnete. Energieentzug
+verlangt die Leiste leer: Miasma-Nova, Schwäre und Energieentzug standen zugleich. Schmerzensflare ging nur im Fenster
+oder auf einen sterbenden Boss.
+*Gebaut:* Das Warten endet, wenn die Burst-Beschwörung seit einem GCD bereit ist und das Fenster nicht offen
+(`SMN_Reborn.BurstSummonHeldElsewhere`, je Durchgang gefragt, damit kein alter Zeitstempel bleibt). Schmerzensflare hat
+denselben Rückfall wie Miasma-Nova: vor der Rückkehr von Energieentzug/Energiesiphon, ohne Rücklage. Ob eine dieser
+Klemmen seine Beobachtung erklärt: unbelegt bis zu seinem Mitschnitt.
+*Seine Frage, am Konzept beantwortet:* Je 60 s entstehen zwei Ladungen, und alle werden ausgegeben: die der ungeraden
+Minute im Zwei-Minuten-Fenster zusammen mit den neuen (vier unter Searing Light), immer vor dem nächsten Energieentzug,
+der sie leer verlangt (The Balance: „as long as they are used before the next Energy Drain“). Verschwendung entsteht nur,
+wenn Energieentzug dafür später kommt – genau die Klemme, die jetzt endet.
+*Prüfgrad:* Code, Compile, Prüfskripte; Laufzeit nicht beobachtet. *Vorhersage:* Im nächsten Mitschnitt eines Beschwörers
+liegen zwischen zwei Energieentzug/Energiesiphon höchstens Abklingzeit plus ein GCD; widerlegt, wenn ein Abstand weit
+darüber liegt, während die Leiste voll ist.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

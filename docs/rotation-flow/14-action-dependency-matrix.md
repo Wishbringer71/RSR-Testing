@@ -756,6 +756,17 @@ wenige Sekunden vor Searing Light und dem Fenster der Gruppe.
 - *Nicht gewartet* wird, wenn der Burst automatisch aus ist, die nächste große Beschwörung nicht die des Bursts ist
   (ein anderer Beschwörer hält sie, Konzept 12) oder eine der beiden später zurückkommt als Energy Drain. Stirbt das
   Ziel, gehen die Ladungen wie bisher.
+- *Das Warten endet* (seine Meldung 20.11.2026: „beschwörer nutzt miasma-nova bzw. schmerzensflare nicht“, A952): Ist
+  die Burst-Beschwörung seit einem GCD bereit und das Fenster trotzdem nicht offen, hält sie etwas anderes zurück
+  (Bewegung, ein Gegner außer Reichweite, eine andere Regel), und die Ladungen gehen. Vorher wartete die Leiste ohne Ende:
+  Energy Drain verlangt sie leer, also standen Miasma-Nova (Necrotize), Schwäre (Fester) und Energy Drain zugleich still.
+  *Im Kampf:* höchstens ein GCD Warten über die Bereitschaft der Beschwörung hinaus, danach zwei Miasma-Nova und Energy
+  Drain wie ohne Rücklage.
+- *Schmerzensflare (Painflare)*, die Flächenausgabe derselben Leiste, hatte nur das Fenster und den sterbenden Boss; vor
+  dem nächsten Energy Siphon ging sie nie, und vor einem Rudel ohne Fenster blieb die Leiste voll, Energy Siphon und
+  Energy Drain aus. Jetzt dieselben drei Wege wie Miasma-Nova: Fenster, sterbendes Ziel, vor der Rückkehr von Energy
+  Drain/Energy Siphon (gemeinsame Abklingzeit), ohne Rücklage für das Fenster. Ob eine dieser Klemmen seine Beobachtung
+  erklärt, ist unbelegt, bis sein Mitschnitt da ist.
 
 **Eine offene Gunst verfällt mit der nächsten Beschwörung; RSR hält dafür keine Beschwörung zurück** (A462). Der
 Wirktext sagt nur „Effect of Garuda's Favor ends upon execution of certain summoner actions" (Job-Guide, abgerufen am
