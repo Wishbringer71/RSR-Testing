@@ -737,6 +737,19 @@ Hier der Vorlauf (A343); Ressourcen und Buffs stehen unter „Schadensausteiler:
 Abgeglichen am 26.10.2026 gegen The Balance, Summoner Basic Guide („Patch Applicable: 7.55", zuletzt geändert am
 31.07.2026; die Opener-Seite zeigt die Folge nur als Bild). Die Searing-Light-Regeln selbst stehen in Konzept 12.
 
+**Rotmagier: Mana vor Embolden** (seine Frage, 20.11.2026, A953; offen, TODO „Rotmagier gibt Mana kurz vor Embolden
+aus“). Die Nahkampf-Kombo beginnt, sobald beide Mana-Leisten die Schwelle erreichen; die Entfernung entscheidet nur
+darüber, ob Enchanted Riposte das Ziel erreicht (3 Yalm). Nah am Boss beginnt sie deshalb an der Schwelle, auf Abstand
+erst beim Herangehen – darum füllen sich die Leisten nur auf Abstand bis 100. Schwellen ohne „Attempt to pool …“ (ab Werk
+aus): 50 unter Embolden; sonst nach der Zeit seit Embolden 90 (bis 15 s), 70 (bis 40 s), 50 (bis 80 s), 60 (danach, also
+in den letzten 40 s vor seiner Rückkehr). The Balance (Red Mage Basic Guide, Patch 7.4, vom Abrufwerkzeug gelesen,
+wörtliche Ausschnitte, 20.11.2026): „Melee combo at 50|50+ mana“; „Always save enough mana for one melee combo under
+buffs“; Dreifach-Kombo zu zwei Minuten „with 73|73 or above mana (starting 15 seconds before Embolden …)“; „Double combo
+during these buff windows if you can (92|81 mana without Manafication)“; „In general, avoid overcapping mana“. 100|100
+ist kein Ziel. *Befund:* In den letzten 40 s vor Embolden gibt RSR ab 60|60 aus und spart nicht für die Kombo unter den
+Buffs; der Pooling-Pfad (92|81 bzw. 81 ab 30 s vorher) liegt näher an The Balance, ist aber ab Werk aus und als
+„Experimental“ geführt.
+
 **Die Necrotize der ungeraden Minute warten auf das Zwei-Minuten-Fenster** (`SMN_Reborn.AttackAbility`, A375). The
 Balance: „Necrotize from your odd minute Energy Drain … should be saved for 2-minute buff windows as long as they are
 used before the next Energy Drain." RSR gab den Aetherflow aus, sobald Energy Drain in zwei GCDs bereit wurde (Schutz

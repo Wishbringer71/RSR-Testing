@@ -30,6 +30,14 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
 
 ## Defekte
 
+- **Rotmagier gibt Mana kurz vor Embolden aus** (seine Frage, 20.11.2026; A953). *Im Kampf:* Ohne „Attempt to pool
+  Black and White Mana for burst“ (ab Werk aus) startet die Nahkampf-Kombo in den letzten 40 s vor Embolden schon ab
+  60|60 (`RedMageRotation.ManaNeededNoPooling`); der Rotmagier kommt dann ohne Mana für eine Kombo unter Embolden ins
+  Fenster. The Balance (Basic Guide 7.4): „Always save enough mana for one melee combo under buffs“, Dreifach-Kombo zu
+  zwei Minuten ab 73|73, 15 bis 17 s vor Embolden; Doppel-Kombo in späteren Fenstern ab 92|81 ohne Manafication.
+  *Nächster Schritt:* Schwellen aus Kombokosten und Mana je GCD herleiten statt der festen Zahlen beider Pfade, Modell
+  nach dem Muster von `samurai_balance_model.py` gegen The Balance, dann die Voreinstellung. *Konzept:* 14.
+
 - **Ninja stellt irgendwann die Rotation ein** (seine Meldung, 20.11.2026, A949). *Im Kampf:* Der Ninja hört mitten im
   Kampf auf, GCDs zu wirken. *Ort, am Code möglich:* `NIN_Reborn.GeneralGCD` gibt während des Mudra-Status nichts aus
   (`IsExecutingMudra`), und `EmergencyAbility` löscht das Ninjutsu-Ziel unter mehreren Bedingungen mitten in einer Folge –

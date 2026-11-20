@@ -27592,6 +27592,22 @@ wenn Energieentzug dafür später kommt – genau die Klemme, die jetzt endet.
 liegen zwischen zwei Energieentzug/Energiesiphon höchstens Abklingzeit plus ein GCD; widerlegt, wenn ein Abstand weit
 darüber liegt, während die Leiste voll ist.
 
+### A953 · Seine Frage: Rotmagier nah am Boss, Leisten nie auf 100, Burst schwach (20.11.2026)
+
+*Frage:* „ist es korrekt, dass wenn der redmage zu nah am boss steht, die balken nie auf 100 punkte aufgeladen werden
+und so der burst nie voll zur geltung kommt, weil die nahkampfangriffe immer zu früh greifen?“
+*Am Code:* Die Kombo beginnt an der Schwelle (`RDM_Reborn.GeneralGCD`, `EnoughManaComboNoPooling`/`Pooling`); keine
+Entfernungsregel, nur die Reichweite von Enchanted Riposte – nah am Ziel beginnt sie an der Schwelle, auf Abstand erst
+beim Herangehen. Schwellen ohne Pooling nach der Zeit seit Embolden: 90, 70, 50, 60 (letzte 40 s), unter Embolden 50.
+*Quelle:* The Balance, Red Mage Basic Guide (Patch 7.4, zuletzt 27.12.2025; vom Abrufwerkzeug gelesen, wörtliche
+Ausschnitte): Kombo ab 50|50; für die Kombo unter Buffs Mana sparen; Dreifach-Kombo zu zwei Minuten ab 73|73, 15 bis 17 s
+vor Embolden; Manafication gibt seit 7.4 kein Mana, sondern drei Stapel Magicked Swordplay; Überlauf vermeiden; 100|100
+kein Ziel.
+*Antwort:* Teils richtig. Nah am Boss werden die Leisten nie voll – das ist gewollt, 100 ist kein Ziel. Falsch läuft die
+Zeit vor Embolden: RSR gibt dort ab 60|60 aus und kommt ohne Mana für die Kombo unter den Buffs ins Fenster.
+*Offen:* TODO „Rotmagier gibt Mana kurz vor Embolden aus“ (Schwellen herleiten, Modell gegen The Balance).
+*Prüfgrad:* Code und Guide; nicht im Mitschnitt gemessen.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
