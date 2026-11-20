@@ -604,12 +604,7 @@ public partial struct ActionTargetInfo
 		// would otherwise hide the refusal of a dash that was actually measured.
 		var refusal = new DataCenter.MoveSafetyRefusal(action.Name, why, DateTime.Now);
 
-		// Concept 05, "Arenagrenzen ohne BossMod-Modul" (A934): each new refusal once in the trace, not every frame.
-		var previous = measured ? DataCenter.LastMoveSafetyRefusal : DataCenter.LastMoveSafetyUnmeasured;
-		if (previous is not { } last || last.Action != refusal.Action || last.Why != why)
-		{
-			DefenseTrace.Line($"movement check: {action.Name} held - {why}");
-		}
+		TraceRefusal(action.Name, why);
 
 		if (measured)
 		{

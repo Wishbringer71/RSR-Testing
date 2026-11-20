@@ -220,6 +220,7 @@ public sealed partial class RotationSolverPlugin : IAsyncDalamudPlugin
 		PositionalWatch.AreaChanged();
 		PositionalMove.AreaChanged();
 		ArenaEdgeWatch.AreaChanged();
+		ActionTargetInfo.AreaChanged();
 		DynamicRotation.AreaChanged();
 
 		if (id == 0)

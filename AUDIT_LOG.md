@@ -27133,6 +27133,23 @@ Befund ohne Vorlage: die M4S-Kampfvorgabe des ChurinSMN schreibt gespeicherte Ei
 zurück (Konzept 14, „Churin- und Beiruta-Rotationen: Einstellungstexte gegen ihren Code“). Umfang: 157 von 157.
 *Prüfgrad:* Code, Compile, CI; im Spiel nicht beobachtet (er spielt sie nicht).
 
+### A937 · TODO weiter: offene Arbeit wartet auf Daten; Code-Review A933 bis A936; Schuldpunkte (20.11.2026)
+
+*Anlass:* sein Auftrag vom 20.11.2026: „dann todo weiter“.
+*Offene Arbeit:* „Rotation jedes Jobs“ wartet nach A936 auf Mitschnitte (Blaumagier, Beastmaster, Burstfolgen der 13);
+„Über den Augenblick hinaus“ auf seinen Gruppen-Upload (K3); K6 im eigenen Fenster hat keinen gemessenen Verlust –
+die eigenen Burstfenster aller gemessenen Jobs waren voll (A933). Beide Punkte stehen jetzt unter „Warten auf Daten“.
+*Technische Schuld:* keine Auflösungsbedingung erfüllt. Für BurstWatch gesucht: Im Aktionsblatt gleicht Gauge
+(Beastmaster) Capture in Kategorie, Ziel, Reichweite, Abklingzeit und Kosten – kein trennendes Feld (xivapi,
+20.11.2026).
+*Code-Review* des Codes von A933 bis A936 (17 Dateien): ein Befund – die Spurzeile „movement check“ verglich nur mit
+der zuletzt gebuchten Ablehnung; wurden zwei Sprünge im selben Frame abgelehnt, schrieb sie beide in jedem Frame.
+Jetzt je Aktion der zuletzt geschriebene Grund, geleert beim Gebietswechsel (Konzept 05, Anforderungstabelle). Ohne
+Befund: Bodenfrage (Gegenprobe am eigenen Standort, Höhe aus der Sprungweite), Randtreffer (namenlos, ohne Wirkzeit,
+Ring, Gruppenmitglied), Lilie im Laufen (Kosten aus dem Blatt, Raidwide-Halt), Life Surge, Swiftcast-Rücklage und
+Ziel aus `CurrentTarget` in den fremden Rotationen.
+*Prüfgrad:* Code, Compile, CI.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

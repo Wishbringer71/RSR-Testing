@@ -256,6 +256,7 @@ einige haben sonderformen“; A935.)
 | Anforderung | Kriterium | Stelle | Beleg | Messweg |
 |---|---|---|---|---|
 | Kein Sprung von RSR über einen Abgrund | Landepunkt ohne Netz → abgelehnt | `ActionTargetInfo.MovementSafety`, `DataCenter.FloorAt` | vnavmesh `IsPointOnMesh` | Spurzeile „… lands where vnavmesh has no floor“ |
+| Jede Ablehnung lesbar, ohne Flut | je Aktion und Grund eine Zeile je Gebiet, auch wenn mehrere Sprünge im selben Frame abgelehnt werden (Code-Review A934) | `ActionTargetInfo.TraceRefusal` | – | Spurzeile „movement check: … held - …“ |
 | Kein falscher Abbruch auf unbekanntem Boden | Spieler nicht auf dem Netz → keine Antwort | `DataCenter.FloorAt` | Gegenprobe | keine Ablehnung aus diesem Grund, wo er steht |
 | Prüfung ab Werk | Schalter an | `Configs.CombatAndTarget` | seine Regel „Sicherheit vor Schaden“ | Einstellungsfenster |
 

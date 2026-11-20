@@ -34,16 +34,7 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
 
 ## Offene Arbeit
 
-- **Rotationen aller Jobs über den Augenblick hinaus** (sein Auftrag vom 19.11.2026; A901). *Wirkung im Kampf:*
-  Verstärker, Zeitgeber und DoTs laufen heute in vorhergesagte Pausen, Ressourcen bleiben beim Tod des Ziels übrig, der
-  eigene Burst richtet sich nach der eigenen Uhr statt nach den Raidbuffs, die wirklich auf dir liegen. *Nächster
-  Schritt:* K3 – Beobachtung gebaut (A904); nach seinem nächsten Upload aus einer Gruppe mit Raidbuffs die Spur
-  „group burst:“ auswerten, dann eigene Verstärker auf den Gruppenburst warten lassen; K1 erster Schritt gebaut
-  (A914: allein jede Pause im Fenster, in der Gruppe nur im ersten GCD), K2 gebaut (A916: gehaltene Ladungen vor dem
-  Tod des Bosses frei), K5 erster Schritt gebaut (A917: Flächen zählen nur, wer den Treffer erlebt), danach K1 mit der
-  Uhr der Gruppe aus K3, dann K6 je Job – mit den Leisten und Aufbauten am Ende eines Rudels (K5, A918) und den
-  Bewegungsmitteln (K4, A919: allgemein geprüft, kein gemessener Verlust). *Konzept:* 03, „F · Über den
-  Augenblick hinaus".
+- Keine; was offen ist, wartet auf Daten oder auf ihn (unten).
 
 ## Technische Schuld
 
@@ -106,6 +97,8 @@ ohne Schaden, die keine Rotation fragt; die Ausnahmen gelten nur Aktionen aller 
 (A855, A864). *Kosten:* eine Angabe ohne Wirkung im Kampf in jeder Zeile des Beastmasters. *Auflösung:* ein
 Merkmal aus den Blättern, das Hilfsaktionen von Fähigkeiten mit Wirkung trennt, ohne echte Abklingzeiten wie Buffs
 auszuschließen; bis dahin bleibt die Vorhersage `burstwatch-no-general-actions` für den Beastmaster widerlegt (A897).
+Gesucht am 20.11.2026 (A937): Im Aktionsblatt gleicht Gauge in Kategorie, Ziel, Reichweite, Abklingzeit und Kosten
+Capture; kein Feld trennt sie.
 *Konzept:* 03, „Bereit, aber nicht genutzt".
 
 ### Plugin-Identität ist die des Upstreams · N
@@ -115,6 +108,17 @@ Reborn"); beides kostet im Spiel, solange nicht beide Installationen gebraucht w
 nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigter Name bleibt. *Konzept:* 24.
 
 ## Warten auf Daten oder Fremde
+
+- **Rotationen aller Jobs über den Augenblick hinaus** (sein Auftrag vom 19.11.2026; A901). *Wirkung im Kampf:*
+  Verstärker, Zeitgeber und DoTs laufen heute in vorhergesagte Pausen, Ressourcen bleiben beim Tod des Ziels übrig, der
+  eigene Burst richtet sich nach der eigenen Uhr statt nach den Raidbuffs, die wirklich auf dir liegen. *Nächster
+  Schritt:* K3 – Beobachtung gebaut (A904); nach seinem nächsten Upload aus einer Gruppe mit Raidbuffs die Spur
+  „group burst:“ auswerten, dann eigene Verstärker auf den Gruppenburst warten lassen; K1 erster Schritt gebaut
+  (A914: allein jede Pause im Fenster, in der Gruppe nur im ersten GCD), K2 gebaut (A916: gehaltene Ladungen vor dem
+  Tod des Bosses frei), K5 erster Schritt gebaut (A917: Flächen zählen nur, wer den Treffer erlebt), danach K1 mit der
+  Uhr der Gruppe aus K3, dann K6 je Job (im eigenen Fenster ohne gemessenen Verlust: alle eigenen Burstfenster voll, A933, A937) – mit den Leisten und Aufbauten am Ende eines Rudels (K5, A918) und den
+  Bewegungsmitteln (K4, A919: allgemein geprüft, kein gemessener Verlust). *Konzept:* 03, „F · Über den
+  Augenblick hinaus".
 
 - **Rotation jedes Jobs: Synergien und Kaskaden innerhalb des Jobs** (sein Auftrag vom 19.11.2026: „danach die
   rotationen jedes jobs auf verbesserungspotential prüfen. innerhalb des jobs durch auswertung der eigenschaften der
