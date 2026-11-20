@@ -216,6 +216,43 @@ Geprüft werden die Landepunkte, die RSR selbst rechnet: fester Sprung, Rückspr
 auf ein Ziel endet bei dem, der auf dem Boden steht. Kein unabhängiger Prüfer: Die Regel bewegt nicht, sie hält eine
 Bewegung zurück, und ihr Fehler kostet einen Sprung.
 
+*Am Effekt, an Textur oder Mesh erkennen?* (sein Hinweis und Vorschlag vom 20.11.2026: „meist enteht in der
+anfangsphase dort ein vfx, um den rand optisch anzuzeigen oder die texturbeschaffenheit oder meshes sind ort anders
+(stecheln, zacken …). kann man das erkennen?“; sein Hinweis desselben Tages: „manche arenen sind eckig, andere rund,
+einige haben sonderformen“; A935.)
+- *Was der Client führt* (FFXIVClientStructs 80cb4a7b, 10.11.2026): Das Layout der Zone hält seine Teile getrennt nach
+  Art, darunter Effekte (`VfxLayoutInstance`: Lage, Drehung, Größe, Prüfsumme des Pfads), Gruppen mit Zeitleiste
+  (`SharedGroupLayoutInstance`: Lage, laufende Zeitleiste), Modelle (`BgPart`) und Kollision. Ein Rand, der beim Pull
+  erscheint, ist im Client ein Effekt oder eine Gruppe, die ein Kartenereignis einschaltet (ACT-Zeile 257).
+- *Was das sagt:* *dass* und *wo* etwas erscheint – der Mittelpunkt aus der Lage –, nicht, *wie weit* es reicht und
+  welche Form es hat. Die Ausdehnung steckt in der Effektdatei (Emitter, Partikel), und die sichtbare Linie ist nicht
+  zwingend die Linie, an der der Server trifft. Seine Formen – eckig, rund, Sonderform – lassen sich aus Lage und Größe
+  nicht ablesen.
+- *Beleg aus dem Vorbild:* BossModReborn (8d5ff8e21) liest dasselbe Ereignis (`OnMapEffect`/`OnEventEnvControl`, 237
+  Module) und trägt die Form danach von Hand ein – `new ArenaBoundsSquare(20f)` in D062Amalgam; kein Modul leitet sie
+  aus dem Effekt ab.
+- *In seinen Mitschnitten:* Kartenereignisse in fast jedem Inhalt, hundertfach (Second Board 1278, M4 400, Pilgrim's
+  Traverse 91–100 288) – auch Licht, Plattformen, Türen; allein ist das Ereignis kein Rand.
+- *Textur und Mesh (Stacheln, Zacken):* Das sind Modelle mit Material zum Zeichnen. Die Materialbits der Kollision, die
+  vnavmesh auswertet, heißen Durchflug, nicht landbar, nicht begehbar, Angelplatz – kein Schaden [Schätzung: Das Spiel
+  führt Schaden am Rand nur am Server; belegt ist, dass weder vnavmesh noch BossModReborn ein solches Bit lesen]. Haben sie Kollision, stehen sie in vnavmeshs Netz und gelten als
+  nicht begehbar; dann deckt sie die Bodenprüfung oben.
+- *Was die Grenze wirklich verrät:* der Treffer. Eine Todeswand trifft mit einer Ringaktion ohne Wirkzeit und ohne
+  Namen im Spielblatt; ihr Ursprung ist die Mitte. In seinen Mitschnitten trafen 452 verschiedene ungewirkte
+  Gegneraktionen Spieler, darunter 4 Ringe, alle mit Namen (Bastion of Twilight, Bog Bequest, Rapid Rotary, Growing
+  Circles of Ablution) – keine Todeswand. Der fehlende Name trennt beides.
+- *Daraus O3 in einer Form, die jede Form trägt:* je Gebiet die Trefferpunkte einer namenlosen Ringaktion ohne Wirkzeit,
+  um ihren Ursprung nach Richtung geordnet (Winkelsektoren); ein Landepunkt im selben Sektor mindestens so weit draußen
+  gilt als unsicher. Eckig, rund und Sonderform ergeben je Sektor ihren eigenen Abstand.
+- *Entscheidung:* Kein Erkennen am Effekt oder an der Textur – beides sagt nicht, wo die Grenze liegt. Als ersten
+  billigen Kontakt (archiv-todo.md) schreibt RSR jetzt jeden solchen Treffer einmal je Aktion und Gebiet in die Spur
+  („arena edge: …“, `ArenaEdgeWatch`); die Lernregel nach Sektoren folgt, wenn die Zeile im Spiel erscheint und ihre
+  Annahmen trägt (Ursprung in der Mitte, kein Name). Antithesen: (1) *kein Defekt* – richtig für Inhalte mit Modul, nicht
+  für neue Inhalte in den Tagen nach einem Patch, bevor BossMod Module hat; (2) *Option falsch* – eine namenlose
+  Ringaktion, die kein Rand ist, lernte einen falschen Rand; die Spur zeigt das, bevor eine Regel danach handelt;
+  (3) *ausgeliefert, und nichts ändert sich* – trifft der Rand niemanden, entsteht keine Zeile; das ist der erwünschte
+  Fall.
+
 | Anforderung | Kriterium | Stelle | Beleg | Messweg |
 |---|---|---|---|---|
 | Kein Sprung von RSR über einen Abgrund | Landepunkt ohne Netz → abgelehnt | `ActionTargetInfo.MovementSafety`, `DataCenter.FloorAt` | vnavmesh `IsPointOnMesh` | Spurzeile „… lands where vnavmesh has no floor“ |

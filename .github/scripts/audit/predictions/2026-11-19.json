@@ -131,5 +131,12 @@
   "kind": "each",
   "situation": "movement check: .+ held - ",
   "match": "movement check: .+ held - .+$"
+ },
+ {
+  "id": "arena-edge-line-form",
+  "archive": "A935",
+  "kind": "each",
+  "situation": "arena edge: nameless ring",
+  "match": "arena edge: nameless ring #[0-9]+ without cast reached .+ [0-9]+[.,][0-9] y from its source, which reaches [0-9]+ y$"
  }
 ]

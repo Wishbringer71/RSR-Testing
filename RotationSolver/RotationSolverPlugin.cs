@@ -219,6 +219,7 @@ public sealed partial class RotationSolverPlugin : IAsyncDalamudPlugin
 		DataCenter.ResetHealMeasurements();
 		PositionalWatch.AreaChanged();
 		PositionalMove.AreaChanged();
+		ArenaEdgeWatch.AreaChanged();
 		DynamicRotation.AreaChanged();
 
 		if (id == 0)

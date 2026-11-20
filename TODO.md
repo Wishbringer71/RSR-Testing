@@ -140,7 +140,13 @@ nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigt
 
 ## Warten auf Daten oder Fremde
 
-- **Todeswand ohne BossMod-Modul lernen** (A934, O3 in Konzept 05, „Arenagrenzen ohne BossMod-Modul“). Abgrund und
+- **Todeswand ohne BossMod-Modul lernen** (A934, O3 in Konzept 05, „Arenagrenzen ohne BossMod-Modul“). Sein Hinweis
+  und Vorschlag vom 20.11.2026, in Arbeit (A935): „meist enteht in der anfangsphase dort ein vfx, um den rand optisch
+  anzuzeigen oder die texturbeschaffenheit oder meshes sind ort anders (stecheln, zacken oder was, wasdas spielfeld
+  nicht hat. kann man das erkennen? voller loop“; sein Hinweis desselben Tages: „manche arenen sind eckig, andere rund,
+  einige haben sonderformen“. Geprüft in A935: Effekt und Textur sagen nicht, wo die Grenze liegt; als erster Kontakt dient
+  die Spurzeile „arena edge: …“. Auflösung jetzt: diese Zeile in einem Upload, dann die Lernregel nach
+  Winkelsektoren im Loop. Abgrund und
   Löcher prüft vnavmesh; eine Todeswand ohne Modul kennt RSR nicht – sie ist keine Kollision, und ihr Blatt nennt den
   inneren Radius nicht. Im Kampf: Ein Sprung von RSR könnte in sie landen. Auflösung: der erste beobachtete Treffer
   einer namenlosen Ringaktion ohne Wirkzeit auf ihn oder ein Mitglied ohne Modul (ACT-Mitschnitt); dann Lernregel je

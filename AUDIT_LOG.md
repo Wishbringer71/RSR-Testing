@@ -27087,6 +27087,26 @@ Wand) bleibt ein Rücksprung, der über die Kante landen würde, aus, und die Sp
 floor“; auf festem Boden keine solche Zeile. Widerlegt, wenn diese Zeile auf Boden erscheint, auf dem er steht.
 *Prüfgrad:* Quellen, Code, Compile, CI; im Spiel nicht beobachtet.
 
+### A935 · Arenarand am Effekt, an Textur oder Mesh erkennen? Grundlagen, Treffer als erster Kontakt (20.11.2026)
+
+*Anlass:* sein Hinweis und Vorschlag vom 20.11.2026: „meist enteht in der anfangsphase dort ein vfx, um den rand
+optisch anzuzeigen oder die texturbeschaffenheit oder meshes sind ort anders (stecheln, zacken oder was, wasdas
+spielfeld nicht hat. kann man das erkennen? voller loop“; sein Hinweis desselben Tages: „manche arenen sind eckig,
+andere rund, einige haben sonderformen“ (TODO, Konzept 05).
+*Grundlagen:* FFXIVClientStructs 80cb4a7b (Layout: `VfxLayoutInstance` mit Lage, Drehung, Größe, Pfadprüfsumme;
+`SharedGroupLayoutInstance` mit Zeitleiste), BossModReborn 8d5ff8e21 (237 Module lesen das Kartenereignis, die Form
+steht von Hand im Modul), vnavmesh 38d2a24 (Materialbits ohne Schaden), seine 20 Mitschnitte: Kartenereignisse in
+fast jedem Inhalt; 452 ungewirkte Gegneraktionen trafen Spieler, 4 davon Ringe, alle benannt (Spielblatt über
+xivapi, 20.11.2026); keine Todeswand.
+*Ergebnis:* Konzept 05, „Am Effekt, an Textur oder Mesh erkennen?“: Effekt und Gruppe zeigen dass und wo, nicht Form und
+Ausdehnung; Textur trägt keinen Schaden im Client; Kollision deckt vnavmesh. Die Grenze verrät erst der Treffer – eine
+namenlose Ringaktion ohne Wirkzeit. Gebaut nur der erste Kontakt: `ArenaEdgeWatch` schreibt einen solchen Treffer auf
+ein Gruppenmitglied einmal je Aktion und Gebiet. Lernregel nach Winkelsektoren (jede Form) offen bis zur ersten Zeile.
+*Vorhersage:* `predictions/2026-11-19.json`, „arena-edge-line-form“. Im Kampf: In einem Inhalt mit Todeswand, deren
+Rand ein Mitglied berührt, erscheint die Zeile mit einem Abstand nahe der sichtbaren Linie; in seinen bisherigen
+Inhalten keine. Widerlegt, wenn die Zeile eine benannte Mechanik zeigt oder einen Abstand mitten in der Arena.
+*Prüfgrad:* Quellen, Mitschnitte, Code, Compile, CI; im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

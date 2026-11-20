@@ -67,7 +67,8 @@ What this release changes in the fight. For the whole distance from upstream, se
   where you land: a jump over an abyss or into a hole in the arena stays out, with or without a BossMod module. Where
   vnavmesh has no mesh for the place you stand, nothing changes. The setting is now "Check where movement actions
   land", on by default; it was off and named after BossModReborn alone. The trace writes
-  "movement check: ... held - ...".
+  "movement check: ... held - ...". When a nameless enemy ring without a cast - a death wall - reaches you or a party
+  member, the trace writes "arena edge: ..." once per action and area.
 
 ## Single jobs
 
