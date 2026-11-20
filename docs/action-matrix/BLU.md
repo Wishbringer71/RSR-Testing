@@ -8,7 +8,7 @@ Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-20; nic
 
 ## Nutzung
 
-direkt: 120 · ungenutzt: 17
+direkt: 122 · ungenutzt: 15
 
 | Stufe | Aktion | Id | Art | Nutzung |
 |---|---|---|---|---|
@@ -16,7 +16,7 @@ direkt: 120 · ungenutzt: 17
 | Job | 4-tonze Weight (`_4TonzeWeightPvE`) | 11384 | Spell | direkt |
 | Job | Abyssal Transfixion (`AbyssalTransfixionPvE`) | 18300 | Spell | direkt |
 | Job | Acorn Bomb (`AcornBombPvE`) | 11392 | Spell | ungenutzt |
-| Job | Addle (`AddlePvE`) | 7560 | Ability | ungenutzt |
+| Job | Addle (`AddlePvE`) | 7560 | Ability | direkt |
 | Job | Aetherial Spark (`AetherialSparkPvE`) | 23281 | Spell | direkt |
 | Job | Aetheric Mimicry (`AethericMimicryPvE`) | 18322 | Spell | ungenutzt |
 | Job | Aetheric Mimicry (`AethericMimicryPvE_19238`) | 19238 | Spell | ungenutzt |
@@ -67,7 +67,7 @@ direkt: 120 · ungenutzt: 17
 | Job | Flame Thrower (`FlameThrowerPvE`) | 11402 | Spell | direkt |
 | Job | Flying Frenzy (`FlyingFrenzyPvE`) | 11389 | Spell | direkt |
 | Job | Flying Sardine (`FlyingSardinePvE`) | 11423 | Spell | direkt |
-| Job | Force Field (`ForceFieldPvE`) | 34575 | Spell | ungenutzt |
+| Job | Force Field (`ForceFieldPvE`) | 34575 | Spell | direkt |
 | Job | Frog Legs (`FrogLegsPvE`) | 18307 | Spell | direkt |
 | Job | Glass Dance (`GlassDancePvE`) | 11430 | Ability | direkt |
 | Job | Glower (`GlowerPvE`) | 11404 | Spell | direkt |
@@ -357,7 +357,6 @@ Der Wirktext lässt Werte aus, die eine Eigenschaft oder die Stufe setzt (Potenz
 Maschinelle Liste; die Bewertung je Eintrag steht im Konzept.
 
 - Acorn Bomb (`AcornBombPvE`, Spell): ungenutzt
-- Addle (`AddlePvE`, Ability): ungenutzt
 - Aetheric Mimicry (`AethericMimicryPvE`, Spell): ungenutzt
 - Aetheric Mimicry (`AethericMimicryPvE_19238`, Spell): ungenutzt
 - Aetheric Mimicry (`AethericMimicryPvE_19239`, Spell): ungenutzt
@@ -365,7 +364,6 @@ Maschinelle Liste; die Bewertung je Eintrag steht im Konzept.
 - Apokalypsis (`ApokalypsisPvE`, Ability): ungenutzt
 - Avail (`AvailPvE`, Spell): ungenutzt
 - Final Sting (`FinalStingPvE`, Spell): ungenutzt
-- Force Field (`ForceFieldPvE`, Spell): ungenutzt
 - Laser Eye (`LaserEyePvE`, Spell): ungenutzt
 - Mind Blast (`MindBlastPvE`, Spell): ungenutzt
 - Perpetual Ray (`PerpetualRayPvE`, Spell): ungenutzt

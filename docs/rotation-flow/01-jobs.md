@@ -626,6 +626,20 @@ statt Reihenfolge" und „Mondflöte"):
 - Synergie: Bestialischer Zorn aus 51 bis 69 % LP führt unter die Schwelle; das bleibt Sache der Option, die nur prüft,
   dass die LP über seinen Kosten liegen.
 
+**Minderung: Stumpfsinn, Kraftfeld, Absichern** (Befund 20.11.2026, A943)
+- *Stumpfsinn (Addle, 7560):* „Lowers target's physical damage dealt by 5% and magic damage dealt by 10%“. Der Blaumagier
+  fragte es nie; jeder andere Magier legt es über dieselbe Regel (`UseAddle`, zentral auf `CustomRotation`: vor
+  vorhergesagtem Schaden oder auf einem Rudel erneuert, sonst wenn der Abwehrzweig offen ist und das Ziel es nicht trägt;
+  Konzept 02, „Identisch in allen vier“). Der Blaumagier nutzt sie jetzt in beiden Abwehrzweigen; die vier Kopien der
+  Regel bei Beschwörer, Rotmagier, Piktomant und Schwarzmagier rufen denselben Helfer.
+- *Kraftfeld (34575):* 10 s „either Physical Vulnerability Down or Magic Vulnerability Down“, je 50 % weniger
+  erlittener Schaden dieser Art, eigene Abklingzeit. Welche der beiden Wirkungen kommt, sagt der Text nicht (unbelegt);
+  auch dann halbiert es eine der beiden Schadensarten des angekündigten Treffers. Es steht im Abwehrzweig für Einzelziele
+  nach Drachenkraft, auf den Spieler selbst – derselbe Zweig, der für einen Tankbuster auf ihn öffnet.
+- *Absichern (18306):* lenkt den Schaden, der dem Spieler gilt, 12 s auf ein Mitglied in 10 Yalm, „Does not activate with
+  certain attacks“ ohne Liste. Bewusst nicht: Es verschiebt Schaden auf einen anderen, dessen Überleben RSR nicht
+  vorhersagt, und welche Angriffe es nicht deckt, sagt keine Quelle (CLAUDE.md, „Spielweise“: Sicherheit der Gruppe).
+
 **Matschkuchen und Reinemachen: Erhaltung des Tanks aus dem Rudel** (Befund 20.11.2026, A942)
 - Wirktexte: Mjam Mjam Matschkuchen (34569) 100 Potenz auf Ziel und Umgebung, jeder weitere 50 % weniger, dazu Begrimed
   (10 Potenz je Tick, 9 s). Großes Reinemachen (34570) 220 auf alle nahen Gegner, jeder weitere 50 % weniger; je Gegner

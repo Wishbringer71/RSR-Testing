@@ -119,14 +119,17 @@ public sealed class BLU_Reborn : BlueMageRotation
 		return base.HealSingleAbility(nextGCD, out act);
 	}
 
+	// Addle as for every caster (concept 01, "Minderung", A943).
+	[RotationDesc(ActionID.AddlePvE)]
 	protected override bool DefenseAreaAbility(IAction nextGCD, out IAction? act)
 	{
-		return base.DefenseAreaAbility(nextGCD, out act);
+		return UseAddle(out act) || base.DefenseAreaAbility(nextGCD, out act);
 	}
 
+	[RotationDesc(ActionID.AddlePvE)]
 	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
 	{
-		return base.DefenseSingleAbility(nextGCD, out act);
+		return UseAddle(out act) || base.DefenseSingleAbility(nextGCD, out act);
 	}
 
 	#endregion
@@ -1044,6 +1047,12 @@ public sealed class BLU_Reborn : BlueMageRotation
 		}
 
 		if (DragonForcePvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		// Halves one of the two kinds of damage for 10 s; which one its text does not say (concept 01, "Minderung", A943).
+		if (ForceFieldPvE.CanUse(out act, targetOverride: TargetType.Self))
 		{
 			return true;
 		}

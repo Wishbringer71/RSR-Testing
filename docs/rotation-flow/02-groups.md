@@ -574,8 +574,8 @@ flowchart TD
 
 ### Identisch in allen vier
 
-1. **Addle-Sustain** über `ShouldSustainMitigationDebuff(StatusID.Addle)` in
-   beiden Defense-Slots (beim Beschwörer über `TryAddleBeforeDamage`).
+1. **Addle-Sustain** über `UseAddle` (`ShouldSustainMitigationDebuff(StatusID.Addle)`, sonst Addle ohne Ziel-Status)
+   in beiden Defense-Slots; derselbe Helfer beim Blaumagier (A943).
 2. **Ein Zustandsautomat als Kern**, Filler nur als Rest.
 
 ### Wo die Gruppe auseinanderläuft

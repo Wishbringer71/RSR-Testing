@@ -124,13 +124,7 @@ public class BLM_Default : BlackMageRotation
 			return true;
 		}
 
-		if (ShouldSustainMitigationDebuff(StatusID.Addle)
-			&& AddlePvE.CanUse(out act, skipStatusProvideCheck: true))
-		{
-			return true;
-		}
-
-		if (AddlePvE.CanUse(out act))
+		if (UseAddle(out act))
 		{
 			return true;
 		}
@@ -146,13 +140,7 @@ public class BLM_Default : BlackMageRotation
 			return true;
 		}
 
-		if (ShouldSustainMitigationDebuff(StatusID.Addle)
-			&& AddlePvE.CanUse(out act, skipStatusProvideCheck: true))
-		{
-			return true;
-		}
-
-		if (AddlePvE.CanUse(out act))
+		if (UseAddle(out act))
 		{
 			return true;
 		}

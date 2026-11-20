@@ -27373,6 +27373,31 @@ binnen eines GCD Zeile 22 mit 34570, danach Zeile 26 mit Spick-and-span auf dem 
 einzelnes Ziel fällt oder 34570 ausbleibt. Ohne Zeile im `DefenseTrace.log`, deshalb nicht maschinenlesbar.
 *Prüfgrad:* Wirktexte, Code, Compile, Prüfskripte; Laufzeit nicht beobachtet.
 
+### A943 · Addle einmal für alle Magier und den Blaumagier; Kraftfeld; Absichern bewusst nicht (20.11.2026)
+
+*Anlass:* TODO „Blaumagier: ungenutzte Zauber“, Minderung.
+*Befund:* Der Blaumagier fragte Stumpfsinn (Addle) nie; Beschwörer, Rotmagier, Piktomant und Schwarzmagier führten
+dieselbe Addle-Regel je als eigene Kopie (Fork, 00a426b14 und Folgecommits; Upstream hat sie nicht), der Beschwörer
+unter eigenem Namen (`TryAddleBeforeDamage`).
+*Gebaut:* `CustomRotation.UseAddle` (Erneuern vor Vorhersage oder auf dem Rudel, sonst Addle ohne Zielstatus); die sechs
+Stellen der vier Magier rufen ihn, der Blaumagier in beiden Abwehrzweigen. Kraftfeld (34575, 10 s, 50 % weniger einer
+der beiden Schadensarten – welche, sagt der Text nicht) im Abwehrzweig für Einzelziele nach Drachenkraft, auf sich.
+*Verhalten der vier Magier:* unverändert; der Helfer ist die bisherige Bedingung in derselben Reihenfolge (am Diff
+geprüft: erst Erneuern mit `skipStatusProvideCheck`, dann `CanUse`; beim Piktomanten weiter hinter `BurstDefense`).
+*Bewusst nicht:* Absichern (18306) – verschiebt den Schaden auf ein Mitglied, dessen Überleben RSR nicht vorhersagt, und
+deckt „certain attacks“ nicht, ohne Liste.
+*Im Kampf anders:* Der Blaumagier legt Addle, sobald ein Flächenangriff oder ein Tankbuster angekündigt ist und das Ziel
+es nicht trägt, und hält es auf einem Rudel; vor einem Tankbuster auf ihn kommt Kraftfeld nach Drachenkraft.
+*Falsifikation:* Kein Defekt? Widerlegt: kein Aufruf. Option falsch? Addle von zwei Magiern übereinander verhindert
+`CanUse` über den Zielstatus wie bei den anderen Magiern. Kraftfeld mit der falschen Wirkung halbiert nichts vom Treffer
+– Preis ein GCD, nur wenn der Zweig für einen Treffer auf den Spieler offen ist. Ausgeliefert, und nichts ändert sich?
+Wenn Kraftfeld nicht im Set liegt; Addle ist eine Rollenaktion und liegt immer bereit.
+*Vorhersage:* In einem ACT-Mitschnitt eines Blaumagiers zeigt Zeile 21 Addle (7560) vom Spieler zwischen dem Beginn
+eines gegnerischen Flächenzaubers (Zeile 20) und seinem Treffer, wenn das Ziel Addle nicht trägt; widerlegt, wenn sie in
+solchen Lagen ausbleibt. Von Hand zu prüfen; eine maschinenlesbare Vorhersage im `DefenseTrace.log` habe ich nicht
+eingerichtet.
+*Prüfgrad:* Wirktexte, Code, Compile, Prüfskripte; Laufzeit nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
