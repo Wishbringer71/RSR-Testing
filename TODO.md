@@ -44,8 +44,6 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
   - die Setverbesserung für Ewige Flammen (heute nur Zauber mit Abklingzeit).
   Bewusst nicht: Schlussstich, Selbstzerstörung, Rotation (stößt die Gruppe weg); Äther-Mimikry wählt der Spieler.
   *Nächster Schritt:* je Zauber Wirktext, Konzept 01, Loop. *Konzept:* 01, „Blaumagier".
-- **Beastmaster: Cloud Skim nie gefragt** (Aktionsmatrix: vier Fassungen „ungenutzt"). *Nächster Schritt:* Wirktext und
-  Begleiter, die ihn tragen, gegen Konzept 21. *Konzept:* 21.
 
 ## Technische Schuld
 

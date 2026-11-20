@@ -1451,7 +1451,9 @@ Beastmaster noch, nicht alle Fähigkeiten stehen am Anfang zur Verfügung.
   (Versteinerung), Silkscreen und Syrup (Fessel), Formic Pheromones und Regurgitate (Verlangsamung), Pins and Nails
   (Lähmung), Bad Breath (alle drei).
 - *Borrow nach Familie:* Beastkin – Beastskin (−25 % physischer Schaden, +5 % kritisch, 30 s); Vilekin – Vileskin (Block
-  100 %, kein Rückstoß); Cloudkin – Cloud Skim (Bewegung); Seedkin – Seedsower (Gegner −10 % Schaden, Gift); Wavekin –
+  100 %, kein Rückstoß); Cloudkin – Cloud Skim (Bewegung in die Richtung, die der Spieler wählt, +5 % Ausweichen 60 s; RSR
+  drückt ihn nie, weil er ihn aus seiner Stellung holt – CLAUDE.md, „Spielweise“ –, und 5 % Ausweichen tragen keinen
+  Druck; drückt er ihn selbst, prüft Konzept 05 den Landeort; A940); Seedkin – Seedsower (Gegner −10 % Schaden, Gift); Wavekin –
   Quelling Wave (350, TP); Scalekin – Scaleskin (Barriere 8 % gegen Magie); Soulkin – Soul Crush (Unterbrechung, 1.000);
   Ashkin – Scouring Ash (reinigt, heilt 10 %).
 

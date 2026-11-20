@@ -27310,8 +27310,10 @@ der Zauber nicht im Set liegt; die Setverbesserung nimmt ihn nicht auf (TODO).
 *Vorhersage:* Im ersten ACT-Mitschnitt eines Blaumagiers mit Ewige Flammen im Set zeigt Zeile 26 den Status 3643 auf dem
 Boss vom ersten Drittel des Kampfes bis zu seinem Ende, einmal gesetzt; widerlegt, wenn er fehlt oder je Ziel mehrfach
 neu gesetzt wird. Ohne Zeile im `DefenseTrace.log`, deshalb nicht maschinenlesbar.
-*Offen (TODO, „Blaumagier: ungenutzte Zauber“, „Beastmaster: Cloud Skim nie gefragt“):* die übrigen 18 Zauber des
-Blaumagiers und Cloud Skim.
+*Beastmaster, Cloud Skim:* Wirktext „Move quickly in the selected direction. Increases evasion by 5%“ – eine Bewegung in die
+Richtung, die der Spieler wählt; RSR drückt sie nicht (CLAUDE.md, „Spielweise“), 5 % Ausweichen tragen keinen Druck.
+Kein Defekt; Grund in Konzept 01, Borrow nach Familie.
+*Offen (TODO, „Blaumagier: ungenutzte Zauber“):* die übrigen 18 Zauber des Blaumagiers.
 *Prüfgrad:* Wirktexte, Blatt, Code, Compile; Laufzeit nicht beobachtet.
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
