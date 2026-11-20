@@ -27461,6 +27461,15 @@ Rubin-Dynamo zurück und hat das Tor für den Treffer; ein Heiler-Blaumagier gib
 *Ungeprüft:* Diese Korrekturen sieht keine weitere Prüfrunde.
 *Prüfgrad:* Code, Compile, Prüfskripte; Laufzeit nicht beobachtet.
 
+### A947 · Auftragsende 20.11.2026: Upstream, Quellen (20.11.2026)
+
+*Upstream:* `check_sync_state.py` nach Fetch: 0 ausstehend gegen `upstream/main`, Arbeits-Branch und `main` auf Stand.
+*Quellen:* `check_source_updates.py`: 41 Quellen, 39 aktuell, 1 bewegt, 1 nicht erreichbar (priestkos/FrontlineAdvisor, wie
+zuvor). dajoey/lalalazy cfc5ac54e → 8264d021d (PvPSolver 0.1.2.21): überträgt Upstream 996f28183 auf PvPSolver
+(Tränke lesen die Daten der Normalqualität, kein Trank im Tod, kein automatischer Trank in PvP). Hier seit dem Merge von
+996f28183 enthalten; `UseHpPotion` und `UseMpPotion` sperren PvP (`CustomRotation_Items.cs`). Kein Nutzen für RSR;
+aufgezeichnet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
