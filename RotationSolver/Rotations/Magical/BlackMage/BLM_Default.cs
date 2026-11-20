@@ -153,7 +153,8 @@ public class BLM_Default : BlackMageRotation
 	[RotationDesc(ActionID.TriplecastPvE, ActionID.LeyLinesPvE, ActionID.RetracePvE)]
 	protected override bool GeneralAbility(IAction nextGCD, out IAction? act)
 	{
-		if (IsMoving && HasHostilesInRange && InCombat && TriplecastPvE.CanUse(out act, usedUp: true))
+		// Triplecast, then Swiftcast, before a spell with a cast while moving (concept 14, A951).
+		if (InstantWhileMoving(nextGCD, out act))
 		{
 			return true;
 		}
@@ -174,21 +175,15 @@ public class BLM_Default : BlackMageRotation
 	[RotationDesc(ActionID.SwiftcastPvE, ActionID.TriplecastPvE, ActionID.LucidDreamingPvE, ActionID.AmplifierPvE)]
 	protected override bool AttackAbility(IAction nextGCD, out IAction? act)
 	{
+		// Blizzard III into the ice made instant - "ideally in Umbral Ice I", after Transpose. Two stacks of Umbral Ice, which
+		// this asked for, never stand there: Transpose leaves one, Blizzard III three (concept 14, A951).
+		if (InstantForIceEntry(nextGCD, out act))
+		{
+			return true;
+		}
+
 		if (InUmbralIce)
 		{
-			if (UmbralIceStacks == 2 && !HasFire
-				&& !IsLastGCD(ActionID.ParadoxPvE))
-			{
-				if (SwiftcastPvE.CanUse(out act))
-				{
-					return true;
-				}
-
-				if (TriplecastPvE.CanUse(out act, usedUp: true))
-				{
-					return true;
-				}
-			}
 
 			if (UmbralIceStacks < MaxSoulCount && LucidDreamingPvE.CanUse(out act))
 			{

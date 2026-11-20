@@ -27539,6 +27539,35 @@ es keinen Vergleich. Seine These ist damit für zwei Jobs belegt und für die ü
 stammt von mir und fiel vor seinem Ziel vom 19.11.2026 – nach ihm gilt ein Rückstand auch im Promillebereich.
 *Umfang:* 3 von 23 Jobs mit einem Modell gegen The Balance, 2 davon mit Potenzurteil.
 
+### A951 · Seine Meldung: Schwarzmagier nutzt Spontaneität kaum (20.11.2026)
+
+*Meldung:* „schwarzmagier scheint keine spontanität für rotation zu benutzen“. Name belegt (`action_names_de.json`:
+Spontaneität = Swiftcast).
+*Gemessen:* sein Mitschnitt vom 15.11.2026 (Puppe, 11:19 bis 11:31, Build 9036b6874; Ids aus `action_ids.py BLM`): 87
+Fire IV, 12 Despair, 12 Flare Star, 10 Transpose, 10 Blizzard III, 7 Triplecast, 3 Swiftcast – alle drei direkt nach Flare
+Star. Swiftcast: 60 s Abklingzeit (xivapi, `Recast100ms` 600, 20.11.2026).
+*Ursache am Code:* `BLM_Default.AttackAbility` drückte Swiftcast nur im Eis bei genau zwei Stapeln Umbral Ice (Upstream
+928d41efe, „rewrite the blm“). Transpose lässt einen Stapel (Wirktext: „Swaps Astral Fire with a single Umbral Ice“),
+Blizzard III drei; zwei stehen in dieser Rotation nicht an. Im Laufen nutzte RSR nur Triplecast. Der Vorbehalt für
+Wiederbelebungen war nicht die Ursache: Der Schwarzmagier hat keine (`SwiftcastForDamage` gilt immer).
+*Quelle:* The Balance, Black Mage Basic Guide (Patch 7.4; vom Abrufwerkzeug gelesen, wörtliche Ausschnitte bis 125
+Zeichen, 20.11.2026): Triplecast und Swiftcast seit 7.2 „primarily used for movement/weaving“; Blizzard III beim Eintritt
+ins Eis „ideally in Umbral Ice I“, „made instant via Swiftcast or Triplecast“; kein fester Platz in der Standardfolge.
+*Gebaut (Ebene aller Schwarzmagier-Rotationen, `BlackMageRotation.Instants.cs`):* `InstantForIceEntry` – nächster GCD
+Blizzard III im Eis, nicht ohnehin sofort: erst Swiftcast, dann Triplecast; `InstantWhileMoving` – im Laufen vor einem
+Zauber mit Wirkzeit: erst Triplecast, dann Swiftcast. `BLM_Default` und `BLM_RP` rufen beide; die Zwei-Stapel-Bedingung
+entfällt, ebenso in `BLM_RP` Swiftcast im Eis vor jedem beliebigen Zauber.
+*Im Kampf anders:* Nach Transpose kommt Blizzard III sofort statt mit seiner langsamen Wirkzeit im Eis; im Laufen
+bleibt der Schwarzmagier mit Swiftcast einen Zauber länger am Wirken, wenn Triplecast aufgebraucht ist.
+*Falsifikation:* Kein Defekt? Widerlegt: 3 Swiftcast in 12,5 min bei 60 s Abklingzeit. Option falsch? Swiftcast im Laufen
+verbraucht ihn vor dem nächsten Eintritt ins Eis – dort springt Triplecast ein; beide fehlen nur, wenn beides verbraucht
+ist, dann wird Blizzard III gewirkt wie bisher. Ausgeliefert, und nichts ändert sich? Wenn die Rotation den Eintritt ins Eis
+ohne Transpose über Blizzard III in Astral Fire nimmt; dann ist der nächste GCD Blizzard III außerhalb des Eises, und es
+bleibt beim Wirken (The Balance: dort „not worthwhile“).
+*Vorhersage:* Im nächsten ACT-Mitschnitt eines Schwarzmagiers steht Swiftcast (1D89) oder Triplecast (1CFD) vor fast jedem
+Blizzard III (9A) nach Transpose (95); widerlegt, wenn Swiftcast weiter nur vereinzelt kommt.
+*Prüfgrad:* Mitschnitt, Wirktext, Blatt, Code, Compile, Prüfskripte; Laufzeit nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

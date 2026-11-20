@@ -95,7 +95,6 @@ direkt: 38 · über andere Aktion: 2
 | Freeze | Regel prüft | Blizzard IV |
 | Retrace | Regel prüft | Ley Lines |
 | Retrace | StatusNeed LeyLines | Ley Lines |
-| Swiftcast | Regel prüft | Paradox |
 | Thunder II | Regel sperrt vorher | Thunder III |
 | Thunder II | Regel sperrt vorher | Thunder IV |
 | Thunder II | Regel sperrt vorher | Thunder |
@@ -108,7 +107,6 @@ direkt: 38 · über andere Aktion: 2
 | Thunder | Regel sperrt vorher | Thunder IV |
 | Transpose | Regel prüft | Fire III |
 | Transpose | Regel prüft | Paradox |
-| Triplecast | Regel prüft | Paradox |
 | Triplecast | Regel sperrt vorher | Paradox |
 | Triplecast | Regel prüft | Swiftcast |
 | Triplecast | Regel sperrt vorher | Swiftcast |
