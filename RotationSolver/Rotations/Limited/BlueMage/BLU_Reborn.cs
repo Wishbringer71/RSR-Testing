@@ -26,6 +26,10 @@ public sealed class BLU_Reborn : BlueMageRotation
 	[RotationConfig(CombatType.PvE, Name = "Use Low Chance abilities")]
 	public bool LowChance { get; set; } = false;
 
+	[RotationConfig(CombatType.PvE, Name = "Use Wild Rage for damage",
+		Tooltip = "In a fight: Wild Rage deals 500 to a pack for half your maximum HP. Skipped as tank or while a hit is announced.")]
+	public bool UseWildRage { get; set; } = false;
+
 	[RotationConfig(CombatType.PvE, Name = "Moon Flute only when it is safe: not as tank or healer, no member in danger, no raidwide or tankbuster on you announced within its window",
 		Tooltip = "In a fight: Moon Flute also waits under tank or healer mimicry, while a member is or would be "
 			+ "in danger, and before an announced raidwide or tankbuster.\nOff: only its damage value decides.")]
@@ -612,12 +616,17 @@ public sealed class BLU_Reborn : BlueMageRotation
 			return true;
 		}
 
-		if (Player?.GetEffectiveHpPercent() <= 20f)
+		// Half the player's HP for 500 potency: only for a player who chose damage over safety, never as tank, never while a
+		// hit on a member is announced (concept 01, "Bewusst nicht", A941). Its check holds HP above the stated cost.
+		if (UseWildRage && !IsTank && !AreaDefenseDanger(out _) && WildRagePvE.CanUse(out act) && OverSonicBoom(WildRagePvE))
 		{
-			if (RevengeBlastPvE.CanUse(out act))
-			{
-				return true;
-			}
+			return true;
+		}
+
+		// Raised potency below the stated HP share, without a price: the heal GCDs ran before this (concept 01, "Rachestoß").
+		if (RevengeBlastPvE.CanUse(out act) && RaisedPotencyBeatsFiller(RevengeBlastPvE))
+		{
+			return true;
 		}
 
 		if (WhiteDeathPvE.CanUse(out act))

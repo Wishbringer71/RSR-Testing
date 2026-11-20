@@ -843,7 +843,8 @@ public partial class BlueMageRotation
 	{
 		setting.AttackTypeOverride = AttackType.Physical;
 		setting.AspectOverride = Aspect.Blunt;
-		setting.ActionCheck = () => Player?.GetHealthRatio() > 0.2f;
+		// Its raised potency needs HP below the share its text states; the old "> 0.2" never met the rotation's "<= 20" (A941).
+		setting.ActionCheck = static () => HealthBelowStated(ActionID.RevengeBlastPvE);
 	}
 
 	static partial void ModifyAngelWhisperPvE(ref ActionSetting setting)
@@ -1272,10 +1273,10 @@ public partial class BlueMageRotation
 
 	static partial void ModifyWildRagePvE(ref ActionSetting setting)
 	{
-		//Need data
 		setting.AttackTypeOverride = AttackType.Physical;
 		setting.AspectOverride = Aspect.Blunt;
-		setting.ActionCheck = () => Player?.GetEffectiveHpPercent() > 50f;
+		// The cost its text states, against HP without shields: a shield does not pay it (A941).
+		setting.ActionCheck = static () => HealthAboveStatedCost(ActionID.WildRagePvE);
 		setting.IsFriendly = false;
 		setting.CreateConfig = () => new ActionConfig()
 		{

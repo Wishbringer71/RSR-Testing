@@ -8,7 +8,7 @@ Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-20; nic
 
 ## Nutzung
 
-direkt: 117 · ungenutzt: 20
+direkt: 118 · ungenutzt: 19
 
 | Stufe | Aktion | Id | Art | Nutzung |
 |---|---|---|---|---|
@@ -144,7 +144,7 @@ direkt: 117 · ungenutzt: 20
 | Job | White Death (`WhiteDeathPvE`) | 23268 | Spell | direkt |
 | Job | White Knight's Tour (`WhiteKnightsTourPvE`) | 18310 | Spell | direkt |
 | Job | White Wind (`WhiteWindPvE`) | 11406 | Spell | direkt |
-| Job | Wild Rage (`WildRagePvE`) | 34568 | Spell | ungenutzt |
+| Job | Wild Rage (`WildRagePvE`) | 34568 | Spell | direkt |
 | Job | Winged Reprobation (`WingedReprobationPvE`) | 34576 | Spell | direkt |
 | Job | the Dragon's Voice (`TheDragonsVoicePvE`) | 11420 | Spell | direkt |
 | Job | the Look (`TheLookPvE`) | 11399 | Spell | direkt |
@@ -299,6 +299,7 @@ direkt: 117 · ungenutzt: 20
 | White Knight's Tour | Regel sperrt vorher | Missile |
 | White Knight's Tour | Regel sperrt vorher | the Ram's Voice |
 | White Knight's Tour | Regel sperrt vorher | Ultravibration |
+| Wild Rage | Regel sperrt vorher | Missile |
 | 1000 Needles | Regel sperrt vorher | Missile |
 | 4-tonze Weight | Regel sperrt vorher | the Ram's Voice |
 | 4-tonze Weight | Regel sperrt vorher | Ultravibration |
@@ -374,7 +375,6 @@ Maschinelle Liste; die Bewertung je Eintrag steht im Konzept.
 - Ruby Dynamics (`RubyDynamicsPvE`, Spell): ungenutzt
 - Self-destruct (`SelfdestructPvE`, Spell): ungenutzt
 - Sleep (`SleepPvE`, Spell): ungenutzt
-- Wild Rage (`WildRagePvE`, Spell): ungenutzt
 
 ## Abgleich Wirktext ↔ Code
 

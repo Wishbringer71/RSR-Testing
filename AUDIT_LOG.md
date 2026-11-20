@@ -27316,6 +27316,39 @@ Kein Defekt; Grund in Konzept 01, Borrow nach Familie.
 *Offen (TODO, „Blaumagier: ungenutzte Zauber“):* die übrigen 18 Zauber des Blaumagiers.
 *Prüfgrad:* Wirktexte, Blatt, Code, Compile; Laufzeit nicht beobachtet.
 
+### A941 · Blaumagier: Rachestoß fiel nie; Bestialischer Zorn als Option (20.11.2026)
+
+*Anlass:* TODO „Blaumagier: ungenutzte Zauber“, Unterpunkt Option für Bestialischen Zorn und Rachestoß (Konzept 01,
+„Bewusst nicht“), im Auftrag vom 20.11.2026 („todo weiter im vollen loop“).
+*Befund:* `BLU_Reborn.UseSituational` fragte Rachestoß nur bei effektiven LP von höchstens 20 %, seine Einstellung
+(`ModifyRevengeBlastPvE`, Upstream a1013370d, 17.11.2026) verlangte `GetHealthRatio() > 0.2` – beides gilt nie zugleich;
+die Matrix führte ihn als „direkt“, weil sie nur den Aufruf sieht, nicht dass er nie durchgeht (Surrogat). Bestialischer
+Zorn: eingestellt (`GetEffectiveHpPercent() > 50`), nie gefragt.
+*Wirktexte* (`ActionId.resx`, 20.11.2026): Rachestoß (18316) „potency of 50. Potency is increased to 500 when your HP is
+below 20%“; Bestialischer Zorn (34568) „potency of 500 for the first enemy, and 50% less for all remaining enemies.
+Consumes 50% of your maximum HP when executed“.
+*Eigene Einordnung berichtigt:* Konzept 01 legte am 03.11.2026 (e48db28e9, meine Ableitung, nicht seine Vorgabe) beide
+hinter eine Option „Schaden vor Sicherheit“. Für Rachestoß trug das keinen Grund: Er kostet keine LP, und die Heil-GCDs
+laufen vor `GeneralGCD` (`CustomRotation_GCD.cs`, Heilzweig vor dem allgemeinen Zweig) – er nimmt nur einen GCD, den die
+Heilregel dem Schaden überlassen hat. Er gilt jetzt ohne Option; Bestialischer Zorn bleibt hinter ihr (ab Werk aus).
+*Gebaut:* `ActionTooltip.TryRaisedPotencyLowHealth`, `TryStatedHealthCost`; `BlueMageRotation.HealthBelowStated`,
+`HealthAboveStatedCost` (LP ohne Schild, Anteil aus dem Text, keine feste 20 oder 50 mehr), `RaisedPotencyBeatsFiller`
+(erhöhte Potenz mal Carnivale-Faktor je Zeit gegen den Füller). Option „Use Wild Rage for damage“; mit ihr nicht unter
+Tank-Mimikry, nicht bei `AreaDefenseDanger`, nur wo `OverSonicBoom` ihn vorn sieht.
+*Im Kampf anders:* Fällt der Blaumagier unter ein Fünftel seiner LP und heilt RSR ihn in diesem GCD nicht, schlägt er mit
+500 statt Überschallknall (220) zu; mit eingeschalteter Option setzt er Bestialischen Zorn auf ein Rudel, solange er mehr
+als die Hälfte seiner LP hat und kein Treffer angekündigt ist, und gerät damit oft unter die Schwelle von Rachestoß.
+*Falsifikation:* Kein Defekt? Widerlegt am Code (zwei Bedingungen, die einander ausschließen). Option falsch? Verdrängt
+Rachestoß eine Heilung, wäre er ein Sicherheitsverlust – widerlegt an der Reihenfolge der Zweige; ein Schild, der die
+effektiven LP über die Schwelle hebt, nähme ihm nichts, weil das Spiel die LP liest. Ausgeliefert, und nichts ändert sich?
+Wenn er nicht im Set liegt oder das Ziel außer Reichweite ist; beides ist Lage, kein Fehler. Ob das Spiel Bestialischen
+Zorn unter 50 % LP sperrt oder tötet, ist unbelegt; die Regel lässt es nicht darauf ankommen.
+*Vorhersage:* In einem ACT-Mitschnitt eines Blaumagiers mit Rachestoß im Set zeigt Zeile 21 die Aktion 18316 nur, wenn die
+LP des Spielers davor (Feld 25/26 der Quelle) unter 20 % lagen, mit Schaden in der Größe von 500 Potenz; widerlegt, wenn
+er nie fällt, obwohl er unter 20 % ohne Heilung im Set lag. Ohne Zeile im `DefenseTrace.log`, deshalb nicht
+maschinenlesbar.
+*Prüfgrad:* Wirktexte, Code, Compile, Prüfskripte; Laufzeit nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

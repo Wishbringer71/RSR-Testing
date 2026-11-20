@@ -268,6 +268,38 @@ public partial class BlueMageRotation
 	}
 
 	/// <summary>
+	/// Whether the player's HP, shields left out, is below the share the text of <paramref name="action"/> states ("when your
+	/// HP is below 20%", Revenge Blast): the game reads HP, a shield does not lift it. False without a figure in the text.
+	/// </summary>
+	protected static bool HealthBelowStated(ActionID action)
+	{
+		return Player is { MaxHp: > 0 } player && ActionTooltip.TryStatedHealthBelow((uint)action, out var below)
+			&& player.CurrentHp < player.MaxHp * below;
+	}
+
+	/// <summary>
+	/// Whether the player's HP, shields left out, is above the share of maximum HP the text of <paramref name="action"/>
+	/// says it consumes (Wild Rage, 50%), so paying it leaves HP. False without a figure in the text.
+	/// </summary>
+	protected static bool HealthAboveStatedCost(ActionID action)
+	{
+		return Player is { MaxHp: > 0 } player && ActionTooltip.TryStatedHealthCost((uint)action, out var cost)
+			&& player.CurrentHp > player.MaxHp * cost;
+	}
+
+	/// <summary>
+	/// Whether Revenge Blast at its raised potency beats the filler in the time it takes, its target's Carnivale factor
+	/// counted (concept 01, "Rachestoß", A941). Asked after its <c>CanUse</c>, whose check holds the HP below the stated share.
+	/// </summary>
+	/// <param name="blast">Revenge Blast, asked after its <c>CanUse</c> chose its target.</param>
+	protected bool RaisedPotencyBeatsFiller(IBaseAction blast)
+	{
+		return ActionTooltip.TryRaisedPotencyLowHealth(blast.ID, out var raised)
+			&& TryFiller(out var fillerPotency, out var fillerTime)
+			&& raised * CarnivaleFactor(blast, blast.Target.Target) / SpellTime(blast) > fillerPotency / fillerTime;
+	}
+
+	/// <summary>
 	/// Whether the 15 s of Waning Nocturne put anyone at risk (concept 01, "Mondflöte", "Sicherheit"): tank or healer mimicry,
 	/// a member in the critical class or an announced area cast that would put one there, the player's own health carried
 	/// forward over the window into the critical class, a raidwide BossModReborn predicts within the window, or a tankbuster

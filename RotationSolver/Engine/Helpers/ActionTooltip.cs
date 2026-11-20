@@ -25,6 +25,8 @@ internal static class ActionTooltip
 	private static readonly Regex StatedPotency = new(@"potency of (?<value>\d[\d,]*)", RegexOptions.Compiled);
 	private static readonly Regex StatedCurePotency = new(@"Cure Potency: (?<value>\d[\d,]*)", RegexOptions.Compiled);
 	private static readonly Regex StatedHealthBelow = new(@"HP is below (?<value>\d{1,3})%", RegexOptions.Compiled);
+	private static readonly Regex StatedRaisedPotencyLowHealth = new(@"[Pp]otency is increased to (?<value>\d[\d,]*) when your HP is below", RegexOptions.Compiled);
+	private static readonly Regex StatedHealthCost = new(@"Consumes (?<value>\d{1,3})% of your maximum HP", RegexOptions.Compiled);
 	private static readonly Regex DealsWithGuard = new(@"Ignores the effects of Guard|Removes (?:target's )?Guard|Removes Guard from|defensive bonus of Guard",
 		RegexOptions.Compiled);
 	private static readonly Dictionary<uint, bool> _handlesGuard = [];
@@ -281,6 +283,27 @@ internal static class ActionTooltip
 	public static bool TryStatedHealthBelow(uint actionId, out float ratio)
 	{
 		var stated = TryStated(actionId, StatedHealthBelow, out var percent);
+		ratio = percent / 100f;
+		return stated;
+	}
+
+	/// <summary>
+	/// The potency the tooltip of <paramref name="actionId"/> says it rises to while the player's HP is below a share
+	/// ("Potency is increased to 500 when your HP is below 20%", Revenge Blast); the share itself comes from
+	/// <see cref="TryStatedHealthBelow"/>. False when it states none (concept 01, "Rachestoß", A941).
+	/// </summary>
+	public static bool TryRaisedPotencyLowHealth(uint actionId, out float potency)
+	{
+		return TryStated(actionId, StatedRaisedPotencyLowHealth, out potency);
+	}
+
+	/// <summary>
+	/// The share of the player's maximum HP the tooltip of <paramref name="actionId"/> says it consumes ("Consumes 50% of
+	/// your maximum HP when executed", Wild Rage), as a ratio; false when it states none (concept 01, A941).
+	/// </summary>
+	public static bool TryStatedHealthCost(uint actionId, out float ratio)
+	{
+		var stated = TryStated(actionId, StatedHealthCost, out var percent);
 		ratio = percent / 100f;
 		return stated;
 	}

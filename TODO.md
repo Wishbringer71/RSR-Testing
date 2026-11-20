@@ -36,8 +36,7 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
 
 - **Blaumagier: ungenutzte Zauber** (Aktionsmatrix 20.11.2026, A940). *Im Kampf:* Liegt einer dieser Zauber im Set, wirkt
   RSR ihn nie. Offen gegen Konzept 01, „Ziel-Rotation nach Rolle":
-  - Mjam Mjam Matschkuchen und Großes Reinemachen (Tank, Erhaltung) und die Option für Bestialischen Zorn und
-    Rachestoß (ab Werk aus) – das Konzept sieht sie vor, der Code nicht;
+  - Mjam Mjam Matschkuchen und Großes Reinemachen (Tank, Erhaltung) – das Konzept sieht sie vor, der Code nicht;
   - Stumpfsinn (Addle) und Kraftfeld als Minderung, Absichern als Deckung;
   - Geiststoß, Laserauge, Rubin-Dynamo, Apokalypsis, Perpetueller Strahl, Eichelbombe und Schlaf: je Wert gegen die
     Flächen- und Füllregel, Rückstoß und Kontrolle gegen die Sicherheit;

@@ -606,8 +606,25 @@ statt Reihenfolge" und „Mondflöte"):
 - *Bewusst nicht:*
   - Schlussstich, Selbstzerstörung, Assimilation (der Blaumagier stirbt; Assimilation bleibt hinter seinem Schalter,
     ab Werk aus).
-  - Bestialischer Zorn (kostet 50 % der max. HP) und Rachestoß (500 nur unter 20 % HP): nur als Option für Spieler,
-    die Schaden vor Sicherheit stellen, ab Werk aus (CLAUDE.md, „Spielweise").
+  - Bestialischer Zorn (kostet laut Wirktext 50 % der maximalen LP): nur als Option für Spieler, die Schaden vor
+    Sicherheit stellen, ab Werk aus (CLAUDE.md, „Spielweise"; Option „Use Wild Rage for damage“, A941). Auch mit Option
+    nur, wenn die LP über seinen Kosten liegen (ob das Spiel ihn darunter sperrt oder den Spieler tötet, ist unbelegt), nicht
+    unter Tank-Mimikry und nicht, solange `AreaDefenseDanger` einen Treffer auf ein Mitglied meldet; er geht vor dem
+    Füller nur, wo seine Potenz über alle Ziele je Zeit den Überschallknall schlägt (`OverSonicBoom`). Preis, den die
+    Option nennt: Ein Treffer, den nichts ankündigt, trifft danach einen Spieler mit halben LP.
+
+**Rachestoß: Schaden aus niedrigen LP, ohne Preis** (Befund 20.11.2026, A941)
+- Wirktext (Rachestoß, 18316): Potenz 50, „Potency is increased to 500 when your HP is below 20%“. Er kostet keine LP und
+  hält den Spieler nicht unten; die Heil-GCDs laufen vor `GeneralGCD` (`CustomRotation_GCD.cs`, Heilzweig vor dem
+  allgemeinen Zweig), also nimmt er nur einen GCD, den die Heilregel dem Schaden überlassen hat. Darum keine Option –
+  meine frühere Einordnung (03.11.2026, zusammen mit Bestialischem Zorn hinter einer Option) trug für ihn keinen Grund.
+- Defekt, den das behebt: Upstreams Rotation verlangte effektive LP von höchstens 20 %, seine Einstellung
+  (`ModifyRevengeBlastPvE`, a1013370d) LP über 20 % – beides zugleich gilt nie, er fiel nie.
+- Regel: nur, solange die LP ohne Schild unter dem Anteil liegen, den sein Text nennt (`TryStatedHealthBelow`; das Spiel
+  prüft die LP, ein Schild hebt sie nicht), und nur, wo die erhöhte Potenz je Zeit den Füller schlägt (Carnivale-Faktor
+  des Ziels eingerechnet). Ohne Zahl im Text fällt er nicht.
+- Synergie: Bestialischer Zorn aus 51 bis 69 % LP führt unter die Schwelle; das bleibt Sache der Option, die nur prüft,
+  dass die LP über seinen Kosten liegen.
 
 **Ewige Flammen: eine Wirkung, die bis zum Tod brennt** (Befund 20.11.2026, A940). Die Ziel-Rotation nennt Ewige Flammen,
 `MaintainDoTs` fragte ihn nie (Aktionsmatrix: „ungenutzt"); legte der Spieler ihn ins Set, ging er nie, und in jedem
