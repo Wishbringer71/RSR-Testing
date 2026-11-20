@@ -8,7 +8,7 @@ Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-20; nic
 
 ## Nutzung
 
-direkt: 122 · ungenutzt: 15
+direkt: 125 · ungenutzt: 12
 
 | Stufe | Aktion | Id | Art | Nutzung |
 |---|---|---|---|---|
@@ -89,7 +89,7 @@ direkt: 122 · ungenutzt: 15
 | Job | Malediction of Water (`MaledictionOfWaterPvE`) | 23283 | Spell | direkt |
 | Job | Matra Magic (`MatraMagicPvE`) | 23285 | Spell | direkt |
 | Job | Mighty Guard (`MightyGuardPvE`) | 11417 | Spell | direkt |
-| Job | Mind Blast (`MindBlastPvE`) | 11394 | Spell | ungenutzt |
+| Job | Mind Blast (`MindBlastPvE`) | 11394 | Spell | direkt |
 | Job | Missile (`MissilePvE`) | 11405 | Spell | direkt |
 | Job | Moon Flute (`MoonFlutePvE`) | 11415 | Spell | direkt |
 | Job | Mortal Flame (`MortalFlamePvE`) | 34579 | Spell | direkt |
@@ -112,14 +112,14 @@ direkt: 122 · ungenutzt: 15
 | Job | Rehydration (`RehydrationPvE`) | 34566 | Spell | direkt |
 | Job | Revenge Blast (`RevengeBlastPvE`) | 18316 | Spell | direkt |
 | Job | Right Round (`RightRoundPvE`) | 34564 | Spell | ungenutzt |
-| Job | Ruby Dynamics (`RubyDynamicsPvE`) | 34571 | Spell | ungenutzt |
+| Job | Ruby Dynamics (`RubyDynamicsPvE`) | 34571 | Spell | direkt |
 | Job | Saintly Beam (`SaintlyBeamPvE`) | 23270 | Spell | direkt |
 | Job | Schiltron (`SchiltronPvE`) | 34565 | Spell | direkt |
 | Job | Sea Shanty (`SeaShantyPvE`) | 34580 | Ability | direkt |
 | Job | Self-destruct (`SelfdestructPvE`) | 11408 | Spell | ungenutzt |
 | Job | Sharpened Knife (`SharpenedKnifePvE`) | 11400 | Spell | direkt |
 | Job | Shock Strike (`ShockStrikePvE`) | 11429 | Ability | direkt |
-| Job | Sleep (`SleepPvE`) | 25880 | Spell | ungenutzt |
+| Job | Sleep (`SleepPvE`) | 25880 | Spell | direkt |
 | Job | Snort (`SnortPvE`) | 11383 | Spell | direkt |
 | Job | Song of Torment (`SongOfTormentPvE`) | 11386 | Spell | direkt |
 | Job | Sonic Boom (`SonicBoomPvE`) | 18308 | Spell | direkt |
@@ -365,12 +365,9 @@ Maschinelle Liste; die Bewertung je Eintrag steht im Konzept.
 - Avail (`AvailPvE`, Spell): ungenutzt
 - Final Sting (`FinalStingPvE`, Spell): ungenutzt
 - Laser Eye (`LaserEyePvE`, Spell): ungenutzt
-- Mind Blast (`MindBlastPvE`, Spell): ungenutzt
 - Perpetual Ray (`PerpetualRayPvE`, Spell): ungenutzt
 - Right Round (`RightRoundPvE`, Spell): ungenutzt
-- Ruby Dynamics (`RubyDynamicsPvE`, Spell): ungenutzt
 - Self-destruct (`SelfdestructPvE`, Spell): ungenutzt
-- Sleep (`SleepPvE`, Spell): ungenutzt
 
 ## Abgleich Wirktext ↔ Code
 

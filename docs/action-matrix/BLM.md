@@ -8,14 +8,14 @@ Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-20; nic
 
 ## Nutzung
 
-direkt: 37 · ungenutzt: 1 · über andere Aktion: 2
+direkt: 38 · über andere Aktion: 2
 
 | Stufe | Aktion | Id | Art | Nutzung |
 |---|---|---|---|---|
 | alle | Sprint (`SprintPvE`) | 3 | System | direkt |
 | Magier | Addle (`AddlePvE`) | 7560 | Ability | direkt |
 | Magier | Lucid Dreaming (`LucidDreamingPvE`) | 7562 | Ability | direkt |
-| Magier | Sleep (`SleepPvE`) | 25880 | Spell | ungenutzt |
+| Magier | Sleep (`SleepPvE`) | 25880 | Spell | direkt |
 | Magier | Surecast (`SurecastPvE`) | 7559 | Ability | direkt |
 | Magier | Swiftcast (`SwiftcastPvE`) | 7561 | Ability | direkt |
 | Job | Aetherial Manipulation (`AetherialManipulationPvE`) | 155 | Ability | direkt |
@@ -153,9 +153,7 @@ Ohne Eintrag in `ActionId.resx` und ohne Wirktext; RSR castet keine PvE-Limit-Br
 
 ## Nicht direkt genutzt
 
-Maschinelle Liste; die Bewertung je Eintrag steht im Konzept.
-
-- Sleep (`SleepPvE`, Spell): ungenutzt
+keine
 
 ## Abgleich Wirktext ↔ Code
 

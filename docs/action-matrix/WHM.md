@@ -8,14 +8,14 @@ Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-20; nic
 
 ## Nutzung
 
-direkt: 42 · ungenutzt: 2
+direkt: 43 · ungenutzt: 1
 
 | Stufe | Aktion | Id | Art | Nutzung |
 |---|---|---|---|---|
 | alle | Sprint (`SprintPvE`) | 3 | System | direkt |
 | Heiler | Esuna (`EsunaPvE`) | 7568 | Spell | direkt |
 | Heiler | Lucid Dreaming (`LucidDreamingPvE`) | 7562 | Ability | direkt |
-| Heiler | Repose (`ReposePvE`) | 16560 | Spell | ungenutzt |
+| Heiler | Repose (`ReposePvE`) | 16560 | Spell | direkt |
 | Heiler | Rescue (`RescuePvE`) | 7571 | Ability | ungenutzt |
 | Heiler | Surecast (`SurecastPvE`) | 7559 | Ability | direkt |
 | Heiler | Swiftcast (`SwiftcastPvE`) | 7561 | Ability | direkt |
@@ -163,5 +163,4 @@ Ohne Eintrag in `ActionId.resx` und ohne Wirktext; RSR castet keine PvE-Limit-Br
 
 Maschinelle Liste; die Bewertung je Eintrag steht im Konzept.
 
-- Repose (`ReposePvE`, Spell): ungenutzt
 - Rescue (`RescuePvE`, Ability): ungenutzt

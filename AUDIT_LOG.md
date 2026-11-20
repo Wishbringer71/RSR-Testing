@@ -27398,6 +27398,30 @@ solchen Lagen ausbleibt. Von Hand zu prüfen; eine maschinenlesbare Vorhersage i
 eingerichtet.
 *Prüfgrad:* Wirktexte, Code, Compile, Prüfskripte; Laufzeit nicht beobachtet.
 
+### A944 · Blaumagier: Geiststoß und Rubin-Dynamo; Matrix las Schlaf und Repose nicht (20.11.2026)
+
+*Anlass:* TODO „Blaumagier: ungenutzte Zauber“, Angriffs- und Kontrollzauber.
+*Quellen:* Wirktexte (`ActionId.resx`); Blatt (xivapi v2 `Action`, Felder Cast100ms, Recast100ms, Range, EffectRange,
+20.11.2026): Blankes Messer 1,0 s Wirkzeit, Reichweite 3; Perpetueller Strahl 3,0 s; Geiststoß 1,0 s, Fläche 6;
+Laserauge 2,0 s, Fläche 8; Rubin-Dynamo 2,0 s, 30 s Abklingzeit, Fläche 12; Apokalypsis Kanal, 120 s. WrathCombo
+(a457838, 09.11.2026, Werkzeugquelle): nutzt Apokalypsis, Geiststoß, Laserauge und Rubin-Dynamo nicht, Perpetuellen
+Strahl als Betäubung vor dem Messer.
+*Gebaut:* Geiststoß in der Füllregel, Rubin-Dynamo nach der Rose, beide hinter `OverSonicBoom`.
+*Bewusst nicht:* Laserauge (der Rückstoß zerstreut das Rudel, auf das sein Wert zählt), Perpetueller Strahl als
+Messer-Öffner (1 s Betäubung gegen 1 s Wirkzeit des Messers; meine Ableitung aus den Zeiten, im Spiel nicht gemessen),
+Eichelbombe (Kontrolle, die der erste Treffer bricht).
+*Prüfmittel berichtigt:* `generate_action_matrix.py` führte Schlaf (25880) bei allen Magiern und Repose (16560) bei allen
+Heilern als „ungenutzt“, obwohl `StopEnemyCast` sie über `var sleep = … ? ReposePvE : SleepPvE` wirkt; es las nur
+`XPvE.CanUse(out …)`. Dazu hätte es seit A943 Addle für jeden Job als zentral gezählt, weil `UseAddle` im Kern steht.
+Jetzt: ein Aufruf über eine lokale Variable zählt; ein Kernhelfer `bool Name(out IAction? act)`, den der Kern selbst nie
+ruft, zählt nur für die Jobs, deren Rotation ihn ruft. Selbsttest um beide Fälle und die Gegenprobe (`CanUse(out _)`
+über eine lokale Variable zählt nicht) erweitert; die alte Fassung fällt am neuen Fall durch. Neu erzeugt: genau
+Schlaf und Repose wechselten auf „direkt“.
+*Offen:* Apokalypsis – sein Wert hängt am Tickabstand (unbelegt); TODO.
+*Im Kampf anders:* Vor einem Rudel wirft der Blaumagier Geiststoß und, alle 30 s ohne Rose im Set, Rubin-Dynamo statt
+des Überschallknalls, wo ihre Potenz über die Ziele je Zeit höher liegt; gegen ein Ziel ändert sich nichts.
+*Prüfgrad:* Wirktexte, Blatt, Code, Compile, Prüfskripte; Laufzeit nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

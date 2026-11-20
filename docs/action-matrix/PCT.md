@@ -8,14 +8,14 @@ Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-20; nic
 
 ## Nutzung
 
-direkt: 42 · nur gelesen: 6 · ungenutzt: 1
+direkt: 43 · nur gelesen: 6
 
 | Stufe | Aktion | Id | Art | Nutzung |
 |---|---|---|---|---|
 | alle | Sprint (`SprintPvE`) | 3 | System | direkt |
 | Magier | Addle (`AddlePvE`) | 7560 | Ability | direkt |
 | Magier | Lucid Dreaming (`LucidDreamingPvE`) | 7562 | Ability | direkt |
-| Magier | Sleep (`SleepPvE`) | 25880 | Spell | ungenutzt |
+| Magier | Sleep (`SleepPvE`) | 25880 | Spell | direkt |
 | Magier | Surecast (`SurecastPvE`) | 7559 | Ability | direkt |
 | Magier | Swiftcast (`SwiftcastPvE`) | 7561 | Ability | direkt |
 | Job | Aero II in Green (`AeroIiInGreenPvE`) | 34657 | Spell | direkt |
@@ -208,6 +208,5 @@ Maschinelle Liste; die Bewertung je Eintrag steht im Konzept.
 - Landscape Motif (`LandscapeMotifPvE`, Spell): nur gelesen — Behälter: der Knopf wird zu anderen Aktionen
 - Living Muse (`LivingMusePvE`, Ability): nur gelesen — Behälter: der Knopf wird zu anderen Aktionen
 - Scenic Muse (`ScenicMusePvE`, Ability): nur gelesen — Behälter: der Knopf wird zu anderen Aktionen
-- Sleep (`SleepPvE`, Spell): ungenutzt
 - Steel Muse (`SteelMusePvE`, Ability): nur gelesen — Behälter: der Knopf wird zu anderen Aktionen
 - Weapon Motif (`WeaponMotifPvE`, Spell): nur gelesen — Behälter: der Knopf wird zu anderen Aktionen

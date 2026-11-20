@@ -640,6 +640,28 @@ statt Reihenfolge" und „Mondflöte"):
   certain attacks“ ohne Liste. Bewusst nicht: Es verschiebt Schaden auf einen anderen, dessen Überleben RSR nicht
   vorhersagt, und welche Angriffe es nicht deckt, sagt keine Quelle (CLAUDE.md, „Spielweise“: Sicherheit der Gruppe).
 
+**Angriffs- und Kontrollzauber, die RSR nie fragte** (Befund 20.11.2026, A944). Wirktexte aus `ActionId.resx`, Wirk- und
+Abklingzeiten aus dem Blatt (xivapi v2, 20.11.2026).
+- *Geiststoß (Mind Blast, 11394):* 200 auf alle Gegner um den Spieler (6 Yalm), jeder weitere 50 % weniger, dazu
+  Paralyse; 1 s Wirkzeit. Ein Flächenfüller wie die übrigen: in der Füllregel, wo `OverSonicBoom` ihn vorn sieht.
+- *Rubin-Dynamo (Ruby Dynamics, 34571):* 220 im Kegel (12 Yalm), 2 s Wirkzeit, 30 s Abklingzeit, teilt sie mit
+  Schildkrötentor und Rose der Zerstörung. Nach der Rose: Liegt sie im Set, nimmt sie die gemeinsame Abklingzeit zuerst;
+  sonst Rubin-Dynamo, wo `OverSonicBoom` ihn vorn sieht – auf ein einzelnes Ziel nie, weil seine Wirkzeit länger ist
+  als die des Überschallknalls.
+- *Bewusst nicht:*
+  - Laserauge (34577): 220 um das Ziel (8 Yalm) und 5 Yalm Rückstoß für alle Gegner darin – der Rückstoß zerstreut das
+    Rudel, auf das sein Flächenwert zählt; auf ein Ziel schlägt ihn der Überschallknall (2 s gegen 1 s Wirkzeit).
+  - Perpetueller Strahl (18314) als Öffner für Blankes Messer: Seine Betäubung hält 1 s, Blankes Messer wirkt 1 s
+    (Blatt) – die Betäubung endet vor dem Treffer. WrathCombo kombiniert beide (Werkzeugquelle, a457838); das trägt
+    gegen die Zeiten nicht. Als Füller schon ausgeschlossen (Füllreihenfolge).
+  - Eichelbombe (11392): Schlaf auf Ziel und Umgebung; der erste Treffer weckt, und RSR plant keine Kontrolle (Konzept
+    14, „Hilfsaktionen“). Schlaf (25880) dagegen nutzt RSR zentral, um einen gegnerischen Zauber zu stoppen
+    (`StopEnemyCast`); die Aktionsmatrix führte ihn bei allen Magiern und Heilern als ungenutzt, weil sie den Aufruf über
+    eine lokale Variable nicht las (A944).
+- *Offen:* Apokalypsis (34581), ein Kanal für 140 Schaden über Zeit in einer Linie, 10 s, 120 s Abklingzeit, teilt sie
+  mit Sterblichkeit (die RSR nutzt). Ob er sich gegen vier GCDs lohnt, hängt an seinem Tickabstand, den weder Text noch
+  Blatt nennen (weiß nicht); RSR drückt ihn nicht, hält ihn aber, wenn der Spieler ihn drückt (Konzept 14).
+
 **Matschkuchen und Reinemachen: Erhaltung des Tanks aus dem Rudel** (Befund 20.11.2026, A942)
 - Wirktexte: Mjam Mjam Matschkuchen (34569) 100 Potenz auf Ziel und Umgebung, jeder weitere 50 % weniger, dazu Begrimed
   (10 Potenz je Tick, 9 s). Großes Reinemachen (34570) 220 auf alle nahen Gegner, jeder weitere 50 % weniger; je Gegner

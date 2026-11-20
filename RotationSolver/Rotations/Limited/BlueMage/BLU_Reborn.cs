@@ -545,6 +545,13 @@ public sealed class BLU_Reborn : BlueMageRotation
 			return true;
 		}
 
+		// Shares its recast with the Rose, which takes it first where it is in the set; a cone for a pack only, its 2 s cast
+		// loses to Sonic Boom on one target (concept 01, "Angriffs- und Kontrollzauber", A944).
+		if (RubyDynamicsPvE.CanUse(out act) && OverSonicBoom(RubyDynamicsPvE))
+		{
+			return true;
+		}
+
 		// The fourth Winged Reprobation grants Winged Redemption for 10 s, which lifts Conviction Marcato from 220 to 440;
 		// RSR never cast Marcato (D11, A508).
 		if (StatusHelper.PlayerHasStatus(true, StatusID.WingedRedemption) && ConvictionMarcatoPvE.CanUse(out act))
@@ -776,6 +783,11 @@ public sealed class BLU_Reborn : BlueMageRotation
 		}
 
 		if (PlaincrackerPvE.CanUse(out act) && OverSonicBoom(PlaincrackerPvE))
+		{
+			return true;
+		}
+
+		if (MindBlastPvE.CanUse(out act) && OverSonicBoom(MindBlastPvE))
 		{
 			return true;
 		}

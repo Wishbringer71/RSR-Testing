@@ -36,11 +36,12 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
 
 - **Blaumagier: ungenutzte Zauber** (Aktionsmatrix 20.11.2026, A940). *Im Kampf:* Liegt einer dieser Zauber im Set, wirkt
   RSR ihn nie. Offen gegen Konzept 01, „Ziel-Rotation nach Rolle":
-  - Geiststoß, Laserauge, Rubin-Dynamo, Apokalypsis, Perpetueller Strahl, Eichelbombe und Schlaf: je Wert gegen die
-    Flächen- und Füllregel, Rückstoß und Kontrolle gegen die Sicherheit;
+  - Apokalypsis: lohnt der Kanal gegen vier GCDs? Hängt am Tickabstand, den Text und Blatt nicht nennen; nächster
+    Schritt: Tickabstand an einem Mitschnitt (ACT Zeile 24 oder FFLogs-Ticks) messen (Konzept 01, „Angriffs- und
+    Kontrollzauber“);
   - die Setverbesserung für Ewige Flammen (heute nur Zauber mit Abklingzeit).
   Bewusst nicht: Schlussstich, Selbstzerstörung, Rotation (stößt die Gruppe weg), Absichern (lenkt Schaden auf ein
-  Mitglied, A943); Äther-Mimikry wählt der Spieler.
+  Mitglied, A943), Laserauge, Perpetueller Strahl, Eichelbombe (A944); Äther-Mimikry wählt der Spieler.
   *Nächster Schritt:* je Zauber Wirktext, Konzept 01, Loop. *Konzept:* 01, „Blaumagier".
 
 ## Technische Schuld
