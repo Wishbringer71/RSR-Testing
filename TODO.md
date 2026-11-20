@@ -34,14 +34,7 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
 
 ## Offene Arbeit
 
-- **Blaumagier: ungenutzte Zauber** (Aktionsmatrix 20.11.2026, A940). *Im Kampf:* Liegt einer dieser Zauber im Set, wirkt
-  RSR ihn nie. Offen gegen Konzept 01, „Ziel-Rotation nach Rolle":
-  - Apokalypsis: lohnt der Kanal gegen vier GCDs? Hängt am Tickabstand, den Text und Blatt nicht nennen; nächster
-    Schritt: Tickabstand an einem Mitschnitt (ACT Zeile 24 oder FFLogs-Ticks) messen (Konzept 01, „Angriffs- und
-    Kontrollzauber“);
-  Bewusst nicht: Schlussstich, Selbstzerstörung, Rotation (stößt die Gruppe weg), Absichern (lenkt Schaden auf ein
-  Mitglied, A943), Laserauge, Perpetueller Strahl, Eichelbombe (A944); Äther-Mimikry wählt der Spieler.
-  *Nächster Schritt:* je Zauber Wirktext, Konzept 01, Loop. *Konzept:* 01, „Blaumagier".
+- Keine offene Arbeit.
 
 ## Technische Schuld
 
@@ -143,8 +136,14 @@ nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigt
   A933): Freischalter, Burst-Procs, Burstfenster und die messbaren Regeln von xivanalysis; gebaut daraus Lilie im Laufen
   (Weißmagier) und Life Surge (Dragoon); diese beiden Klassen auch in den 13 Churin- und Beiruta-Rotationen geprüft,
   ohne Befund. Die 13 Churin- und Beiruta-Rotationen sind verträglich (A936).
-  Ihre 157 Einstellungstexte decken sich mit dem Code (A936). *Nächster Schritt:* Blaumagier, Beastmaster und die
+  Ihre 157 Einstellungstexte decken sich mit dem Code (A936). Blaumagier statisch: jeder Zauber, den die Matrix als
+  ungenutzt führte, gebaut oder mit Grund ausgeschlossen (A940 bis A945). *Nächster Schritt:* Blaumagier, Beastmaster und die
   Burstfolgen der 13 am nächsten Mitschnitt, in dem sie laufen. *Konzept:* 14 (je Job), 03 „F · Über den Augenblick hinaus“.
+
+- **Blaumagier: Apokalypsis** (A944). *Im Kampf:* Liegt Apokalypsis ohne Sterblichkeit im Set, wirkt RSR ihn nie.
+  Ob der Kanal (140 über Zeit, 10 s, 120 s Abklingzeit) vier GCDs schlägt, hängt am Tickabstand, den weder Wirktext
+  noch Blatt noch die gelesenen Quellen nennen. Auflösung: ein Mitschnitt, in dem er gewirkt wird (ACT Zeile 24 je
+  Tick oder FFLogs-Ticks); dann Wert gegen den Füller im Loop. *Konzept:* 01, „Angriffs- und Kontrollzauber“.
 
 - **Todeswand ohne BossMod-Modul lernen** (A934, O3 in Konzept 05, „Arenagrenzen ohne BossMod-Modul“). Sein Hinweis
   und Vorschlag vom 20.11.2026, in Arbeit (A935): „meist enteht in der anfangsphase dort ein vfx, um den rand optisch

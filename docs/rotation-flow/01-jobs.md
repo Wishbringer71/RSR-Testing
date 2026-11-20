@@ -660,7 +660,8 @@ Abklingzeiten aus dem Blatt (xivapi v2, 20.11.2026).
     eine lokale Variable nicht las (A944).
 - *Offen:* Apokalypsis (34581), ein Kanal für 140 Schaden über Zeit in einer Linie, 10 s, 120 s Abklingzeit, teilt sie
   mit Sterblichkeit (die RSR nutzt). Ob er sich gegen vier GCDs lohnt, hängt an seinem Tickabstand, den weder Text noch
-  Blatt nennen (weiß nicht); RSR drückt ihn nicht, hält ihn aber, wenn der Spieler ihn drückt (Konzept 14).
+  Blatt nennen (weiß nicht); RSR drückt ihn nicht, hält ihn aber, wenn der Spieler ihn drückt (Konzept 14). Warten auf einen Mitschnitt: TODO,
+  „Blaumagier: Apokalypsis“.
 
 **Matschkuchen und Reinemachen: Erhaltung des Tanks aus dem Rudel** (Befund 20.11.2026, A942)
 - Wirktexte: Mjam Mjam Matschkuchen (34569) 100 Potenz auf Ziel und Umgebung, jeder weitere 50 % weniger, dazu Begrimed
