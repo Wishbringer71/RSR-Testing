@@ -27608,6 +27608,26 @@ Zeit vor Embolden: RSR gibt dort ab 60|60 aus und kommt ohne Mana für die Kombo
 *Offen:* TODO „Rotmagier gibt Mana kurz vor Embolden aus“ (Schwellen herleiten, Modell gegen The Balance).
 *Prüfgrad:* Code und Guide; nicht im Mitschnitt gemessen.
 
+### A954 · Seine Vorgabe: Ansturm der Tanks im Kampf nur als Option, ab Werk aus (20.11.2026)
+
+*Vorgabe:* „warum werden bei tanks auch die anstürmeffekte im nahkampf als angriff genutzt? dass habe ich nicht
+angeordnet. gerade bei wall to wall pulls rennt doch der tank zur nächsten gruppe und nutzt dafür das heranspringen. das
+ist durch den verbrauch im kampf weg … wenn überhaupt, dann solche nutzungen im kampf als option, aber eben nicht per
+default an. idiot“; Präzisierung: „bei kämpfen direkt beim endboss mag das manchmal klappen, da keine großen wege, aber
+nicht bei dungeon instanzen, ally-raid“.
+*Herkunft des Verhaltens:* Upstream-Rotationen gaben Intervene (Paladin, eine Ladung immer, beide mit „Use up both
+stacks …“ in Fight or Flight, ab Werk an) und Onslaught (Krieger, „Use both stacks … during burst“, ab Werk an) als
+Schaden aus. Konzept 14 führte beides als „deckt sich“ mit The Balance. CLAUDE.md, „Spielweise“, trug meine
+Verallgemeinerung seiner Aussage zum Beschwörer (A122: Crimson Cyclone als Teil der Rotation) auf jeden Gapcloser („bei 0
+Yalm nur Schaden“) – den Preis einer verbrauchten Ladung prüfte ich nicht. Seine Rüge trifft.
+*Gebaut (Ebene Tanks):* `CustomRotation.DashDamageTarget` – nur gegen einen Boss. Paladin: neue Option „Use Intervene for
+damage in combat“ (ab Werk aus), „Use up both stacks …“ darunter; Krieger: „Use both stacks of Onslaught during burst …“
+ab Werk aus, beide Onslaught-Optionen nur gegen einen Boss. Revolverklinge und Dunkelritter nutzten Trajectory und
+Shadowstride schon nur zur Bewegung. CLAUDE.md, „Spielweise“, um die Vorgabe ergänzt.
+*Im Kampf anders:* Im Dungeon und Allianz-Raid behält der Tank alle Ladungen für den Sprung zum nächsten Rudel; am Boss
+nur mit eingeschalteter Option Schaden aus dem Ansturm.
+*Prüfgrad:* Code, Compile, Prüfskripte; Laufzeit nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

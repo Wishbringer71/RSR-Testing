@@ -214,6 +214,13 @@ public partial class CustomRotation
 	}
 
 	/// <summary>
+	/// Concept 14, "Ansturm der Tanks im Kampf" (A954): whether a tank's dash may go for damage - only at a boss, where no
+	/// pack follows before it dies; in a dungeon or an alliance raid the charge is kept for the way to the next pack. Asked
+	/// only behind the option that allows the damage use, off by default (the owner's rule, 20.11.2026).
+	/// </summary>
+	protected static bool DashDamageTarget => HostileTarget is { } target && (target.IsBossFromIcon() || target.IsBossFromTTK());
+
+	/// <summary>
 	/// Addle for every job that has it, in the defense branches (concept 02, "Identisch in allen vier"; the Blue Mage too,
 	/// concept 01, A943): refreshed ahead of predicted damage or held up on a pack (<see cref="ShouldSustainMitigationDebuff"/>,
 	/// which counts the target's Addle from any source), otherwise whenever the branch opened and the target lacks it.

@@ -903,17 +903,30 @@ Paladin (7.4, 17.12.2025), Dunkelritter (7.5, 14.08.2026), Revolverklinge (7.4, 
 Konzept 09; hier der Schaden. Keine Änderung: Alle Kernregeln decken sich. Die AoE-Schwelle der Tanks bleibt bei 2
 (oben, „AoE-Schwellen aller Jobs").
 
+*Ansturm der Tanks im Kampf (seine Vorgabe, 20.11.2026, A954):* „warum werden bei tanks auch die anstürmeffekte im
+nahkampf als angriff genutzt? … gerade bei wall to wall pulls rennt doch der tank zur nächsten gruppe und nutzt dafür
+das heranspringen. das ist durch den verbrauch im kampf weg … wenn überhaupt, dann solche nutzungen im kampf als option,
+aber eben nicht per default an.“ Gilt für alle Tanks: Ein Ansturm mit Ladungen geht im Kampf als Schaden nur hinter
+einer Option, ab Werk aus; ohne sie bleibt er der Bewegung (`MoveForwardAbility`). Betroffen sind Intervene (Paladin)
+und Onslaught (Krieger); Trajectory (Revolverklinge) und Shadowstride (Dunkelritter) nutzen die Rotationen nur zur
+Bewegung. Seine Präzisierung desselben Tages: „bei kämpfen direkt beim endboss mag das manchmal klappen, da keine großen
+wege, aber nicht bei dungeon instanzen, ally-raid“ – auch eingeschaltet geht der Ansturm deshalb nur gegen einen Boss
+(`IsBossFromIcon`, `IsBossFromTTK`): Bis zu seinem Tod folgt kein Rudel, für das die Ladung fehlen könnte. *Im Kampf:* Im
+Burst fehlen dem Paladin bis zu zwei Intervene, dem Krieger bis zu drei Onslaught an Schaden (The Balance gibt sie dort
+aus); dafür springt der Tank nach dem Rudel mit voller Ladung zum nächsten. Wer den Schaden am Boss will, schaltet die
+Option ein (CLAUDE.md, „Spielweise“).
+
 | Job | Punkt | The Balance | RSR | Stand |
 |---|---|---|---|---|
 | Krieger | Opener | Tomahawk bei −0,7 s, Infuriate eingewebt | Tomahawk bei unter 0,54 s, Infuriate in der ersten Einwebung | deckt sich |
 | Krieger | Surging Tempest | bei 7 bis 15 s Rest erneuern, nie über 31 s | Storm's Eye neun GCDs vor dem Ablauf (`StatusRefreshGcdCount`) | deckt sich: Bei rund 22 s Rest plus 30 s bleibt die Wirkung unter der Obergrenze von 60 s, es geht nichts verloren |
 | Krieger | Beast Gauge | Storm's Path nicht bei 90 bis 100, Infuriate nicht bei 60 bis 100 | Storm's Path bis 80, Infuriate bis 50 (`ActionCheck`) | deckt sich |
 | Krieger | Upheaval, Inner Release | auf Abklingzeit | auf Abklingzeit, Inner Release mit Surging Tempest | deckt sich |
-| Krieger | Onslaught | drei Ladungen in den geraden, eine in den ungeraden Fenstern | im Burst und vor dem Überlauf, nur im Stand; die Reichweite begrenzt die zentrale Sprungprüfung | weicht ab, wo Onslaught ihn bewegen würde: seine Regel (Konzept 04) |
+| Krieger | Onslaught | drei Ladungen in den geraden, eine in den ungeraden Fenstern | als Schaden nur mit „Use both stacks of Onslaught during burst while standing still“ oder „… when its about to overcap …“, beide ab Werk aus (seine Vorgabe, 20.11.2026, A954); sonst nur zur Bewegung | weicht ab: seine Vorgabe, die Ladungen für den Weg zum nächsten Rudel zu halten |
 | Paladin | Fight or Flight | auf Abklingzeit; Imperator direkt danach, vor Confiteor | Fight or Flight mit bereiten Folgen; Imperator und Requiescat in Fight or Flight | deckt sich |
 | Paladin | Circle of Scorn, Expiacion | in jedem Fight-or-Flight-Fenster | erst, wenn Fight or Flight und Imperator laufen oder abklingen | deckt sich |
 | Paladin | Atonement-Folge | zwischen den Fenstern aufheben, vor dem nächsten Royal Authority ausgeben | in Fight or Flight, vor dem Ablauf oder wenn Rage of Halone bereit ist | deckt sich |
-| Paladin | Intervene | zwei Ladungen in Fight or Flight | im Stand, mit Option alle Ladungen in Fight or Flight | deckt sich, mit seiner Bewegungsregel |
+| Paladin | Intervene | zwei Ladungen in Fight or Flight | als Schaden nur mit „Use Intervene for damage in combat“ (ab Werk aus, A954), dann im Stand, mit „Use up both stacks …“ alle Ladungen in Fight or Flight; sonst nur zur Bewegung | weicht ab: seine Vorgabe |
 | Dunkelritter | Edge of Shadow | gegen MP-Überlauf, gegen das Auslaufen von Darkside, im Burst | dieselben drei Lagen; im Burst und gegen das Auslaufen nur über der Rücklage für The Blackest Night | deckt sich (A197); bei knappen MP läuft Darkside aus, statt die Rücklage zu verbrauchen – der Text von „Keep at least 3000 MP" (A406) |
 | Dunkelritter | Bloodspiller, Shadowbringer | Blut nur im Burst oder gegen Überlauf; beide Ladungen Shadowbringer ins Zwei-Minuten-Fenster | Blut wie The Balance (A197); Shadowbringer eine Ladung an der Grenze, die letzte im Burst | deckt sich: Im 120-s-Takt ist die zweite Ladung genau zum Fenster zurück |
 | Revolverklinge | No Mercy | jede Minute, Einwebposition je GCD-Geschwindigkeit | auf Stufe 100 mit liegendem Bloodfest; beide haben 60 s Abklingzeit (Job-Guide 7.5) | deckt sich im Takt; die Einwebposition (früh oder spät je Geschwindigkeit) ist nicht geprüft |
