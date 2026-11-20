@@ -49,9 +49,9 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
   *Stand:* drei Durchgänge über alle Rotationen, die er in den Mitschnitten vom 10. bis 19.11.2026 spielte (A931 bis
   A933): Freischalter, Burst-Procs, Burstfenster und die messbaren Regeln von xivanalysis; gebaut daraus Lilie im Laufen
   (Weißmagier) und Life Surge (Dragoon); diese beiden Klassen auch in den 13 Churin- und Beiruta-Rotationen geprüft,
-  ohne Befund. *Nächster Schritt:* die 13 statisch gegen den übrigen Katalog – zuerst je Rotation, ob die
-  Fork-Mechanik greift (CLAUDE.md), Befunde nur ohne Richtungsentscheidung –, dazu Blaumagier und Beastmaster am
-  nächsten Mitschnitt. *Konzept:* 14 (je Job), 03 „F · Über den Augenblick hinaus“.
+  ohne Befund. Die 13 Churin- und Beiruta-Rotationen sind verträglich (A936).
+  *Nächster Schritt:* je Einstellung der 13 der Tooltip gegen den Code (157); Blaumagier, Beastmaster und die
+  Burstfolgen der 13 am nächsten Mitschnitt, in dem sie laufen. *Konzept:* 14 (je Job), 03 „F · Über den Augenblick hinaus“.
 - **Rotationen aller Jobs über den Augenblick hinaus** (sein Auftrag vom 19.11.2026; A901). *Wirkung im Kampf:*
   Verstärker, Zeitgeber und DoTs laufen heute in vorhergesagte Pausen, Ressourcen bleiben beim Tod des Ziels übrig, der
   eigene Burst richtet sich nach der eigenen Uhr statt nach den Raidbuffs, die wirklich auf dir liegen. *Nächster
@@ -75,12 +75,6 @@ jede solche Änderung trägt im selben Commit die Anpassung des Modus „plugin"
 ### Status-Einstellungen auf der falschen Seite der Aktion · N, U
 Fundstellen in Bozja (`scan11.py`), außerhalb seines Profils; je eine Richtungsentscheidung, die eine Beobachtung im
 Inhalt verlangt. *Auflösung:* erst, wenn er Bozja nennt. *Konzept:* 19.
-
-### Die Beiruta-Heiler lesen das Ziel des letzten Erfolgs · N, R
-BeirutaAST, BeirutaWHM und BeirutaSGE lesen `X.Target.Target` vor `X.CanUse`, an 17 Stellen, und prüfen so das Ziel des
-letzten Erfolgs, anfangs keines (A415); der eigene Code liest überall das Ziel derselben Entscheidung. Fremde
-Rotationen, außerhalb seines Profils. *Auflösung:* wenn er sie nennt – dann eine seiteneffektfreie Zielabfrage im Paket,
-die ihr Muster trägt. *Konzept:* 03.
 
 ### `HasSurvivingShield` misst die kürzeste Schildrestzeit · N, R
 Öffentlich, ohne Leser im Baum; der Tankbuster-Plan liest dieselbe Regel aus der Statusliste. Das Maximum tauschte den

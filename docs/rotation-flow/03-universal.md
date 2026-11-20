@@ -583,9 +583,20 @@ Lesung von `X.Target` ohne `X.CanUse` in derselben Entscheidung bekäme das Ziel
 Gemessen am 26.10.2026 (A415), jede Lesung im Baum außer Churin: In `RebornRotations` und `RotationSolver.Basic` liest
 jede Stelle das Ziel eines `CanUse` derselben Entscheidung, meist im Zweig gleich danach; einzige Ausnahme ist die
 Anzeige des Gelehrten (`ScholarRotation.DisplayBaseStatus`), ohne Wirkung im Kampf. Der Tänzer überschreibt das Ziel
-von Closed Position nach `CanUse` bewusst mit dem benannten Partner. Vor `CanUse` lesen nur die fremden Heiler
-BeirutaAST, BeirutaWHM und BeirutaSGE, an 17 Stellen (TODO, technische Schuld). Eine seiteneffektfreie Zielabfrage
-braucht der eigene Code deshalb nicht.
+von Closed Position nach `CanUse` bewusst mit dem benannten Partner. Eine seiteneffektfreie Zielabfrage braucht der
+eigene Code deshalb nicht.
+
+*Die fremden Rotationen, neu gemessen am 20.11.2026 (A936, alle 13 Churin- und Beiruta-Dateien):* Die 17 Stellen der
+Beiruta-Heiler von A415 gibt es nicht mehr – Upstreams Überarbeitung (996f28183) liest dort nach `CanUse`; BeirutaAST
+liest das Ziel von Benefic II, nachdem es als nächster GCD gewählt ist. Vor `CanUse` lasen nur noch zwei Rotationen:
+- *ChurinSMN:* der Abstand zum Ziel von Crimson Cyclone an drei Stellen (Ruby-Zweig in Bewegung, „Ziel zu weit“, die
+  Planung der Ifrit-Phase). Ohne vorherige Wahl ist das Ziel leer und der Abstand unendlich: „zu weit“ galt, bevor
+  Crimson Cyclone je gefragt war.
+- *ChurinDRK:* der Abstand zum Ziel von Disesteem im Burst. Leer galt „weiter als 3 Yalm“, und Disesteem ging beim
+  ersten Anlass an den Kombo-Bedingungen vorbei.
+
+Beide meinen das Ziel, das die Aktion träfe; bei einem Sprung auf den Gegner und einer Linie vom Spieler ist das das
+aktuelle Ziel (`CurrentTarget`). Behoben ohne Richtungsentscheidung: Die Stellen lesen jetzt `CurrentTarget`.
 
 ---
 

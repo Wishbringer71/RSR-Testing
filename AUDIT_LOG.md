@@ -27107,6 +27107,25 @@ Rand ein Mitglied berührt, erscheint die Zeile mit einem Abstand nahe der sicht
 Inhalten keine. Widerlegt, wenn die Zeile eine benannte Mechanik zeigt oder einen Abstand mitten in der Arena.
 *Prüfgrad:* Quellen, Mitschnitte, Code, Compile, CI; im Spiel nicht beobachtet.
 
+### A936 · Churin und Beiruta im Loop: Verträglichkeit, Ziel vor CanUse, Swiftcast-Rücklage (20.11.2026)
+
+*Anlass:* sein Auftrag vom 20.11.2026: „weiter mit churin und beiruta im vollen loop“; seine Präzisierungen vom
+19.11.2026 (bearbeitbar, wo mit dem Fork verträglich; keine inhaltlichen Entscheidungen von ihm).
+*Umfang:* alle 13 Dateien (ChurinSMN, ChurinMNK, ChurinBRD, ChurinDNC, ChurinMCH, ChurinDRK, BeirutaAST, BeirutaSGE,
+BeirutaSCH, BeirutaWHM, BeirutaPCT, BeirutaRDM, BeirutaNIN).
+*Verträglichkeit:* Sie überschreiben nur die Haken (`EmergencyGCD`, `GeneralGCD` usw.), nicht die Abfolge; kritischer
+Heil-GCD, dynamische Rotation, Pull-Vorbereitung, Auszeit-Halt der eigenen Buffs greifen. Churins eigene Trankregel
+endet in `UseBurstMedicine`, die Tinkturregel des Forks greift. Jede Einstellung wird im Code gelesen.
+*Befunde, behoben ohne Richtungsentscheidung:* Ziel vor `CanUse` in ChurinSMN (Crimson Cyclone, drei Stellen und die
+Anzeige) und ChurinDRK (Disesteem im Burst) – Konzept 03; die 17 Stellen der Beiruta-Heiler aus A415 gibt es seit
+Upstream 996f28183 nicht mehr (Schuldpunkt entfällt). Swiftcast-Rücklage nach seiner Regel – Konzept 11: Schalter für
+Swiftcast im Laufen ab Werk aus (BeirutaAST, BeirutaSGE, BeirutaWHM, ChurinSMN niedrige Stufe), BeirutaRDM hinter
+`SwiftcastForDamage`.
+*Befunde ohne Vorlage (inhaltlich, Richtung des Autors):* ChurinSMN setzt Searing Light erst in den letzten fünf GCDs
+der großen Beschwörung; die Burstfolgen aller 13 folgen ihrem Autor, ohne Mitschnitt nicht gemessen.
+*Nicht erfasst:* ob jeder Tooltip der 13 seinem Code entspricht (157 Einstellungen) – offen im TODO.
+*Prüfgrad:* Code, Compile, CI; im Spiel nicht beobachtet (er spielt sie nicht).
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

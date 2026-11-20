@@ -277,8 +277,20 @@ swiftcast rezzen"; A503).
     verfügbarer Sofortzauber, sonst bliebe der Rotmagier im Laufen ohne GCD.
 - *Ohne Wiederbelebung* gibt es nichts zurückzulegen: Schwarzmagier, Piktomant, jeder Job unter der Stufe seiner
   Wiederbelebung, auch synchronisiert. Die Reborn-Heiler nehmen Swiftcast nur für die Wiederbelebung.
-- *Fremde Rotationen* lesen die Rücklage nicht: `BeirutaRDM` nimmt Swiftcast für Schaden, die Beiruta-Heiler haben
-  eigene Rücklagen. Außerhalb seines Profils; erfasst, nicht geändert.
+- *Fremde Rotationen* (A936; seine Präzisierung vom 19.11.2026: bearbeitbar, wo mit dem Fork verträglich, ohne
+  inhaltliche Entscheidung von ihm). Seine Regel gilt für jeden Job, der mit Swiftcast wiederbelebt; ein Schalter für
+  anderes ist erlaubt, wenn er ihn selbst einschaltet, ab Werk aus. Gemessen:
+  - `BeirutaAST`, `BeirutaSGE`, `BeirutaWHM`: „[Movement] Use Swiftcast“ kam eingeschaltet, im Laufen auch für
+    Schadenszauber; ihre eigene Rücklage hält Swiftcast nur, solange schon jemand tot ist. Jetzt ab Werk aus; der Text
+    bleibt.
+  - `ChurinSMN`: Swiftcast auf Ruby Ruin und Ruby Outburst unterhalb von Ruby Rite kam eingeschaltet. Jetzt ab Werk aus.
+  - `BeirutaRDM`: Swiftcast ohne Schalter im Burst, für die Fenster von Fleche und Contre Sixte, im Laufen und als
+    Füller. Jetzt nur, wo die zentrale Rücklage ihn freigibt (`SwiftcastForDamage`: „Raise with Swiftcast or
+    Dualcast“ aus oder unter der Stufe von Verraise). Acceleration bleibt in allen diesen Wegen.
+  - `BeirutaSCH`: ab Werk Swiftcast nur für Wiederbelebung und im Laufen für Schilde (Deployment, Succor), Schaden nur
+    mit eigenem Schalter, ab Werk aus – verträglich, unverändert. `BeirutaPCT` wiederbelebt nicht.
+  Im Kampf: Stirbt jemand, hat der Heiler oder Rotmagier dieser Rotationen Swiftcast bereit, statt ihn für einen Glare
+  oder ein Verthunder im Laufen verbraucht zu haben; der Preis ist der Schaden dieser Sofortzauber.
 - *Verworfen:*
   - eine Sperre in der Swiftcast-Aktion selbst (`ActionCheck`): Sie fängt jeden Aufrufer, auch fremde Rotationen, sperrt
     aber auch die eingeschalteten Schadensschalter, deren Text dann etwas verspricht, das nie geschieht. Und sie müsste

@@ -81,6 +81,16 @@ What this release changes in the fight. For the whole distance from upstream, se
   whichever finisher came next, Wheeling Thrust or Lance Barrage included, while Heavens' Thrust and Drakesbane followed
   in the same window. A lesser finisher now takes Life Surge only when Battle Litany ends before the next weaponskill.
 
+## Churin and Beiruta rotations
+
+- **Swiftcast stays for raises there too.** "[Movement] Use Swiftcast" in the Beiruta astrologian, sage and white mage
+  rotations and Swiftcast on Ruby Ruin and Ruby Outburst in the Churin summoner rotation are now off by default; the
+  Beiruta red mage uses Swiftcast for damage or movement only when "Raise with Swiftcast or Dualcast" is off or Verraise
+  is not learned. Acceleration and every other instant stay as they were.
+- **Distances read from the target being fought.** The Churin summoner measured Crimson Cyclone's reach, and the Churin
+  dark knight Disesteem's, from the target of their last use; before the first use that read as out of reach, and
+  Disesteem went at the first chance in the burst.
+
 ## Seeing what the enemies do
 
 - **One right picture per enemy area (needs Splatoon).** Circles and lines an enemy casts without the game's orange
