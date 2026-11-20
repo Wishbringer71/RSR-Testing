@@ -166,6 +166,12 @@ nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigt
   noch Blatt noch die gelesenen Quellen nennen. Auflösung: ein Mitschnitt, in dem er gewirkt wird (ACT Zeile 24 je
   Tick oder FFLogs-Ticks); dann Wert gegen den Füller im Loop. *Konzept:* 01, „Angriffs- und Kontrollzauber“.
 
+- **Dunkelritter greift an der Puppe eine zweite an** (seine Meldung, 20.11.2026; A955). *Im Kampf:* Angriffe auf eine
+  Puppe, die er nicht anvisiert. Seit a45c8cc8e (A948) ist eine Puppe nur als sein aktuelles Ziel angreifbar; der
+  Dunkelritter wählt keine Ziele an der gemeinsamen Zielliste vorbei. Auflösung: die Kopfzeile seines `DefenseTrace.log`
+  (Build-Commit) und der ACT-Mitschnitt – Build vor a45c8cc8e: erledigt; danach und ein Einzelzielangriff auf die zweite
+  Puppe: Loop an der Zielwahl; nur Flächentreffer: gewollt (A923, A948). *Konzept:* 03, „Welche Puppe dein Kampf ist“.
+
 - **Todeswand ohne BossMod-Modul lernen** (A934, O3 in Konzept 05, „Arenagrenzen ohne BossMod-Modul“). Sein Hinweis
   und Vorschlag vom 20.11.2026, in Arbeit (A935): „meist enteht in der anfangsphase dort ein vfx, um den rand optisch
   anzuzeigen oder die texturbeschaffenheit oder meshes sind ort anders (stecheln, zacken oder was, wasdas spielfeld

@@ -27628,6 +27628,16 @@ Shadowstride schon nur zur Bewegung. CLAUDE.md, „Spielweise“, um die Vorgabe
 nur mit eingeschalteter Option Schaden aus dem Ansturm.
 *Prüfgrad:* Code, Compile, Prüfskripte; Laufzeit nicht beobachtet.
 
+### A955 · Seine Meldung: Dunkelritter greift an der Puppe eine zweite an (20.11.2026)
+
+*Meldung:* „auch der dunkelritter greift an der puppe eine zweite an“.
+*Am Code:* Der Dunkelritter wählt feindliche Ziele nur über `TargetHelper.GetTargetsByRange`, das `IsAttackable` liest
+(eigene Ziele nur `Self` und `LowHP` für Freunde, `DRK_Reborn`, `DarkKnightRotation`). Seit a45c8cc8e (20.11.2026 16:59,
+A948) ist eine Puppe dort nur als sein aktuelles Ziel angreifbar; Flächen streifen Nachbarpuppen, zählen sie aber nicht,
+so dass ein Flächen-GCD an einer einzelnen Puppe nicht gewählt wird. Ob sein Build a45c8cc8e enthielt: weiß ich nicht.
+*Offen (TODO, Warten auf Daten):* Build-Commit aus der Kopfzeile der Spur, Ziele im Mitschnitt.
+*Prüfgrad:* statisch am Code.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
