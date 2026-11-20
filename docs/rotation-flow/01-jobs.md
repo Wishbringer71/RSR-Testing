@@ -609,7 +609,7 @@ statt Reihenfolge" und „Mondflöte"):
   - Bestialischer Zorn (kostet laut Wirktext 50 % der maximalen LP): nur als Option für Spieler, die Schaden vor
     Sicherheit stellen, ab Werk aus (CLAUDE.md, „Spielweise"; Option „Use Wild Rage for damage“, A941). Auch mit Option
     nur, wenn die LP über seinen Kosten liegen (ob das Spiel ihn darunter sperrt oder den Spieler tötet, ist unbelegt), nicht
-    unter Tank-Mimikry und nicht, solange `AreaDefenseDanger` einen Treffer auf ein Mitglied meldet; er geht vor dem
+    unter Tank- oder Heiler-Mimikry (der Heiler ist die Rettung der Gruppe; Code-Review A946) und nicht, solange `AreaDefenseDanger` einen Treffer auf ein Mitglied meldet; er geht vor dem
     Füller nur, wo seine Potenz über alle Ziele je Zeit den Überschallknall schlägt (`OverSonicBoom`). Preis, den die
     Option nennt: Ein Treffer, den nichts ankündigt, trifft danach einen Spieler mit halben LP.
 
@@ -648,6 +648,12 @@ Abklingzeiten aus dem Blatt (xivapi v2, 20.11.2026).
   Schildkrötentor und Rose der Zerstörung. Nach der Rose: Liegt sie im Set, nimmt sie die gemeinsame Abklingzeit zuerst;
   sonst Rubin-Dynamo, wo `OverSonicBoom` ihn vorn sieht – auf ein einzelnes Ziel nie, weil seine Wirkzeit länger ist
   als die des Überschallknalls.
+- *Gemeinsame Abklingzeit mit dem Schildkrötentor* (Code-Review 20.11.2026, A946): Unter Tank-Mimikry und mit dem Tor
+  im Set nehmen Rose und Rubin-Dynamo die 30 s nur, wenn innerhalb ihrer Abklingzeit kein Tankbuster auf den Spieler
+  angekündigt ist (`TankbusterOnMeWithin`); sonst bliebe dem Tank für den Treffer kein Tor. Ohne Ankündigung (kein
+  Modul, kein gemessener Wirkbeginn) geht der Schaden vor – sonst läge die Abklingzeit im Trash ungenutzt; der Preis:
+  Ein Tankbuster, den nichts ankündigt, trifft ohne Tor. Für die Rose galt das vorher nicht; ihre Abklingzeit nahm das
+  Tor ebenso.
 - *Bewusst nicht:*
   - Laserauge (34577): 220 um das Ziel (8 Yalm) und 5 Yalm Rückstoß für alle Gegner darin – der Rückstoß zerstreut das
     Rudel, auf das sein Flächenwert zählt; auf ein Ziel schlägt ihn der Überschallknall (2 s gegen 1 s Wirkzeit).

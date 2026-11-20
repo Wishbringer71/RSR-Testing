@@ -270,10 +270,39 @@ public partial class BlueMageRotation
 	/// <summary>
 	/// The most stacks of Spick-and-span the Status sheet allows, 0 without a row (Deep Clean then never goes).
 	/// </summary>
-	protected static byte SpickAndSpanMaxStacks => _spickAndSpanMaxStacks ??=
-		Service.GetSheet<Lumina.Excel.Sheets.Status>().TryGetRow((uint)StatusID.Spickandspan, out var row) ? row.MaxStacks : (byte)0;
+	protected static byte SpickAndSpanMaxStacks
+	{
+		get
+		{
+			// Kept only once read: a lookup before the sheet is there answers 0 now and is asked again (A946).
+			if (_spickAndSpanMaxStacks is { } known)
+			{
+				return known;
+			}
+
+			if (!Service.GetSheet<Lumina.Excel.Sheets.Status>().TryGetRow((uint)StatusID.Spickandspan, out var row))
+			{
+				return 0;
+			}
+
+			_spickAndSpanMaxStacks = row.MaxStacks;
+			return row.MaxStacks;
+		}
+	}
 
 	private static byte? _spickAndSpanMaxStacks;
+
+	/// <summary>
+	/// Whether a spell sharing its recast with Chelonian Gate - the Rose of Destruction, Ruby Dynamics - may take it: always,
+	/// except under tank mimicry with the gate in the set while a tankbuster on the player is announced within that recast;
+	/// then the gate keeps it for the hit (concept 01, "Gemeinsame Abklingzeit mit dem Schildkrötentor", A946). Without an
+	/// announcement the damage goes, and an unannounced buster meets the tank without the gate.
+	/// </summary>
+	/// <param name="spell">The spell that would take the shared recast.</param>
+	protected bool MayTakeGateRecast(IBaseAction spell)
+	{
+		return !IsTank || !ChelonianGatePvE.Info.IsOnSlot || !TankbusterOnMeWithin(spell.Cooldown.RecastTimeOneChargeRaw);
+	}
 
 	/// <summary>
 	/// Whether Peat Pelt opens a Deep Clean for the tank (concept 01, "Matschkuchen und Reinemachen", A942): Deep Clean in

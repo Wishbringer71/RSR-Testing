@@ -27,7 +27,7 @@ public sealed class BLU_Reborn : BlueMageRotation
 	public bool LowChance { get; set; } = false;
 
 	[RotationConfig(CombatType.PvE, Name = "Use Wild Rage for damage",
-		Tooltip = "In a fight: Wild Rage deals 500 to a pack for half your maximum HP. Skipped as tank or while a hit is announced.")]
+		Tooltip = "In a fight: Wild Rage hits a pack at the HP cost its effect text states. Skipped as tank or healer, and while a hit is announced.")]
 	public bool UseWildRage { get; set; } = false;
 
 	[RotationConfig(CombatType.PvE, Name = "Moon Flute only when it is safe: not as tank or healer, no member in danger, no raidwide or tankbuster on you announced within its window",
@@ -540,14 +540,16 @@ public sealed class BLU_Reborn : BlueMageRotation
 			return true;
 		}
 
-		if (TheRoseOfDestructionPvE.CanUse(out act))
+		// The Rose and Ruby Dynamics take Chelonian Gate's recast: under tank mimicry not while a buster on the player is
+		// announced within it (concept 01, A946).
+		if (TheRoseOfDestructionPvE.CanUse(out act) && MayTakeGateRecast(TheRoseOfDestructionPvE))
 		{
 			return true;
 		}
 
 		// Shares its recast with the Rose, which takes it first where it is in the set; a cone for a pack only, its 2 s cast
 		// loses to Sonic Boom on one target (concept 01, "Angriffs- und Kontrollzauber", A944).
-		if (RubyDynamicsPvE.CanUse(out act) && OverSonicBoom(RubyDynamicsPvE))
+		if (RubyDynamicsPvE.CanUse(out act) && OverSonicBoom(RubyDynamicsPvE) && MayTakeGateRecast(RubyDynamicsPvE))
 		{
 			return true;
 		}
@@ -638,9 +640,9 @@ public sealed class BLU_Reborn : BlueMageRotation
 			return true;
 		}
 
-		// Half the player's HP for 500 potency: only for a player who chose damage over safety, never as tank, never while a
-		// hit on a member is announced (concept 01, "Bewusst nicht", A941). Its check holds HP above the stated cost.
-		if (UseWildRage && !IsTank && !AreaDefenseDanger(out _) && WildRagePvE.CanUse(out act) && OverSonicBoom(WildRagePvE))
+		// The HP cost its text states for its damage: only for a player who chose damage over safety, never as tank or healer,
+		// never while a hit on a member is announced (concept 01, "Bewusst nicht", A941, A946). Its check holds HP above the cost.
+		if (UseWildRage && !IsTank && !IsHealer && !AreaDefenseDanger(out _) && WildRagePvE.CanUse(out act) && OverSonicBoom(WildRagePvE))
 		{
 			return true;
 		}

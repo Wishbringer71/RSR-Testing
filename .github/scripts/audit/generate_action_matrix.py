@@ -665,11 +665,15 @@ LOCAL_ACTION = re.compile(r"\bvar\s+(\w+)\s*=\s*([^;]*\w+PvE(?:_\d+)?[^;]*);")
 
 
 def local_casts(code):
-    """Actions cast through a local: `var sleep = healer ? ReposePvE : SleepPvE;` then `sleep.CanUse(out act ...)`."""
+    """Actions cast through a local: `var sleep = healer ? ReposePvE : SleepPvE;` then `sleep.CanUse(out act ...)`. A local
+    is resolved within its method, so two methods reusing a name do not lend each other their actions (A946)."""
     casts = set()
-    for local, expr in LOCAL_ACTION.findall(code):
-        if re.search(rf"\b{local}\s*\.\s*CanUse\s*\(\s*out\s+(?!_\s*[,)])", code):
-            casts |= set(re.findall(r"\b(\w+PvE(?:_\d+)?)\b", expr))
+    spans = method_spans(code) or [(0, len(code))]
+    for start, end in spans:
+        body = code[start:end]
+        for local, expr in LOCAL_ACTION.findall(body):
+            if re.search(rf"\b{local}\s*\.\s*CanUse\s*\(\s*out\s+(?!_\s*[,)])", body):
+                casts |= set(re.findall(r"\b(\w+PvE(?:_\d+)?)\b", expr))
     return casts
 
 
@@ -1379,6 +1383,12 @@ def self_test():
         return f"a helper only rotations call, or a probe, counted as central dispatch: {sorted(used)}"
     if central_helpers(central).get("UseAddle", (None, set()))[1] != {"AddlePvE"}:
         return "a central helper's casts were not read"
+    reused = strip_code('''
+        private bool A(out IAction? act) { var stop = FootGrazePvE; return stop.CanUse(out _); }
+        private bool B(out IAction? act) { var stop = SleepPvE; return stop.CanUse(out act); }
+    ''')
+    if local_casts(reused) != {"SleepPvE"}:
+        return f"a local name reused in another method lent its action: {sorted(local_casts(reused))}"
     return None
 
 

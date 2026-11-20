@@ -20,6 +20,7 @@ namespace RotationSolver.Engine.Helpers;
 internal static class ActionTooltip
 {
 	private static readonly Dictionary<(uint ActionId, int Level), string> _texts = [];
+	private static readonly Dictionary<(Regex Pattern, uint ActionId, int Level), float> _statedFigures = [];
 	private static readonly object _gate = new();
 
 	private static readonly Regex StatedPotency = new(@"potency of (?<value>\d[\d,]*)", RegexOptions.Compiled);
@@ -282,7 +283,7 @@ internal static class ActionTooltip
 	/// </summary>
 	public static bool TryStatedHealthBelow(uint actionId, out float ratio)
 	{
-		var stated = TryStated(actionId, StatedHealthBelow, out var percent);
+		var stated = TryStatedKept(actionId, StatedHealthBelow, out var percent);
 		ratio = percent / 100f;
 		return stated;
 	}
@@ -294,7 +295,34 @@ internal static class ActionTooltip
 	/// </summary>
 	public static bool TryRaisedPotencyLowHealth(uint actionId, out float potency)
 	{
-		return TryStated(actionId, StatedRaisedPotencyLowHealth, out potency);
+		return TryStatedKept(actionId, StatedRaisedPotencyLowHealth, out potency);
+	}
+
+	// A figure read once per action and level, for a check asked every frame (Revenge Blast's and Wild Rage's ActionCheck):
+	// the text does not change at a level, and a Match per frame allocates. NaN marks "the text states none". Only a read
+	// from a text that exists is kept, so an empty text before the sheets load is asked again.
+	private static bool TryStatedKept(uint actionId, Regex pattern, out float value)
+	{
+		var key = (pattern, actionId, DataCenter.PlayerSyncedLevel());
+		lock (_gate)
+		{
+			if (_statedFigures.TryGetValue(key, out var known))
+			{
+				value = float.IsNaN(known) ? 0f : known;
+				return !float.IsNaN(known);
+			}
+		}
+
+		var stated = TryStated(actionId, pattern, out value);
+		if (Text(actionId).Length > 0)
+		{
+			lock (_gate)
+			{
+				_statedFigures[key] = stated ? value : float.NaN;
+			}
+		}
+
+		return stated;
 	}
 
 	/// <summary>
@@ -303,7 +331,7 @@ internal static class ActionTooltip
 	/// </summary>
 	public static bool TryStatedHealthCost(uint actionId, out float ratio)
 	{
-		var stated = TryStated(actionId, StatedHealthCost, out var percent);
+		var stated = TryStatedKept(actionId, StatedHealthCost, out var percent);
 		ratio = percent / 100f;
 		return stated;
 	}

@@ -27437,6 +27437,30 @@ Zauber, den RSR wirkt? Nein, nur freie oder nicht gewirkte Plätze. Ausgeliefert
 Spieler das Set selbst geändert hat (dann schreibt RSR in dieser Sitzung nichts) oder kein Platz frei ist.
 *Prüfgrad:* Code, Compile, Prüfskripte; Laufzeit nicht beobachtet.
 
+### A946 · Code-Review über A940 bis A945: Torschutz, Heiler bei Bestialischem Zorn, Zwischenspeicher (20.11.2026)
+
+*Umfang:* `git diff 12be0c8f8..HEAD` über `RotationSolver*` und `.github/` (11 Dateien), Code-Review auf hoher Stufe in
+vier Blickwinkeln (Zeile für Zeile, entferntes Verhalten, Aufrufer, CLAUDE.md); 7 Befunde.
+*Behoben:*
+- Rose der Zerstörung und Rubin-Dynamo nahmen dem Tank das Schildkrötentor (gemeinsame 30 s). Jetzt
+  `MayTakeGateRecast`: unter Tank-Mimikry mit dem Tor im Set nicht, solange innerhalb der Abklingzeit ein Tankbuster auf
+  den Spieler angekündigt ist. Für die Rose bestand das seit Upstream; dieselbe Klasse, deshalb beide.
+- Bestialischer Zorn auch nicht unter Heiler-Mimikry; der Optionstext nennt keine festen Zahlen mehr, sondern die Kosten
+  laut Wirktext (er band „500“ und „half“, der Code liest den Text).
+- `SpickAndSpanMaxStacks` hielt eine 0 aus einem Abruf vor dem Laden des Blatts für die ganze Sitzung; jetzt nur ein
+  gelesener Wert.
+- `ActionTooltip.TryStatedHealthBelow`, `TryStatedHealthCost`, `TryRaisedPotencyLowHealth` lasen je Frame einen
+  regulären Ausdruck (Anlage je Aufruf); jetzt einmal je Aktion und Stufe (`TryStatedKept`), nur aus einem vorhandenen
+  Text. `TryStatedHealthBelow` liest auch der PvP-Limitbruch; sein Ergebnis bleibt gleich.
+- `generate_action_matrix.py`: eine lokale Variable wird je Methode aufgelöst; Selbsttest mit zwei Methoden, die
+  denselben Namen nutzen (die alte Fassung lieh die Aktion der anderen).
+*Kein Defekt:* Kraftfeld im Zweig für Einzelziele – der Blaumagier hat die Rolle RangedMagical, und für sie öffnet der
+Zweig nur für einen Treffer auf ihn selbst (`StateUpdater.ShouldAddDefenseSingle`, `AimedHitCallsForDefenceInParty(false)`).
+*Im Kampf anders:* Kündigt BossMod einen Tankbuster auf den Tank-Blaumagier innerhalb von 30 s an, hält er Rose und
+Rubin-Dynamo zurück und hat das Tor für den Treffer; ein Heiler-Blaumagier gibt nie die Hälfte seiner LP für Schaden.
+*Ungeprüft:* Diese Korrekturen sieht keine weitere Prüfrunde.
+*Prüfgrad:* Code, Compile, Prüfskripte; Laufzeit nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
