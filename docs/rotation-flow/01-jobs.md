@@ -609,6 +609,32 @@ statt Reihenfolge" und „Mondflöte"):
   - Bestialischer Zorn (kostet 50 % der max. HP) und Rachestoß (500 nur unter 20 % HP): nur als Option für Spieler,
     die Schaden vor Sicherheit stellen, ab Werk aus (CLAUDE.md, „Spielweise").
 
+**Ewige Flammen: eine Wirkung, die bis zum Tod brennt** (Befund 20.11.2026, A940). Die Ziel-Rotation nennt Ewige Flammen,
+`MaintainDoTs` fragte ihn nie (Aktionsmatrix: „ungenutzt"); legte der Spieler ihn ins Set, ging er nie, und in jedem
+längeren Kampf fehlte sein Schaden über Zeit.
+- *Wirktext und Blatt:* 40 Potenz je Tick, „Only one effect inflicted by this action can be active at a time", wirkt nur
+  im Kampf und endet mit ihm; der Status (3643, „Flames will continue to burn until death", im Blatt dauerhaft) hat keine
+  Dauer. Ein Tick alle 3 s (`DotTickTracker.TickMs`). Denselben Satz „only one effect" trägt nur noch Zauberatem; über
+  alle Jobs keine weitere Aktion (Wirktexte, 20.11.2026) – die Regel sitzt deshalb beim Blaumagier.
+- *Regel:* Ewige Flammen geht auf das Ziel, wenn seine Ticks bis zum geschätzten Tod mehr Potenz bringen, als der
+  Füllzauber in der Wirkzeit von Ewige Flammen brächte: Potenz × (Lebenszeit ÷ Tick) gegen Füllpotenz × Wirkzeit ÷
+  Füllzeit, beides aus den Wirktexten; der gemessene Schaden je Potenz kürzt sich heraus. Trägt schon ein anderer
+  lebender Gegner die eigene Wirkung, zieht sie nur um, wenn das Ziel um diesen Betrag mehr Ticks vor sich hat als
+  der Träger – sonst kostet jeder Zielwechsel einen GCD und nimmt dem Träger seine Ticks. Ist die Lebenszeit des
+  Ziels unbekannt, zählt sie als lang, wie beim Rösselsprung und dem Messer; ist die des Trägers oder des Ziels beim
+  Umzug unbekannt, bleibt die Wirkung, wo sie ist.
+- *Reihenfolge:* nach dem Gesang der Gemarterten und Zauberatem, die mehr Potenz je Tick bringen und ablaufen; vor dem
+  Füllzauber.
+- *Im Kampf anders:* Gegen einen Boss trägt Ewige Flammen vom zweiten GCD an bis zum Ende; über zehn Minuten sind das
+  200 Ticks, 8.000 Potenz für einen GCD. Ein Gegner, der stirbt, bevor sich der GCD bezahlt macht, bekommt ihn nicht.
+- *Nicht geändert:* Die Setverbesserung ergänzt nur Füllzauber, Kettenpartner und Zauber mit eigener Abklingzeit;
+  Ewige Flammen ohne Abklingzeit nimmt sie nicht auf. Ob sie ihn aufnehmen soll, ist offen (TODO, „Blaumagier:
+  ungenutzte Zauber").
+- *Gegenthese:* „Ewige Flammen lohnt nur im Boss" – trifft die Regel, weil sie an der Lebenszeit rechnet, nicht an der
+  Gegnerart. „Zauberatem trägt dieselbe Einschränkung und verschiebt sich ebenso" – Zauberatem dauert 60 s und erneuert
+  sich über `TargetStatusProvide` am Ziel; ein Umzug kostet dort einen GCD, gewinnt aber eine volle Dauer am neuen
+  Ziel; nicht geändert, ohne Messung kein Befund.
+
 **Wert statt Reihenfolge** (die Behebung von D1, D3 bis D5 und D8 bis D10 als Klasse; Stufe 1, gebaut mit A507):
 - *Schaden je Potenz:* RSR misst ihn an den eigenen Treffern, im Effekt-Handler, der jeden Treffer sieht.
   - Es zählen Zauber, deren Wirktext genau eine Potenz ohne Bedingung nennt: kein „increased", kein Schaden über Zeit,

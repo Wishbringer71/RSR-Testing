@@ -34,7 +34,18 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
 
 ## Offene Arbeit
 
-- Keine; was offen ist, wartet auf Daten oder auf ihn (unten).
+- **Blaumagier: ungenutzte Zauber** (Aktionsmatrix 20.11.2026, A940). *Im Kampf:* Liegt einer dieser Zauber im Set, wirkt
+  RSR ihn nie. Offen gegen Konzept 01, „Ziel-Rotation nach Rolle":
+  - Mjam Mjam Matschkuchen und Großes Reinemachen (Tank, Erhaltung) und die Option für Bestialischen Zorn und
+    Rachestoß (ab Werk aus) – das Konzept sieht sie vor, der Code nicht;
+  - Stumpfsinn (Addle) und Kraftfeld als Minderung, Absichern als Deckung;
+  - Geiststoß, Laserauge, Rubin-Dynamo, Apokalypsis, Perpetueller Strahl, Eichelbombe und Schlaf: je Wert gegen die
+    Flächen- und Füllregel, Rückstoß und Kontrolle gegen die Sicherheit;
+  - die Setverbesserung für Ewige Flammen (heute nur Zauber mit Abklingzeit).
+  Bewusst nicht: Schlussstich, Selbstzerstörung, Rotation (stößt die Gruppe weg); Äther-Mimikry wählt der Spieler.
+  *Nächster Schritt:* je Zauber Wirktext, Konzept 01, Loop. *Konzept:* 01, „Blaumagier".
+- **Beastmaster: Cloud Skim nie gefragt** (Aktionsmatrix: vier Fassungen „ungenutzt"). *Nächster Schritt:* Wirktext und
+  Begleiter, die ihn tragen, gegen Konzept 21. *Konzept:* 21.
 
 ## Technische Schuld
 

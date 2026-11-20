@@ -65,6 +65,55 @@ public partial class BlueMageRotation
 	}
 
 	/// <summary>
+	/// Whether Mortal Flame pays on the target its <c>CanUse</c> chose. It burns until that target dies and only one of its
+	/// effects is active at a time, so: its ticks until the target's estimated death must bring more potency than the filler
+	/// would in its cast; with the effect already on another living enemy, the target must have that many ticks more ahead
+	/// than the bearer, or the move costs a GCD and takes the bearer's ticks. Both sides come from the effect texts, so the
+	/// measured damage per potency cancels out. An unknown time to kill counts as long on a fresh target and keeps the effect
+	/// where it is when it would move (concept 01, "Ewige Flammen", A940).
+	/// </summary>
+	/// <param name="flame">Mortal Flame, asked after its <c>CanUse</c> chose its target.</param>
+	protected bool MortalFlamePays(IBaseAction flame)
+	{
+		if (flame.Target.Target is not { } target
+			|| !target.StatusFlags.HasFlag(Dalamud.Game.ClientState.Objects.Enums.StatusFlags.InCombat)
+			|| !ActionTooltip.TryStatedPotency(flame.ID, out var potency) || potency <= 0f
+			|| !TryFiller(out var fillerPotency, out var fillerTime))
+		{
+			return false;
+		}
+
+		var cost = fillerPotency * SpellTime(flame) / fillerTime;
+		var ahead = TicksAhead(target);
+		IBattleChara? bearer = null;
+		foreach (var hostile in DataCenter.AllHostileTargets)
+		{
+			if (hostile != null && hostile.EntityId != target.EntityId && !hostile.IsDead
+				&& hostile.HasStatus(true, StatusID.MortalFlame_3643))
+			{
+				bearer = hostile;
+				break;
+			}
+		}
+
+		if (bearer == null)
+		{
+			return float.IsPositiveInfinity(ahead) || potency * ahead > cost;
+		}
+
+		var behind = TicksAhead(bearer);
+		return !float.IsPositiveInfinity(ahead) && !float.IsPositiveInfinity(behind) && potency * (ahead - behind) > cost;
+
+		static float TicksAhead(IBattleChara enemy)
+		{
+			var ttk = enemy.GetCorrectedTTK();
+			return float.IsNaN(ttk)
+				? float.PositiveInfinity
+				: MathF.Floor(ttk / (float)TimeSpan.FromMilliseconds(DotTickTracker.TickMs).TotalSeconds);
+		}
+	}
+
+	/// <summary>
 	/// Whether <paramref name="action"/>, a spell without a recast of its own, should go before Sonic Boom: it brings more
 	/// potency per time over the enemies it reaches, and on a single target only without a longer cast - a longer cast costs
 	/// the weaving room the Blue Mage's many abilities need, which is why Sonic Boom (1 s) is the filler at Blue Academy,

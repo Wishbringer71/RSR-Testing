@@ -462,6 +462,12 @@ public sealed class BLU_Reborn : BlueMageRotation
 			return true;
 		}
 
+		// Burns until the target dies: only where its ticks pay for the cast (concept 01, "Ewige Flammen", A940).
+		if (MortalFlamePvE.CanUse(out act) && MortalFlamePays(MortalFlamePvE))
+		{
+			return true;
+		}
+
 		if (SongOfTormentPvE.CanUse(out act, skipStatusProvideCheck: true) && SongOfTormentPvE.Target.Target != null && (SongOfTormentPvE.Target.Target?.WillStatusEndGCD(3, 0, true, SongOfTormentPvE.Setting.TargetStatusProvide ?? []) ?? false))
 		{
 			if (BristlePvE.Info.IsOnSlot && StatusHelper.PlayerHasStatus(true, StatusID.Boost_1716))

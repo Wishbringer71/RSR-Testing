@@ -8,7 +8,7 @@ Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-20; nic
 
 ## Nutzung
 
-direkt: 116 · ungenutzt: 21
+direkt: 117 · ungenutzt: 20
 
 | Stufe | Aktion | Id | Art | Nutzung |
 |---|---|---|---|---|
@@ -92,7 +92,7 @@ direkt: 116 · ungenutzt: 21
 | Job | Mind Blast (`MindBlastPvE`) | 11394 | Spell | ungenutzt |
 | Job | Missile (`MissilePvE`) | 11405 | Spell | direkt |
 | Job | Moon Flute (`MoonFlutePvE`) | 11415 | Spell | direkt |
-| Job | Mortal Flame (`MortalFlamePvE`) | 34579 | Spell | ungenutzt |
+| Job | Mortal Flame (`MortalFlamePvE`) | 34579 | Spell | direkt |
 | Job | Mountain Buster (`MountainBusterPvE`) | 11428 | Ability | direkt |
 | Job | Mustard Bomb (`MustardBombPvE`) | 23279 | Spell | direkt |
 | Job | Nightbloom (`NightbloomPvE`) | 23290 | Ability | direkt |
@@ -368,7 +368,6 @@ Maschinelle Liste; die Bewertung je Eintrag steht im Konzept.
 - Force Field (`ForceFieldPvE`, Spell): ungenutzt
 - Laser Eye (`LaserEyePvE`, Spell): ungenutzt
 - Mind Blast (`MindBlastPvE`, Spell): ungenutzt
-- Mortal Flame (`MortalFlamePvE`, Spell): ungenutzt
 - Peat Pelt (`PeatPeltPvE`, Spell): ungenutzt
 - Perpetual Ray (`PerpetualRayPvE`, Spell): ungenutzt
 - Right Round (`RightRoundPvE`, Spell): ungenutzt

@@ -1403,9 +1403,11 @@ public partial class BlueMageRotation
 
 	static partial void ModifyMortalFlamePvE(ref ActionSetting setting)
 	{
-		//Need data
 		setting.AttackTypeOverride = AttackType.Magic;
 		setting.AspectOverride = Aspect.Fire;
+		// The status the spell lays (sheet: "Flames will continue to burn until death", permanent); 2136 of the same name
+		// is a duty mechanic (concept 01, "Ewige Flammen", A940).
+		setting.TargetStatusProvide = [StatusID.MortalFlame_3643];
 		setting.IsFriendly = false;
 		setting.CreateConfig = () => new ActionConfig()
 		{

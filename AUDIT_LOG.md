@@ -27285,6 +27285,35 @@ Kostenaussage; sie bleibt. Die Bewertung des Zeichenbudgets im Regelgerüst stü
 nicht auf Zeichen; sie bleibt.
 *Prüfgrad:* Messung mit der CLI, zwei Modelle; `check_rule_files.py`.
 
+### A940 · Blaumagier: Ewige Flammen nie gewirkt; ungenutzte Zauber erhoben (20.11.2026)
+
+*Anlass:* sein Auftrag vom 20.11.2026 („todo weiter im vollen loop“). Offene Arbeit und Defekte waren leer; der Punkt
+„Rotation jedes Jobs“ wartete laut TODO auf Mitschnitte. Statisch offen war aber, was A931 ausließ: ob Blaumagier und
+Beastmaster jede eigene Aktion fragen.
+*Erhoben:* Aktionsmatrix (`generate_action_matrix.py`, 20.11.2026): Beastmaster 6 ungenutzt (Beast Mode als Behälter,
+Gauge als bekannte Schuld, Cloud Skim in vier Fassungen); Blaumagier 21 ungenutzt. Deutsche Namen aus den Spielblättern
+(xivapi v2, `language=de`, Zeilen-Ids aus der Matrix). Gegen Konzept 01: Die Ziel-Rotation nennt Ewige Flammen (DPS,
+Einzelziel), Matschkuchen und Reinemachen (Tank) und eine Option für Bestialischen Zorn; der Code fragt keinen davon.
+*Eigener Fehler, berichtigt:* Den ersten Abruf der deutschen Namen setzte ich mit Ids aus dem Gedächtnis; zwei waren
+falsch (Bestialischer Zorn, Selbstzerstörung). Der zweite Abruf nahm die Ids aus der Matrix.
+*Gebaut:* Ewige Flammen (Konzept 01, „Ewige Flammen“). Wirktext: 40 Potenz je Tick, eine Wirkung zugleich, nur im Kampf;
+Status 3643 (Blatt: dauerhaft, „until death“; 2136 gleichen Namens ist eine Kampfmechanik). Regel in
+`BlueMageRotation.MortalFlamePays`: Ticks bis zum geschätzten Tod (`GetCorrectedTTK`, Tick aus
+`DotTickTracker.TickMs`) mal Potenz gegen Füllpotenz mal Wirkzeit durch Füllzeit; trägt ein anderer lebender Gegner die
+Wirkung, nur mit so viel mehr Ticks; unbekannte Lebenszeit zählt auf einem neuen Ziel als lang und hält einen Umzug an.
+Aufruf in `BLU_Reborn.MaintainDoTs` nach Zauberatem; `TargetStatusProvide` am Zauber.
+*Im Kampf anders:* Gegen einen Boss trägt der Blaumagier Ewige Flammen vom ersten DoT-GCD an bis zum Ende, über zehn
+Minuten 200 Ticks, 8.000 Potenz für einen GCD; Trash, der vor der Gewinnschwelle stirbt, bekommt ihn nicht.
+*Falsifikation:* Kein Defekt? Widerlegt: ohne Aufruf kein Wirken (Matrix, Code). Option falsch? Ein Wechsel des Ziels
+ohne Gegenrechnung nähme dem Träger seine Ticks; die Regel rechnet ihn. Ausgeliefert, und nichts ändert sich? Nur, wenn
+der Zauber nicht im Set liegt; die Setverbesserung nimmt ihn nicht auf (TODO).
+*Vorhersage:* Im ersten ACT-Mitschnitt eines Blaumagiers mit Ewige Flammen im Set zeigt Zeile 26 den Status 3643 auf dem
+Boss vom ersten Drittel des Kampfes bis zu seinem Ende, einmal gesetzt; widerlegt, wenn er fehlt oder je Ziel mehrfach
+neu gesetzt wird. Ohne Zeile im `DefenseTrace.log`, deshalb nicht maschinenlesbar.
+*Offen (TODO, „Blaumagier: ungenutzte Zauber“, „Beastmaster: Cloud Skim nie gefragt“):* die übrigen 18 Zauber des
+Blaumagiers und Cloud Skim.
+*Prüfgrad:* Wirktexte, Blatt, Code, Compile; Laufzeit nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
