@@ -1188,3 +1188,20 @@ die Abklingzeit wie vorher.
   30 % Fehler – bei rund 150 000 Potenz in zehn Minuten 0,1 bis 0,2 %. Stets auf Abklingzeit wären −99: Ohne die
   Buffs der anderen, die nach seiner Spielweise kein tragender Grund sind, gewinnt die Ausrichtung knapp. Eine
   Fehlvorhersage kostet höchstens den Embolden-Anteil eines Einsatzes; die Sicherheit berührt die Regel nicht.
+
+### Churin- und Beiruta-Rotationen: Einstellungstexte gegen ihren Code
+
+Sein Auftrag vom 20.11.2026 („die 104 restlichen texte auch prüfen“), Stand 20.11.2026 (A936). Je Einstellung der 13
+fremden Rotationen ihr Text gegen jede Stelle, die sie liest, auch über eine abgeleitete Eigenschaft.
+- *Umfang:* 157 von 157 Einstellungen – 53 mit Zahl im Text, 104 ohne (BeirutaAST 17, BeirutaSGE 18, BeirutaSCH 27,
+  BeirutaWHM 14, BeirutaPCT 9, BeirutaRDM 8, BeirutaNIN 3, ChurinSMN 9; ChurinMNK, ChurinBRD, ChurinDNC, ChurinMCH
+  und ChurinDRK haben keine).
+- *Deckungsgleich:* jede. Beispiele, die genau hinzusehen verlangten: Die Bewegungs-Prognosis des Weisen geht nur, wenn
+  noch niemand einen Schild trägt (doppelte Verneinung in `CountMissing`); der Gelehrte wirft übrige Aetherflow-Stapel
+  vor dem nächsten Aetherflow ab (`FreshAetherflowSoon`); der Weißmagier heilt im Burst nicht nur fürs Laufen
+  (`CanUseMovementHeal`).
+- *Befund ohne Vorlage (Richtung des Autors):* Die Kampfvorgabe „AAC Cruiserweight M4 (Savage)“ des ChurinSMN schreibt
+  während des Kampfes die gespeicherten Einstellungen `AddCrimsonCyclone` und `SummonOrder` um und setzt sie danach nicht
+  zurück; nach dem Kampf gelten die Werte der Vorgabe weiter. Ob das gewollt ist, entscheidet sein Autor.
+- *Nach eigener Änderung:* „Uses Swiftcast or Acceleration“ (BeirutaRDM) gilt weiter – Acceleration immer, Swiftcast
+  ohne Rücklage für die Wiederbelebung (Konzept 11, A936).

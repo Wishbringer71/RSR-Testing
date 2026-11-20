@@ -27128,7 +27128,9 @@ der großen Beschwörung; die Burstfolgen aller 13 folgen ihrem Autor, ohne Mits
 Muse, 2 s Zeit bis zum Tod, Stufe 92). In den übrigen 11 Dateien jede Zahl eines Texts gegen die Werte im Code
 (auch als Bruchteil oder Millisekunden): ohne Gegenstück nur „about 85-90%“ (Linie je Heilung aus ihrer Potenz
 gerechnet), „0-6-11“ (Minuten einer Auswahl) und „60s window“ (Abklingzeit von Kunai's Bane) – kein Widerspruch.
-Die 104 Texte ohne Zahl sind nicht einzeln gegen ihren Code gelesen; offen im TODO.
+Die 104 Texte ohne Zahl danach einzeln gegen jede lesende Stelle (sein Auftrag, 20.11.2026): alle deckungsgleich;
+Befund ohne Vorlage: die M4S-Kampfvorgabe des ChurinSMN schreibt gespeicherte Einstellungen um und setzt sie nicht
+zurück (Konzept 14, „Churin- und Beiruta-Rotationen: Einstellungstexte gegen ihren Code“). Umfang: 157 von 157.
 *Prüfgrad:* Code, Compile, CI; im Spiel nicht beobachtet (er spielt sie nicht).
 
 ## B · Commit-Register (Fork vs. `upstream/main`)

@@ -34,24 +34,6 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
 
 ## Offene Arbeit
 
-- **Rotation jedes Jobs: Synergien und Kaskaden innerhalb des Jobs** (sein Auftrag vom 19.11.2026: „danach die
-  rotationen jedes jobs auf verbesserungspotential prüfen. innerhalb des jobs durch auswertung der eigenschaften der
-  funktionen, angriffe, skills, talente und allen drumrum, auf synergieeffekte und kaskaden. im vollen kritischen loop
-  mit antithese, audit und codereview mit fehlerbehebung“); seine Präzisierung desselben Tages: „ziel ist die
-  aufrechterhaltung der schadensgeneriereung, aufrechterhaltung der gruppengesundheit und erhöhung des schadensoutputs bei
-  bosskämpfen, raids und prüfungen. danach bei allen anderen inhalten und kämpfen“ – Maßstab je Befund: Schaden ohne
-  Lücke, Gesundheit der Gruppe, mehr Schaden; Reihenfolge Boss, Raid, Prüfung vor allem anderen. Umfang (seine Präzisierung, 19.11.2026: „ich habe nicht
-  gesagt, dass du nur die jobs bearbeiten sollst, die ich spiele. ich habe alle gesagt“): alle Jobs – die 21 Kampfjobs,
-  Blaumagier und Beastmaster –, je Job jede Rotation; Churin und Beiruta, soweit mit den Änderungen des Forks verträglich (CLAUDE.md, seine Präzisierung). Ziel (seine Vorgabe, 19.11.2026): „ziel für alle rotationen ist es, besser als
-  die von the balance zu werden.“ – gemessen an Potenz über den Kampf; wo eine Sicherheitsregel bewusst Schaden kostet,
-  zählt das nicht als schlechter (CLAUDE.md, „Spielweise“). *Wirkung im Kampf:* Wo ein Merkmal, ein Status oder eine
-  Aktion eine andere verstärkt oder freischaltet und die Rotation das nicht nutzt, fehlt Schaden in jedem Kampf.
-  *Stand:* drei Durchgänge über alle Rotationen, die er in den Mitschnitten vom 10. bis 19.11.2026 spielte (A931 bis
-  A933): Freischalter, Burst-Procs, Burstfenster und die messbaren Regeln von xivanalysis; gebaut daraus Lilie im Laufen
-  (Weißmagier) und Life Surge (Dragoon); diese beiden Klassen auch in den 13 Churin- und Beiruta-Rotationen geprüft,
-  ohne Befund. Die 13 Churin- und Beiruta-Rotationen sind verträglich (A936).
-  *Nächster Schritt:* die 104 Einstellungstexte der 13 ohne Zahl gegen ihren Code (die 53 mit Zahl stimmen, A936); Blaumagier, Beastmaster und die
-  Burstfolgen der 13 am nächsten Mitschnitt, in dem sie laufen. *Konzept:* 14 (je Job), 03 „F · Über den Augenblick hinaus“.
 - **Rotationen aller Jobs über den Augenblick hinaus** (sein Auftrag vom 19.11.2026; A901). *Wirkung im Kampf:*
   Verstärker, Zeitgeber und DoTs laufen heute in vorhergesagte Pausen, Ressourcen bleiben beim Tod des Ziels übrig, der
   eigene Burst richtet sich nach der eigenen Uhr statt nach den Raidbuffs, die wirklich auf dir liegen. *Nächster
@@ -133,6 +115,25 @@ Reborn"); beides kostet im Spiel, solange nicht beide Installationen gebraucht w
 nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigter Name bleibt. *Konzept:* 24.
 
 ## Warten auf Daten oder Fremde
+
+- **Rotation jedes Jobs: Synergien und Kaskaden innerhalb des Jobs** (sein Auftrag vom 19.11.2026: „danach die
+  rotationen jedes jobs auf verbesserungspotential prüfen. innerhalb des jobs durch auswertung der eigenschaften der
+  funktionen, angriffe, skills, talente und allen drumrum, auf synergieeffekte und kaskaden. im vollen kritischen loop
+  mit antithese, audit und codereview mit fehlerbehebung“); seine Präzisierung desselben Tages: „ziel ist die
+  aufrechterhaltung der schadensgeneriereung, aufrechterhaltung der gruppengesundheit und erhöhung des schadensoutputs bei
+  bosskämpfen, raids und prüfungen. danach bei allen anderen inhalten und kämpfen“ – Maßstab je Befund: Schaden ohne
+  Lücke, Gesundheit der Gruppe, mehr Schaden; Reihenfolge Boss, Raid, Prüfung vor allem anderen. Umfang (seine Präzisierung, 19.11.2026: „ich habe nicht
+  gesagt, dass du nur die jobs bearbeiten sollst, die ich spiele. ich habe alle gesagt“): alle Jobs – die 21 Kampfjobs,
+  Blaumagier und Beastmaster –, je Job jede Rotation; Churin und Beiruta, soweit mit den Änderungen des Forks verträglich (CLAUDE.md, seine Präzisierung). Ziel (seine Vorgabe, 19.11.2026): „ziel für alle rotationen ist es, besser als
+  die von the balance zu werden.“ – gemessen an Potenz über den Kampf; wo eine Sicherheitsregel bewusst Schaden kostet,
+  zählt das nicht als schlechter (CLAUDE.md, „Spielweise“). *Wirkung im Kampf:* Wo ein Merkmal, ein Status oder eine
+  Aktion eine andere verstärkt oder freischaltet und die Rotation das nicht nutzt, fehlt Schaden in jedem Kampf.
+  *Stand:* drei Durchgänge über alle Rotationen, die er in den Mitschnitten vom 10. bis 19.11.2026 spielte (A931 bis
+  A933): Freischalter, Burst-Procs, Burstfenster und die messbaren Regeln von xivanalysis; gebaut daraus Lilie im Laufen
+  (Weißmagier) und Life Surge (Dragoon); diese beiden Klassen auch in den 13 Churin- und Beiruta-Rotationen geprüft,
+  ohne Befund. Die 13 Churin- und Beiruta-Rotationen sind verträglich (A936).
+  Ihre 157 Einstellungstexte decken sich mit dem Code (A936). *Nächster Schritt:* Blaumagier, Beastmaster und die
+  Burstfolgen der 13 am nächsten Mitschnitt, in dem sie laufen. *Konzept:* 14 (je Job), 03 „F · Über den Augenblick hinaus“.
 
 - **Todeswand ohne BossMod-Modul lernen** (A934, O3 in Konzept 05, „Arenagrenzen ohne BossMod-Modul“). Sein Hinweis
   und Vorschlag vom 20.11.2026, in Arbeit (A935): „meist enteht in der anfangsphase dort ein vfx, um den rand optisch
