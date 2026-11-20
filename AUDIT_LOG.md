@@ -27125,7 +27125,10 @@ Swiftcast im Laufen ab Werk aus (BeirutaAST, BeirutaSGE, BeirutaWHM, ChurinSMN n
 der großen Beschwörung; die Burstfolgen aller 13 folgen ihrem Autor, ohne Mitschnitt nicht gemessen.
 *Text gegen Code:* 157 Einstellungen, 53 nennen Zahlen. Geprüft und deckungsgleich: BeirutaRDM (2 s Warten, 17 s,
 73|73, Lücke 11, unter 50 Mana; „about 3 GCDs“ sind 5 s ab Embolden), BeirutaPCT (Countdown bis 5,5 s, 10 s um Starry
-Muse, 2 s Zeit bis zum Tod, Stufe 92). Die übrigen 11 Dateien offen im TODO.
+Muse, 2 s Zeit bis zum Tod, Stufe 92). In den übrigen 11 Dateien jede Zahl eines Texts gegen die Werte im Code
+(auch als Bruchteil oder Millisekunden): ohne Gegenstück nur „about 85-90%“ (Linie je Heilung aus ihrer Potenz
+gerechnet), „0-6-11“ (Minuten einer Auswahl) und „60s window“ (Abklingzeit von Kunai's Bane) – kein Widerspruch.
+Die 104 Texte ohne Zahl sind nicht einzeln gegen ihren Code gelesen; offen im TODO.
 *Prüfgrad:* Code, Compile, CI; im Spiel nicht beobachtet (er spielt sie nicht).
 
 ## B · Commit-Register (Fork vs. `upstream/main`)

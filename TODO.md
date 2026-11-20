@@ -50,8 +50,7 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
   A933): Freischalter, Burst-Procs, Burstfenster und die messbaren Regeln von xivanalysis; gebaut daraus Lilie im Laufen
   (Weißmagier) und Life Surge (Dragoon); diese beiden Klassen auch in den 13 Churin- und Beiruta-Rotationen geprüft,
   ohne Befund. Die 13 Churin- und Beiruta-Rotationen sind verträglich (A936).
-  *Nächster Schritt:* je Einstellung der Tooltip gegen den Code – BeirutaRDM und BeirutaPCT geprüft, die übrigen
-  11 Dateien offen; Blaumagier, Beastmaster und die
+  *Nächster Schritt:* die 104 Einstellungstexte der 13 ohne Zahl gegen ihren Code (die 53 mit Zahl stimmen, A936); Blaumagier, Beastmaster und die
   Burstfolgen der 13 am nächsten Mitschnitt, in dem sie laufen. *Konzept:* 14 (je Job), 03 „F · Über den Augenblick hinaus“.
 - **Rotationen aller Jobs über den Augenblick hinaus** (sein Auftrag vom 19.11.2026; A901). *Wirkung im Kampf:*
   Verstärker, Zeitgeber und DoTs laufen heute in vorhergesagte Pausen, Ressourcen bleiben beim Tod des Ziels übrig, der
