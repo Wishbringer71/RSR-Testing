@@ -2623,11 +2623,12 @@ nimmt“, A961). Eine Ablehnung nach `CanUse` erscheint in der Zeile als „not 
     Abilities in 77 GCDs über den Kampf) und die offene Abwehrflagge: Nach „single defence open, nothing chosen" läuft
     die Wahl weiter zu `AttackAbility`. Erklärt (A867, A868): Den Laufstabilisator sperrte die Gruppe des Vorjobs bis
     47,5 s, die Überhitzung folgt ihm (51,0 s). Schachmatt kam bei 53,4 s, seine Gruppe 16 lief nach dem Dunkelritter
-    bis 56,9 s [Schätzung: die Sperre lag in dieser Gruppe; die 3,5 s Abstand erklärt die Messung nicht]. Offen bleibt
-    Doppelschach: `usedUp` ist mit Auto-Burst wahr, die Ladung hätte kommen müssen. Hypothese: `MCH_Reborn` wählt vor der
-    Abfrage nach der längeren abgelaufenen Abklingzeit zwischen Schachmatt und Doppelschach und fragt im Zweig „Ricochet"
-    nur Schachmatt; ist es gesperrt, kommt keine von beiden. Die Messzeile zeigt das in der nächsten Puppensitzung nach
-    einem Jobwechsel als Doppelschach „not asked".
+    bis 56,9 s [Schätzung: die Sperre lag in dieser Gruppe; die 3,5 s Abstand erklärt die Messung nicht]. Doppelschach
+    *geklärt am 20.11.2026 (A968):* Die Hypothese, `MCH_Reborn` frage nach gesperrtem Schachmatt Doppelschach gar nicht,
+    ist widerlegt. In der Puppensitzung nach dem Barden stand Doppelschach mit „refused ChargesKept 2043, AnimationLock
+    1615“ in der Messzeile, nicht mit „not asked“: Die Rotation fragte, und `CanUse` hielt die letzte Ladung außerhalb
+    des Bursts (`usedUp: IsBurst || IsOverheated`) oder der Weave-Platz war belegt. Das ist die gewollte Rücklage einer
+    Ladung für den Burst; die 30 s vom 15.11. erklärt sie ebenso („Doppelschach hielt eine Ladung“). Kein Defekt.
 - *Ursache des späten ersten Bursts an der Puppe (A867):* keine Rotation, sondern der Jobwechsel. Abklinggruppen sind
   Nummern, die verschiedene Jobs für verschiedene Aktionen nutzen, und die Gruppe läuft beim Wechsel weiter. In der
   Puppensitzung vom 15.11.2026 endete die Gruppe der Burst-Aktion jedes betroffenen Jobs zu der Zeit, zu der die Aktion kam,

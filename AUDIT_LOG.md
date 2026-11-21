@@ -27991,6 +27991,29 @@ so dass ein Flächen-GCD an einer einzelnen Puppe nicht gewählt wird. Ob sein B
 - *Prüfgrad:* Regelabgleich am Code und Konzept, Mitschnitt 20.11.2026, Modelle; Selbsttest des Hooks; keine Änderung am
   Plugin.
 
+### A968 · Upload 20.11.2026, allgemeine Auswertung: Zeilenarten, gelernte Tabellen, Vorhersagen (21.11.2026)
+
+- *Anlass:* Rest der Auswertung des Uploads vom 20.11.2026 (Skill `upload-auswertung`, Schritte 2, 4, 5), offen seit A957.
+- *Zeilenarten (Sitzung ab Zeile 7904, Build 4f9790fd4):* dynamic rotation 5.523 (Rauschen, seit fc664c7eb je Aktion
+  und Ziel einmal), request without an answer 331 (A957), positional 245, je Kampf Kosten- und Zeitzeilen (32), ready but
+  unused 29, tincture held 25, out-of-combat heal held 24, positional move 11, eigene Flächen gemessen (Wirbelströmung 8,
+  Salzige Erde 6: Gegner darin 15,0 s), movement check 5, gcd idle 3 (A958), cast broken by moving 2. Keine Ausnahme,
+  kein Hook-Fehler.
+- *Gelernte Tabellen:* 51 von 51 gegen den Upload vom 19.11.2026 verglichen, alle byteweise gleich – eine Puppensitzung
+  ohne gegnerische Zauber lehrt keine Tabelle.
+- *Vorhersagen (`evaluate_predictions.py`):* 73 Einträge, 35 PASS, 25 OPEN, 2 UNBOUND, 11 FAIL; am Build 4f9790fd4 zwei
+  FAIL, die übrigen an älteren Builds und dort ausgewertet:
+  - `mch-checkmate-hides-double-check` (A868): *widerlegt am 20.11.2026.* Doppelschach stand mit „refused ChargesKept,
+    AnimationLock“, nicht „not asked“; die Rücklage einer Ladung außerhalb des Bursts erklärt die Lücke, kein Defekt.
+    Konzept 03 fortgeschrieben, TODO-Punkt „Maschinist: Schachmatt sperrt Doppelschach“ geschlossen.
+  - `move-forecast-learns` (A880): *offen, Vorhersage zu weit gefasst.* Zwei Abbrüche eines Reaper-Harpe beim Gehen
+    zwischen Puppen, ohne Zeile „move forecast“: Gelernt wird nur ein Vorlauf vor einem Treffer (an der Puppe keiner) oder
+    eine Pause, wenn er binnen eines GCD wieder geht; ob er das tat, zeigen die Ortszeilen (etwa eine je Sekunde) nicht –
+    weiß ich nicht. Am 18. und 19.11. lernte dieselbe Regel (PASS bei c93ec988b). Die Vorhersage verlangt einen Abbruch,
+    nicht die Lernbedingung.
+- *Umfang:* Zeilenarten der ganzen Sitzung; Tabellen 51 von 51; Vorhersagen 73 von 73.
+- *Prüfgrad:* Spur, Tabellen, Mitschnitt.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

@@ -168,12 +168,6 @@ nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigt
   (17.11.2026): „nebenthema zuende. wird irgendwann von mir neu angesprochen“. Auflösung: sein neuer Auftrag.
 
 
-- **Maschinist: Schachmatt sperrt Doppelschach** (A868). Ist Schachmatt gewählt, aber gesperrt, kommt auch Doppelschach
-  nicht – an der Puppe nach einem Jobwechsel rund 30 s ohne Ability [Schätzung: im Inhalt kaum]. Ort:
-  `MCH_Reborn.AttackAbility`, Auswahl `whichToUse` ohne Rückfall. Auflösung: nächste Puppensitzung mit Maschinist nach
-  einem anderen Job, Vorhersage `mch-checkmate-hides-double-check`; trifft sie zu, Konzept 03 fortschreiben und den
-  Rückfall bauen. Konzept 03, „Bereit, aber nicht genutzt“.
-
 - **Absturz einer zweiten Installation am 11.11.2026, 21:18** (A736). Das Spiel endete als Dunkelritter in der
   Azim-Steppe 0,5 s nach Kampfbeginn, ohne die Plugins zu entladen; Build b184ee7fc (08.11.2026). Das `DefenseTrace.log`
   nennt keinen Fehler. Auflösung: das Dalamud-Protokoll dieser Minuten (und ein Bericht des Absturzbehandlers, falls
