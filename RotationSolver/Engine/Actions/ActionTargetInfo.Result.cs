@@ -146,6 +146,16 @@ public partial struct ActionTargetInfo
 		IEnumerable<IBattleChara> canTargets = GetCanTargets(skipStatusProvideCheck, skipTargetStatusNeedCheck, type, targetOverride);
 		var canAffects = GetCanAffects(skipStatusProvideCheck, skipTargetStatusNeedCheck, type, targetOverride);
 
+		// Concept 18, "Welches Ziel ein Sprung nimmt" (A961): a leap onto the target picks among those within "Only use
+		// damaging gap closers within this distance" whenever one stands there, before the choice by targets hit. The
+		// targeting order alone took the dummy with the most HP, 6.7 or 14.8 yalms off, the rotation's check refused the
+		// leap there, and Stardiver missed 9 of 11 windows while the Dragoon stood in his own dummy's hitbox. With none
+		// within, all stay: a rotation's switch for leaps at any range and its own check after CanUse keep their say.
+		if (action.Setting.SpecialType == SpecialActionType.HostileMovingAttack)
+		{
+			canTargets = WithinGapCloserBound(canTargets, (ActionID)action.ID);
+		}
+
 		// A Walking Dead bearer who is carried by his own attacks is supported with a HoT only, the
 		// owner's rule (concept 09): a heal action that grants no HoT does not take him as its target
 		// until StatusHelper.WalkingDeadCarriedBySelfHeal releases him. Here rather than in

@@ -2604,9 +2604,10 @@ obwohl er bereit ist, schreibt RSR am Kampfende je Aktion, wie lange er bereit s
 und mit welchem Grund `CanUse` ablehnte. Das Messmittel greift nicht ein; es zeigt, wo eine Rotation Schaden liegen
 lässt. Beobachtet werden auch die Sprungangriffe (`HostileMovingAttack`: Sternensturz, Wyrmodem, Primal Rend,
 Crimson Cyclone und andere), weil sie Schaden sind; ausgenommen bleiben reine Bewegung und Schutz (A960). Grund: Am
-20.11.2026 kam Sternensturz in 2 von 11 Fenstern des Lebens des Drachen, der Dragoon stand in allen elf in der
-Trefferfläche der Puppe (−1,09 y) und das Leben des Drachen lief 20 s; die Zeile nannte ihn nicht, weil sie Sprünge
-ausnahm, und der Grund blieb offen.
+20.11.2026 kam Sternensturz in 2 von 11 Fenstern des Lebens des Drachen, und die Zeile nannte ihn nicht, weil sie
+Sprünge ausnahm. Die Ursache stand erst im Mitschnitt: Der Sprung wählte eine fernere Puppe, und die Grenze für
+Sprungangriffe lehnte ihn nach `CanUse` ab, ohne dass die Zeile einen Grund sah (Konzept 18, „Welches Ziel ein Sprung
+nimmt“, A961). Eine Ablehnung nach `CanUse` erscheint in der Zeile als „not asked“: `CanUse` sagte zu, die Rotation nahm die Aktion danach nicht.
 
 - *Anlass:* Seine Puppensitzung vom 15.11.2026 (Build 9036b6874):
   - Der erste Burst kam bei Tänzer, Maschinist und Rotmagier 40 bis 73 s nach Kampfbeginn: Technischer Schritt nach

@@ -27812,6 +27812,41 @@ so dass ein Flächen-GCD an einer einzelnen Puppe nicht gewählt wird. Ob sein B
   `action_names_de.json`.
 - *Prüfgrad:* Mitschnitt ausgewertet; Code, Compile, Prüfschritte; im Spiel nicht beobachtet.
 
+### A961 · TODO: Dragoon lässt Sternensturz und Wyrmodem aus – Ursache die Zielwahl der Sprünge, behoben (21.11.2026)
+
+- *Anlass:* TODO „Dragoon lässt Sternensturz und Wyrmodem aus“ (A960), sein Auftrag „todo im loop weitermachen“.
+- *Messung am Mitschnitt 20.11.2026 (Zeilen 21/22, Feld Ziel und HP des Ziels davor):* Hochsprung und Illusionssprung
+  gingen in den Fenstern ohne Sternensturz auf eine andere Puppe als die, an der er stand (22 und 23, 14,77 und
+  6,66 y entfernt), jedes Mal auf die mit den meisten HP; in den Fenstern 17:44 und 17:45 hatte seine eigene Puppe 24 die
+  meisten HP (9,1 Mio. gegen 6,9 Mio. bei 22), und dort kam Sternensturz beide Male, Wyrmodem um 17:45, je auf 24. Ab 17:45:33
+  gingen die Sprünge wieder auf 22 und 23, und Sternensturz blieb aus. Leiste (Zeile 31): Leben des Drachen jedes Mal
+  20 s, Zustand 2 durchgehend; Abklinggruppen von Sternensturz (7), Nastrond (4) und Geirskogul (11) getrennt
+  (xivapi v2). Die Reihenfolge „Nastrond zuerst“ aus A960 ist keine Ursache: In 17:40, 17:41 und 17:43 stand Nastrond
+  im ersten Weave nach einem GCD, wo `EmergencyAbility` Sternensturz vorher fragt; er war dort schon abgelehnt.
+- *Ursache am Code:* Sternensturz und Wyrmodem sind `HostileMovingAttack`; ihre Zielwahl filtert nur Lebende und ordnet
+  dann nach seiner Zielart (`FindHostileRaw`, `PickByTargeting`). `DRG_Reborn` prüft die Grenze „Only use damaging gap
+  closers within this distance“ erst nach `CanUse` (`GapCloserAllowed(StardiverPvE.Target.Target, …)`); auf die fernere
+  Puppe lehnte sie ab, und kein anderes Ziel wurde gefragt. Der Text der Einstellung verspricht dagegen den Sprung auf
+  ein Ziel, an dem er steht, auch bei 0 y. Dieselbe Bauart (Prüfung nach `CanUse`): Primal Rend (`WAR_Reborn`),
+  Crimson Cyclone (`SMN_Reborn`); als Zielfilter schon richtig: Intervene, Blaumagier, Beastmaster, Phantomjobs, PvP.
+- *Behoben (Ebene alle, Konzept 18, „Welches Ziel ein Sprung nimmt“):* `ActionTargetInfo.WithinGapCloserBound` engt die
+  Ziele jedes `HostileMovingAttack` vor der Wahl nach Trefferzahl auf die innerhalb der Grenze ein, sobald dort eines
+  steht; sonst bleiben alle, damit die „Dangerous“-Schalter und die Grenzen der Rotationen weiter entscheiden. Mein
+  Grund in A358 gegen die Grenze in der Zielwahl (sie hebe die Schalter auf) gilt nur für einen harten Filter.
+  *Verworfen:* Nächstes Ziel für jeden Sprung (übergeht seine Zielart auch innerhalb der Grenze); harter Filter (hebt
+  die Schalter auf); nur `DRG_Reborn` ändern (lässt Krieger und Beschwörer in derselben Lage).
+- *Falsifikation:* (1) Kein Defekt – widerlegt: Die Sprünge kamen genau in den Fenstern, in denen seine Puppe die meisten
+  HP trug. (2) Option falsch – sie trägt ihn nur innerhalb seiner eigenen Grenze; Preis mit Schalter und bei Flächen in
+  Konzept 18. (3) Ausgeliefert, nichts ändert sich – möglich, wenn die Grenze der Rotation („Max distance … Stardiver“)
+  enger steht als der Abstand zur gewählten Puppe; sie ist ab Werk 20 y und nur eine Obergrenze. Die Wahl unter den
+  nahen folgt seiner Zielart.
+- *Eigener Fehler:* A960 und C237 schlossen den Abstand als Ursache aus, weil ich ihn zu der Puppe maß, an der er stand,
+  nicht zu der, die der Sprung wählte (C238).
+- *Vorhersage:* Im nächsten Dragoon-Mitschnitt mit mehreren Puppen in Reichweite kommt Sternensturz in jedem Fenster
+  des Lebens des Drachen, auf die Puppe, an der er steht (Zeile 21, Ziel); widerlegt, wenn ein Fenster mit 20 s Leben
+  des Drachen ohne Sternensturz bleibt, während er in der Trefferfläche steht.
+- *Prüfgrad:* Mitschnitt ausgewertet, Code, Compile, Prüfschritte; im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -28204,3 +28239,4 @@ geben den Stand vom 14.10.2026 wieder.
 | C235 | A819 und Konzept 02 (15.11.2026), meine Aussage an ihn: BossModReborn bewege ihn nach RSRs Seite (B2), RSR müsse deshalb nicht selbst bewegen (B1 verworfen) | BossMod bewegt nur mit eingeschalteter KI; an der Puppe lief sie nicht (er stand still auf der Diagonale), und keine Schnittstelle nimmt einen Schritt an. Die Voraussetzung war nie geprüft | A926 |
 | C236 | A926, C235 und Konzept 02 (Stand c479f65e9): Ohne eingeschaltete KI bewege BossMod nie, und keine Schnittstelle nehme einen Schritt von einem anderen Plugin an; RSR müsse deshalb selbst über einen Hook bewegen | BossMods Modul „Automatic movement“ bewegt ohne KI aus der aktiven Voreinstellung, und Voreinstellungen stehen über IPC. Gefunden von der unabhängigen Prüfung, am Quelltext bestätigt | A928 |
 | C237 | A957 und TODO (21.11.2026), meine Aussage an ihn: Sternensturz und Wyrmodem fehlten, weil sie nur innerhalb „Only use damaging gap closers within this distance“ (0 y) gehen | Widerlegt am Mitschnitt: der Dragoon stand in allen elf Fenstern bei −1,09 y in der Trefferfläche; Ursache offen (A960) |
+| C238 | C237 und A960 (21.11.2026): Die Grenze für Sprungangriffe hielt Sternensturz nicht zurück, der Abstand sei ausgeschlossen (−1,09 y) | Widerlegt: gemessen war der Abstand zur Puppe, an der er stand; der Sprung wählte die Puppe mit den meisten HP, 6,66 oder 14,77 y entfernt, und dort lehnte die Grenze ab (A961) |

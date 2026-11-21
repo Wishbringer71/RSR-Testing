@@ -30,15 +30,6 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
 
 ## Defekte
 
-- **Dragoon lässt Sternensturz und Wyrmodem aus** (Upload 20.11.2026; A957, Ursache offen, A960). *Im Kampf:* Sternensturz
-  in 2 von 11 Fenstern des Lebens des Drachen, Wyrmodem in 2 von 6 Fenstern der Litanei der Schlacht; rund 20.800 Potenz in
-  11 min nach den Wirktexten. Ausgeschlossen am Mitschnitt: Abstand (−1,09 y, in der Trefferfläche, in allen Fenstern),
-  Leben des Drachen (Leiste 20 s aktiv). Gemessen: In beiden Treffern kam Sternensturz vor Nastrond, in allen neun
-  Fehlschlägen Nastrond zuerst. *Ort:* `DRG_Reborn.EmergencyAbility` (Sternensturz nur im ersten Weave nach einem GCD),
-  `AttackAbility` (Wyrmodem nur unter der Litanei). *Nächster Schritt:* sein nächster Dragoon-Upload: die Zeile „ready but
-  unused“ nennt die Gründe für beide Sprünge; dazu vorher am Code jeden Pfad, der zwischen Nastrond und dem
-  nächsten ersten Weave Sternensturz sperrt. *Konzept:* 14 (Dragoon).
-
 ## Offene Arbeit
 
 - **Jede Rotation gegen The Balance messen** (seine These, 20.11.2026: „meine these ist nun, dass alle von dir optimierten
