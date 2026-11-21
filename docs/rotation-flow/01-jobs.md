@@ -551,13 +551,17 @@ statt Reihenfolge" und „Mondflöte"):
       (`ActionManager` führt 24, `FixedSizeArray24`) und hätte dann hinter dem Feld weitergelesen.
     - Er rief im Konstruktor der Rotation. Das ist beim Laden, ohne Prüfung auf Kampf und ohne Gewähr, dass es auf dem
       Spiel-Thread lief.
-- *Widerspruch, offen:* Code und Spielregel sagen, 1000 Nadeln geht nur im aktiven Set. Seine Beobachtung sagt etwas
-  anderes. Möglich sind drei Dinge:
+- *Widerspruch, aufgelöst durch Beobachtung (A970):* Code und Spielregel sagen, 1000 Nadeln geht nur im aktiven Set.
+  Seine Beobachtung vom 03.11.2026 sagte etwas anderes. In vier Blaumagier-Sitzungen mit dem Messmittel (15.11.2026
+  dreimal, 20.11.2026) stand das Set in der Spur, und keine Zeile „blue mage spell outside the active set“ – RSR wirkte
+  keinen Zauber außerhalb des Sets. Am wahrscheinlichsten trifft der erste der drei Fälle unten zu, den der alte Setzer
+  hinterließ [Schätzung: Der Setzer ist seither ersetzt, belegt ist nur das Ausbleiben]. Die drei Fälle, die vorher
+  offen waren:
   - Das aktive Set enthält den Zauber doch; gespeicherte Sets und Hotbar zeigen etwas anderes. Möglich ist, dass der
     alte Setzer ihn einmal gesetzt hat (Schluss).
   - Die Lesung liefert etwas anderes als erwartet.
   - Ein Weg umgeht die Prüfung.
-  Statisch nicht entscheidbar; Messmittel unter Stufe 0.
+  Statisch nicht entscheidbar; Messmittel unter Stufe 0 – es fand in vier Sitzungen keinen Fall.
 
 **Synergien aus den Wirktexten** (Spielblätter; wo eine Wirkung über den Text hinaus angenommen ist, steht es dabei):
 

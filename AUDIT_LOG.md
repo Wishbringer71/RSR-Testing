@@ -28031,6 +28031,16 @@ so dass ein Flächen-GCD an einer einzelnen Puppe nicht gewählt wird. Ob sein B
   widerlegt, wenn nach einem „combat ended“ zwischen Wahl und Zeile weiter „a GCD ahead of it in the path“ steht.
 - *Prüfgrad:* Spuren, Compile, Prüfschritte.
 
+### A970 · Wartepunkt „Blaumagier: 1000 Nadeln gewirkt, obwohl nicht im Set“ aufgelöst (21.11.2026)
+
+- *Auflösungsbedingung (A506):* die Zeilen „blue mage set“ und „blue mage spell outside the active set“ in einer
+  Blaumagier-Spur. Gemessen an allen Spuren seit dem 11.11.2026: „blue mage set“ in vier Sitzungen (15.11.2026 um 11:42,
+  12:10, 14:17; 20.11.2026 um 17:22), „spell outside the active set“ in keiner (Zeile seit e48db28e9, 03.11.2026). RSR
+  wirkte keinen Blaumagier-Zauber außerhalb des aktiven Sets. Punkt geschlossen; Konzept 01 fortgeschrieben.
+- *Grenze:* Ob 1000 Nadeln in diesen Sitzungen im Set stand, entscheidet die Frage nicht; die Zeile hätte jeden Zauber
+  außerhalb des Sets gemeldet.
+- *Prüfgrad:* Spuren.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
