@@ -2498,8 +2498,8 @@ aber die Bindung eines Gruppen-Buffs an eine eigene Phase, ohne sie gegen The Ba
 sobald die Zeitgeber auseinanderliefen. *Die Regel daraus (Ebene alle):* Die Grundlage jedes Burstfensters ist das
 Raster, das The Balance nennt – Buffs der Gruppe bei Abklingzeit, eigene Abklingzeiten nicht verschoben. Eine lagebezogene
 Abweichung (warten, binden, vorziehen) ist erst erlaubt, wenn ein Modell über den Kampf belegt, dass sie mehr bringt als
-das Raster, und nur für die Lage, die das Modell zeigt (Bewegung, Pause, Tod, zweiter Spieler desselben Jobs). Ein
-Abgleich je Job gegen das Raster steht im TODO („Jede Rotation gegen The Balance messen“). *Gegenthese 1 („feste Folgen
+das Raster, und nur für die Lage, die das Modell zeigt (Bewegung, Pause, Tod, zweiter Spieler desselben Jobs). Der
+Abgleich je Job gegen das Raster ist geführt (Konzept 14, „Seine These vom 20.11.2026“, A967). *Gegenthese 1 („feste Folgen
 wie bei The Balance wären besser“):* Sie hätten die drei Upstream-Fehler ebenso, wo sie falsch geschrieben sind, und sie
 reagieren nicht auf Bewegung, Pausen und Tode, für die The Balance selbst Ausnahmen beschreibt. Widerlegt als
 Gesamturteil; bestätigt für die Ausrichtung der Buffs, darum die Regel oben. *Gegenthese 2 („D2 kann einen

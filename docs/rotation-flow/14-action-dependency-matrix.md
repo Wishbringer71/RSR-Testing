@@ -581,6 +581,23 @@ Schadensausteilern Ressourcen und Buffs (A379), ihre Burstfenster (A381 bis A386
 betreffen, werden behoben, wo sich die bessere Wahl aus dem Spiel ableiten lässt und keine seiner Regeln dagegen steht;
 die übrigen nennt der Abgleich mit Grund. Weniger Schaden aus einer Sicherheitsregel bleibt (seine Präzisierung).
 
+**Seine These vom 20.11.2026** („alle von dir optimierten rotas schlechter als die von the balance … beweise das
+gegenteil“; A950, abgeschlossen A967). Ein Unterschied in Potenz über den Kampf entsteht nur dort, wo eine Regel von
+RSR von der des Guides abweicht oder der Code anders spielt, als seine Regel sagt. Beides ist je Job geprüft:
+- *Regeln:* jede Regel jedes Kampfjobs gegen The Balance (Tabellen dieses Abschnitts). Wo sie abweicht, ist sie mit
+  einem Modell gerechnet und so gebaut, dass sie in keinem gerechneten Fall hinter The Balance liegt: Samurai (A962,
+  spielt wie The Balance), Monk (A963, gleichauf im Mittel, Solar-Folge nie darunter), Maschinist (A964, Wildfire ohne
+  Full Metal Field nie darunter), Rotmagier (A966, nie unter The Balance, +0,13 % im Mittel). Ohne Abweichung ist der
+  Unterschied durch die Bauart null; ein Modell gleicher Regeln rechnete nichts Neues.
+- *Bewusst abweichend, seine Regeln:* Weiser, Phlegma (fremde Buffs kein tragender Grund); Gapcloser als Schaden nur
+  hinter Optionen (Paladin, Krieger, A954); Swiftcast für Wiederbelebungen. Weniger Schaden daraus ist gewollt.
+- *Im Spiel:* 19 Jobs am Puppenmitschnitt vom 20.11.2026 (A957); was dort vom Guide abwich, ist behoben – Abklinggruppen
+  mit einer Ladung, Searing Light bei Abklingzeit, Wildfire nach Full Metal Field, Mana vor Embolden (A957), die Sprünge
+  des Dragoon (A961). *Ohne Mitschnitt:* Weißmagier, Astrologe, Blaumagier (TODO „Weißmagier, Astrologe und Blaumagier
+  am ersten Puppenmitschnitt gegen The Balance“).
+- *Gegenthese:* „Gleiche Regeln auf dem Papier, anders im Spiel.“ Trifft zu – genau das fand der Mitschnitt viermal.
+  Darum gilt der Beleg je Job erst mit Mitschnitt; für die drei ohne steht er aus.
+
 ### Maschinist
 
 **Auto Crossbow fällt nur, wo es mehr bringt als Blazing Shot samt dem, was Blazing Shot nach sich zieht**

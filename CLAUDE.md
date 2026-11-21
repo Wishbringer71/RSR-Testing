@@ -97,7 +97,7 @@ Diese Datei gilt in jeder Lage. Die übrigen Regeln stehen je genau einmal im Re
 
 **Bevor ich einen Zug beende**
 - Beenden darf ich einen Zug nur mit einem Ergebnis, einem Blocker oder einer Frage, die nur er beantworten kann (seine Vorgabe, zweimal gerügt). Grund: Eine Ankündigung ohne Ausführung lässt ihn warten, und es passiert nichts.
-- Kündige ich Arbeit an, beginne ich sie im selben Zug und arbeite sie ab. Zum Weitermachen braucht es keine Zustimmung von ihm. Ein Ergebnis mit dem Hinweis auf den nächsten offenen Punkt beendet keinen Zug, solange der Punkt zum Auftrag gehört (seine Rüge, 07.11.2026: „du bist mit beastmaster noch nicht fertig"), auch nicht nach einem grünen CI-Lauf. Setzt der Stop-Hook den Zug fort, arbeite ich weiter, statt die Meldung umzuformulieren.
+- Kündige ich Arbeit an, beginne ich sie im selben Zug und arbeite sie ab. Zum Weitermachen braucht es keine Zustimmung von ihm. Ein Ergebnis mit dem Hinweis auf den nächsten offenen Punkt beendet keinen Zug, solange der Punkt zum Auftrag gehört (seine Rüge, 07.11.2026: „du bist mit beastmaster noch nicht fertig"), auch nicht nach einem grünen CI-Lauf. Setzt der Stop-Hook den Zug fort, arbeite ich weiter, statt die Meldung umzuformulieren. Durchgesetzt (dritter Bruch, seine Rüge vom 21.11.2026, A967): `stop_check.py` hält den Zug an, wenn seine letzte Nachricht die TODO-Arbeit verlangt und unter „Defekte“ oder „Offene Arbeit“ in `TODO.md` ein Punkt steht; ob ein anderer offener Punkt zum Auftrag gehört, entscheidet kein Skript, weil das am Inhalt hängt.
 
 **Bevor ich committe und pushe**
 - Identität unverändert, Commit klein.

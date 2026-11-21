@@ -27967,6 +27967,30 @@ so dass ein Flächen-GCD an einer einzelnen Puppe nicht gewählt wird. Ob sein B
   während die Zeit bis zum Tod kürzer als die Abklingzeit von Embolden ist.
 - *Prüfgrad:* Modell mit Selbsttest, Compile, Prüfschritte; im Spiel nicht beobachtet.
 
+### A967 · TODO „Jede Rotation gegen The Balance messen“ geschlossen; Stand je Job (21.11.2026)
+
+- *Anlass:* seine Rüge vom 21.11.2026: „was hast du an meinen letzten befehl ="weiter mit den punkten in der todo im
+  vollen loop" nicht verstanden? warum sind dann immer noch todos offen?“ – ich hatte den Zug mit offenen Punkten
+  beendet, obwohl CLAUDE.md („Bevor ich einen Zug beende“) das verbietet. Dritter Bruch dieser Regel; durchgesetzt ist sie
+  nur für Ankündigungen (`stop_check.py`), nicht für ein Ende mit offenem TODO, weil „gehört zum Auftrag“ am Inhalt hängt.
+- *Stand:* Regeln aller Kampfjobs gegen The Balance in Konzept 14; Abweichungen gerechnet und so gebaut, dass sie in
+  keinem gerechneten Fall dahinter liegen (Samurai A962, Monk A963, Maschinist A964, Rotmagier A966); Beschwörer und
+  Tänzer auf dem Raster (A957, Code gelesen 21.11.2026: Technical Step bei Abklingzeit, Devilment nach Technical Finish);
+  19 Jobs am Mitschnitt 20.11.2026 gemessen und die Abweichungen behoben (A957, A961). Bewusste Abweichungen nach seinen
+  Regeln benannt. Konzept 12: der Absatz zu The Balance nannte noch die widerlegte Annahme „fällt mit on cooldown
+  zusammen“; berichtigt.
+- *Warum kein Modell je Job:* Ohne abweichende Regel ist der Unterschied in Potenz durch die Bauart null; ein Modell
+  gleicher Regeln rechnet nichts Neues. Was Regeln gleich und Spiel verschieden macht, zeigt nur ein Mitschnitt.
+- *Offen, auf Daten:* Weißmagier, Astrologe, Blaumagier ohne Puppenmitschnitt (neuer Punkt unter „Warten“).
+- *Barde, Apex Arrow:* 1 bis 3 s nach dem Guide, im selben Lied und vor demselben Burst – keine Potenzdifferenz, nicht
+  geändert (Konzept 14).
+- *Durchgesetzt (`regeldateien.md`, zweimal gebrochen → Hook):* `stop_check.py` liest `TODO.md` und findet ein Zugende,
+  wenn seine letzte Nachricht „todo“ trägt und unter „Defekte“ oder „Offene Arbeit“ ein Punkt steht; eine echte Frage an
+  ihn und ein Ende, das auf ihn wartet, gehen durch. Selbsttest 42 Fälle (Defekt gefunden; leerer TODO, kein Auftrag,
+  Frage, „todoliste“ gehen durch; Lesen nur der beiden Abschnitte). CLAUDE.md nennt die Durchsetzung und ihre Grenze.
+- *Prüfgrad:* Regelabgleich am Code und Konzept, Mitschnitt 20.11.2026, Modelle; Selbsttest des Hooks; keine Änderung am
+  Plugin.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

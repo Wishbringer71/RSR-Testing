@@ -32,20 +32,6 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
 
 ## Offene Arbeit
 
-- **Jede Rotation gegen The Balance messen** (seine These, 20.11.2026: „meine these ist nun, dass alle von dir optimierten
-  rotas schlechter als die von the balance sind. beweise das gegenteil!“; A950). *Im Kampf:* Wo die Rotation weniger
-  Potenz über den Kampf bringt als der Guide, fehlt Schaden in jedem Kampf. *Stand:* Ein Vergleich in Potenz über den
-  Kampf besteht für Samurai (spielt wie The Balance, A962), Monk (gleichauf im Mittel, A963) und den Maschinisten
-  (Wildfire ohne anstehendes Full Metal Field, A964; Automatenkönigin ohne eigenen Schaden); für 20 Jobs keiner. *Nächster Schritt:* je Job ein Modell nach dem Muster von
-  `samurai_balance_model.py` (Folge von The Balance gegen die der Rotation, ein Boss, Potenzen aus dem Job-Guide, Kampflänge
-  und GCD variiert), Boss-Jobs seines Profils zuerst; wo The Balance vorn liegt, die Regel verbessern, bis sie nicht mehr
-  dahinter liegt (sein Ziel vom 19.11.2026). Als Nächstes die übrigen Jobs seines Profils mit Burstfenstern, die
-  RSR bindet oder verschiebt (Konzept 03, „Seine Frage, ein strategischer Fehler?“): Beschwörer, Tänzer; der Rotmagier
-  ist gemessen (A966). Vorrang haben die
-  Stellen, an denen eine Rotation ein Burstfenster gegen das Raster von The Balance verschiebt oder bindet (warten,
-  binden, vorziehen): Sie brauchen den Modellbeleg (Konzept 03, „Seine Frage, ein strategischer Fehler?“, A958).
-  *Konzept:* 14.
-
 ## Technische Schuld
 
 Ohne Wirkung im Kampf oder bewusst eingegangen; je Kosten und Auflösungsbedingung.
@@ -118,6 +104,11 @@ Reborn"); beides kostet im Spiel, solange nicht beide Installationen gebraucht w
 nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigter Name bleibt. *Konzept:* 24.
 
 ## Warten auf Daten oder Fremde
+
+- **Weißmagier, Astrologe und Blaumagier am ersten Puppenmitschnitt gegen The Balance** (A967). *Im Kampf:* Spielt der
+  Code anders als seine Regel, fehlt Schaden, ohne dass der Regelabgleich es zeigt (viermal am 20.11.2026 bei anderen
+  Jobs). *Auflösung:* sein nächster Puppenmitschnitt mit einem dieser Jobs: GCD-Lücken, Abklinggruppen und Burstfenster
+  wie in A957 gegen den Guide. *Konzept:* 14, „Seine These vom 20.11.2026“.
 
 - **Ninja: Stillstand, wenn die Puppe ihn fallen lässt** (seine Meldung, 20.11.2026; Ursache A956). *Im Kampf:* Die Puppe
   setzt ihr Ziel auf keines, der Kampf endet, RSR greift nicht wieder an, bis er selbst anschlägt. *Ort:* Zielwahl an
