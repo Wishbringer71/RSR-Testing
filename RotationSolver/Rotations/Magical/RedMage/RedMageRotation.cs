@@ -73,26 +73,22 @@ public partial class RedMageRotation
 	/// </summary>
 	public int ManaNeededNoPooling()
 	{
-		if (!ZwerchhauPvE.EnoughLevel)
+		// Concept 14, "Rotmagier: Mana vor Embolden" (A966): the combo's cost from the action sheet - Enchanted Riposte,
+		// Zwerchhau and Redoublement as far as the level has them (20, 35, 50).
+		var comboCost = (int)EnchantedRipostePvE.Action.PrimaryCostValue
+			+ (ZwerchhauPvE.EnoughLevel ? (int)EnchantedZwerchhauPvE.Action.PrimaryCostValue : 0)
+			+ (RedoublementPvE.EnoughLevel ? (int)EnchantedRedoublementPvE.Action.PrimaryCostValue : 0);
+		if (!RedoublementPvE.EnoughLevel || !EmboldenPvE.EnoughLevel)
 		{
-			return 20;
-		}
-
-		if (ZwerchhauPvE.EnoughLevel && !RedoublementPvE.EnoughLevel)
-		{
-			return 35;
-		}
-
-		if (RedoublementPvE.EnoughLevel && !EmboldenPvE.EnoughLevel)
-		{
-			return 50;
+			return comboCost;
 		}
 
 		if (EmboldenPvE.EnoughLevel)
 		{
-			if (HasEmbolden)
+			// Under Embolden, and when Embolden comes back only after the target dies: nothing to hold for.
+			if (HasEmbolden || BuffReturnsAfterDeath(EmboldenPvE))
 			{
-				return 50;
+				return comboCost;
 			}
 
 			// Concept 14, "Rotmagier: Mana vor Embolden" (A957): the time until Embolden returns, as the pooling path reads it.
@@ -102,7 +98,7 @@ public partial class RedMageRotation
 				case > 80:
 					return 60;
 				case > 40 and <= 80:
-					return 50;
+					return comboCost;
 				case > 15 and <= 40:
 					return 70;
 				case <= 15:

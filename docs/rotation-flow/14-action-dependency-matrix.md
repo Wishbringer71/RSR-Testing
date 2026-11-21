@@ -748,8 +748,17 @@ den letzten 40 s vor Embolden galt 60, und der Fall „bis 15 s“ griff nie, we
 läuft. Der Pooling-Pfad daneben liest die verbleibende Zeit. Gemessen am 20.11.2026: Kombo um 19:04:57 bei 67|60, 24 s
 vor Embolden, und um 19:07:11 bei 68|62, 10 s davor; der Rotmagier kam beide Male mit 36|40 und 26|31 ins Fenster und
 hatte darunter keine Kombo ohne Manafication. Jetzt verbleibende Zeit (A957): An denselben Stellen wartet die Kombo bis
-70 beziehungsweise 90 und fällt unter Embolden. Die Zahlen selbst stammen von Upstream und sind nicht hergeleitet
-(TODO „Rotmagier: Manaschwellen aus Kosten und Gewinn herleiten“). Leser: `RDM_Reborn` und `BeirutaRDM` (zentral,
+70 beziehungsweise 90 und fällt unter Embolden. *Hergeleitet und gemessen (A966):* Die Kosten der Kombo liest RSR aus
+dem Aktionsblatt (Enchanted Riposte 20, Zwerchhau und Redoublement je 15, je nach Stufe 20, 35 oder 50); dieselben Kosten
+gelten unter Embolden und zwischen 40 und 80 s davor. Die Leiter davor (60, 70, 90) bleibt: Im Modell
+(`redmage_balance_model.py`, Wirktexte 21.11.2026, 39 Fälle aus GCD 2,40 bis 2,50 s und 3 bis 15 min) bringt sie mehr
+Kombos unter Embolden als die Regel von The Balance (50, in den letzten 15 s 73) – bei zehn Minuten 5 statt 3 – und liegt
+in 32 Fällen vor ihr; ein Halten, das nur das Überlaufen bis Embolden prüft, bringt nichts darüber. Ihr einziger Verlust
+war das Kampfende: Sie hielt Mana für ein Embolden, das erst nach dem Tod des Ziels zurückkam, und es fehlte eine Kombo
+(4, 8 und 14 min, bis 2,41 %). *Jetzt:* Kommt Embolden erst nach dem Tod des Ziels zurück (`BuffReturnsAfterDeath`,
+die korrigierte Zeit bis zum Tod wie `HoldCostsUse`, nur wenn das Ziel der letzte Gegner in Reichweite ist), beginnt die
+Kombo an ihren Kosten. Im Modell nie unter der bisherigen Leiter (+0,24 % im Mittel) und nie unter The Balance (+0,13 %
+im Mittel, bis +1,43 %). Ohne Messung der Zeit bis zum Tod gilt die Leiter. Leser: `RDM_Reborn` und `BeirutaRDM` (zentral,
 keine Richtungsentscheidung). The Balance (Red Mage Basic Guide, Patch 7.4, vom Abrufwerkzeug gelesen,
 wörtliche Ausschnitte, 20.11.2026): „Melee combo at 50|50+ mana“; „Always save enough mana for one melee combo under
 buffs“; Dreifach-Kombo zu zwei Minuten „with 73|73 or above mana (starting 15 seconds before Embolden …)“; „Double combo

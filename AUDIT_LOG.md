@@ -27940,6 +27940,33 @@ so dass ein Flächen-GCD an einer einzelnen Puppe nicht gewählt wird. Ob sein B
 - *Prüfgrad:* Prüfskripte gegen den neuen Stand; die übrigen Kampfmodule nicht einzeln gelesen (Umfang: 4 der 347
   Dateien inhaltlich, die übrigen nur nach Pfad gegen die Leser von RSR).
 
+### A966 · TODO: Rotmagier – Manaschwellen aus den Kosten, Leiter gegen The Balance gemessen, Freigabe vor dem Tod (21.11.2026)
+
+- *Anlass:* technische Schuld „Rotmagier: Manaschwellen aus Kosten und Gewinn herleiten“ (A957) und TODO „Jede Rotation
+  gegen The Balance messen“; seine Rüge vom 21.11.2026, dass TODO-Punkte offen blieben.
+- *Quellen:* Aktionsblatt (xivapi v2, 21.11.2026): Enchanted Riposte, Zwerchhau, Redoublement `PrimaryCostValue` 20, 15,
+  15; Wirktexte der Mana bewegenden Aktionen, Embolden (+10 % eigener Magieschaden, 20 s, 120 s) und Manafication
+  (3 Stapel ohne Kosten, 110 s).
+- *Modell (`redmage_balance_model.py`, neu, Selbsttest; in der CI-Liste der Modelle):* 39 Fälle (GCD 2,40 bis 2,50 s,
+  3 bis 15 min). Die Leiter von RSR (60, 50, 70, 90) bringt mehr Kombos unter Embolden als The Balance (50, zuletzt 73)
+  und liegt in 32 Fällen vor ihr (bis −0,19 % für The Balance); The Balance gewinnt nur am Kampfende (4, 8, 14 min, bis
+  +2,41 %), weil die Leiter für ein Embolden hält, das nach dem Tod des Ziels kommt. Ein Halten, das nur das Überlaufen
+  bis Embolden prüft, bringt nichts (Haltefenster 0 bis 80 s gleich). *Gewählt:* die Leiter mit Freigabe, wenn Embolden
+  erst nach dem Tod zurückkommt: nie unter der Leiter (+0,24 %), nie unter The Balance (+0,13 % im Mittel, bis +1,43 %).
+- *Geändert:* `RedMageRotation.ManaNeededNoPooling` liest die Kosten der Kombo aus dem Blatt (statt 20, 35, 50) und gibt
+  sie unter Embolden, zwischen 40 und 80 s davor und bei `BuffReturnsAfterDeath(EmboldenPvE)`; neuer allgemeiner Helfer
+  `CustomRotation.BuffReturnsAfterDeath` (korrigierte Zeit bis zum Tod, nur am letzten Gegner, sonst falsch). Die Zahlen
+  der Leiter (60, 70, 90 und ihre Grenzen 80, 40, 15 s) stehen unverändert in Upstreams Zeilen; das Modell belegt sie gegen
+  The Balance, hergeleitet sind sie nicht. Leser: `RDM_Reborn`, `BeirutaRDM` (zentral, keine Richtungsentscheidung).
+- *Antithesen:* (1) Modell grob (Procs als Erwartungswert, keine Ungleichheitsstrafe, oGCDs ausgelassen) – die Frage
+  hängt an der Zahl der Kombos unter Embolden und am Kampfende, beides bildet es ab. (2) Zeit bis zum Tod falsch
+  geschätzt – zu kurz geschätzt gibt die Kombo vor Embolden aus (der alte Upstream-Fall), ohne Messung gilt die Leiter.
+  (3) Ausgeliefert, nichts ändert sich – unter mehreren Gegnern oder ohne Messung bleibt alles wie bisher.
+- *Vorhersage:* Im nächsten Rotmagier-Mitschnitt an einer Puppe oder einem Boss beginnt in den letzten 40 s vor einem
+  Embolden, das erst nach dem Tod des Ziels käme, die Kombo bei 50|50; widerlegt, wenn dort Mana über 70 gehalten wird,
+  während die Zeit bis zum Tod kürzer als die Abklingzeit von Embolden ist.
+- *Prüfgrad:* Modell mit Selbsttest, Compile, Prüfschritte; im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
