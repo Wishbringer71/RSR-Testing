@@ -27638,6 +27638,38 @@ so dass ein Flächen-GCD an einer einzelnen Puppe nicht gewählt wird. Ob sein B
 *Offen (TODO, Warten auf Daten):* Build-Commit aus der Kopfzeile der Spur, Ziele im Mitschnitt.
 *Prüfgrad:* statisch am Code.
 
+### A956 · Upload 20.11.2026: Ninja-Stillstand an der Puppe, seine Frage nach „Verstecken“ (21.11.2026)
+
+- *Anlass:* Upload 20.11.2026 (ACT-Mitschnitt, `DefenseTrace.log`, Build 4f9790fd4, Lebende Erinnerung) zu seiner Meldung
+  „ninja stellt auch irgendwann die rotation ein“ (A949); seine Frage: „Wenn der ninja sich versteckt, wie soll die Puppe ihn
+  dann erkennen?“
+- *Gemessen:* drei Ninja-Kämpfe (17:58:39, 18:00:31, 18:02:56). Jeweils mitten im Angriff setzt die Puppe ihr Ziel auf keines
+  (Zeile 261, `NPCTargetID` E0000000: 18:00:09,49, 18:02:05,57, 18:04:26,39) und ihre LP auf voll (Zeile 38, 18:00:09,95);
+  das Spiel beendet den Kampf (Zeile 260), RSR schreibt „combat ended“ (18:00:09,335). Erst danach drückt RSR „Verstecken“
+  (abgelehnt 18:00:09,336, Wirkung 18:00:10,085); der Status steht 18:00:11,241 bis 18:00:11,380 und wird von „Use Unhide“
+  aufgehoben. Im Augenblick des Fallenlassens war beim Ninja kein Status aktiv. Sein Ziel blieb auf der Puppe (Zeile 261,
+  `PCTargetID`, keine Änderung bis 18:02:50,6, dort von ihm gelöscht und neu gesetzt). Danach keine Aktion bis 18:00:31,4,
+  18:02:56,0 und 18:05:42,9 (21, 50 und 77 s); zweimal eröffnet „Zermürben“, wie bei seinen Pulls von Hand.
+- *Seine Frage geprüft:* „Verstecken“ geht im Kampf nicht und kam nach dem Fallenlassen; es erklärt weder das Fallenlassen
+  noch den Stillstand, der 20 s und länger über das Ende des Status hinaus lief.
+- *Andere Jobs:* Dieselbe Puppe ließ den Rotmagier fünfmal und den Beschwörer einmal mitten im Kampf fallen; dort lief ein
+  Zauber schon, sein Treffer zog die Puppe zurück, die nächste Aktion kam binnen einer Sekunde. Am 15.11. (Nebelmark, andere
+  Puppe) kämpfte der Ninja 8 min ohne Fallenlassen. Warum die Puppe fallen lässt: weiß ich nicht.
+- *Ursache des Stillstands:* Im Build 4f9790fd4 entschied an einer Puppe ohne Ziel die Einstellung zum Angreifen
+  (`ObjectHelper.IsAttackable`, Ende). RSR eröffnete in derselben Sitzung beim Dragoon (17:37:10) und Schnitter (17:48:48)
+  nur an Puppen, die seinen Chocobo hielten [Schätzung: seine Einstellung verlangt ein Ziel des Gegners, die Gruppe zählt den
+  Chocobo mit; die Einstellung steht in keiner Datei]. Seit A948 (a45c8cc8e) gilt eine Puppe als angreifbar, wenn sie sein
+  Ziel ist, vor dieser Einstellung.
+- *Falsifikation:* Kein Defekt? Widerlegt: Das Ziel stand auf der Puppe, 21 bis 77 s ohne Aktion. Ursache falsch? Möglich,
+  solange seine Einstellung nicht gemessen ist; der Gegenfall wäre ein Stillstand auch mit A948. Ausgeliefert, nichts
+  ändert sich? Wenn RSR aus einem anderen Grund nicht drückt (aus, Abschaltung nach dem Kampf); dann zeigt die Spur nach
+  dem Kampfende keine Zeile „dynamic rotation“ und keine Aktion.
+- *Vorhersage:* Im nächsten Puppen-Upload mit einem Build ab a45c8cc8e folgt auf jedes Fallenlassen (Zeile 261 der Puppe
+  auf E0000000) eine Aktion des Spielers auf dieselbe Puppe binnen eines GCD; widerlegt, wenn eine Lücke über einem GCD
+  bleibt, während sein Ziel (`PCTargetID`) auf ihr steht. Nicht maschinenlesbar: Die Spur nennt das Fallenlassen nicht.
+- *Gebaut:* nichts; Konzept 03 („Welche Puppe dein Kampf ist“) und TODO fortgeschrieben.
+- *Prüfgrad:* Mitschnitt und Spur ausgewertet; Wirkung von A948 statisch am Code, im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

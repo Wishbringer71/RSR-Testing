@@ -1469,6 +1469,20 @@ Einstellung). Grund: Eine Puppe kämpft nicht; welche du übst, sagt nur dein Zi
 nicht mehr testbar.“ Trifft zu; Puppen bilden kein Rudel nach (sie kämpfen nicht, sterben nicht). Ohne Ziel greift RSR
 keine Puppe an.
 
+*Die Puppe lässt dich fallen (Upload 20.11.2026, Lebende Erinnerung, A956):* Mitten im Angriff setzt die Puppe ihr Ziel auf
+keines und ihre LP auf voll; das Spiel beendet den Kampf. Gemessen beim Ninja dreimal nach 90 bis 94 s, beim Rotmagier
+fünfmal, beim Beschwörer einmal. Warum die Puppe das tut, weiß ich nicht; ein Zustand des Spielers erklärt es nicht: Beim
+Ninja war in diesem Augenblick kein Status aktiv, „Verstecken“ kam erst danach (es geht im Kampf nicht). Beim Rotmagier und
+Beschwörer lief der Kampf weiter, weil ein Zauber schon unterwegs war und mit seinem Treffer die Puppe wieder auf ihn zog.
+Beim Ninja war keiner unterwegs. Sein Ziel blieb auf der Puppe (ACT-Zeile 261, `PCTargetID`), RSR griff 21 s, 50 s und 77 s
+nicht an, bis er selbst wieder anschlug. Im Build 4f9790fd4 galt eine Puppe ohne Ziel nicht als angreifbar, wenn deine
+Einstellung zum Angreifen ein Ziel des Gegners verlangt und die Gruppe mehr als dich zählt (dein Chocobo zählt mit)
+[Schätzung, aus zwei Fällen derselben Sitzung: RSR eröffnete beim Dragoon und beim Schnitter nur an Puppen, die deinen
+Chocobo hielten; die Einstellung selbst steht in keiner Datei]. Seit A948 entscheidet an einer Puppe allein dein Ziel. Der
+Kampf geht dann mit dem nächsten GCD weiter, und mit dem Treffer nimmt die Puppe dich wieder. *Im Kampf:* An der Puppe kein
+Stillstand mehr, wenn sie dich fallen lässt. „Verstecken“ nach dem Kampfende ist dabei ohne Wirkung auf den Angriff: RSR
+hebt es nach 0,14 s wieder auf („Use Unhide“), und der nächste Angriff hebt es ohnehin auf.
+
 *Gegenthese 2 (ein Gegner ohne Ziel kämpft doch):* Ein Gegner kann im Kampf kurz kein Ziel halten (Wirken auf den
 Boden, Phasenwechsel). Bis A833 wartete die Fläche dann. *Widerlegt seit A833:* Als „kämpft noch nicht" gilt ein Gegner
 nur, wenn er weder ein Ziel hält noch im Kampf steht (das Kampfkennzeichen seiner Figur, `ObjectHelper.InCombat`) – für

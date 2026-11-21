@@ -38,12 +38,6 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
   *Nächster Schritt:* Schwellen aus Kombokosten und Mana je GCD herleiten statt der festen Zahlen beider Pfade, Modell
   nach dem Muster von `samurai_balance_model.py` gegen The Balance, dann die Voreinstellung. *Konzept:* 14.
 
-- **Ninja stellt irgendwann die Rotation ein** (seine Meldung, 20.11.2026, A949). *Im Kampf:* Der Ninja hört mitten im
-  Kampf auf, GCDs zu wirken. *Ort, am Code möglich:* `NIN_Reborn.GeneralGCD` gibt während des Mudra-Status nichts aus
-  (`IsExecutingMudra`), und `EmergencyAbility` löscht das Ninjutsu-Ziel unter mehreren Bedingungen mitten in einer Folge –
-  unbelegt, welche greift. *Nächster Schritt:* sein `DefenseTrace.log` und ACT-Mitschnitt nach der Sitzung: Zeilen
-  „gcd idle“ (`GcdIdleWatch`, A923) mit Ablehnungsgründen, Mudra- und Ninjutsu-Folge im Mitschnitt (Ids aus der
-  Aktionsmatrix, nicht aus dem Gedächtnis); dann Ursache und Klasse im Loop. *Konzept:* 14 (Ninja).
 
 ## Offene Arbeit
 
@@ -129,6 +123,12 @@ Reborn"); beides kostet im Spiel, solange nicht beide Installationen gebraucht w
 nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigter Name bleibt. *Konzept:* 24.
 
 ## Warten auf Daten oder Fremde
+
+- **Ninja: Stillstand, wenn die Puppe ihn fallen lässt** (seine Meldung, 20.11.2026; Ursache A956). *Im Kampf:* Die Puppe
+  setzt ihr Ziel auf keines, der Kampf endet, RSR greift nicht wieder an, bis er selbst anschlägt. *Ort:* Zielwahl an
+  Puppen (`ObjectHelper.IsAttackable`), nach seinem Ziel. *Auflösung:* sein nächster Puppen-Upload mit einem
+  Build ab a45c8cc8e: Nach einem Fallenlassen kommt die nächste Aktion des Spielers auf die Puppe binnen eines GCD.
+  *Konzept:* 03 („Welche Puppe dein Kampf ist“).
 
 - **Rotationen aller Jobs über den Augenblick hinaus** (sein Auftrag vom 19.11.2026; A901). *Wirkung im Kampf:*
   Verstärker, Zeitgeber und DoTs laufen heute in vorhergesagte Pausen, Ressourcen bleiben beim Tod des Ziels übrig, der
