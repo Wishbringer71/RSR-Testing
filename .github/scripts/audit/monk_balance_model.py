@@ -12,8 +12,9 @@ Solar sequence raptor, coeurl, opo-opo regardless of potency. Does that cost a M
 weaponskills under Riddle of Fire and Brotherhood - the Monk's own damage?
 
 The choices of MNK_Reborn are mirrored by hand from RotationSolver/Rotations/Melee/Monk/MNK_Reborn.cs
-(EmergencyAbility, AttackAbility, GeneralGCD) and the action checks of MonkRotation: RSR as the rotation stands since
-A412, RSR_BEFORE as of c6ed70be4. A change there needs the same change here (TODO, technical debt). What the model found
+(EmergencyAbility, AttackAbility, GeneralGCD, WeakestSolarStep) and the action checks of MonkRotation: RSR as the
+rotation stands since A963 (the Solar sequence from weakest to strongest by the potency its tooltip states with the
+form's Fury, without Leaping Opo's critical factor), RSR_A412 before it, RSR_BEFORE as of c6ed70be4. A change there needs the same change here (TODO, technical debt). What the model found
 (A412): MNK_Reborn pressed the even window's Perfect Balance only while Brotherhood came back within 3 s, and pressed
 Brotherhood itself up to 3 s ahead of Riddle of Fire - when the opo-opo weaponskill fell after that, the window went
 without its first Perfect Balance, the second came too late for Brotherhood, and a charge ran over. Figures: job guide, patch 7.5 (na.finalfantasyxiv.com/jobguide/
@@ -57,7 +58,9 @@ BLITZ = {"eb", "rp", "pr", "cr"}
 RSR_BEFORE = {"name": "rsr_before", "pb_pre": "rsr", "late_rof": False, "solar_order": "rsr", "odd_solar_pre": False,
               "gcd_order": "rsr"}
 # MNK_Reborn since A412: The Balance's identifier for the even window, the rest as before.
-RSR = dict(RSR_BEFORE, name="rsr", pb_pre="balance")
+RSR_A412 = dict(RSR_BEFORE, name="rsr_a412", pb_pre="balance")
+# MNK_Reborn since A963: the Solar sequence from weakest to strongest.
+RSR = dict(RSR_A412, name="rsr", solar_order="potency")
 BALANCE = {"name": "balance", "pb_pre": "balance", "late_rof": True, "solar_order": "balance",
            "odd_solar_pre": True, "gcd_order": "balance"}
 
@@ -183,6 +186,9 @@ def solar_step(s, t, policy, crit_lo):
     if policy["solar_order"] == "balance":
         # "order the three GCDs from weakest to strongest"
         options.sort(key=lambda g: value(s, g, crit_lo))
+    elif policy["solar_order"] == "potency":
+        # MNK_Reborn since A963: the stated potency with the form's Fury; the critical factor is the player's
+        options.sort(key=lambda g: value(s, g, 1.0))
     return options[0]
 
 
@@ -475,12 +481,12 @@ def main():
     for policy in (RSR_BEFORE, RSR, BALANCE):
         print(f"  {policy['name']:10s} {summary(run(10, 1.94, policy, 1.39, late=lt))}")
     print()
-    compare({"rsr_before": RSR_BEFORE}, "MNK_Reborn before A412 against it since")
+    compare({"rsr_before": RSR_BEFORE, "rsr_a412": RSR_A412}, "MNK_Reborn before A412 and before A963 against it now")
     print()
     parts = {"balance": BALANCE}
     for key in ("late_rof", "solar_order", "odd_solar_pre", "gcd_order"):
         parts[key] = dict(RSR, name=key, **{key: BALANCE[key]})
-    compare(parts, "The Balance's rule against MNK_Reborn since A412 - all of it, then each remaining part alone")
+    compare(parts, "The Balance's rule against MNK_Reborn now - all of it, then each part alone")
 
 
 if __name__ == "__main__":

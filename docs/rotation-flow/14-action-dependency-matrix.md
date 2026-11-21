@@ -1161,13 +1161,22 @@ Unterhalb der Stufe von Riddle of Fire bleibt es beim Bisherigen: Perfect Balanc
   tauschen die Plätze, beide unter beiden Buffs. Die Beschreibung der Rotation nennt einen „Lunar Solar Opener"; The
   Balance führt „Solar Lunar" und „Double Lunar", der Code folgt „Solar Lunar". Der Text ist Upstreams und widerspricht
   dem Code nur in der Benennung; nicht geändert.
-- *Nicht übernommen, mit Grund* (dasselbe Modell, gegen `MNK_Reborn` seit A412): The Balance als Ganzes +0,03 % im
-  Mittel, −0,25 % bis +0,15 %, 12 Kombinationen darunter. Riddle of Fire spät eingeschoben, für sich, und Perfect
-  Balance vor Riddle of Fire im ungeraden Solar-Fenster (Basic Guide; die Grafik der Openers-Seite nimmt im ungeraden
-  Fenster „the first opo within RoF"), für sich, liegen im Mittel bei ±0,00 %, je 12 darunter – beide verlieren in
-  diesen 12 denselben letzten Perfect Balance vor dem Kampfende. Die Solar-Folge von schwach nach stark bringt +0,04 %
-  (+0,02 bis +0,08 %). Promillebereich, unter der Unschärfe des Modells: kritische Treffer nur als Faktor auf Leaping
-  Opo, der Zeitpunkt des späten Einschubs angenommen, The Forbidden Chakra und Auto-Angriffe nicht gerechnet.
+- *Geändert: die Solar-Folge von schwach nach stark (A963).* The Balance ordnet die drei Waffenfertigkeiten einer
+  Solar-Folge „from weakest to strongest"; `MNK_Reborn` nahm stets Raptor, Coeurl, Opo-opo. Jetzt fragt RSR alle drei
+  Formen und nimmt die mit der geringsten Potenz zuerst. Die Potenz liest RSR aus dem Wirktext der Fertigkeit, die die
+  Form wählt (`ActionTooltip.TryHitPotency`): mit Fury der Form die „Fury Potency", sonst die Grundpotenz oder die mit
+  getroffenem Positional. Der sichere kritische Treffer von Leaping Opo zählt nicht mit, er hängt an Werten des Spielers.
+  *Im Modell* (156 Kombinationen): +0,034 % im Mittel, +0,015 % bis +0,083 %, in keinem Fall darunter; mit dem
+  kritischen Faktor von Leaping Opo +0,036 %; nach der Grundpotenz allein ohne Fury −0,020 %, 78 darunter – die Fury
+  trägt den Gewinn. Grund im Kampf: Die stärkste Fertigkeit fällt zuletzt, tiefer in Riddle of Fire und Brotherhood.
+- *Nicht übernommen, mit Grund* (dasselbe Modell, gegen `MNK_Reborn` mit der Solar-Folge): Riddle of Fire spät
+  eingeschoben und Perfect Balance vor Riddle of Fire im ungeraden Solar-Fenster (Basic Guide; die Grafik der
+  Openers-Seite nimmt im ungeraden Fenster „the first opo within RoF") liegen je und zusammen im Mittel bei −0,003 %,
+  12 Kombinationen darunter (bis −0,28 %), keine Mischung über der Solar-Folge allein. Ihr Unterschied zeigt sich nur
+  bei GCD 1,97 s und wechselt mit der Kampflänge das Vorzeichen (10 min −0,28 %, 11 min +0,05 %, 13 min +0,12 %): die
+  Lage der Fenster zum Kampfende, kein Merkmal im Kampf, an dem eine Regel ansetzen könnte. Unschärfe des Modells:
+  kritische Treffer nur als Faktor auf Leaping Opo, der Zeitpunkt des späten Einschubs angenommen, The Forbidden Chakra
+  und Auto-Angriffe nicht gerechnet.
 - *The Forbidden Chakra:* RSR hält es im letzten GCD, bevor Brotherhood abgeklungen ist, und wirkt es, sobald
   Brotherhood bereit ist – im selben Einschub noch davor. The Balance nennt keine Zurückhaltung. Hielte RSR es bis unter
   Brotherhood, liefe Chakra über, solange Brotherhood auf Riddle of Fire wartet; nicht geändert.

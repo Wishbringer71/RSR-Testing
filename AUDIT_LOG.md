@@ -27879,6 +27879,30 @@ so dass ein Flächen-GCD an einer einzelnen Puppe nicht gewählt wird. Ob sein B
   auf das erste Tendo Kaeshi; widerlegt, wenn Higanbana über den Kampf nie unter Meikyo fällt.
 - *Prüfgrad:* Modell mit Selbsttest, Compile, Prüfschritte; im Spiel nicht beobachtet.
 
+### A963 · TODO: Monk ordnet die Solar-Folge von schwach nach stark (21.11.2026)
+
+- *Anlass:* TODO „Jede Rotation gegen The Balance messen“, nach dem Samurai der Monk (The Balance im Mittel +0,03 %
+  vor `MNK_Reborn`, A412).
+- *Modell (`monk_balance_model.py`, 156 Kombinationen):* Von den Teilen von The Balance lag nur die Solar-Folge „from
+  weakest to strongest“ in keinem Fall zurück (+0,02 bis +0,08 %); der späte Einschub von Riddle of Fire und Perfect
+  Balance vor Riddle of Fire im ungeraden Solar-Fenster liegen mit ihr zusammen bei −0,003 %, 12 Fälle bis −0,28 %, nur
+  bei GCD 1,97 s und mit wechselndem Vorzeichen über die Kampflänge. Ordnungsschlüssel geprüft: Potenz mit Fury und
+  Kritfaktor +0,036 %, mit Fury ohne Kritfaktor +0,034 % (0 darunter), Grundpotenz ohne Fury −0,020 % (78 darunter).
+- *Geändert:* `MNK_Reborn.WeakestSolarStep` (neue Teildatei `MNK_Reborn.SolarOrder.cs`, Klasse dafür `partial`) fragt
+  alle drei fehlenden Formen und nimmt die schwächste; `ActionTooltip.TryHitPotency` liest die Potenz aus dem
+  englischen Wirktext (Grundpotenz, Potenz mit Positional, „Fury Potency“ bei Fury der Form). Wirktexte gelesen
+  (xivapi v2 ActionTransient, 21.11.2026): Rising Raptor 340 / „Raptor's Fury Potency: 540“, Pouncing Coeurl 310 / 370
+  Flanke / 460 / „Flank Coeurl's Fury Potency: 520“, Leaping Opo 260 / 460, Twin Snakes 420, Demolish 360 / 420 Rücken,
+  Dragon Kick 320; die Flächenfertigkeiten tragen je eine Potenz. Keine Zahl im Code.
+- *Antithesen:* (1) Promille – ja, +0,03 %, aber ohne Fall darunter, und sein Ziel ist, nicht hinter The Balance zu
+  liegen. (2) Drei `CanUse` statt einem je GCD unter Perfect Balance – drei Prüfungen in drei GCDs je Fenster; die
+  Potenz kommt aus dem Zwischenspeicher je Stufe. (3) Ausgeliefert, nichts ändert sich – unter mehreren Zielen wählen
+  die Formen ihre Flächenfertigkeiten, deren Potenzen ebenso im Text stehen; ohne gelesenen Text bleibt die alte Folge.
+- *Vorhersage:* Im nächsten Monk-Mitschnitt stehen in Solar-Folgen mit Fury die Fury verbrauchenden Fertigkeiten
+  (Rising Raptor, Pouncing Coeurl, Leaping Opo mit Fury) hinter denen ohne (Twin Snakes, Demolish, Dragon Kick, Leaping Opo
+  ohne Fury); widerlegt, wenn in einer Solar-Folge eine Fertigkeit mit Fury vor einer ohne steht.
+- *Prüfgrad:* Modell mit Selbsttest, Compile, Prüfschritte; im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

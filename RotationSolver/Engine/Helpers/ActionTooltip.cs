@@ -25,6 +25,8 @@ internal static class ActionTooltip
 
 	private static readonly Regex StatedPotency = new(@"potency of (?<value>\d[\d,]*)", RegexOptions.Compiled);
 	private static readonly Regex StatedCurePotency = new(@"Cure Potency: (?<value>\d[\d,]*)", RegexOptions.Compiled);
+	private static readonly Regex StatedPositionalPotency = new(@"(?m)^(?<value>\d[\d,]*) when executed from a target's", RegexOptions.Compiled);
+	private static readonly Regex StatedFuryPotency = new(@"Fury Potency: (?<value>\d[\d,]*)", RegexOptions.Compiled);
 	private static readonly Regex StatedHealthBelow = new(@"HP is below (?<value>\d{1,3})%", RegexOptions.Compiled);
 	private static readonly Regex StatedRaisedPotencyLowHealth = new(@"[Pp]otency is increased to (?<value>\d[\d,]*) when your HP is below", RegexOptions.Compiled);
 	private static readonly Regex StatedHealthCost = new(@"Consumes (?<value>\d{1,3})% of your maximum HP", RegexOptions.Compiled);
@@ -323,6 +325,66 @@ internal static class ActionTooltip
 		}
 
 		return stated;
+	}
+
+	/// <summary>
+	/// The potency one hit of <paramref name="actionId"/> deals as its tooltip states it, with its positional met: the
+	/// highest of "a potency of 310" and "370 when executed from a target's flank"; with <paramref name="fury"/>, the
+	/// highest "Fury Potency" (Pouncing Coeurl's "Coeurl's Fury Potency: 460", "Flank Coeurl's Fury Potency: 520") where
+	/// the text states one. False when it states no potency. Concept 14, "Monk: Perfect Balance und das Burstfenster"
+	/// (A963): the order of a Solar sequence.
+	/// </summary>
+	public static bool TryHitPotency(uint actionId, bool fury, out float potency)
+	{
+		if (fury && TryStatedHighestKept(actionId, StatedFuryPotency, out potency))
+		{
+			return true;
+		}
+
+		var stated = TryStatedKept(actionId, StatedPotency, out potency);
+		if (TryStatedHighestKept(actionId, StatedPositionalPotency, out var positional) && positional > potency)
+		{
+			potency = positional;
+			stated = true;
+		}
+
+		return stated;
+	}
+
+	// The highest figure a pattern matches in the text, kept like TryStatedKept.
+	private static bool TryStatedHighestKept(uint actionId, Regex pattern, out float value)
+	{
+		var key = (pattern, actionId, DataCenter.PlayerSyncedLevel());
+		lock (_gate)
+		{
+			if (_statedFigures.TryGetValue(key, out var known))
+			{
+				value = float.IsNaN(known) ? 0f : known;
+				return !float.IsNaN(known);
+			}
+		}
+
+		var text = Text(actionId);
+		var highest = float.NaN;
+		foreach (Match match in pattern.Matches(text))
+		{
+			if (float.TryParse(match.Groups["value"].Value.Replace(",", string.Empty), NumberStyles.Float,
+				CultureInfo.InvariantCulture, out var figure) && (float.IsNaN(highest) || figure > highest))
+			{
+				highest = figure;
+			}
+		}
+
+		if (text.Length > 0)
+		{
+			lock (_gate)
+			{
+				_statedFigures[key] = highest;
+			}
+		}
+
+		value = float.IsNaN(highest) ? 0f : highest;
+		return !float.IsNaN(highest);
 	}
 
 	/// <summary>

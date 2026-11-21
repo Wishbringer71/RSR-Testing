@@ -35,12 +35,12 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
 - **Jede Rotation gegen The Balance messen** (seine These, 20.11.2026: „meine these ist nun, dass alle von dir optimierten
   rotas schlechter als die von the balance sind. beweise das gegenteil!“; A950). *Im Kampf:* Wo die Rotation weniger
   Potenz über den Kampf bringt als der Guide, fehlt Schaden in jedem Kampf. *Stand:* Ein Vergleich in Potenz über den
-  Kampf besteht für Samurai (spielt wie The Balance, A962), Monk (The Balance +0,03 %) und – ohne Potenzurteil –
+  Kampf besteht für Samurai (spielt wie The Balance, A962), Monk (gleichauf im Mittel, A963) und – ohne Potenzurteil –
   den Maschinisten (Batterie); für 20 Jobs keiner. *Nächster Schritt:* je Job ein Modell nach dem Muster von
   `samurai_balance_model.py` (Folge von The Balance gegen die der Rotation, ein Boss, Potenzen aus dem Job-Guide, Kampflänge
   und GCD variiert), Boss-Jobs seines Profils zuerst; wo The Balance vorn liegt, die Regel verbessern, bis sie nicht mehr
-  dahinter liegt (sein Ziel vom 19.11.2026). Als Nächstes der Monk (Konzept 14, „Monk: Perfect Balance und das
-  Burstfenster“). Vorrang haben die
+  dahinter liegt (sein Ziel vom 19.11.2026). Als Nächstes der Maschinist (sein häufigster Job; Konzept 14,
+  „Maschinist“), dort das Potenzurteil. Vorrang haben die
   Stellen, an denen eine Rotation ein Burstfenster gegen das Raster von The Balance verschiebt oder bindet (warten,
   binden, vorziehen): Sie brauchen den Modellbeleg (Konzept 03, „Seine Frage, ein strategischer Fehler?“, A958).
   *Konzept:* 14.

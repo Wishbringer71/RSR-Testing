@@ -3,7 +3,7 @@ namespace RotationSolver.Rotations.Melee.Monk;
 [Rotation("Reborn", CombatType.PvE, GameVersion = "7.58", RotationType = RotationType.Reborn, Description = "Uses Lunar Solar Opener from The Balance")]
 [SourceCode(Path = "main/Rotations/Melee/Monk/MNK_Reborn.cs")]
 
-public sealed class MNK_Reborn : MonkRotation
+public sealed partial class MNK_Reborn : MonkRotation
 {
 	#region Config Options
 
@@ -549,22 +549,9 @@ public sealed class MNK_Reborn : MonkRotation
 		//if (StatusHelper.PlayerStatusStack(true, StatusID.PerfectBalance) == 3 && OpoOpoForm(out act)) return true;
 
 		// Gain Solar Nadi through 3 different forms
-		if (HasPerfectBalance && !HasSolar && EnhancedPerfectBalanceTrait.EnoughLevel)
+		if (HasPerfectBalance && !HasSolar && EnhancedPerfectBalanceTrait.EnoughLevel && WeakestSolarStep(out act))
 		{
-			if (!BeastChakrasContains(BeastChakra.Raptor) && RaptorForm(out act))
-			{
-				return true;
-			}
-
-			if (!BeastChakrasContains(BeastChakra.Coeurl) && CoerlForm(out act))
-			{
-				return true;
-			}
-
-			if (!BeastChakrasContains(BeastChakra.OpoOpo) && OpoOpoForm(out act))
-			{
-				return true;
-			}
+			return true;
 		}
 
 		// Gain Lunar Nadi through 3 opopo form actions
