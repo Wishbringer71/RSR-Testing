@@ -2484,6 +2484,31 @@ annimmt (D2).
 ist, wird eine alternative gewählt.“ Am 19.11. in den Auftrag genommen: „dynamische rotation nun im vollen loop mit
 konzept, audit, codereview, fehlerbeseitigung“.
 
+**Seine Frage, ein strategischer Fehler? (21.11.2026, A958)** „war die entscheidung der dynamisierung der rotationen ein
+strategischer fehler, da ja anscheinend die rotationen nun schlechter als the balance agieren?“; dazu: „ziel war ja, damit
+eine verbesserung gegen the balance zu bekommen und schneller auf situationen reagieren zu können. wenn aber damit
+burstphasen beschädigt werden, ist das doch eher kontraproduktiv“. *Gemessen (Upload 20.11.2026, 22 Puppenkämpfe, 19
+Jobs, Build 4f9790fd4 mit D1 und D2):* D1 sperrte keine Aktion (keine Zeile „left out until the game takes it“), D2 griff
+nie (keine Zeile „instead of none“). Die vier gemessenen Schäden an Burstfenstern (A957) hatten andere Ursachen: Wildfire
+nur vor Full Metal Field (Upstream, 02805766b, 2025), die Ladungsprüfung mit fremder Gruppendauer (Upstream, 14b907736,
+2025), die Mana-Schwelle des Rotmagiers nach verstrichener statt verbleibender Zeit (Upstream, 5dd3dac18, 2025) – und
+Searing Light an die eigene Solar-Phase gebunden (Fork, Konzept 12) auf meiner Annahme, der Buff falle mit Solar ohnehin
+zusammen. *Urteil:* D1 und D2 sind nicht die Ursache; sie haben am 20.11. nichts verändert. Ein strategischer Fehler war
+aber die Bindung eines Gruppen-Buffs an eine eigene Phase, ohne sie gegen The Balance zu rechnen: Sie hielt den Buff,
+sobald die Zeitgeber auseinanderliefen. *Die Regel daraus (Ebene alle):* Die Grundlage jedes Burstfensters ist das
+Raster, das The Balance nennt – Buffs der Gruppe bei Abklingzeit, eigene Abklingzeiten nicht verschoben. Eine lagebezogene
+Abweichung (warten, binden, vorziehen) ist erst erlaubt, wenn ein Modell über den Kampf belegt, dass sie mehr bringt als
+das Raster, und nur für die Lage, die das Modell zeigt (Bewegung, Pause, Tod, zweiter Spieler desselben Jobs). Ein
+Abgleich je Job gegen das Raster steht im TODO („Jede Rotation gegen The Balance messen“). *Gegenthese 1 („feste Folgen
+wie bei The Balance wären besser“):* Sie hätten die drei Upstream-Fehler ebenso, wo sie falsch geschrieben sind, und sie
+reagieren nicht auf Bewegung, Pausen und Tode, für die The Balance selbst Ausnahmen beschreibt. Widerlegt als
+Gesamturteil; bestätigt für die Ausrichtung der Buffs, darum die Regel oben. *Gegenthese 2 („D2 kann einen
+zurückgehaltenen Burst-GCD außerhalb des Fensters zünden“):* Möglich, weil D2 ohne `ActionCheck` fragt. Er greift aber
+erst nach einem ganzen freien GCD; ein verlorener GCD kostet immer, ein verschobener Burst-GCD nur seinen Aufschlag.
+Am 20.11. nicht eingetreten; die Vorhersage `dynamic-fallback-line-form` zeigt jeden Einsatz mit Namen. *Gegenthese 3
+(„ausgeliefert, und nichts ändert sich“):* Ohne Abgleich je Job bleibt jede weitere Bindung ungeprüft; deshalb gilt die
+Regel für jede neue und jede angefasste Bindung, nicht nur für Searing Light.
+
 **Grundlagen**
 - *RSR heute:* Jede Rotation fragt ihre Aktionen der Reihe nach (`if (X.CanUse(out act)) return true;`). Was `CanUse`
   ablehnt – Abklingzeit, Reichweite, Status, eigene Bedingung (`ActionCheck`) –, überspringt sie; insoweit ist sie schon

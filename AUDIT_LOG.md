@@ -27739,6 +27739,29 @@ so dass ein Flächen-GCD an einer einzelnen Puppe nicht gewählt wird. Ob sein B
   Spur keine Zeile je Einsatz schreibt.
 - *Prüfgrad:* Mitschnitt und Spur ausgewertet; Code, Compile, 66 Prüfschritte grün; im Spiel nicht beobachtet.
 
+### A958 · Seine Frage: War die Dynamisierung der Rotationen ein strategischer Fehler? (21.11.2026)
+
+- *Frage:* „war die entscheidung der dynamisierung der rotationen ein strategischer fehler, da ja anscheinend die rotationen
+  nun schlechter als the balance agieren? im vollen loop kritisch mit antithese prüfen“; dazu: „ziel war ja, damit eine
+  verbesserung gegen the balance zu bekommen und schneller auf situationen reagieren zu können. wenn aber damit
+  burstphasen beschädigt werden, ist das doch eher kontraproduktiv“.
+- *Gemessen:* Spur 20.11.2026 (Build 4f9790fd4, enthält D1 und D2 aus A930): 0 Zeilen „left out until the game takes it“,
+  0 „instead of none“, 3 „gcd idle“ (Dragoon 26 s bei seinem Zielwechsel, Tänzer 7 s, Schwarzmagier 9 s, je „NoTarget“
+  oder Spielstatus). Herkunft der vier Burstschäden aus A957 per `git log -S` und `git blame`: Wildfire nur vor Full Metal
+  Field (Upstream 02805766b, 07.06.2025), Ladungsprüfung (Upstream 14b907736, 22.05.2025), Rotmagier-Schwelle (Upstream
+  5dd3dac18, 01.07.2025), Searing Light an Solar gebunden (Fork, Konzept 12, meine Annahme).
+- *Ergebnis:* D1 und D2 verursachten keinen der Schäden; sie griffen nicht. Der eine Schaden aus einer Fork-Regel kam aus
+  der Bindung eines Gruppen-Buffs an eine eigene Phase, nicht gegen The Balance gerechnet. Seine Aussage „wenn damit
+  burstphasen beschädigt werden, ist das kontraproduktiv“ trifft auf diese Art Regel zu. Neue Regel (Konzept 03, Ebene
+  alle): Grundlage jedes Burstfensters ist das Raster von The Balance; eine lagebezogene Abweichung nur mit Modellbeleg
+  für die Lage, die er zeigt. TODO „Jede Rotation gegen The Balance messen“: solche Stellen zuerst.
+- *Antithesen:* (1) Feste Folgen wären besser – widerlegt als Gesamturteil (sie trügen dieselben Upstream-Fehler und
+  reagieren nicht auf Bewegung, Pause, Tod), bestätigt für die Ausrichtung der Buffs. (2) D2 könnte einen
+  zurückgehaltenen Burst-GCD zünden – möglich, erst nach einem ganzen freien GCD, am 20.11. nicht eingetreten. (3)
+  Ausgeliefert, nichts ändert sich – ohne Abgleich je Job bleiben weitere Bindungen ungeprüft; die Regel gilt deshalb für
+  jede neue und jede angefasste Bindung.
+- *Prüfgrad:* Spur, Mitschnitt und Versionsgeschichte; keine Codeänderung.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

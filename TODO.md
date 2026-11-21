@@ -41,7 +41,10 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
   `samurai_balance_model.py` (Folge von The Balance gegen die der Rotation, ein Boss, Potenzen aus dem Job-Guide, Kampflänge
   und GCD variiert), Boss-Jobs seines Profils zuerst; wo The Balance vorn liegt, die Regel verbessern, bis sie nicht mehr
   dahinter liegt (sein Ziel vom 19.11.2026). Samurai zuerst: die Meikyo-Regel liegt im Mittel 0,29 % zurück
-  (Konzept 14, „Samurai: Meikyo Shisui und Higanbana“, dort „nicht gebaut“ vor seinem Ziel). *Konzept:* 14.
+  (Konzept 14, „Samurai: Meikyo Shisui und Higanbana“, dort „nicht gebaut“ vor seinem Ziel). Vorrang haben die
+  Stellen, an denen eine Rotation ein Burstfenster gegen das Raster von The Balance verschiebt oder bindet (warten,
+  binden, vorziehen): Sie brauchen den Modellbeleg (Konzept 03, „Seine Frage, ein strategischer Fehler?“, A958).
+  *Konzept:* 14.
 
 ## Technische Schuld
 
