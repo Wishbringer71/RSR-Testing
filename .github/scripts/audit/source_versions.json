@@ -3,8 +3,8 @@
  "sources": [
   {
    "repo": "aers/FFXIVClientStructs",
-   "commit": "80cb4a7b7",
-   "date": "2026-11-10",
+   "commit": "7f509ce13",
+   "date": "2026-11-21",
    "use": "Client-API"
   },
   {
@@ -27,14 +27,14 @@
   },
   {
    "repo": "BeirutaNa1na/RotationSolverReborn",
-   "commit": "abfd49fa0",
-   "date": "2026-11-19",
+   "commit": "996f28183",
+   "date": "2026-11-21",
    "use": "Beiruta-Rotationen"
   },
   {
    "repo": "dajoey/lalalazy",
-   "commit": "8264d021d",
-   "date": "2026-11-20",
+   "commit": "c941afe43",
+   "date": "2026-11-21",
    "use": "GluttonyCombo, LazyCrucible: Crucible-Aufzeichnungen, Sanduhr, Futter (A674, A679)"
   },
   {
@@ -117,8 +117,8 @@
   },
   {
    "repo": "ofnature/Daedalus",
-   "commit": "8b4ce0506",
-   "date": "2026-11-20",
+   "commit": "8684c7938",
+   "date": "2026-11-21",
    "use": "Feldnotizen, Rotationen aller Jobs, Crucible (A600, A660)"
   },
   {
@@ -183,8 +183,8 @@
   },
   {
    "repo": "t3knical/DalamudPlugins",
-   "commit": "e63189109",
-   "date": "2026-11-19",
+   "commit": "3344272b1",
+   "date": "2026-11-21",
    "use": "Tekz-BossmodReborn-Fork (Zielvorrang je Kampf), BeastMasterHelper (A667)"
   },
   {

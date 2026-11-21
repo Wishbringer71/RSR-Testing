@@ -27760,6 +27760,11 @@ so dass ein Flächen-GCD an einer einzelnen Puppe nicht gewählt wird. Ob sein B
   zurückgehaltenen Burst-GCD zünden – möglich, erst nach einem ganzen freien GCD, am 20.11. nicht eingetreten. (3)
   Ausgeliefert, nichts ändert sich – ohne Abgleich je Job bleiben weitere Bindungen ungeprüft; die Regel gilt deshalb für
   jede neue und jede angefasste Bindung.
+- *Auftragsende (21.11.2026):* Upstream gemessen, kein neuer Commit. Quellen: fünf bewegt, ohne Nutzen für RSR –
+  FFXIVClientStructs 7f509ce13 (drei Versätze in Typen, die RSR nicht liest), Beiruta 996f28183 (Upstreams Merge, hier
+  schon gemergt), lalalazy c941afe43 (PvPSolver entfernt PvE-Pfade aus seinem Fork), Daedalus 8684c7938 (nur
+  Verweise auf Plugin-Stände), DalamudPlugins 3344272b1 (Download-Zahlen); festgehalten mit `--record`.
+  FrontlineAdvisor nicht erreichbar.
 - *Prüfgrad:* Spur, Mitschnitt und Versionsgeschichte; keine Codeänderung.
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
