@@ -121,7 +121,9 @@ public sealed class MCH_Reborn : MachinistRotation
 					return true;
 				}
 			}
-			if (HasWildfire && (IsLastAction(false, FullMetalFieldPvE) || IsLastGCD(false, FullMetalFieldPvE)))
+			// A964: Wildfire without a Full Metal Field pending is followed by Hypercharge as well.
+			if (HasWildfire && (IsLastAction(false, FullMetalFieldPvE) || IsLastGCD(false, FullMetalFieldPvE)
+				|| (FullMetalFieldPvE.EnoughLevel && !HasFullMetalMachinist)))
 			{
 				if (HyperchargePvE.CanUse(out act, skipTTKCheck: true))
 				{
@@ -335,6 +337,18 @@ public sealed class MCH_Reborn : MachinistRotation
 					}
 
 					if (!IsOverheated && IsLastGCD(false, FullMetalFieldPvE) && WildfirePvE.CanUse(out act)
+						&& (!WildfireBoss || WildfirePvE.Target.Target.IsBossFromIcon()))
+					{
+						return true;
+					}
+
+					// Concept 14, "Wildfire im Zwei-Minuten-Fenster" (A964): with no Full Metal Field pending and Barrel Stabilizer
+					// not back within Wildfire's duration, Wildfire goes with the next Overheat, once Hypercharge may (The Balance:
+					// "Not drifting ... Wildfire"). It waited for the next Full Metal Field; a window without one carries the
+					// same six stacks.
+					if (!IsOverheated && !HasFullMetalMachinist && CanLateWeave
+						&& !BarrelStabilizerPvE.Cooldown.WillHaveOneCharge(DefensiveValues.DurationOf(WildfirePvE.ID))
+						&& ToolChargeSoon(out _) && WildfirePvE.CanUse(out act)
 						&& (!WildfireBoss || WildfirePvE.Target.Target.IsBossFromIcon()))
 					{
 						return true;

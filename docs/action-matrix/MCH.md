@@ -215,6 +215,7 @@ direkt: 37 · ungenutzt: 8 · über andere Aktion: 1
 | Spread Shot | Regel prüft | Scattergun |
 | Spread Shot | Regel sperrt vorher | Wildfire |
 | Tactician | Regel sperrt vorher | Wildfire |
+| Wildfire | Regel prüft | Barrel Stabilizer |
 | Wildfire | Regel prüft | Full Metal Field |
 | Wildfire | Regel sperrt vorher | Full Metal Field |
 

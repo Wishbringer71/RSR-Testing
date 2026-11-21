@@ -27903,6 +27903,29 @@ so dass ein Flächen-GCD an einer einzelnen Puppe nicht gewählt wird. Ob sein B
   ohne Fury); widerlegt, wenn in einer Solar-Folge eine Fertigkeit mit Fury vor einer ohne steht.
 - *Prüfgrad:* Modell mit Selbsttest, Compile, Prüfschritte; im Spiel nicht beobachtet.
 
+### A964 · TODO: Maschinist – Wildfire ohne anstehendes Full Metal Field mit der nächsten Überhitzung (21.11.2026)
+
+- *Anlass:* TODO „Jede Rotation gegen The Balance messen“, Maschinist; Konzept 14 führte den Fall seit A957/A958 als
+  „nicht gebaut, erst mit Modell“ (gemessen 20.11.2026: Wildfire nach dem Jobwechsel bereit um 18:23:18, gewartet bis
+  18:24:26).
+- *Grundlage:* The Balance „Not drifting Air Anchor, Chainsaw, Barrel Stabilizer, and Wildfire“ (Basic Guide, gelesen
+  21.11.2026); Wirktext Wildfire (xivapi v2 ActionTransient 2878, 21.11.2026): 240 Potenz je gelandeter
+  Waffenfertigkeit, höchstens 6, Dauer 10 s. Das Warten war die Abweichung vom Raster, nicht die neue Regel.
+- *Modell (`machinist_balance_model.py`, Teil 4, Selbsttest):* Barrel Stabilizer 0 bis 110 s nach Wildfire bereit,
+  3 bis 15 min, 156 Fälle: die neue Regel nie darunter, in 22 Fällen ein Wildfire mehr (bis 1.440 Potenz), jedes Fenster
+  6 Stapel; ausgerichtet wie bisher.
+- *Geändert (`MCH_Reborn`):* Wildfire im späten Weave (`CanLateWeave`), wenn kein Full Metal Field ansteht, Barrel
+  Stabilizer nicht innerhalb der Dauer von Wildfire zurückkommt (`DefensiveValues.DurationOf`) und Hypercharge gehen darf
+  (`ToolChargeSoon`); Hypercharge folgt jedem Wildfire ohne anstehendes Full Metal Field. Keine neue Zahl.
+- *Antithesen:* (1) Die Fenster liegen danach neben Barrel Stabilizer und den Gruppenbuffs – eigener Schaden gleich
+  (6 Stapel), fremde Buffs nach seiner Regel kein tragender Grund. (2) Wildfire kurz vor Barrel Stabilizer – ausgenommen,
+  solange Barrel Stabilizer innerhalb der 10 s zurückkommt; dann geht der alte Weg. (3) Ausgeliefert, nichts ändert
+  sich – ohne Heat 50 und ohne Hypercharged wartet Wildfire weiter, bis Hypercharge darf.
+- *Vorhersage:* Im nächsten Maschinisten-Mitschnitt nach einem Jobwechsel kommt Wildfire mit der ersten Überhitzung nach
+  50 Heat (Zeile 21 Wildfire, danach Hypercharge), nicht erst mit Full Metal Field; widerlegt, wenn Wildfire bereit
+  und Heat 50 erreicht sind und es bis zum nächsten Full Metal Field ausbleibt.
+- *Prüfgrad:* Modell mit Selbsttest, Compile, Prüfschritte; im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
