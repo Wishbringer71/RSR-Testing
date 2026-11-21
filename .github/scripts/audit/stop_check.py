@@ -73,6 +73,15 @@ EXTENT = re.compile(r"^\s*(?:[-*]\s*)?(?:\*\*)?Umfang(?:\*\*)?\s*:", re.M)
 TAGGED = re.compile(r"<(system-reminder|command-[\w-]+|local-command-[\w-]+|task-notification)>.*?</\1>", re.S)
 
 
+# A decision put to him (CLAUDE.md, "Vorlagen an ihn", his rule of 21.11.2026): it is his only once the problem is
+# described, a recommendation is given with its grounds, and both were worked in the loop to the plateau. The hook
+# finds the parts by name; whether they are thorough it cannot tell.
+ASKS_DECISION = re.compile(r"\bdeine\s+entscheidung\b|\bzur\s+entscheidung\b|\bentscheid(?:e|est)\s+du\b|"
+                           r"\bdie\s+frage\s+an\s+dich\b|\bfrage\s+an\s+dich\b|\bvorlage\s+an\s+dich\b", re.I)
+DECISION_PARTS = {"Problem": re.compile(r"\bproblem\w*", re.I), "Empfehlung": re.compile(r"\bempfehl\w*", re.I),
+                  "Begründung": re.compile(r"\bbegründ\w*", re.I), "Plateau": re.compile(r"\bplateau\b", re.I)}
+
+
 def his_last_words(path):
     """The text of his last own message in the session transcript, or "" - not tool results, reminders, notifications,
     summaries or messages of other sessions."""
@@ -126,6 +135,12 @@ def findings(message, waiting=False, asked=""):
         out.append(f"Die letzte Nachricht endet mit einer Ankündigung ({what}). CLAUDE.md, „Bevor ich einen Zug "
                    f"beende“: Ein Zug endet mit einem Ergebnis, einem Blocker oder einer Frage, die nur er beantworten "
                    f"kann; angekündigte Arbeit beginnt im selben Zug.")
+    if ASKS_DECISION.search(text):
+        missing = [name for name, pattern in DECISION_PARTS.items() if not pattern.search(text)]
+        if missing:
+            out.append(f"Die letzte Nachricht legt ihm eine Entscheidung vor, ohne {', '.join(missing)}. CLAUDE.md, "
+                       f"„Vorlagen an ihn“: seine Entscheidung erst mit umfassender Problembeschreibung, Empfehlung und "
+                       f"Begründung, beides im Loop bis zum Plateau; bis dahin offene Arbeit im TODO.")
     word = COMPLETE.search(asked or "")
     if word and not EXTENT.search(message):
         out.append(f"Seine Nachricht verlangt jedes Element („{word.group(0)}“), die letzte Nachricht nennt keinen Umfang. "
@@ -203,15 +218,25 @@ def self_test():
         "a waiting status passes": ("Der Build läuft noch. Das Ergebnis kommt als Ereignis über das PR-Abonnement.", 0),
         "an empty message is found": ("  \n", 1),
         "a perfect tense is no announcement (Retainer-Repricer)": ("Ich habe jetzt alle Tests grün.", 0),
-        "a close waiting on his decision is a blocker (KSP-MyContracts)": ("Die Prüfung ist offen.\n\nFür den "
-                                                                            "nächsten Schritt braucht es deine "
+        "a close waiting on his decision is a blocker (KSP-MyContracts)": ("Problem, Empfehlung V2 und Begründung "
+                                                                            "stehen oben, der Loop am Plateau.\n\n"
+                                                                            "Für den nächsten Schritt braucht es deine "
                                                                             "Entscheidung zu V2.", 0),
+        "the same close without the parts is found (A957)": ("Die Prüfung ist offen.\n\nFür den nächsten Schritt "
+                                                             "braucht es deine Entscheidung zu V2.", 1),
         "a close conditional on his answer is a blocker": ("Sagst du ja zu beiden Empfehlungen, entferne ich die "
                                                            "Einstellungen im nächsten Schritt.", 0),
         "'gleich' as a comparison is no announcement (Retainer-Repricer)": ("Der Preis liegt gleich dem günstigsten "
                                                                            "Angebot, und die Liste ist geprüft.", 0),
         "'weiter mit' is found": ("Gepusht.\n\nWeiter mit D18.", 1),
         "a question at the end is no announcement": ("Erledigt.\n\nSoll ich als Nächstes die Tabellen prüfen?", 0),
+        "a decision without its parts is found (A957)": ("Dragoon – deine Entscheidung: Sternensturz kam selten. "
+                                                         "Gilt die Grenze weiter?", 1),
+        "a decision with problem, recommendation, grounds and plateau passes": (
+            "Vorlage an dich. Problem: die Grenze sperrt Sternensturz. Empfehlung: B. Begründung: kein Weg ohne "
+            "Bewegung. Der Loop lief bis zum Plateau. Gilt B?", 0),
+        "a decision missing only the plateau is found": ("Zur Entscheidung: Problem X, Empfehlung B, Begründung Y.", 1),
+        "no decision put to him needs no parts": ("Das Problem ist behoben, die Prüfung ist grün.", 0),
     }
     failed = [name for name, (msg, n) in cases.items() if len(findings(msg)) != n]
     if hook({"stop_hook_active": True, "last_assistant_message": "Als Nächstes prüfe ich das."}) is not None:
@@ -265,7 +290,7 @@ def self_test():
         print("self-test FAILED: " + "; ".join(failed))
         return 1
     print(f"self-test ok: {len(cases) + len(complete) + 9} cases - announcement at the end, trailing colon, English, "
-          f"code left out, continuation let through, extent when he asks for every element")
+          f"code left out, continuation let through, extent when he asks for every element, the parts of a decision")
     return 0
 
 

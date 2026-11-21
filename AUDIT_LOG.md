@@ -27767,6 +27767,29 @@ so dass ein Flächen-GCD an einer einzelnen Puppe nicht gewählt wird. Ob sein B
   FrontlineAdvisor nicht erreichbar.
 - *Prüfgrad:* Spur, Mitschnitt und Versionsgeschichte; keine Codeänderung.
 
+### A959 · Seine Vorgabe: seine Entscheidung erst nach Vorlage bis zum Plateau (21.11.2026)
+
+- *Vorgabe:* „merk dir endlich mal: meine entscheidung ist es erst, wenn du das problem umfassend beschrieben hast, und
+  eine empfehlung inkl. umfassender begründung geliefert hast, und die erstellung der problembeschreibung und der
+  empfehlung inkl. dessen begründung im loop bis zum plateau optimiert wurde“.
+- *Anlass, eigener Fehler:* In der Schlussmeldung zu A957 stand „Dragoon – deine Entscheidung“ mit Ursache und Preis, ohne
+  Empfehlung, ohne Begründung, ohne Loop; die Frage „Gilt die Grenze weiter …?“ stellte ihm eine unfertige Vorlage.
+  Zurückgenommen; der Punkt ist offene Arbeit (TODO „Sprungangriffe innerhalb der Gapcloser-Grenze: Vorlage bis zum
+  Plateau“). Dieselbe Regel stand schon in `archiv-todo.md` („Ein Eintrag gilt erst als seine Entscheidung, wenn der
+  Loop durch ist und die Vorlage darin steht“, seine Rüge vom 14.10.2026): zweiter Bruch.
+- *Eingearbeitet:* CLAUDE.md, „Vorlagen an ihn“, der erste Punkt neu gefasst (seine Worte, Grund, Durchsetzung), die Form
+  der Vorlage als eigener Punkt mit der Prüfung, ob die Empfehlung alternativlos ist (Idee aus dem LLM-Framework,
+  a389fe0, A15 dort; hier geprüft: sie trennt eine Empfehlung mit Preis von einer ohne).
+- *Durchgesetzt (zweiter Bruch, `regeldateien.md`):* `stop_check.py` findet in der Schlussmeldung eine vorgelegte
+  Entscheidung („deine Entscheidung“, „zur Entscheidung“, „entscheidest du“, „Frage an dich“, „Vorlage an dich“) und
+  verlangt dann die Teile Problem, Empfehlung, Begründung und Plateau. Selbsttest: die Meldung aus A957 wird gefunden,
+  eine mit allen Teilen geht durch, eine ohne Plateau wird gefunden, eine ohne Vorlage braucht keine Teile. Der Fall „a
+  close waiting on his decision is a blocker“ trägt jetzt die Teile, weil er das Ende ohne Ankündigung prüft, nicht die
+  Vorlage; derselbe Satz ohne Teile steht als eigener Fall, der gefunden wird. *Grenze:* Ob Problem und Begründung
+  umfassend sind und ob der Loop das Plateau erreichte, entscheidet kein Skript; das hängt am Inhalt. Preis: Ein Bericht
+  über eine frühere Entscheidung in der zweiten Person („deine Entscheidung B“) kostet eine Runde.
+- *Prüfgrad:* Selbsttest grün, 66 Prüfschritte.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

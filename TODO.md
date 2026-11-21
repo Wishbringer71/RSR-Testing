@@ -46,6 +46,14 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
   binden, vorziehen): Sie brauchen den Modellbeleg (Konzept 03, „Seine Frage, ein strategischer Fehler?“, A958).
   *Konzept:* 14.
 
+- **Sprungangriffe innerhalb der Gapcloser-Grenze: Vorlage bis zum Plateau** (A957, A959). *Im Kampf:* Mit „Only use
+  damaging gap closers within this distance“ auf 0 y kam Sternensturz am 20.11. in 2 von 11 Fenstern, Drachenfeuersturz
+  in 2 von 6 (rund 20.800 Potenz in 11 min nach den Wirktexten). *Ort:* `GapCloserAllowed`, alle Jobs mit
+  Schadens-Sprung (Ebene alle, dann je Job). *Nächster Schritt:* Problem umfassend beschreiben (jeder betroffene Job und
+  Sprung, Landepunkt, Weg, Lagen mit und ohne BossMod-Modul, seine Vorgaben A528, A529, A954), Optionen samt Konstruktion
+  ohne Preis suchen, Empfehlung mit Begründung, beides im Loop bis zum Plateau; erst dann Vorlage an ihn.
+  *Konzept:* 01 und 05 („Sprung auf ein Ziel“).
+
 ## Technische Schuld
 
 Ohne Wirkung im Kampf oder bewusst eingegangen; je Kosten und Auflösungsbedingung.
