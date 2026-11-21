@@ -738,18 +738,23 @@ Hier der Vorlauf (A343); Ressourcen und Buffs stehen unter „Schadensausteiler:
 Abgeglichen am 26.10.2026 gegen The Balance, Summoner Basic Guide („Patch Applicable: 7.55", zuletzt geändert am
 31.07.2026; die Opener-Seite zeigt die Folge nur als Bild). Die Searing-Light-Regeln selbst stehen in Konzept 12.
 
-**Rotmagier: Mana vor Embolden** (seine Frage, 20.11.2026, A953; offen, TODO „Rotmagier gibt Mana kurz vor Embolden
-aus“). Die Nahkampf-Kombo beginnt, sobald beide Mana-Leisten die Schwelle erreichen; die Entfernung entscheidet nur
-darüber, ob Enchanted Riposte das Ziel erreicht (3 Yalm). Nah am Boss beginnt sie deshalb an der Schwelle, auf Abstand
-erst beim Herangehen – darum füllen sich die Leisten nur auf Abstand bis 100. Schwellen ohne „Attempt to pool …“ (ab Werk
-aus): 50 unter Embolden; sonst nach der Zeit seit Embolden 90 (bis 15 s), 70 (bis 40 s), 50 (bis 80 s), 60 (danach, also
-in den letzten 40 s vor seiner Rückkehr). The Balance (Red Mage Basic Guide, Patch 7.4, vom Abrufwerkzeug gelesen,
+**Rotmagier: Mana vor Embolden** (seine Frage, 20.11.2026, A953; Ursache A957). Die Nahkampf-Kombo beginnt, sobald
+beide Mana-Leisten die Schwelle erreichen; die Entfernung entscheidet nur darüber, ob Enchanted Riposte das Ziel
+erreicht (3 Yalm). Nah am Boss beginnt sie deshalb an der Schwelle, auf Abstand erst beim Herangehen – darum füllen sich
+die Leisten nur auf Abstand bis 100. Schwellen ohne „Attempt to pool …“ (ab Werk aus): 50 unter Embolden; sonst nach der
+Zeit bis zu seiner Rückkehr 60 (mehr als 80 s), 50 (40 bis 80 s), 70 (15 bis 40 s), 90 (die letzten 15 s). *Ursache des
+Befunds:* Upstreams Fassung (5dd3dac18) las die verstrichene Zeit statt der verbleibenden, mit denselben Grenzen: In
+den letzten 40 s vor Embolden galt 60, und der Fall „bis 15 s“ griff nie, weil Embolden in seinen ersten 20 s noch
+läuft. Der Pooling-Pfad daneben liest die verbleibende Zeit. Gemessen am 20.11.2026: Kombo um 19:04:57 bei 67|60, 24 s
+vor Embolden, und um 19:07:11 bei 68|62, 10 s davor; der Rotmagier kam beide Male mit 36|40 und 26|31 ins Fenster und
+hatte darunter keine Kombo ohne Manafication. Jetzt verbleibende Zeit (A957): An denselben Stellen wartet die Kombo bis
+70 beziehungsweise 90 und fällt unter Embolden. Die Zahlen selbst stammen von Upstream und sind nicht hergeleitet
+(TODO „Rotmagier: Manaschwellen aus Kosten und Gewinn herleiten“). Leser: `RDM_Reborn` und `BeirutaRDM` (zentral,
+keine Richtungsentscheidung). The Balance (Red Mage Basic Guide, Patch 7.4, vom Abrufwerkzeug gelesen,
 wörtliche Ausschnitte, 20.11.2026): „Melee combo at 50|50+ mana“; „Always save enough mana for one melee combo under
 buffs“; Dreifach-Kombo zu zwei Minuten „with 73|73 or above mana (starting 15 seconds before Embolden …)“; „Double combo
 during these buff windows if you can (92|81 mana without Manafication)“; „In general, avoid overcapping mana“. 100|100
-ist kein Ziel. *Befund:* In den letzten 40 s vor Embolden gibt RSR ab 60|60 aus und spart nicht für die Kombo unter den
-Buffs; der Pooling-Pfad (92|81 bzw. 81 ab 30 s vorher) liegt näher an The Balance, ist aber ab Werk aus und als
-„Experimental“ geführt.
+ist kein Ziel. Der Pooling-Pfad (92|81 ab 30 s vorher) bleibt ab Werk aus und als „Experimental“ geführt.
 
 **Die Necrotize der ungeraden Minute warten auf das Zwei-Minuten-Fenster** (`SMN_Reborn.AttackAbility`, A375). The
 Balance: „Necrotize from your odd minute Energy Drain … should be saved for 2-minute buff windows as long as they are

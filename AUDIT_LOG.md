@@ -27702,6 +27702,12 @@ so dass ein Flächen-GCD an einer einzelnen Puppe nicht gewählt wird. Ob sein B
   Wildfire wartete auf das nächste Full Metal Field. *Gebaut:* Wildfire auch im Weave direkt nach Full Metal Field, vor
   Hypercharge; Hypercharge liest dafür auch den letzten GCD (The Balance, Machinist Basic Guide 7.3: „Excavator > Full
   Metal Field > (Hypercharge + Wildfire)“). Konzept 14, Maschinist.
+- *Defekt 4, Rotmagier (TODO „Rotmagier gibt Mana kurz vor Embolden aus“, A953):* `ManaNeededNoPooling` las die seit
+  Embolden verstrichene Zeit, mit Grenzen, die nur als verbleibende Zeit Sinn ergeben (der Fall „bis 15 s“ war tot,
+  weil Embolden 20 s läuft; der Pooling-Pfad daneben liest die verbleibende Zeit; Upstream 5dd3dac18). Gemessen
+  (Leiste aus Zeile 31): Kombo um 19:04:57 bei 67|60, 24 s vor Embolden, und um 19:07:11 bei 68|62, 10 s davor; ins
+  Fenster kam er mit 36|40 und 26|31. *Gebaut:* verbleibende Zeit. Die Zahlen bleiben Upstreams; ihre Herleitung steht
+  als technische Schuld im TODO. Betroffen auch `BeirutaRDM` (zentral, keine Richtungsentscheidung).
 - *Dragoon, seine Einstellung:* Sternensturz 2 von 11 Fenstern des Lebens des Drachen, Drachenfeuersturz 2 von 6. Beide
   Sprünge gehen nur innerhalb „Only use damaging gap closers within this distance“; die stand am 04.11. auf 0 y (A528),
   und A529 behielt sie für alle Jobs außer dem Schildansturm (seine Entscheidung B). Preis nach den Wirktexten: 9 ×
@@ -27714,11 +27720,13 @@ so dass ein Flächen-GCD an einer einzelnen Puppe nicht gewählt wird. Ob sein B
   früher als Solar deckt die Phase ganz, solange er höchstens 5 s vorher fällt (20 s Buff, 15 s Phase); weiter vorn deckt
   er sie teilweise, dafür liegt er auf seiner Abklingzeit. Wildfire: Nach Full Metal Field fällt es in den ersten Weave;
   Hypercharge folgt, weil es auf ein bereites Wildfire wartet (`WillHaveOneCharge(30)`). Ausgeliefert, und nichts ändert
-  sich? Bei 2,50 s GCD (Searing Light), bei Wildfire im Weave davor (der Normalfall), ohne Jobwechsel (Ladungsprüfung).
+  sich? Bei 2,50 s GCD (Searing Light), bei Wildfire im Weave davor (der Normalfall), ohne Jobwechsel (Ladungsprüfung),
+  auf Abstand zum Boss (Rotmagier: Die Kombo wartet dort ohnehin auf das Herangehen).
 - *Vorhersage:* Nächster Puppen-Upload mit einem Build ab diesem Commit: (1) Maschinist: Wildfire in jedem Fenster, Abstand
   120 s (± ein GCD), im ACT-Mitschnitt; widerlegt bei einem Abstand von 240 s. (2) Beschwörer mit GCD unter 2,50 s:
   Gleißender Schein im Abstand seiner Abklingzeit (120 s ± ein GCD); widerlegt bei einem Abstand über 125 s. (3) Nach
-  einem Jobwechsel kein „ChargesKept“ in „ready but unused“ für eine Aktion ohne Ladungen. Nicht maschinenlesbar, weil die
+  einem Jobwechsel kein „ChargesKept“ in „ready but unused“ für eine Aktion ohne Ladungen. (4) Rotmagier nah am Boss:
+  keine Kombo in den letzten 15 s vor Embolden unter 90|90, Leiste beim Embolden ab 50|50. Nicht maschinenlesbar, weil die
   Spur keine Zeile je Einsatz schreibt.
 - *Prüfgrad:* Mitschnitt und Spur ausgewertet; Code, Compile, 66 Prüfschritte grün; im Spiel nicht beobachtet.
 

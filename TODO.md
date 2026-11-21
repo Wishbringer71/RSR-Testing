@@ -30,14 +30,6 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
 
 ## Defekte
 
-- **Rotmagier gibt Mana kurz vor Embolden aus** (seine Frage, 20.11.2026; A953). *Im Kampf:* Ohne „Attempt to pool
-  Black and White Mana for burst“ (ab Werk aus) startet die Nahkampf-Kombo in den letzten 40 s vor Embolden schon ab
-  60|60 (`RedMageRotation.ManaNeededNoPooling`); der Rotmagier kommt dann ohne Mana für eine Kombo unter Embolden ins
-  Fenster. The Balance (Basic Guide 7.4): „Always save enough mana for one melee combo under buffs“, Dreifach-Kombo zu
-  zwei Minuten ab 73|73, 15 bis 17 s vor Embolden; Doppel-Kombo in späteren Fenstern ab 92|81 ohne Manafication.
-  *Nächster Schritt:* Schwellen aus Kombokosten und Mana je GCD herleiten statt der festen Zahlen beider Pfade, Modell
-  nach dem Muster von `samurai_balance_model.py` gegen The Balance, dann die Voreinstellung. *Konzept:* 14.
-
 
 ## Offene Arbeit
 
@@ -54,6 +46,12 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
 ## Technische Schuld
 
 Ohne Wirkung im Kampf oder bewusst eingegangen; je Kosten und Auflösungsbedingung.
+
+### Rotmagier: Manaschwellen aus Kosten und Gewinn herleiten · N
+*Kompromiss:* Die Schwellen für den Beginn der Nahkampf-Kombo (60, 50, 70, 90 nach der Zeit bis Embolden; Pooling
+92|81) sind Upstreams feste Zahlen (A957). *Kosten:* Weicht der Managewinn je GCD ab (Stufe, Zaubertempo), kommt die
+Kombo zu früh oder zu spät vor das Fenster. *Auflösung:* Schwellen aus Kombokosten und Mana je GCD bis Embolden, Modell
+gegen The Balance (73|73 ab 15 s vorher, 92|81 für die Doppel-Kombo). *Konzept:* 14 („Rotmagier: Mana vor Embolden“).
 
 ### Searing-Light-Abdeckungsmodell bildet die Phasenbuchung von Hand nach · R
 *Kosten:* Ändert sich die Buchung in `UpdateSearingPhaseBook`, `AllSearingPhasesHeld` oder `BurstPhaseHeldByAnother`,

@@ -95,7 +95,9 @@ public partial class RedMageRotation
 				return 50;
 			}
 
-			switch (EmboldenPvE.Cooldown.RecastTimeElapsed)
+			// Concept 14, "Rotmagier: Mana vor Embolden" (A957): the time until Embolden returns, as the pooling path reads it.
+			// Read as the time since, the last 40 s before the window asked only 60 and "<= 15" never held.
+			switch (EmboldenPvE.Cooldown.RecastTimeRemain)
 			{
 				case > 80:
 					return 60;
