@@ -124,8 +124,29 @@ Henne-Ei-Problem wie bei der Wiederbelebung (Konzept 11): Der Buff wartete darau
 werden, und die Ankündigung auf den Buff.
 
 **„Bereit bis zum nächsten GCD", nicht „bereit".** Die Abklingzeit der Beschwörung endet auf dem
-GCD-Raster, weil die vorige Beschwörung selbst ein GCD war und 60 s ein Vielfaches des GCDs sind. Fragte
-die Regel nach abgelaufener Abklingzeit, wäre der Platz davor schon vorbei (A126).
+GCD-Raster, weil die vorige Beschwörung selbst ein GCD war und ihre Abklingzeit mit dem Zaubertempo
+mitläuft. Fragte die Regel nach abgelaufener Abklingzeit, wäre der Platz davor schon vorbei (A126).
+
+**Sol-Bahamut läuft dem Buff davon (Upload 20.11.2026, A957).** Die Abklingzeit der Demi-Beschwörungen
+verkürzt sich mit dem Zaubertempo (The Balance, Summoner Basic Guide, Patch 7.55, gelesen 21.11.2026:
+„the summon demi-primal abilities also scale with spell speed“; „With higher spell speed, subsequent
+Summon Solar Bahamuts will become available before Searing Light“). Gemessen bei deinem GCD von 2,35 s:
+eine Demi alle 57 s, Sol-Bahamut alle 114 s, Searing Light alle 120 s. Jede Solar-Phase beginnt damit
+etwa 6 s früher gegenüber dem Buff: 18:48:58 Solar, Buff 6 s später; 18:50:53 Solar, Buff 11 s später.
+Im nächsten Zyklus wäre er erst nach dem Ende der 15-s-Phase frei geworden (Solar um 18:52:47, Buff um
+18:53:04, gerechnet; der Kampf endete 18:54:07). Bis hierher wartete er dann auf die nächste Solar-Phase,
+rund 95 s seiner 120-s-Abklingzeit [Schätzung aus den gemessenen Abständen]. *Die Regel:* Bin ich der
+einzige Beschwörer und steht Burst an, geht ein bereiter Buff außerhalb von Solar auch dann, wenn Solar
+nicht bis zum nächsten GCD bereit ist – bei Abklingzeit, wie The Balance es verlangt („Searing Light
+should be used on cooldown to align with all other two minute party buffs“; „Aligning with other party
+buffs should be prioritized over aligning with your own burst phases“). Die Beschwörung wartet weiter
+höchstens einen GCD (`searingSettled`); The Balance verlangt dasselbe („do not delay your demi-primals“).
+*Im Kampf:* Bei 2,50 s GCD fallen Buff und Solar weiter zusammen, bei schnellerem GCD läuft der Buff bei
+seiner Abklingzeit, und keiner geht verloren. Mit einem zweiten Beschwörer gilt das Phasenbuch (seine
+Vorgabe, oben) unverändert. *Gegenthese:* „Ein Buff vor Bahamut oder Phönix ist schwächer als in Solar.“
+Trifft für die Phase zu; Warten kostet aber bis zu 95 s Buff, und die Gruppen-Buffs der anderen liegen
+auf dem Zwei-Minuten-Raster, nicht auf deinem Solar. Die Annahme, Buff und Solar fielen beim einzigen
+Beschwörer ohnehin zusammen, ist für GCDs unter 2,50 s widerlegt.
 
 **Keine Sonde:** Die Entscheidung fällt im Code, aus der Bereitschaft der Beschwörung und des Buffs, die
 beide hier und jetzt lesbar sind. Eine Messung, deren Auswertung über das Modell liefe, kostete je Wert
@@ -290,7 +311,7 @@ Zündung hängt damit vom Zeitpunkt ab:
 | nach 19 s (Restzeit 1 s) | 19 s |
 | nach Ablauf | 20 s, volle Wirkung |
 
-`IsStatusProvided` (`ActionBasicInfo.cs:639`) sperrt die Zündung, solange der Status nicht innerhalb von
+`IsStatusProvided` (`ActionBasicInfo.cs:654`) sperrt die Zündung, solange der Status nicht innerhalb von
 `StatusRefreshGcdCount` GCDs endet (`ActionConfig.cs:71`, ab Werk 2), also etwa fünf Sekunden vor Ablauf.
 Entscheidend dafür ist `StatusFromSelf = false` in `ModifySearingLightPvE`: `PlayerHasStatus`
 (`StatusHelper.PlayerHasStatus`, Quellenfilter in `AnyStatusMatches`) filtert nur bei `isFromSelf` auf die
@@ -542,9 +563,10 @@ Slipstream 520, Mountain Buster 160, Inferno 800, Earthen Fury 800, Aerial Blast
 **The Balance** (Summoner Basic Guide, 02.10.2026): „Searing Light should be used on cooldown to align with
 all other two minute party buffs, unless a specific buff delay is agreed upon by the entire party. Aligning
 with other party buffs should be prioritized over aligning with your own burst phases." Für einen einzelnen
-Beschwörer trifft RSR das: Die Abklingzeit von 120 s ist genau ein Demi-Zyklus, und die Zündung im
-Beschwörungsfenster fällt mit „on cooldown" zusammen. Mehrere Beschwörer behandelt The Balance nicht; dort
-gilt seine Vorgabe. Swiftcast auf Slipstream nennt The Balance als situativen Gewinn; nach seiner Spielweise
+Beschwörer trifft RSR das seit A957: Der Buff geht bei Abklingzeit und wartet höchstens einen GCD auf Solar
+(oben, „Sol-Bahamut läuft dem Buff davon“); die frühere Annahme, die Zündung im Beschwörungsfenster falle mit
+„on cooldown" zusammen, gilt nur bei 2,50 s GCD, weil die Demi-Abklingzeit mit dem Zaubertempo schrumpft. Mehrere
+Beschwörer behandelt The Balance nicht; dort gilt seine Vorgabe. Swiftcast auf Slipstream nennt The Balance als situativen Gewinn; nach seiner Spielweise
 bleibt Swiftcast für Wiederbelebungen.
 
 ### Gemessen: was im Kampf ankommt
@@ -805,8 +827,9 @@ Verlust, aber der Pfad gibt das nicht her: `AttackAbility` wird in `CustomRotati
   29.10.2026). Der erste gibt Searing Light frei, sobald es bereit ist; der zweite hält es in der Variante „Balance"
   die ersten 5 s des Kampfes zurück, damit es mit den Buffs der Gruppe fällt, die meist nach zwei GCDs kommen. Beides
   richtet Searing Light nach den anderen aus – eine Annahme über sie, die nach seiner Spielweise kein tragender Grund
-  ist; die Bindung an die Lage ist seine Vorgabe (Abschnitt „Seine Vorgabe"), und für einen Beschwörer fällt „on
-  cooldown" mit dem Solar-Fenster ohnehin zusammen. Die 5 s sind zudem ein fester Wert ohne Herleitung. Übernommen
+  ist; die Bindung an die Lage ist seine Vorgabe (Abschnitt „Seine Vorgabe"). „On cooldown" fällt für einen
+  Beschwörer nur bei 2,50 s GCD mit dem Solar-Fenster zusammen; darunter gilt „Sol-Bahamut läuft dem Buff davon"
+  (A957). Die 5 s sind zudem ein fester Wert ohne Herleitung. Übernommen
   sind aus demselben Commit Energy Drain unter dem eigenen Searing Light – außerhalb einer Demi wirkt das nur auf einen
   sterbenden Boss – und Ruin IV in der Ifrit-Phase (Konzept 14, „Beschwörer").
 - **Das Solar-Fenster nur beim Betreten beobachten**, wie das Phasenbuch bucht. Ein fremder Buff, der einen

@@ -45,7 +45,7 @@ public sealed partial class RotationSolverPlugin : IAsyncDalamudPlugin
 
 	public RotationSolverPlugin(IDalamudPluginInterface pluginInterface)
 	{
-		ECommonsMain.Init(pluginInterface, this, ECommons.Module.DalamudReflector, ECommons.Module.ObjectFunctions);
+		ECommonsMain.Init(pluginInterface, this, ECommons.Module.DalamudReflector, ECommons.Module.ObjectFunctions, ECommons.Module.SplatoonAPI);
 
 		M3.ElementBaseline = 0.75f;
 		M3.Initialize(pluginInterface, Service.Config);
@@ -218,6 +218,10 @@ public sealed partial class RotationSolverPlugin : IAsyncDalamudPlugin
 		DataCenter.ResetAllRecords();
 		DataCenter.ResetHealMeasurements();
 		PositionalWatch.AreaChanged();
+		PositionalMove.AreaChanged();
+		ArenaEdgeWatch.AreaChanged();
+		ActionTargetInfo.AreaChanged();
+		DynamicRotation.AreaChanged();
 
 		if (id == 0)
 		{
@@ -447,6 +451,8 @@ public sealed partial class RotationSolverPlugin : IAsyncDalamudPlugin
 		ActionQueueManager.Disable();
 		ActionManagerEx.DisposeInstance();
 		BMRPlanUpdater.Disable();
+		// A928: BossMod's movement preset does not stay on without RSR.
+		PositionalMove.Dispose();
 		ActionContextMenu.Dispose();
 		BestiaryTrace.Disable();
 		CrucibleWindowTrace.Disable();
@@ -473,6 +479,7 @@ public sealed partial class RotationSolverPlugin : IAsyncDalamudPlugin
 		BMRInfo_IPCSubscriber.Dispose();
 		BMRTimeline_IPCSubscriber.Dispose();
 		BMRPlan_IPCSubscriber.Dispose();
+		Navmesh_IPCSubscriber.Dispose();
 		Wrath_IPCSubscriber.Dispose();
 
 		await saveLists;

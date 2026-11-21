@@ -518,6 +518,21 @@ vorgezogener Sofort-GCD verliert höchstens seine spätere Lage: Polyglot, Farbe
 später, wären dort aber auch nur ein GCD gewesen. Deshalb geht der stärkste Sofort-GCD, dessen Ressource keinen anderen
 Zweck hat, vor einem schwächeren und vor keinem. Swiftcast zählt hier nicht, wo der Job damit wiederbelebt (Konzept 11).
 
+**Eine Ressource, die mit der Zeit nachwächst und an ihrer Obergrenze verfällt** (Heilungslilien des Weißmagiers, A933),
+hat einen anderen Zweck – Heilung – und geht trotzdem vor einer Erneuerung des DoT vor seiner Zeit, solange danach ein
+Vorrat bleibt. Grund: Ihre Zahl über den Kampf ist fest, weil der Zähler unterhalb der Grenze stetig weiterläuft; was
+im Laufen gezogen wird, fehlt nicht der Heilung, sondern wird später nicht an der Grenze abgeworfen. Im Kampf: Eine Lilie
+im Laufen ersetzt eine Dia-Erneuerung mit 25 s Rest (85 Potenz direkt, dazu rund 1,7 zusätzliche Ticks zu 85, zusammen
+rund 230), und der Abwurf an der Grenze, der sonst im Stand einen Glare III (350) ersetzt hätte, entfällt; drei Lilien
+und Misery wiegen vier Glare III auf (1400 gegen 4 × 350, The Balance, Skills Overview 7.4, gelesen 19.11.2026). Netto
+rund 120 Potenz je Bewegungs-GCD, und Afflatus Rapture heilt dabei die Gruppe. The Balance: Lilien „can cover the
+majority of movement requirements in any fight", die frühe Dia-Erneuerung ist „for when you are truly out of options"
+(Basic Guide 7.3). Preis: Nach dem Laufen liegt eine Lilie weniger bereit; braucht die Gruppe binnen 20 s mehr als die
+verbliebenen, heilt Cure II statt einer Lilie (1000 MP, im Stand). Deshalb nur, solange mindestens zwei Lilien
+bereitliegen (eine bleibt), weniger als drei Blutlilien stehen (sonst geht Misery vor) und kein angekündigter Raidwide
+die Lilie für die Heilung danach hält (`HealForResourceWaitsForAreaHit`, A292). Option „Use a lily instead of an early
+Dia while moving", ab Werk an.
+
 **Ein DoT vor seiner Zeit** (meine Ableitung, keine Quelle nennt es; The Balance schweigt dazu, Astrologian und Sage
 Basic Guide, 06.11.2026). Bei voller Laufzeit des DoT ist es gleich, wann er erneuert wird; es zählt nur, wie viele
 Erneuerungen im Stand einen Füller kosten. Mit Restzeit R erneut gesetzt, verschiebt er die nächste um D − R nach hinten
@@ -533,7 +548,7 @@ erneuert wird) bleibt unberührt.
 
 | Job | Sofort-GCDs, wenn kein Zauber startbar ist | Stand |
 |---|---|---|
-| Weißmagier | Glare IV, Afflatus Misery, Lilien in Pausen; danach Dia jeden GCD („Use DOT while moving even if it does not need refresh", ab Werk an; Dia trifft auch direkt) | deckt sich |
+| Weißmagier | Glare IV, Afflatus Misery, Lilien in Pausen; ab zwei Lilien eine Lilie (Rapture vor Solace); danach Dia jeden GCD („Use DOT while moving even if it does not need refresh", ab Werk an; Dia trifft auch direkt) | **geändert (A933):** vorher Dia vor jeder Lilie unter der Grenze – in seinen Mitschnitten 1324 Dia-Erneuerungen mit über 5 s Rest im Laufen |
 | Gelehrter | Ruin II nach „Seconds you must be moving before Ruin II will be used" (ab Werk 0 s) | deckt sich |
 | Weiser | Phlegma, im Laufen auch die letzte Ladung; Toxikon; Eukrasia mit Eukrasian Dosis vor ihrer Zeit nach der Ableitung oben | **geändert (A603):** vorher Eukrasian Dosis nur zur Erneuerung |
 | Astrologe | Lightspeed, im Laufen beide Ladungen („Use both stacks of Lightspeed while moving", ab Werk an); Combust vor seiner Zeit nach der Ableitung oben | **geändert (A603):** vorher Combust nur zur Erneuerung |
@@ -568,9 +583,20 @@ Lesung von `X.Target` ohne `X.CanUse` in derselben Entscheidung bekäme das Ziel
 Gemessen am 26.10.2026 (A415), jede Lesung im Baum außer Churin: In `RebornRotations` und `RotationSolver.Basic` liest
 jede Stelle das Ziel eines `CanUse` derselben Entscheidung, meist im Zweig gleich danach; einzige Ausnahme ist die
 Anzeige des Gelehrten (`ScholarRotation.DisplayBaseStatus`), ohne Wirkung im Kampf. Der Tänzer überschreibt das Ziel
-von Closed Position nach `CanUse` bewusst mit dem benannten Partner. Vor `CanUse` lesen nur die fremden Heiler
-BeirutaAST, BeirutaWHM und BeirutaSGE, an 17 Stellen (TODO, technische Schuld). Eine seiteneffektfreie Zielabfrage
-braucht der eigene Code deshalb nicht.
+von Closed Position nach `CanUse` bewusst mit dem benannten Partner. Eine seiteneffektfreie Zielabfrage braucht der
+eigene Code deshalb nicht.
+
+*Die fremden Rotationen, neu gemessen am 20.11.2026 (A936, alle 13 Churin- und Beiruta-Dateien):* Die 17 Stellen der
+Beiruta-Heiler von A415 gibt es nicht mehr – Upstreams Überarbeitung (996f28183) liest dort nach `CanUse`; BeirutaAST
+liest das Ziel von Benefic II, nachdem es als nächster GCD gewählt ist. Vor `CanUse` lasen nur noch zwei Rotationen:
+- *ChurinSMN:* der Abstand zum Ziel von Crimson Cyclone an drei Stellen (Ruby-Zweig in Bewegung, „Ziel zu weit“, die
+  Planung der Ifrit-Phase). Ohne vorherige Wahl ist das Ziel leer und der Abstand unendlich: „zu weit“ galt, bevor
+  Crimson Cyclone je gefragt war.
+- *ChurinDRK:* der Abstand zum Ziel von Disesteem im Burst. Leer galt „weiter als 3 Yalm“, und Disesteem ging beim
+  ersten Anlass an den Kombo-Bedingungen vorbei.
+
+Beide meinen das Ziel, das die Aktion träfe; bei einem Sprung auf den Gegner und einer Linie vom Spieler ist das das
+aktuelle Ziel (`CurrentTarget`). Behoben ohne Richtungsentscheidung: Die Stellen lesen jetzt `CurrentTarget`.
 
 ---
 
@@ -1414,6 +1440,49 @@ hier, Assise wecke keinen Schlafenden mehr – das galt nur mit Markierung (C209
 *Gegenthese 1 (Assise ist eine Heilung):* Ihr Heilanteil ginge mit der Sperre verloren. Nicht widerlegt, aber gewollt:
 Der Schalter fragt, ob eine Aktion Gegner trifft, nicht wozu sie gedrückt wird; eine Heilung, die einen neuen Pack
 zieht, kostet mehr LP, als sie bringt.
+*Trainingspuppen kämpfen nie und ziehen nichts (A923):* Eine Puppe hält kein Ziel und trägt das Kampfkennzeichen nicht
+verlässlich; als „kämpft noch nicht" eingestuft, sperrte sie seit A884 jede Fläche, die sie streifte. *Gemessen (sein
+Mitschnitt 19.11.2026, Living Memory, Build c93ec988b):* Dort stehen vier Puppen in einer Reihe, je 8 Yalm auseinander.
+Seine Samurai-Sitzung an der dritten: Zanshin 3.156-mal mit „NoTarget“ abgelehnt, Ogi Namikiri nach dem zweiten und
+dritten Ikishoten nie gewirkt, beide Bereitschaften ungenutzt abgelaufen; nach dem ersten Ikishoten, kurz nach dem Pull,
+gingen beide. Am 15.11. (Build 9036b6874, vor A884) gingen alle drei. Die Kegel reichen von der Flanke aus, längs der
+Reihe, bis zur Nachbarpuppe. *Gilt:* Eine Puppe (`IsDummy`) kämpft nie „noch nicht“ (`DataCenter.NotFightingYet`) – für
+die Flächen, „Don't pull new enemies with AoE", die Einstellung zum Angriff und die Schlafregel gleich. Grund: Eine Puppe
+greift nicht an; eine Fläche, die sie streift, zieht nichts in den Kampf. *Im Kampf:* An einer Puppenreihe kommen
+Flächen- und Kegelangriffe wie an einer einzelnen Puppe. *Folge:* Ohne Zanshin stieg Kenki auf 100, und jeder Kombo-Schlag sperrte sich gegen den Überlauf – 28 s und 16 s ohne
+GCD (Konzept 14, „Samurai: Kenki-Verklemmung“, A925).
+
+*Welche Puppe dein Kampf ist (seine Meldungen 20.11.2026, A948):* „warum werden andere trainingspuppen für angriffe
+anvisiert?“; „da er immer wieder auf eine weiter entfernte puppe switcht, die ich beim letzten mal benutzt habe“; sein
+Hinweis: „puppen halten einen nach ausloggen und einloggen nicht im target“. Hart verdrahtet ist keine Puppe: Erkannt
+werden alle gleich (`IsDummy`, NameId 541), und RSR speichert kein früheres Ziel. Im Auto-Modus wählt RSR für jede Aktion
+selbst unter allen angreifbaren Gegnern (`FindHostileRaw`: Sortierung der Einstellung, Verteilen von Schaden über Zeit,
+bestes Flächenziel). *Warum gerade die Puppe vom letzten Mal:* weiß ich nicht; dazu fehlt eine Spur der Zielwahl. Am
+Code möglich: (a) Bei gleichen Puppen entscheidet die Reihenfolge der Objektliste, die zwischen Sitzungen gleich
+bleiben kann [Schätzung]; (b) die Puppe hält ein Ziel, etwa einen anderen Spieler – mit „Previously engaged targets“
+reicht irgendein Ziel; (c) eine Vorrangregel nimmt sie an. Meine erste Begründung – die Puppe halte dich aus dem
+letzten Durchgang – widerlegt sein Hinweis. *Gilt, unabhängig von der Ursache:* Eine Puppe ist für RSRs Zielwahl nur
+angreifbar, wenn sie dein aktuelles Ziel ist (`ObjectHelper.IsAttackable`, vor Countdown, dem Halten als Ziel und der
+Einstellung). Grund: Eine Puppe kämpft nicht; welche du übst, sagt nur dein Ziel. Flächen treffen Nachbarpuppen weiter
+(A923); sie zählen nur nicht als eigenes Ziel. *Im Kampf:* An einer Puppenreihe bleibt jeder Angriff und jeder Schaden
+über Zeit auf der Puppe, die du anvisierst. *Gegenthese:* „Das Verteilen von Schaden über Zeit an mehreren Puppen ist
+nicht mehr testbar.“ Trifft zu; Puppen bilden kein Rudel nach (sie kämpfen nicht, sterben nicht). Ohne Ziel greift RSR
+keine Puppe an.
+
+*Die Puppe lässt dich fallen (Upload 20.11.2026, Lebende Erinnerung, A956):* Mitten im Angriff setzt die Puppe ihr Ziel auf
+keines und ihre LP auf voll; das Spiel beendet den Kampf. Gemessen beim Ninja dreimal nach 90 bis 94 s, beim Rotmagier
+fünfmal, beim Beschwörer einmal. Warum die Puppe das tut, weiß ich nicht; ein Zustand des Spielers erklärt es nicht: Beim
+Ninja war in diesem Augenblick kein Status aktiv, „Verstecken“ kam erst danach (es geht im Kampf nicht). Beim Rotmagier und
+Beschwörer lief der Kampf weiter, weil ein Zauber schon unterwegs war und mit seinem Treffer die Puppe wieder auf ihn zog.
+Beim Ninja war keiner unterwegs. Sein Ziel blieb auf der Puppe (ACT-Zeile 261, `PCTargetID`), RSR griff 21 s, 50 s und 77 s
+nicht an, bis er selbst wieder anschlug. Im Build 4f9790fd4 galt eine Puppe ohne Ziel nicht als angreifbar, wenn deine
+Einstellung zum Angreifen ein Ziel des Gegners verlangt und die Gruppe mehr als dich zählt (dein Chocobo zählt mit)
+[Schätzung, aus zwei Fällen derselben Sitzung: RSR eröffnete beim Dragoon und beim Schnitter nur an Puppen, die deinen
+Chocobo hielten; die Einstellung selbst steht in keiner Datei]. Seit A948 entscheidet an einer Puppe allein dein Ziel. Der
+Kampf geht dann mit dem nächsten GCD weiter, und mit dem Treffer nimmt die Puppe dich wieder. *Im Kampf:* An der Puppe kein
+Stillstand mehr, wenn sie dich fallen lässt. „Verstecken“ nach dem Kampfende ist dabei ohne Wirkung auf den Angriff: RSR
+hebt es nach 0,14 s wieder auf („Use Unhide“), und der nächste Angriff hebt es ohnehin auf.
+
 *Gegenthese 2 (ein Gegner ohne Ziel kämpft doch):* Ein Gegner kann im Kampf kurz kein Ziel halten (Wirken auf den
 Boden, Phasenwechsel). Bis A833 wartete die Fläche dann. *Widerlegt seit A833:* Als „kämpft noch nicht" gilt ein Gegner
 nur, wenn er weder ein Ziel hält noch im Kampf steht (das Kampfkennzeichen seiner Figur, `ObjectHelper.InCombat`) – für
@@ -1452,6 +1521,39 @@ selbst einen Kampf – eine eigene Aktion außerhalb des Kampfes, deren Ziel ode
 nicht kämpft (eine Fläche um dich hat dich als Ziel, A883) –, schreibt die Spur
 je Annäherung eine Zeile „pull: RSR opened …“ mit Aktion, Gegner, Einstellung, Countdown und offener Anfrage; die gehaltene
 Anfrage schreibt „pull: held …“ einmal je Anfrage.
+
+*Pull ohne Countdown: die Vorbereitung vor dem ersten GCD (A924):* Wer in der offenen Welt, in einem Dungeon oder an der
+Puppe einen Gegner angreift, pullt ohne Countdown – das ist der Normalfall (seine Rüge, 19.11.2026: „wenn man in der offenen
+welt einen gegner angreift ist das immer ein pull ohne countdown. also eigentlich der standard.“).
+- *Befund am Code:* Außerhalb des Kampfes wählt `CustomRotation.Invoke` bei freiem GCD nur den GCD (eine Fähigkeit davor
+  nur als Notfallheilung); was der Countdown-Pfad einer Rotation vor dem Pull vorbereitet (`CountDownAction`), läuft nur mit
+  Countdown. Die erste Aktion eines Pulls ohne Countdown ist deshalb immer ein GCD, und die Vorbereitung kommt danach oder
+  nie. *Gemessen (sein Mitschnitt 19.11.2026):* Der Samurai eröffnete an der Puppe mit Gyofu und zog Meikyo Shisui erst
+  danach; The Balance (7.4) legt Meikyo vor den Pull, damit die ersten drei GCDs Sen geben – ein GCD ohne Sen ist der Preis.
+- *Erhoben (alle 21 eigenen Countdown-Pfade, 19.11.2026):* Vorbereitung ohne Schaden und ohne Bewegung – Samurai Meikyo und
+  True North, Maschinist Reassemble, Tänzer Standard Step und Schritte, Monk Meditation und Form Shift, Schnitter Soulsow,
+  Piktomant Striking Muse, Beschwörer und Gelehrter ihr Begleiter, Astrologe Earthly Star und Astral Draw, Weiser
+  Eukrasia, Dunkelritter The Blackest Night, Paladin Divine Veil (Option), Gelehrter Recitation (Option), Tinkturen (nur wo
+  „Tincture usage“ sie zulässt). Angriffe, die den Pull selbst bilden: vorgewirkte Zauber (Malefic, Stone, Ruin, Fire III,
+  Veraero, Holy Spirit), Harpe, Air Anchor, Tomahawk, Lightning Shot, Unmend, Lückenschließer.
+- *Gilt:* Außerhalb des Kampfes, ohne Countdown, wenn der gewählte GCD einen Gegner angreift (der Pull steht an), fragt RSR
+  vor ihm den Countdown-Pfad der Rotation so, als endete der Countdown jetzt (Restzeit 0), und lässt dabei nur Aktionen zu,
+  die keinen Schaden angeben und den Spieler nicht bewegen. Was der Pfad dann liefert, geht vor dem ersten GCD; danach
+  fragt er erneut, bis nichts mehr kommt. Für jeden Job an derselben Stelle, ohne eine Zeile in den Rotationen.
+- *Ausgenommen, mit Grund:* Fenster mit Untergrenze (Weißmagier Regen und Benison bei 3 bis 5 s, Gelehrter Adloquium bei 6
+  bis 7 s und Deployment bei 3 bis 4 s) erreicht Restzeit 0 nicht; für den Tank vor dem Pull gibt es die vorbeugenden
+  Heilungen (V1, Konzept 15). Der Ninja: Sein Countdown-Pfad setzt beim Fragen sein Ninjutsu-Ziel (Suiton), das dann
+  außerhalb des Pfads Mudras auslöste; Suiton selbst ist ein Angriff und bliebe ausgesperrt – die Mudras liefen ins Leere.
+- *Im Kampf:* Der Samurai eröffnet mit Meikyo und Gekko, Kasha, Yukikaze wie in der Eröffnung von The Balance; der
+  Maschinist mit Reassemble vor Air Anchor; der Tänzer mit Standard Step. Der erste Treffer kommt um die Sperre je
+  Vorbereitung später (eine Fähigkeit rund 0,6 s; Standard Step und zwei Schritte rund 3,5 s, die der Countdown ebenso
+  kostet).
+- *Falsifikation:* (1) *Kein Defekt* – widerlegt am Mitschnitt (Gyofu vor Meikyo) und am Code. (2) *Option falsch: Die
+  Verzögerung kostet mehr, als die Vorbereitung bringt* – an einem Gegner, der in Sekunden fällt (Dungeon-Rudel), kommt
+  der erste Treffer später; die Vorbereitung ist aber dieselbe, die der Autor für den Countdown gewählt hat, und eine
+  Fähigkeit kostet eine Sperre. *Preis:* bei Rudeln, die vor dem Ende der Vorbereitung fallen, die Sperre ohne Nutzen.
+  (3) *Ausgeliefert, und nichts ändert sich:* Liefert der Pfad bei Restzeit 0 nichts Zulässiges, bleibt alles wie bisher;
+  die Spur schreibt je Pull „pull prepared: …“ mit den Aktionen, sodass das Ausbleiben sichtbar ist.
 
 *Anlass (A877):* Shinryu (Unreal), 17.11.2026: Bereitschaftsanfrage des Tanks um 19:14:33, kein Countdown, 19:14:35,975
 Ruinga des Beschwörers auf Shinryus Herz, das seit seinem Erscheinen (19:14:19) kein Ziel hielt (Mitschnitt, Zeile 261
@@ -2370,12 +2472,142 @@ GCD-Tabelle der Spur macht ihn messbar.
   Geschwindigkeit. Upstreams `RPR_Reborn` rechnet für Sacrificium einen GCD als 2,5 s; bei der Schnelligkeit des Schnitters
   ist der Unterschied unter 0,1 s, ohne Wirkung im Kampf.
 
+## Dynamische Rotation: geht eine Aktion nicht, kommt eine Alternative
+
+Geltender Stand (A930): Eine Rotation ist eine Vorrangliste, die je Frame neu gefragt wird; was `CanUse` ablehnt, gibt
+den Platz an die nächste Aktion. Zwei Lücken schließt RSR für alle Jobs an einer Stelle: Lehnt das Spiel einen Druck mit
+einem Grund ab, ist die Aktion für die Wahl gesperrt, bis das Spiel sie wieder annimmt (D1). Sperren die Bedingungen der
+Rotation selbst länger als einen GCD jeden GCD, obwohl das Spiel einen annähme, kommt der stärkste, den das Spiel
+annimmt (D2).
+
+**Seine Vorgabe** (19.11.2026): „und dynamische rotationen zeichnen sich dadurch aus: wenn etwas gerade nicht möglich
+ist, wird eine alternative gewählt.“ Am 19.11. in den Auftrag genommen: „dynamische rotation nun im vollen loop mit
+konzept, audit, codereview, fehlerbeseitigung“.
+
+**Seine Frage, ein strategischer Fehler? (21.11.2026, A958)** „war die entscheidung der dynamisierung der rotationen ein
+strategischer fehler, da ja anscheinend die rotationen nun schlechter als the balance agieren?“; dazu: „ziel war ja, damit
+eine verbesserung gegen the balance zu bekommen und schneller auf situationen reagieren zu können. wenn aber damit
+burstphasen beschädigt werden, ist das doch eher kontraproduktiv“. *Gemessen (Upload 20.11.2026, 22 Puppenkämpfe, 19
+Jobs, Build 4f9790fd4 mit D1 und D2):* D1 sperrte keine Aktion (keine Zeile „left out until the game takes it“), D2 griff
+nie (keine Zeile „instead of none“). Die vier gemessenen Schäden an Burstfenstern (A957) hatten andere Ursachen: Wildfire
+nur vor Full Metal Field (Upstream, 02805766b, 2025), die Ladungsprüfung mit fremder Gruppendauer (Upstream, 14b907736,
+2025), die Mana-Schwelle des Rotmagiers nach verstrichener statt verbleibender Zeit (Upstream, 5dd3dac18, 2025) – und
+Searing Light an die eigene Solar-Phase gebunden (Fork, Konzept 12) auf meiner Annahme, der Buff falle mit Solar ohnehin
+zusammen. *Urteil:* D1 und D2 sind nicht die Ursache; sie haben am 20.11. nichts verändert. Ein strategischer Fehler war
+aber die Bindung eines Gruppen-Buffs an eine eigene Phase, ohne sie gegen The Balance zu rechnen: Sie hielt den Buff,
+sobald die Zeitgeber auseinanderliefen. *Die Regel daraus (Ebene alle):* Die Grundlage jedes Burstfensters ist das
+Raster, das The Balance nennt – Buffs der Gruppe bei Abklingzeit, eigene Abklingzeiten nicht verschoben. Eine lagebezogene
+Abweichung (warten, binden, vorziehen) ist erst erlaubt, wenn ein Modell über den Kampf belegt, dass sie mehr bringt als
+das Raster, und nur für die Lage, die das Modell zeigt (Bewegung, Pause, Tod, zweiter Spieler desselben Jobs). Der
+Abgleich je Job gegen das Raster ist geführt (Konzept 14, „Seine These vom 20.11.2026“, A967). *Gegenthese 1 („feste Folgen
+wie bei The Balance wären besser“):* Sie hätten die drei Upstream-Fehler ebenso, wo sie falsch geschrieben sind, und sie
+reagieren nicht auf Bewegung, Pausen und Tode, für die The Balance selbst Ausnahmen beschreibt. Widerlegt als
+Gesamturteil; bestätigt für die Ausrichtung der Buffs, darum die Regel oben. *Gegenthese 2 („D2 kann einen
+zurückgehaltenen Burst-GCD außerhalb des Fensters zünden“):* Möglich, weil D2 ohne `ActionCheck` fragt. Er greift aber
+erst nach einem ganzen freien GCD; ein verlorener GCD kostet immer, ein verschobener Burst-GCD nur seinen Aufschlag.
+Am 20.11. nicht eingetreten; die Vorhersage `dynamic-fallback-line-form` zeigt jeden Einsatz mit Namen. *Gegenthese 3
+(„ausgeliefert, und nichts ändert sich“):* Ohne Abgleich je Job bleibt jede weitere Bindung ungeprüft; deshalb gilt die
+Regel für jede neue und jede angefasste Bindung, nicht nur für Searing Light.
+
+**Grundlagen**
+- *RSR heute:* Jede Rotation fragt ihre Aktionen der Reihe nach (`if (X.CanUse(out act)) return true;`). Was `CanUse`
+  ablehnt – Abklingzeit, Reichweite, Status, eigene Bedingung (`ActionCheck`) –, überspringt sie; insoweit ist sie schon
+  dynamisch. Zwei Fälle fallen durch:
+  - *D1, das Spiel lehnt ab, RSR nicht:* `CanUse` fragt das Spiel nur nach einigen Gründen und ohne Ziel
+    (`BadStatusAction`: nicht gelernt, falscher Job, hier nicht nutzbar, keine Ladung). Gründe wie Statusbann (581,
+    etwa Pacification gegen Waffenfertigkeiten), Sichtlinie oder Reichweite aus Sicht des Spiels (562, 566) oder „kann
+    nicht ausgeführt werden“ am Ziel (579) sieht es erst beim Drücken. `RSCommands` drückt, `UseAction` liefert „nein“,
+    und das schrieb nur ein Debug-Protokoll; im nächsten Frame wählt die Rotation dieselbe Aktion wieder – ohne Ende.
+  - *D2, die Rotation sperrt sich selbst:* Bedingungen einer Rotation sind teils Vorlieben (Samurai: kein Kombo-Schlag
+    über 85/90/95 Kenki gegen Überlauf). Fällt der Weg aus, über den sie sich lösen (der Verbraucher), sperrt jede
+    Bedingung ihren GCD, und es kommt keiner. Gemessen: Samurai an der Puppe 28,3 s und 15,9 s nur Auto-Attacke (A923,
+    A925); A925 behob diesen einen Weg, die Klasse bleibt für jede künftige Bedingung.
+- *Vorbild:* BossModReborns Warteschlange (`ActionQueue.FindBest`, 8d5ff8e21) überspringt jede Aktion, deren Bedingung
+  gerade nicht erfüllt ist („no point waiting forever“), und nimmt die nächste nach Vorrang; vor dem Drücken fragt sie das
+  Spiel (`GetActionStatus`). Werkzeugquelle.
+- *Spiel:* `ActionManager.GetActionStatus(Typ, Aktion, Ziel, Abklingzeit prüfen, Wirken prüfen)` nennt den Grund einer
+  Ablehnung als Zahl (`ActionStatus`), 0 heißt annehmbar; ohne die beiden Prüfungen nennt es den Grund unabhängig von
+  laufendem GCD und Zauber.
+
+**Optionen**
+- *N:* wie bisher; eine Ablehnung durch das Spiel hält die Rotation fest, eine Selbstsperre bis ihre Bedingung fällt.
+- *Je Rotation Ausweichpfade:* 21 Jobs, jeder mit eigenen Lücken; die nächste Bedingung bringt den nächsten Stillstand.
+  Verworfen (Universell zuerst).
+- *Alle Bedingungen beim Spiel gegenprüfen (vor jeder Wahl `GetActionStatus` mit Ziel):* deckt D1 vorab, kostet je Frame
+  eine Spielabfrage je gefragter Aktion (code.md, „Struktur und Kosten“) und deckt D2 nicht. Verworfen.
+- *D1, Sperre nach Ablehnung (gewählt):* Liefert `UseAction` „nein“ und nennt das Spiel für Aktion und Ziel einen Grund,
+  ist die Aktion für dieses Ziel gesperrt; `CanUse` fragt das Spiel nur für gesperrte Aktionen, und sobald es 0 sagt,
+  ist die Sperre weg. Kein fester Zeitraum: Das Spiel sagt, wann es wieder geht. Ohne Grund (0 beim Nachfragen, etwa
+  Zeitpunkt) sperrt RSR nicht. Die Spurzeile dazu („refused by the game without a reason“) steht je Aktion und Ziel
+  einmal je Kampf (A957): Am 20.11.2026 waren es 5.523 der 6.521 Zeilen einer Sitzung, fast jede Aktion bei ihrem
+  ersten Druck, und damit ein Zeitpunkt, kein Befund.
+- *D2, Ausweg aus dem Leerlauf (gewählt):* Steht der GCD länger als einen GCD frei (dieselbe Strecke, die
+  `GcdIdleWatch` misst) und wählt die Rotation keinen, fragt RSR die eigenen Schadens-GCDs der Rotation (mit im
+  Wirktext genannter Potenz) ohne deren eigene Bedingungen (`ActionCheck`, `RotationCheck`), aber mit jeder zentralen
+  Prüfung (Ziel, Reichweite, Blick, Kanal, Bewegung, Rudel, Wiederbelebungsschutz, Spielstatus) und nimmt den mit der
+  höchsten genannten Potenz, den das Spiel für sein Ziel annimmt. Im nächsten GCD fragt RSR wieder zuerst die Rotation.
+- *D2 nicht:* solange ein Ablauf läuft, den ein fremder GCD zerstört (Mudra, Ten Chi Jin, Standard und Technical Step),
+  bei begrenzten Jobs (Blaumagier: Final Sting und Self-destruct tragen die höchste Potenz und kosten das Leben;
+  Beastmaster, Inhaltsrotationen), in PvP, und solange eine Wiederbelebung als nächste Aktion ansteht.
+
+**Abwägung im Kampf (SWOT)**
+- *D1:* Stärke – nach einer Ablehnung kommt im nächsten Frame die nächste Aktion statt Auto-Attacke bis zum Ende der
+  Ursache. Schwäche – ein Druck je Ursache geht verloren. Bedrohung – das Spiel nennt einen Grund, der im nächsten Frame
+  schon weg ist; dann prüft `CanUse` neu und lässt die Aktion zu. Chance – die Spur zählt erstmals, wie oft das Spiel
+  ablehnt.
+- *D2:* Stärke – ein Stillstand kostet höchstens einen GCD statt bis zum Ende der Selbstsperre (beim Samurai 28 s).
+  Schwäche – der Ausweg kennt Kombos und Leisten nicht; er nimmt einen GCD, den die Rotation an dieser Stelle nicht
+  gewollt hätte (etwa Gekko mit 10 Kenki Überlauf). Ein verlorener GCD wiegt mehr als jeder Überlauf einer Leiste: Ein
+  Kombo-Schlag trägt ein Vielfaches der Potenz von 10 Kenki. Bedrohung – eine Rotation, die absichtlich keinen GCD wählt;
+  RSRs absichtliche Pausen sind zentrale Prüfungen (Blick, Kanal, Bewegungssperre, Wiederbelebung) und bleiben.
+- *Bilanz:* beide; D1 ohne Preis außer einem Druck, D2 mit dem Preis eines nicht gewollten GCD gegen einen Stillstand.
+
+**Falsifikation**
+- (1) *Kein Defekt:* widerlegt für D2 am Mitschnitt (A923, A925). Für D1 gibt es keinen Mitschnitt, weil RSR die
+  Ablehnung nicht schrieb – tragende Annahme A1 unten, die Spur misst sie ab jetzt.
+- (2) *Option falsch:* D2 nimmt einen GCD, der einen Ablauf zerstört. Abgedeckt sind die bekannten (Mudra, Ten Chi Jin,
+  Schritte); ein unbekannter zeigt sich in der Spur „dynamic rotation: … instead of none“.
+- (3) *Ausgeliefert, nichts ändert sich – warum?* Das Spiel lehnt nie ab, und keine Rotation sperrt sich; dann schreibt
+  die Spur nichts, gewollt.
+
+**Anforderungen**
+
+| # | Vorgabe | prüfbares Kriterium | Ort | Beleg heute | Messweg |
+|---|---|---|---|---|---|
+| R1 | Geht etwas nicht, kommt eine Alternative (19.11.) | nach einer Ablehnung durch das Spiel wird die Aktion bis zur Annahme nicht mehr gewählt | D1 | statisch | „dynamic rotation: … refused by the game“ |
+| R2 | dieselbe | kein Leerlauf über einen GCD, wenn das Spiel einen Schadens-GCD annimmt | D2 | statisch | „dynamic rotation: … instead of none“, keine „gcd idle“-Zeile über zwei GCDs |
+| R3 | Sicherheit vor Schaden | jede zentrale Prüfung gilt auch im Ausweg | D2 | Code | – |
+| R4 | Alle Jobs (Universell zuerst) | an einer Stelle für jede Rotation | `BaseAction`, `CustomRotation_Invoke` | Code | Zeilen bei mehreren Jobs |
+
+**Tragende Annahmen**
+- A1: `UseAction` liefert „nein“ nur bei einer echten Ablehnung, nicht bei einem Zeitproblem. Gesperrt wird nur, wenn
+  das Spiel beim Nachfragen einen Grund nennt; sonst schreibt die Spur die Ablehnung ohne Sperre.
+- A2: Was der Wirktext als erste Potenz nennt, ordnet die Schadens-GCDs eines Jobs hinreichend. [Schätzung: für einen
+  Ausweg, der nur nach einer Selbstsperre greift, genügt das; der Kombo-Zuschlag fehlt in der Ordnung.]
+
+*Messweg:* „dynamic rotation: <Aktion> refused by the game on <Ziel> (<Grund>) - left out until the game takes it“,
+„dynamic rotation: <Aktion> taken again“, „dynamic rotation: <Aktion> instead of none - no GCD for <s> s“.
+
 ## Bereit, aber nicht genutzt
+
+*GCD-Leerlauf (A923):* Steht der GCD im Kampf frei, ein Gegner in Reichweite, RSR spielt und der Spieler wirkt nicht,
+und kommt länger als einen GCD lang keiner, schreibt RSR am Ende dieser Strecke eine Zeile: wie lange, welchen GCD die
+Rotation in der Strecke gewählt hatte (keinen oder welchen) und welche GCDs `CanUse` mit welchem Grund ablehnte.
+*Anforderung:* Seine Samurai-Sitzung vom 19.11.2026 lief 44 s nur mit Auto-Attacke, und die Spur sagte nicht, warum –
+die Bilanz zählt nur „GCD free with nothing queued 50,90 s“. Ohne die Zeile bleibt jeder solche Stillstand eine
+Vermutung; der Schaden ist ein ganzer Burst. *Bauart:* Es sitzt dort, wo die Rotation entscheidet
+(`ActionUpdater.UpdateNextAction`), liest die Ablehnungen, die `ActionTracer.Reject` ohnehin meldet, und greift nicht
+ein. Kosten je Frame: ein Vergleich, solange kein Leerlauf läuft.
 
 Geltender Stand (A820): Kommt ein Cooldown, der eine eigene Abklinggruppe hat, im Kampf länger als einen GCD nicht,
 obwohl er bereit ist, schreibt RSR am Kampfende je Aktion, wie lange er bereit stand, wie oft ihn die Rotation fragte
 und mit welchem Grund `CanUse` ablehnte. Das Messmittel greift nicht ein; es zeigt, wo eine Rotation Schaden liegen
-lässt.
+lässt. Beobachtet werden auch die Sprungangriffe (`HostileMovingAttack`: Sternensturz, Wyrmodem, Primal Rend,
+Crimson Cyclone und andere), weil sie Schaden sind; ausgenommen bleiben reine Bewegung und Schutz (A960). Grund: Am
+20.11.2026 kam Sternensturz in 2 von 11 Fenstern des Lebens des Drachen, und die Zeile nannte ihn nicht, weil sie
+Sprünge ausnahm. Die Ursache stand erst im Mitschnitt: Der Sprung wählte eine fernere Puppe, und die Grenze für
+Sprungangriffe lehnte ihn nach `CanUse` ab, ohne dass die Zeile einen Grund sah (Konzept 18, „Welches Ziel ein Sprung
+nimmt“, A961). Eine Ablehnung nach `CanUse` erscheint in der Zeile als „not asked“: `CanUse` sagte zu, die Rotation nahm die Aktion danach nicht.
 
 - *Anlass:* Seine Puppensitzung vom 15.11.2026 (Build 9036b6874):
   - Der erste Burst kam bei Tänzer, Maschinist und Rotmagier 40 bis 73 s nach Kampfbeginn: Technischer Schritt nach
@@ -2391,11 +2623,12 @@ lässt.
     Abilities in 77 GCDs über den Kampf) und die offene Abwehrflagge: Nach „single defence open, nothing chosen" läuft
     die Wahl weiter zu `AttackAbility`. Erklärt (A867, A868): Den Laufstabilisator sperrte die Gruppe des Vorjobs bis
     47,5 s, die Überhitzung folgt ihm (51,0 s). Schachmatt kam bei 53,4 s, seine Gruppe 16 lief nach dem Dunkelritter
-    bis 56,9 s [Schätzung: die Sperre lag in dieser Gruppe; die 3,5 s Abstand erklärt die Messung nicht]. Offen bleibt
-    Doppelschach: `usedUp` ist mit Auto-Burst wahr, die Ladung hätte kommen müssen. Hypothese: `MCH_Reborn` wählt vor der
-    Abfrage nach der längeren abgelaufenen Abklingzeit zwischen Schachmatt und Doppelschach und fragt im Zweig „Ricochet"
-    nur Schachmatt; ist es gesperrt, kommt keine von beiden. Die Messzeile zeigt das in der nächsten Puppensitzung nach
-    einem Jobwechsel als Doppelschach „not asked".
+    bis 56,9 s [Schätzung: die Sperre lag in dieser Gruppe; die 3,5 s Abstand erklärt die Messung nicht]. Doppelschach
+    *geklärt am 20.11.2026 (A968):* Die Hypothese, `MCH_Reborn` frage nach gesperrtem Schachmatt Doppelschach gar nicht,
+    ist widerlegt. In der Puppensitzung nach dem Barden stand Doppelschach mit „refused ChargesKept 2043, AnimationLock
+    1615“ in der Messzeile, nicht mit „not asked“: Die Rotation fragte, und `CanUse` hielt die letzte Ladung außerhalb
+    des Bursts (`usedUp: IsBurst || IsOverheated`) oder der Weave-Platz war belegt. Das ist die gewollte Rücklage einer
+    Ladung für den Burst; die 30 s vom 15.11. erklärt sie ebenso („Doppelschach hielt eine Ladung“). Kein Defekt.
 - *Ursache des späten ersten Bursts an der Puppe (A867):* keine Rotation, sondern der Jobwechsel. Abklinggruppen sind
   Nummern, die verschiedene Jobs für verschiedene Aktionen nutzen, und die Gruppe läuft beim Wechsel weiter. In der
   Puppensitzung vom 15.11.2026 endete die Gruppe der Burst-Aktion jedes betroffenen Jobs zu der Zeit, zu der die Aktion kam,
@@ -2755,7 +2988,30 @@ vorhergesagte bewegungen nicht von allen jobs gelesen? gründe?"; an der Version
 - *Gegenthese 8 – Die Zeit bis zum Tod schätzt zu früh:* Stirbt der Boss später, als die Schätzung sagt, fehlt die
   verbrauchte Ladung im nächsten Burst. `GetCorrectedTTK` steuert ihren Fehler nach; was bleibt, ist eine Ladung,
   die eine Abklingzeit früher wiederkommt – der Preis ist klein, weil die Ladung bis zum Burst ohnehin nachlädt,
-  wenn der Burst mehr als eine Ladezeit entfernt ist. Zu prüfen am Modell, bevor gebaut wird.
+  wenn der Burst mehr als eine Ladezeit entfernt ist.
+- *Die Rechnung (A916):* Trifft die Schätzung, gewinnt die Freigabe einen ganzen Einsatz, der sonst mit dem Tod des
+  Bosses verfällt. Irrt sie (der Boss lebt über den nächsten Burst hinaus), verliert sie höchstens den Aufschlag des
+  Bursts auf diesen einen Einsatz – die Ladung lädt nach und geht später. Mit der Wahrscheinlichkeit q eines solchen
+  Irrtums und dem Aufschlag P lohnt sie, solange (1 − q) > q · P; bei P = 0,25 *[Annahme wie in K1]* bis q = 0,8. Die
+  Schätzung müsste also in vier von fünf Fällen um mehr als den Abstand zum Burst danebenliegen, damit sie schadet.
+- *Gebaut (A916):* In `CooldownCheck`, an der Stelle „Cooldown:ChargesKept“: Eine Fähigkeit mit Ladungen, die nur aus
+  Sparsamkeit wartet, geht, wenn das aktuelle Ziel ein Boss (`IsBossFromTTK`) und der letzte Gegner in Reichweite ist und
+  laut `GetCorrectedTTK` stirbt, bevor ihre Ladungen voll wären und bevor der nächste eigene Burst fällig ist
+  (`TinctureClock.SecondsToNext`; unbekannt zählt nur der Überlauf). Nicht für freundliche Aktionen (Heilung, Schutz –
+  deren letzte Ladung wartet auf Gefahr, Konzept 07) und nicht für Bewegung mit fester Strecke. Spurzeile je Aktion und
+  Kampf „fight end: … charges released“, Vorhersage `fight-end-charges-line-form`. *Ausgeliefert, und nichts ändert
+  sich:* Ohne gemessene Zeit bis zum Tod oder bei mehreren Gegnern bleibt alles wie bisher.
+- *Nur Fähigkeiten mit Ladungen (Upload 20.11.2026, A957):* Abklinggruppen gelten über den Jobwechsel hinweg, sie sind
+  Plätze im Spiel, keine Jobs (gemessen: Bruderschaft kam erst, als Ikishoten des Samurai abgelaufen war; Ley-Linien
+  wartete auf die Komplexe Choreographie des Tänzers, das erste Wildfeuer auf das Sperrfeuer des Barden – alle drei in
+  Gruppe 20, jeweils auf die Sekunde nach 120 s). Das ist Spiel, kein Defekt. Die Ladungsprüfung aber las die Gruppe
+  samt der Gesamtdauer der Aktion, die sie zuletzt gefüllt hatte: Nach Ley-Linien (zwei Ladungen, 240 s Gesamtdauer)
+  hielt sie Gleißender Schein – eine Ladung – noch 120 s, nachdem das Spiel ihn freigab, und Sol-Bahamut wartete
+  29 s auf ihn (die Beschwörung wartet auf einen bereiten Buff, Konzept 12). Eine Aktion mit einer Ladung hat keine
+  zurückzuhalten: Die Prüfung gilt nur, wo die Aktion selbst mehr als eine Ladung hat (`MaxCharges` des Spiels für
+  Stufe und Aktion). *Im Kampf:* Nach einem Jobwechsel kommt jede Abklingzeit mit einer Ladung, sobald das Spiel sie
+  freigibt. *Gegenthese:* „Eine Aktion mit einer Ladung, die frei ist, steht nie in der Prüfung.“ Ohne fremde Füllung
+  der Gruppe trifft das zu (die Restzeit ist dann 0); die Änderung ist dort ohne Wirkung und nur nach dem Wechsel wirksam.
 
 **Vorbild: die Kampfrotationen von BossMod** (seine Frage, 19.11.2026: „bringt eigentlich der ai-kampf modus in bossmod
 reborn oder in bossmod was? ist da was, dass rsr verbessern könnte? … ich meine die dortige kampfrotation";
@@ -2827,6 +3083,53 @@ jeden Kampf mit Gruppe; K2 jedes Kampfende, ist aber teilweise gebaut. *Gegenpos
 Inhalt, gibt es kaum Pausen; dort wirken K2 und K5 öfter. Darum K1 zuerst als allgemeiner Mechanismus, aber K2 und K5 vor
 den jobweisen Abläufen.
 
+**K5 – Mehrere Ziele: wer noch lebt, wenn der Treffer ankommt** (erster Schritt gebaut, A917):
+- *Gemessen (alle 19 Mitschnitte seiner Uploads, 19.11.2026):* Holy und Holy III des Weißmagiers (Wirkzeit 1,5 s,
+  Schwelle 3) trafen in 56 Würfen weniger als drei Gegner; in 28 davon starb ein Gegner in den 3 s vor dem Treffer. Die
+  Zielwahl zählt für die Schwelle jeden Gegner in der Fläche, dessen Zeit bis zum Tod über `TimeToKill` der Aktion liegt
+  – ab Werk 0, also jeden, auch einen, der vor dem Eintreffen fällt.
+- *Gebaut:* Für einen Angriff zählt ein Gegner nicht zu den Getroffenen, wenn seine geschätzte Zeit bis zum Tod
+  (`GetTTK`) kürzer ist als die Zeit bis zum Treffer – Wirkzeit plus, bei einem GCD, der Rest des laufenden GCD
+  (`NeededStatusMargin`). Gilt für jede Fläche jedes Jobs an derselben Stelle wie `TimeToKill`; ohne Schätzung zählt
+  er wie bisher. Das Ziel eines Einzelangriffs bleibt unberührt.
+- *Wirkung im Kampf:* Ein Holy III auf drei Gegner, von denen einer in der Wirkzeit fällt, wird zur Einzelaktion
+  (Glare), die auf zwei Gegner kaum weniger und auf einen deutlich mehr bringt. *Größe:* klein – 28 Fälle in allen
+  Mitschnitten *[Schätzung: unter einem Promille des Schadens]*; gebaut, weil der Eingriff eine Bedingung an der
+  allgemeinen Stelle ist und jede Fläche jedes Jobs trifft.
+- *Falsifikation:* (1) *Kein Defekt:* Die übrigen 28 Fälle ohne Tod lagen an Gegnern, die aus der Fläche liefen, oder an
+  der Betäubungsstreckung des Weißmagiers (Holy für den Stun) – die Regel ändert dort nichts. (2) *Option falsch – die
+  Schätzung ist im Burst zu kurz:* Dann zählt ein Gegner nicht, der den Treffer erlebt hätte, und die Einzelaktion geht;
+  auf drei Gegner verliert sie den Anteil der Fläche über dem Einzelangriff, im Fenster von höchstens einer Wirkzeit und
+  einem GCD. *Preis:* derselbe kleine Betrag in die andere Richtung, wo die Schätzung irrt (Konzept 03, D: drei von 34
+  Verzichten beim DoT lagen falsch). (3) *Ausgeliefert, und nichts ändert sich:* Ohne Schätzung (Pullbeginn) zählt
+  alles wie bisher. Messweg: die Zählung je Wurf im Mitschnitt, wie oben.
+- *Lange Aufbauten auf einem Rudel, das vor ihrem Abschluss fällt – auf der Stufe „alle" geprüft, keine Regel (A918):*
+  Eine angefangene Flächenkombo hat am Ende eines Rudels keine Alternative, die mehr bringt: Ihr nächster Schritt ist
+  die stärkste Fläche, und ob überhaupt eine Fläche geht, entscheidet die Zählung oben. Ob eine Leiste oder ein Aufbau
+  mit dem Rudel verfällt, hängt am Job – manche Leisten bleiben zwischen zwei Kämpfen stehen, andere laufen ab –; seine
+  Mitschnitte belegen es nur für den Weißmagier (619 von 764 Übergängen unverändert, die übrigen an der Lilien-Uhr) und
+  für drei weitere Fälle. Das gehört deshalb zu K6, je Job mit dessen Wirktexten. Gebaut ist auf der Stufe „alle", was
+  für jeden Job gleich gilt: die Zählung der Flächen (oben), kein DoT auf Gegner, die bald sterben (D), freie Ladungen vor
+  dem Tod des Bosses (K2).
+
+**K4 – Bewegung: Sofortzauber für eine vorhergesagte Bewegung aufheben** (geprüft, nicht gebaut, A919):
+- *Was RSR schon weiß:* wann eine Fläche auf deinem Platz aktiv wird (`MovementLock.SpotDangerIn`, aus BossModReborns
+  Zonen, `Hints.ForbiddenZonesNextActivation`), und wie lange gezaubert werden darf (`Hints.MaxCastTime`). Passt kein
+  Zauber mehr, nimmt die Rotation einen Sofortzauber (C6, `NoCastFitsNow`). Was fehlt, ist die Gegenrichtung: einen
+  begrenzten Sofortzauber (aus einem Proc, einer Leiste, Ladungen) im Stehen nicht verbrauchen, wenn gleich bewegt werden
+  muss.
+- *Gemessen (alle 19 Mitschnitte):* Der Beschwörer wirkte 105 Ruin III, 26 Ruin IV, 4 Ruinator und kein Ruin II – das
+  schwache Sofort-Ruin, das fällt, wenn in der Bewegung kein besserer Sofortzauber bereitliegt. Ein Verlust aus
+  verbrauchten Sofortzaubern ist in seinen Daten nicht zu sehen.
+- *Erwogen, allgemein:* „Ein Sofortzauber-GCD, der einen von einer anderen Aktion gegebenen Status braucht, wartet,
+  solange ein Zauber passt und eine Bewegung auf deinem Platz vor dem Ende des Status vorhergesagt ist.“ Er träfe Ruin
+  IV, Hammer Stamp und Holy in White, nicht Xenoglossy oder Toxikon (Leiste) – welche Sofortzauber Bewegungsmittel sind,
+  ist je Job verschieden, wie oft sie nachkommen auch. *Nicht gebaut:* kein gemessener Schaden, gegen den die Regel
+  schützt (CLAUDE.md, „Prüfgrad“: ein neuer Mechanismus nur gegen eine schriftliche Anforderung mit Schaden ohne ihn);
+  das Halten im Burst verlöre den Burst-Aufschlag des einen GCD. Die Frage geht je Job zu K6, mit dessen
+  Bewegungsmitteln, und wird gebaut, sobald ein Mitschnitt den Verlust zeigt (Ruin II, Jolt in der Bewegung, ein
+  ausgefallener GCD beim Gehen).
+
 **K1, erster Schritt – Grundlagen** (in Arbeit, A901):
 - *Der Burst-Schalter ist kein Hebel.* `IsBurst` (`AutoStatus.Burst`, in `StateUpdater` gesetzt, solange „Auto Burst"
   an ist) steht in 17 Rotationen an 54 Stellen, aber in zwei Bedeutungen: als Freigabe des Burstbeginns (Technical Step,
@@ -2860,6 +3163,27 @@ den jobweisen Abläufen.
   wird nur, wo die Pause gleich nach dem Beginn des Fensters kommt.
 - *Allein* (Solo, Trust, Duty Support ohne Raidbuffs) entfällt Gegenthese 4: Halten, wann immer die Pause ins Fenster
   fällt und das Warten keinen Einsatz kostet.
+- *Gebaut, erster Schritt (A914): was ohne die Messung der Gruppe schon trägt.* Zentral in `BasicCheck`
+  (`HeldForDowntime`, „BasicCheck:HeldForDowntime"), für jeden Job, ohne eine Zeile in den Rotationen:
+  - *Ein eigener Verstärker* ist eine Aktion, die einen Status gibt (`StatusProvide`), dessen englischer Text den Schaden,
+    die Kritrate oder die Direkttrefferrate erhöht (`RaisesDamageDealt`, dieselbe Erkennung wie K3), oder einen auf den
+    Gegner, der den erlittenen Schaden erhöht (`RaisesDamageTaken`). Seine Dauer d nennt sein Wirktext („Duration: 20s").
+  - *Er wartet,* wenn BossMods Zeitleiste eine Pause in t < d Sekunden vorhersagt und ihr Ende kennt, das Warten bis zu
+    ihrem Ende keinen Einsatz bis zum Tod des Ziels kostet (`HoldCostsUse`), und: *allein* (keine weiteren
+    Gruppenmitglieder) bei jedem solchen t, weil das ganze Fenster nach der Pause mehr trifft als ein Teil davor
+    (Gegenthese 4, allein); *in der Gruppe* (auch Trust und Duty Support) nur, wenn t kürzer als ein GCD ist – die sichere
+    Annahme „die Gruppe drückt“: Im Modell gewinnt Halten dann nur, wenn die Pause in den ersten 2 s des Fensters beginnt,
+    also bevor ein zweiter GCD darin landet.
+  - *Spur:* je Aktion und Pause eine Zeile „downtime hold: AKTION waits - pause in t s for p s, its window is d s, alone
+    or in a group“.
+  - *Nicht davon berührt:* Ohne BossMod-Modul (keine Pause vorhergesagt) oder ohne bekanntes Ende gilt das bisherige
+    Verhalten. Gehalten wird nur ein Verstärker; Schaden, DoTs und Ladungen bleiben K2 und K5.
+  - *Falsifikation:* (1) *Kein Defekt:* Ein Verstärker in eine Pause trifft kaum etwas. Allein trifft er nur t/d seines
+    Fensters, gehalten das ganze; in der Gruppe innerhalb eines GCD höchstens einen GCD. (2) *Option falsch:* In der Gruppe
+    trennt Halten den Burst von den Raidbuffs der anderen. Darum hält sie dort nur im ersten GCD, wo das Modell den
+    Gewinn zeigt. *Preis:* Wo die Gruppe ebenso hält, wäre längeres Halten besser; das misst erst K3. (3) *Ausgeliefert,
+    und nichts ändert sich:* Erkennt RSR den Verstärker nicht (kein Status in `StatusProvide`, Text ohne die Wendung), oder
+    sagt BossMod keine Pause voraus, wartet nichts. Messweg: die Spurzeile, Vorhersage `downtime-hold-line-form`.
 
 **K3 – Fenster der Gruppe am Spiel messen** (in Arbeit, A901):
 - *Erkennbar für alle Jobs* (Status-Wirktexte, xivapi v2, 19.11.2026): Die Raidbuffs tragen allgemeine Texte – „Damage

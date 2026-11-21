@@ -1,6 +1,6 @@
 # BLM — Abhängigkeitsmatrix
 
-Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-06; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
+Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-21; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `BlackMageRotation`
 - Rotation: `RotationSolver/Rotations/Magical/BlackMage/BLM_Default.cs`, `RotationSolver/Rotations/Magical/BlackMage/BLM_RP.cs`
@@ -8,14 +8,14 @@ Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-06; nic
 
 ## Nutzung
 
-direkt: 37 · ungenutzt: 1 · über andere Aktion: 2
+direkt: 38 · über andere Aktion: 2
 
 | Stufe | Aktion | Id | Art | Nutzung |
 |---|---|---|---|---|
 | alle | Sprint (`SprintPvE`) | 3 | System | direkt |
 | Magier | Addle (`AddlePvE`) | 7560 | Ability | direkt |
 | Magier | Lucid Dreaming (`LucidDreamingPvE`) | 7562 | Ability | direkt |
-| Magier | Sleep (`SleepPvE`) | 25880 | Spell | ungenutzt |
+| Magier | Sleep (`SleepPvE`) | 25880 | Spell | direkt |
 | Magier | Surecast (`SurecastPvE`) | 7559 | Ability | direkt |
 | Magier | Swiftcast (`SwiftcastPvE`) | 7561 | Ability | direkt |
 | Job | Aetherial Manipulation (`AetherialManipulationPvE`) | 155 | Ability | direkt |
@@ -95,7 +95,6 @@ direkt: 37 · ungenutzt: 1 · über andere Aktion: 2
 | Freeze | Regel prüft | Blizzard IV |
 | Retrace | Regel prüft | Ley Lines |
 | Retrace | StatusNeed LeyLines | Ley Lines |
-| Swiftcast | Regel prüft | Paradox |
 | Thunder II | Regel sperrt vorher | Thunder III |
 | Thunder II | Regel sperrt vorher | Thunder IV |
 | Thunder II | Regel sperrt vorher | Thunder |
@@ -108,7 +107,6 @@ direkt: 37 · ungenutzt: 1 · über andere Aktion: 2
 | Thunder | Regel sperrt vorher | Thunder IV |
 | Transpose | Regel prüft | Fire III |
 | Transpose | Regel prüft | Paradox |
-| Triplecast | Regel prüft | Paradox |
 | Triplecast | Regel sperrt vorher | Paradox |
 | Triplecast | Regel prüft | Swiftcast |
 | Triplecast | Regel sperrt vorher | Swiftcast |
@@ -153,9 +151,7 @@ Ohne Eintrag in `ActionId.resx` und ohne Wirktext; RSR castet keine PvE-Limit-Br
 
 ## Nicht direkt genutzt
 
-Maschinelle Liste; die Bewertung je Eintrag steht im Konzept.
-
-- Sleep (`SleepPvE`, Spell): ungenutzt
+keine
 
 ## Abgleich Wirktext ↔ Code
 

@@ -23,7 +23,7 @@ Pomander stehen unten („Tiefe Gewölbe: Pomander").
   (`MoveForwardGCD`), wie jeder schadende Sprint aus der Ferne: Selbsttätig holte er dich für Schaden aus deiner
   Stellung, im Gewölbe womöglich auf eine Falle (seine Spielweise: „Nichts empfehlen, was ihn für Schaden aus einer
   sicheren Position holt"). Er trägt den Bewegungstyp eines festen Sprints wie En Avant, die Weite aus dem
-  Aktionsblatt; mit „Check movement actions with BossModReborn (Experimental)" wird sein Landepunkt geprüft.
+  Aktionsblatt; mit „Check where movement actions land" (ab Werk an, A934) wird sein Landepunkt geprüft.
 - *Spur:* Mit jeder Verwandlung eine Zeile ins `DefenseTrace.log` – welche Formaktionen das Spiel zulässt –, damit ein
   Upload zeigt, ob die Kette greift.
 

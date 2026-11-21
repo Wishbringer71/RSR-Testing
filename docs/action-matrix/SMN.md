@@ -1,6 +1,6 @@
 # SMN — Abhängigkeitsmatrix
 
-Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-19; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
+Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-21; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `SummonerRotation`
 - Rotation: `RotationSolver/Rotations/Magical/Summoner/SMN_Reborn.cs`
@@ -8,14 +8,14 @@ Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-19; nic
 
 ## Nutzung
 
-direkt: 72 · nur gelesen: 1 · ungenutzt: 10 · über andere Aktion: 3
+direkt: 73 · nur gelesen: 1 · ungenutzt: 9 · über andere Aktion: 3
 
 | Stufe | Aktion | Id | Art | Nutzung |
 |---|---|---|---|---|
 | alle | Sprint (`SprintPvE`) | 3 | System | direkt |
 | Magier | Addle (`AddlePvE`) | 7560 | Ability | direkt |
 | Magier | Lucid Dreaming (`LucidDreamingPvE`) | 7562 | Ability | direkt |
-| Magier | Sleep (`SleepPvE`) | 25880 | Spell | ungenutzt |
+| Magier | Sleep (`SleepPvE`) | 25880 | Spell | direkt |
 | Magier | Surecast (`SurecastPvE`) | 7559 | Ability | direkt |
 | Magier | Swiftcast (`SwiftcastPvE`) | 7561 | Ability | direkt |
 | Job | Aethercharge (`AetherchargePvE`) | 25800 | Spell | direkt |
@@ -401,5 +401,4 @@ Maschinelle Liste; die Bewertung je Eintrag steht im Konzept.
 - Precious Brilliance (`PreciousBrilliancePvE`, Spell): ungenutzt — Behälter: der Knopf wird zu anderen Aktionen
 - Revelation (`RevelationPvE`, Ability): ungenutzt — nicht zuweisbar: Begleiter oder Automatik
 - Scarlet Flame (`ScarletFlamePvE`, Spell): ungenutzt — nicht zuweisbar: Begleiter oder Automatik
-- Sleep (`SleepPvE`, Spell): ungenutzt
 - Wyrmwave (`WyrmwavePvE`, Spell): ungenutzt — nicht zuweisbar: Begleiter oder Automatik

@@ -409,6 +409,14 @@ public static partial class ObjectHelper
 			return true;
 		}
 
+		// Concept 03, "Welche Puppe dein Kampf ist" (A948): a training dummy fights nobody, so only the player's current target
+		// is his fight - before the countdown, the line that takes an enemy holding him, and the engage setting, under which
+		// RSR's own choice went to another dummy of the row.
+		if (battleChara.IsDummy())
+		{
+			return battleChara.GameObjectId == Svc.Targets.Target?.GameObjectId;
+		}
+
 		if (Service.CountDownTime > 0 || DataCenter.IsPvP)
 		{
 			return true;

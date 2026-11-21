@@ -65,6 +65,55 @@ public partial class BlueMageRotation
 	}
 
 	/// <summary>
+	/// Whether Mortal Flame pays on the target its <c>CanUse</c> chose. It burns until that target dies and only one of its
+	/// effects is active at a time, so: its ticks until the target's estimated death must bring more potency than the filler
+	/// would in its cast; with the effect already on another living enemy, the target must have that many ticks more ahead
+	/// than the bearer, or the move costs a GCD and takes the bearer's ticks. Both sides come from the effect texts, so the
+	/// measured damage per potency cancels out. An unknown time to kill counts as long on a fresh target and keeps the effect
+	/// where it is when it would move (concept 01, "Ewige Flammen", A940).
+	/// </summary>
+	/// <param name="flame">Mortal Flame, asked after its <c>CanUse</c> chose its target.</param>
+	protected bool MortalFlamePays(IBaseAction flame)
+	{
+		if (flame.Target.Target is not { } target
+			|| !target.StatusFlags.HasFlag(Dalamud.Game.ClientState.Objects.Enums.StatusFlags.InCombat)
+			|| !ActionTooltip.TryStatedPotency(flame.ID, out var potency) || potency <= 0f
+			|| !TryFiller(out var fillerPotency, out var fillerTime))
+		{
+			return false;
+		}
+
+		var cost = fillerPotency * SpellTime(flame) / fillerTime;
+		var ahead = TicksAhead(target);
+		IBattleChara? bearer = null;
+		foreach (var hostile in DataCenter.AllHostileTargets)
+		{
+			if (hostile != null && hostile.EntityId != target.EntityId && !hostile.IsDead
+				&& hostile.HasStatus(true, StatusID.MortalFlame_3643))
+			{
+				bearer = hostile;
+				break;
+			}
+		}
+
+		if (bearer == null)
+		{
+			return float.IsPositiveInfinity(ahead) || potency * ahead > cost;
+		}
+
+		var behind = TicksAhead(bearer);
+		return !float.IsPositiveInfinity(ahead) && !float.IsPositiveInfinity(behind) && potency * (ahead - behind) > cost;
+
+		static float TicksAhead(IBattleChara enemy)
+		{
+			var ttk = enemy.GetCorrectedTTK();
+			return float.IsNaN(ttk)
+				? float.PositiveInfinity
+				: MathF.Floor(ttk / (float)TimeSpan.FromMilliseconds(DotTickTracker.TickMs).TotalSeconds);
+		}
+	}
+
+	/// <summary>
 	/// Whether <paramref name="action"/>, a spell without a recast of its own, should go before Sonic Boom: it brings more
 	/// potency per time over the enemies it reaches, and on a single target only without a longer cast - a longer cast costs
 	/// the weaving room the Blue Mage's many abilities need, which is why Sonic Boom (1 s) is the filler at Blue Academy,
@@ -216,6 +265,87 @@ public partial class BlueMageRotation
 		}
 
 		return perSecond;
+	}
+
+	/// <summary>
+	/// The most stacks of Spick-and-span the Status sheet allows, 0 without a row (Deep Clean then never goes).
+	/// </summary>
+	protected static byte SpickAndSpanMaxStacks
+	{
+		get
+		{
+			// Kept only once read: a lookup before the sheet is there answers 0 now and is asked again (A946).
+			if (_spickAndSpanMaxStacks is { } known)
+			{
+				return known;
+			}
+
+			if (!Service.GetSheet<Lumina.Excel.Sheets.Status>().TryGetRow((uint)StatusID.Spickandspan, out var row))
+			{
+				return 0;
+			}
+
+			_spickAndSpanMaxStacks = row.MaxStacks;
+			return row.MaxStacks;
+		}
+	}
+
+	private static byte? _spickAndSpanMaxStacks;
+
+	/// <summary>
+	/// Whether a spell sharing its recast with Chelonian Gate - the Rose of Destruction, Ruby Dynamics - may take it: always,
+	/// except under tank mimicry with the gate in the set while a tankbuster on the player is announced within that recast;
+	/// then the gate keeps it for the hit (concept 01, "Gemeinsame Abklingzeit mit dem Schildkrötentor", A946). Without an
+	/// announcement the damage goes, and an unannounced buster meets the tank without the gate.
+	/// </summary>
+	/// <param name="spell">The spell that would take the shared recast.</param>
+	protected bool MayTakeGateRecast(IBaseAction spell)
+	{
+		return !IsTank || !ChelonianGatePvE.Info.IsOnSlot || !TankbusterOnMeWithin(spell.Cooldown.RecastTimeOneChargeRaw);
+	}
+
+	/// <summary>
+	/// Whether Peat Pelt opens a Deep Clean for the tank (concept 01, "Matschkuchen und Reinemachen", A942): Deep Clean in
+	/// the set and at level, Peat Pelt reaching more than one enemy, and Spick-and-span missing or ending before both land.
+	/// </summary>
+	/// <param name="pelt">Peat Pelt, asked after its <c>CanUse</c> chose its targets.</param>
+	protected bool PeatPeltOpensDeepClean(IBaseAction pelt)
+	{
+		return IsTank && DeepCleanPvE.Info.IsOnSlot && DeepCleanPvE.EnoughLevel
+			&& (pelt.Target.AffectedTargets?.Length ?? 0) > 1
+			&& StatusHelper.PlayerWillStatusEnd(SpellTime(pelt) + SpellTime(DeepCleanPvE), true, StatusID.Spickandspan);
+	}
+
+	/// <summary>
+	/// Whether the player's HP, shields left out, is below the share the text of <paramref name="action"/> states ("when your
+	/// HP is below 20%", Revenge Blast): the game reads HP, a shield does not lift it. False without a figure in the text.
+	/// </summary>
+	protected static bool HealthBelowStated(ActionID action)
+	{
+		return Player is { MaxHp: > 0 } player && ActionTooltip.TryStatedHealthBelow((uint)action, out var below)
+			&& player.CurrentHp < player.MaxHp * below;
+	}
+
+	/// <summary>
+	/// Whether the player's HP, shields left out, is above the share of maximum HP the text of <paramref name="action"/>
+	/// says it consumes (Wild Rage, 50%), so paying it leaves HP. False without a figure in the text.
+	/// </summary>
+	protected static bool HealthAboveStatedCost(ActionID action)
+	{
+		return Player is { MaxHp: > 0 } player && ActionTooltip.TryStatedHealthCost((uint)action, out var cost)
+			&& player.CurrentHp > player.MaxHp * cost;
+	}
+
+	/// <summary>
+	/// Whether Revenge Blast at its raised potency beats the filler in the time it takes, its target's Carnivale factor
+	/// counted (concept 01, "Rachestoß", A941). Asked after its <c>CanUse</c>, whose check holds the HP below the stated share.
+	/// </summary>
+	/// <param name="blast">Revenge Blast, asked after its <c>CanUse</c> chose its target.</param>
+	protected bool RaisedPotencyBeatsFiller(IBaseAction blast)
+	{
+		return ActionTooltip.TryRaisedPotencyLowHealth(blast.ID, out var raised)
+			&& TryFiller(out var fillerPotency, out var fillerTime)
+			&& raised * CarnivaleFactor(blast, blast.Target.Target) / SpellTime(blast) > fillerPotency / fillerTime;
 	}
 
 	/// <summary>
@@ -443,6 +573,15 @@ public partial class BlueMageRotation
 		Pair(PeripheralSynthesisPvE, MustardBombPvE, "Mustard Bomb on Lightheaded");
 		Pair(MatraMagicPvE, BristlePvE, "Bristle before Matra Magic");
 		Pair(SongOfTormentPvE, BristlePvE, "Bristle before Song of Torment");
+		Pair(PeatPeltPvE, DeepCleanPvE, "Deep Clean after Peat Pelt");
+		Pair(DeepCleanPvE, PeatPeltPvE, "Peat Pelt before Deep Clean");
+
+		// Mortal Flame pays from about six ticks on, on any target living longer; whether it goes on a target the rotation
+		// decides in the fight (concept 01, "Ewige Flammen", A945).
+		if (learned.Contains(MortalFlamePvE) && !inSet.ContainsKey(MortalFlamePvE.ID) && !wanted.Exists(w => w.Spell == MortalFlamePvE))
+		{
+			wanted.Add((MortalFlamePvE, 0f, "damage over time until the target dies"));
+		}
 
 		var groupsInSet = new HashSet<byte>();
 		foreach (var action in inSet.Values)

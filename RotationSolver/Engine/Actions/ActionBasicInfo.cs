@@ -524,14 +524,29 @@ public readonly partial struct ActionBasicInfo
 			return RefuseBasic("BasicCheck:StatusProvidedDuringGCD");
 		}
 
-		if (!IsActionCheckValid())
+		if (!IBaseAction.IgnoreRotationChecks && !IsActionCheckValid())
 		{
 			return RefuseBasic("BasicCheck:ActionCheck");
 		}
 
-		if (!IsRotationCheckValid())
+		if (!IBaseAction.IgnoreRotationChecks && !IsRotationCheckValid())
 		{
 			return RefuseBasic("BasicCheck:RotationCheck");
+		}
+
+		if (HeldForDowntime())
+		{
+			return RefuseBasic("BasicCheck:HeldForDowntime");
+		}
+
+		if (OutOfCombatHealHeld())
+		{
+			return RefuseBasic("BasicCheck:OutOfCombatHeal");
+		}
+
+		if (IBaseAction.PullPreparationOnly && !PreparesPull())
+		{
+			return RefuseBasic("BasicCheck:PullPreparation");
 		}
 
 		// A channel that ends upon moving does not start where BossMod forbids the spot: its first step ends it (A651).

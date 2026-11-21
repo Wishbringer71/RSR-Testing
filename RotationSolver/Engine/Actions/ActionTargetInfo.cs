@@ -255,7 +255,8 @@ public partial struct ActionTargetInfo(IBaseAction action)
 				continue;
 			}
 
-			if (CheckStatus(tar, skipStatusProvideCheck, skipTargetStatusNeedCheck) && CheckTimeToKill(tar, timeToKill) && CheckResistance(tar, range))
+			if (CheckStatus(tar, skipStatusProvideCheck, skipTargetStatusNeedCheck) && CheckTimeToKill(tar, timeToKill) && CheckResistance(tar, range)
+				&& LivesUntilItLands(tar))
 			{
 				validTargets.Add(tar);
 			}

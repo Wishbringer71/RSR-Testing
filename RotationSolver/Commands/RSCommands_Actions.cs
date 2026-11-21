@@ -169,9 +169,18 @@ namespace RotationSolver.Commands
 					}
 				}
 			}
-			else if (Service.Config.InDebug)
+			else
 			{
-				PluginLog.Verbose($"Failed to use the action {nextAction} ({nextAction.AdjustedID})");
+				// A930 (concept 03, "Dynamische Rotation", D1): refused by the game, left out until it takes it again.
+				if (nextAction is IBaseAction refused)
+				{
+					DynamicRotation.PressFailed(refused);
+				}
+
+				if (Service.Config.InDebug)
+				{
+					PluginLog.Verbose($"Failed to use the action {nextAction} ({nextAction.AdjustedID})");
+				}
 			}
 		}
 

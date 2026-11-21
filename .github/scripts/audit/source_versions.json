@@ -3,8 +3,8 @@
  "sources": [
   {
    "repo": "aers/FFXIVClientStructs",
-   "commit": "80cb4a7b7",
-   "date": "2026-11-10",
+   "commit": "7f509ce13",
+   "date": "2026-11-21",
    "use": "Client-API"
   },
   {
@@ -21,27 +21,27 @@
   },
   {
    "repo": "awgil/ffxiv_bossmod",
-   "commit": "1758cc8ea",
-   "date": "2026-11-18",
+   "commit": "02a16b442",
+   "date": "2026-11-19",
    "use": "BossMod (Original)"
   },
   {
    "repo": "BeirutaNa1na/RotationSolverReborn",
-   "commit": "d1e376bdd",
-   "date": "2026-11-19",
+   "commit": "996f28183",
+   "date": "2026-11-21",
    "use": "Beiruta-Rotationen"
   },
   {
    "repo": "dajoey/lalalazy",
-   "commit": "cfc5ac54e",
-   "date": "2026-11-19",
+   "commit": "c941afe43",
+   "date": "2026-11-21",
    "use": "GluttonyCombo, LazyCrucible: Crucible-Aufzeichnungen, Sanduhr, Futter (A674, A679)"
   },
   {
    "repo": "FFXIV-CombatReborn/BossmodReborn",
-   "commit": "8d5ff8e21",
-   "date": "2026-11-16",
-   "use": "Crucible-Module, Mechaniken, Vertrag mit RSR (Konzept 21, Code.md), Blickliste GazeActions.g.cs (Konzept 13)"
+   "commit": "91fbb365a",
+   "date": "2026-11-21",
+   "use": "Crucible-Module, Mechaniken, Vertrag mit RSR (Konzept 21, Code.md), Blickliste GazeActions.g.cs (Konzept 13), Projektion in die 3D-Welt und Ringe im Modulcode (Konzept 13, A921)"
   },
   {
    "repo": "getsetmind/dalamudmcp",
@@ -117,8 +117,8 @@
   },
   {
    "repo": "ofnature/Daedalus",
-   "commit": "fdb0811",
-   "date": "2026-11-18",
+   "commit": "8684c7938",
+   "date": "2026-11-21",
    "use": "Feldnotizen, Rotationen aller Jobs, Crucible (A600, A660)"
   },
   {
@@ -183,8 +183,8 @@
   },
   {
    "repo": "t3knical/DalamudPlugins",
-   "commit": "1821dcdd9",
-   "date": "2026-11-19",
+   "commit": "3344272b1",
+   "date": "2026-11-21",
    "use": "Tekz-BossmodReborn-Fork (Zielvorrang je Kampf), BeastMasterHelper (A667)"
   },
   {
@@ -234,6 +234,18 @@
    "commit": "301a95e",
    "date": "2026-11-13",
    "use": "PvP: Frontline-Strategie (Konzept 25, Quellen)"
+  },
+  {
+   "repo": "PunishXIV/Splatoon",
+   "commit": "f396ef6",
+   "date": "2026-11-19",
+   "use": "Projection, IPC, Einstellungen der Projection (Konzept 13, A920, A921)"
+  },
+  {
+   "repo": "awgil/ffxiv_navmesh",
+   "commit": "38d2a24",
+   "date": "2026-11-06",
+   "use": "vnavmesh: floor under a landing point (IPC), concept 05, A934"
   }
  ]
 }

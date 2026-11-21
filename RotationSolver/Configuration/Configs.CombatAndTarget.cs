@@ -133,6 +133,11 @@ internal partial class Configs
 	Filter = UiInformation)]
 	private static readonly bool _showInfoOnToast = false;
 
+	[ConditionBool, UI("Draw enemy areas without a ground marker through Splatoon",
+	Description = "In a fight: circles and lines an enemy casts without the game's ground marker are drawn where they land. Needs Splatoon.\nLeft to BossMod's world projection or Splatoon's projection where they draw; their blacklist is respected.\nWhile Splatoon's projection is on, a ring it draws against the game's marker goes into its blacklist.",
+	Filter = UiInformation)]
+	private static readonly bool _drawAreasWithoutMarker = true;
+
 	[ConditionBool, UI("Lock movement while casting",
 	Description = "Stops your character from moving while casting, until the spell can no longer be interrupted, and while using the actions ticked below. It never holds you in danger: BossMod's AI and you can still move out. A ticked party mitigation holds against BossMod's AI only while it covers a party member in danger before an announced hit and no other party mitigation is ready.",
 	Filter = Extra)]
@@ -601,10 +606,12 @@ internal partial class Configs
 		Filter = AutoActionUsage)]
 	private static readonly bool _damageAreasWhereEnemiesStay = true;
 
-	[ConditionBool, UI("Check movement actions with BossModReborn (Experimental)",
-		Description = "Before RSR uses a movement action, or an action that moves you, on its own, ask BossModReborn whether the destination is safe.",
+	// Concept 05, "Arenagrenzen ohne BossMod-Modul" (A934): on by default - safety before damage; the saved name stays.
+	[ConditionBool, UI("Check where movement actions land",
+		Description = "In a fight: before RSR moves you with an action, it asks BossModReborn's danger zones and "
+			+ "vnavmesh's floor.\nA jump into a zone or over an abyss stays out.\nOff: it jumps unchecked.",
 		Filter = AutoActionUsage)]
-	private static readonly bool _bmrSafetyCheckAuto = false;
+	private static readonly bool _bmrSafetyCheckAuto = true;
 
 	[ConditionBool, UI("Use defensive actions", Filter = AutoActionUsage, Section = 2, Description = "Turn this off if you'd rather plan defensive actions yourself, for example in raids.")]
 	private static readonly bool _useDefenseAbility = true;
@@ -737,6 +744,14 @@ internal partial class Configs
 		Parent = nameof(UseAbility),
 		PvEFilter = JobFilterType.Melee)]
 	private static readonly bool _autoUseTrueNorth = true;
+
+	[ConditionBool, UI("Move into positionals through BossMod",
+		Description = "In a fight: when your next weaponskill needs rear or flank and True North does not cover it, "
+			+ "BossMod's \"Automatic movement\" walks you inside that side.\nNeeds BossMod; not while its AI "
+			+ "moves you or another BossMod preset is active.\nAdds the BossMod preset \"RSR Positionals\".",
+		Parent = nameof(UseAbility),
+		PvEFilter = JobFilterType.Melee)]
+	private static readonly bool _moveIntoPositionals = true;
 
 	[ConditionBool, UI("Use movement speed abilities out of combat in duties", Parent = nameof(UseAbility))]
 	private static readonly bool _autoSpeedOutOfCombat = true;

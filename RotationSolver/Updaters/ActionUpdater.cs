@@ -125,6 +125,8 @@ internal static partial class ActionUpdater
 		finally
 		{
 			ActionTracer.EndFrame(NextAction);
+			// A923: a stretch with the GCD free and none coming, with what was chosen and refused.
+			GcdIdleWatch.Frame(NextGCDAction);
 			// A819: True North and the target's status change without a new GCD; the side is asked again each frame.
 			DesiredPositional = CalculateDesiredPositional();
 		}
@@ -172,6 +174,7 @@ internal static partial class ActionUpdater
 			GazeWatch.EndFight();
 			// A820 (concept 03, "Bereit, aber nicht genutzt"): which cooldowns stood ready in this fight and did not come.
 			BurstWatch.EndFight();
+			DynamicRotation.FightEnded();
 			DataCenter.EnemyHitPlayerThisFight = false;
 			_startCombatTime = DateTime.MinValue;
 

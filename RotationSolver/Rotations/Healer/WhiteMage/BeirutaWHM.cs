@@ -111,7 +111,7 @@ public sealed class BeirutaWHM : WhiteMageRotation
 	[RotationConfig(CombatType.PvE, Name = "[Movement] Use Swiftcast", Tooltip =
 		"Instant options while moving: lily heals > Afflatus Misery > Glare IV > early Dia, then Swiftcast, then Regen.\n" +
 		"No heal GCDs are used just for movement in burst.")]
-	public bool UseSwiftcastForMovement { get; set; } = true;
+	public bool UseSwiftcastForMovement { get; set; } = false; // A936: Swiftcast stays for raises unless switched on
 
 	[RotationConfig(CombatType.PvE, Name = "    > When to use it", Parent = nameof(UseSwiftcastForMovement), Tooltip =
 		"Last resort: only when no instant option is available. First: before the instant options.\n" +

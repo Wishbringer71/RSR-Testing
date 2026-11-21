@@ -15,7 +15,7 @@ public sealed partial class SMN_Reborn : SummonerRotation
 			return true;
 		}
 
-		if (TryAddleBeforeDamage(out act) || AddlePvE.CanUse(out act))
+		if (UseAddle(out act))
 		{
 			return true;
 		}
@@ -31,23 +31,12 @@ public sealed partial class SMN_Reborn : SummonerRotation
 			return true;
 		}
 
-		if (TryAddleBeforeDamage(out act) || AddlePvE.CanUse(out act))
+		if (UseAddle(out act))
 		{
 			return true;
 		}
 
 		return base.DefenseSingleAbility(nextGCD, out act);
-	}
-
-	// Addle mitigates any damage the enemy deals, so the generic BMRDamageIn is the right signal.
-	private bool TryAddleBeforeDamage(out IAction? act)
-	{
-		if (ShouldSustainMitigationDebuff(StatusID.Addle))
-		{
-			return AddlePvE.CanUse(out act, skipStatusProvideCheck: true);
-		}
-		act = null;
-		return false;
 	}
 
 	// BMRRaidwideIn is already the earliest of BMR's timeline/hints/generic raidwide predictions,

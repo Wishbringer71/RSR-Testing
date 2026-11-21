@@ -132,7 +132,7 @@ einen Bezeichner zu zwingen wäre der Fehler; die Reihenfolge ist gemeinsam, der
 gehört dem Job.
 
 Die Konvention galt schon zuvor für fork-eigenen Code und ist dort angewandt —
-`ShouldSustainMitigationDebuff`, `TrySustain…OnTank`, `TryAddleBeforeDamage`,
+`ShouldSustainMitigationDebuff`, `TrySustain…OnTank`, `UseAddle`,
 `SwiftRaisePending` sind genau solche benannten Stufen mit Domänennamen.
 
 ## B · Gruppenebene

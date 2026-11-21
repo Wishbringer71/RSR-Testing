@@ -267,6 +267,9 @@ public sealed class ChurinDRK : DarkKnightRotation
 
 		if (InBurstWindow)
 		{
+			// Concept 03, "Das Ziel einer Aktion stammt aus ihrem CanUse" (A936): asked first, so the distance below is this
+			// frame's target; when it cannot go, the branch ends in the same CanUse and gives nothing.
+			_ = DisesteemPvE.CanUse(out _);
 			if ((NoCombo && IsLastGCD(ActionID.SouleaterPvE)) || (NoCombo && HasDelirium && CurrentMp >= 9600) || DisesteemPvE.Target.Target.DistanceToPlayer() > 3f)
 			{
 				return DisesteemPvE.CanUse(out act);

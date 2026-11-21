@@ -190,6 +190,8 @@ public static partial class Watcher
 			ActionPenaltyWatch.ObserveLanding(set);
 			// A783: whether a gaze RSR turned for still harmed the player.
 			GazeWatch.ObserveLanding(set);
+			// Concept 05 (A935): a death wall's ring on a party member, the first contact with the arena's edge.
+			ArenaEdgeWatch.ObserveLanding(set);
 			// Concept 03, F, K3 (A904): the raid buffs of the other members, for when the group's next window comes.
 			GroupBurstWatch.Observe(set, playerObject.GameObjectId);
 
@@ -342,6 +344,13 @@ public static partial class Watcher
 							: DataCenter.Role != JobRole.Tank || TankbusterForecast.TookCastFor(tankbusterForPlayer != 0 ? tankbusterForPlayer : marked.RowId)
 								? ", after a tankbuster marker"
 							: ", after a tankbuster marker, no cast taken for it"));
+					// A928 (concept 02): a hit while BossMod walks the player into a positional stops the move; a raidwide
+					// reaches him anywhere and says nothing about the spot.
+					if (!partyWide)
+					{
+						PositionalMove.HitOnPlayer(marked.Name.ExtractText());
+					}
+
 					TankSwapWatch.RecordHitOnPlayer(tankbusterForPlayer != 0 ? tankbusterForPlayer : marked.RowId, marked.Name.ExtractText(),
 						source.GameObjectId, hitShare, markedForPlayer, !partyWide && OtherConfiguration.HostileCastingTank.Contains(marked.RowId),
 						StatusesAppliedTo(set, playerObject.GameObjectId));

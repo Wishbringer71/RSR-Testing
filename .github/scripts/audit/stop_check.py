@@ -70,7 +70,39 @@ def prose(message):
 COMPLETE = re.compile(r"\b(?:vollständig\w*|umfassend\w*|alle[nrs]?)\b", re.I)
 EXTENT = re.compile(r"^\s*(?:[-*]\s*)?(?:\*\*)?Umfang(?:\*\*)?\s*:", re.M)
 # Text the harness wraps around or into a message: reminders, commands, notifications - not his words.
+# A967: he asked for the TODO to be worked through, and the turn ended with points open (three times rebuked, the
+# last on 21.11.2026: "warum sind dann immer noch todos offen?"). Only Defekte and Offene Arbeit count: technical debt
+# carries its own condition and waiting points wait on him or on data.
+ASKS_TODO = re.compile(r"\btodos?\b", re.I)
+TODO_FILE = Path(__file__).resolve().parents[3] / "TODO.md"
+WORKED_SECTIONS = ("## Defekte", "## Offene Arbeit")
+
+
+def open_todo(path=TODO_FILE):
+    """The titles of the entries under Defekte and Offene Arbeit in TODO.md; empty when the file cannot be read."""
+    try:
+        lines = Path(path).read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return []
+    titles, section = [], None
+    for line in lines:
+        if line.startswith("## "):
+            section = line.strip()
+        elif section in WORKED_SECTIONS and line.startswith("- **"):
+            titles.append(line[4:].split("**")[0])
+    return titles
+
+
 TAGGED = re.compile(r"<(system-reminder|command-[\w-]+|local-command-[\w-]+|task-notification)>.*?</\1>", re.S)
+
+
+# A decision put to him (CLAUDE.md, "Vorlagen an ihn", his rule of 21.11.2026): it is his only once the problem is
+# described, a recommendation is given with its grounds, and both were worked in the loop to the plateau. The hook
+# finds the parts by name; whether they are thorough it cannot tell.
+ASKS_DECISION = re.compile(r"\bdeine\s+entscheidung\b|\bzur\s+entscheidung\b|\bentscheid(?:e|est)\s+du\b|"
+                           r"\bdie\s+frage\s+an\s+dich\b|\bfrage\s+an\s+dich\b|\bvorlage\s+an\s+dich\b", re.I)
+DECISION_PARTS = {"Problem": re.compile(r"\bproblem\w*", re.I), "Empfehlung": re.compile(r"\bempfehl\w*", re.I),
+                  "Begründung": re.compile(r"\bbegründ\w*", re.I), "Plateau": re.compile(r"\bplateau\b", re.I)}
 
 
 def his_last_words(path):
@@ -103,9 +135,9 @@ def his_last_words(path):
     return last
 
 
-def findings(message, waiting=False, asked=""):
+def findings(message, waiting=False, asked="", todo=()):
     """The reasons to go on. waiting: background work is in flight and its end wakes the turn, so naming what comes
-    after it is no announcement. asked: his last own message."""
+    after it is no announcement. asked: his last own message. todo: the open entries under Defekte and Offene Arbeit."""
     if not message.strip():
         return ["Der Zug endet ohne Ergebnis: Die letzte Nachricht ist leer, der Zug endete nach einem Tool-Aufruf. "
                 "CLAUDE.md, „Bevor ich einen Zug beende“: Ergebnis, Blocker oder eine Frage, die nur er beantworten kann."]
@@ -126,6 +158,16 @@ def findings(message, waiting=False, asked=""):
         out.append(f"Die letzte Nachricht endet mit einer Ankündigung ({what}). CLAUDE.md, „Bevor ich einen Zug "
                    f"beende“: Ein Zug endet mit einem Ergebnis, einem Blocker oder einer Frage, die nur er beantworten "
                    f"kann; angekündigte Arbeit beginnt im selben Zug.")
+    if ASKS_DECISION.search(text):
+        missing = [name for name, pattern in DECISION_PARTS.items() if not pattern.search(text)]
+        if missing:
+            out.append(f"Die letzte Nachricht legt ihm eine Entscheidung vor, ohne {', '.join(missing)}. CLAUDE.md, "
+                       f"„Vorlagen an ihn“: seine Entscheidung erst mit umfassender Problembeschreibung, Empfehlung und "
+                       f"Begründung, beides im Loop bis zum Plateau; bis dahin offene Arbeit im TODO.")
+    if todo and ASKS_TODO.search(asked or "") and not message.rstrip().endswith("?") and not WAITS_ON_HIM.search(last):
+        out.append(f"Seine Nachricht verlangt die TODO-Arbeit, und unter Defekte oder Offene Arbeit steht noch "
+                   f"{len(todo)} Punkt(e): {'; '.join(todo[:3])}. CLAUDE.md, „Bevor ich einen Zug beende“: Ein Ergebnis "
+                   f"mit dem nächsten offenen Punkt beendet keinen Zug, solange der Punkt zum Auftrag gehört.")
     word = COMPLETE.search(asked or "")
     if word and not EXTENT.search(message):
         out.append(f"Seine Nachricht verlangt jedes Element („{word.group(0)}“), die letzte Nachricht nennt keinen Umfang. "
@@ -156,7 +198,8 @@ def record(data, found):
 def hook(data):
     found = [] if data.get("stop_hook_active") else findings(data.get("last_assistant_message") or "",
                                                              waiting=bool(data.get("background_tasks")),
-                                                             asked=his_last_words(data.get("transcript_path")))
+                                                             asked=his_last_words(data.get("transcript_path")),
+                                                             todo=open_todo())
     record(data, found)
     if not found:
         return None
@@ -203,15 +246,25 @@ def self_test():
         "a waiting status passes": ("Der Build läuft noch. Das Ergebnis kommt als Ereignis über das PR-Abonnement.", 0),
         "an empty message is found": ("  \n", 1),
         "a perfect tense is no announcement (Retainer-Repricer)": ("Ich habe jetzt alle Tests grün.", 0),
-        "a close waiting on his decision is a blocker (KSP-MyContracts)": ("Die Prüfung ist offen.\n\nFür den "
-                                                                            "nächsten Schritt braucht es deine "
+        "a close waiting on his decision is a blocker (KSP-MyContracts)": ("Problem, Empfehlung V2 und Begründung "
+                                                                            "stehen oben, der Loop am Plateau.\n\n"
+                                                                            "Für den nächsten Schritt braucht es deine "
                                                                             "Entscheidung zu V2.", 0),
+        "the same close without the parts is found (A957)": ("Die Prüfung ist offen.\n\nFür den nächsten Schritt "
+                                                             "braucht es deine Entscheidung zu V2.", 1),
         "a close conditional on his answer is a blocker": ("Sagst du ja zu beiden Empfehlungen, entferne ich die "
                                                            "Einstellungen im nächsten Schritt.", 0),
         "'gleich' as a comparison is no announcement (Retainer-Repricer)": ("Der Preis liegt gleich dem günstigsten "
                                                                            "Angebot, und die Liste ist geprüft.", 0),
         "'weiter mit' is found": ("Gepusht.\n\nWeiter mit D18.", 1),
         "a question at the end is no announcement": ("Erledigt.\n\nSoll ich als Nächstes die Tabellen prüfen?", 0),
+        "a decision without its parts is found (A957)": ("Dragoon – deine Entscheidung: Sternensturz kam selten. "
+                                                         "Gilt die Grenze weiter?", 1),
+        "a decision with problem, recommendation, grounds and plateau passes": (
+            "Vorlage an dich. Problem: die Grenze sperrt Sternensturz. Empfehlung: B. Begründung: kein Weg ohne "
+            "Bewegung. Der Loop lief bis zum Plateau. Gilt B?", 0),
+        "a decision missing only the plateau is found": ("Zur Entscheidung: Problem X, Empfehlung B, Begründung Y.", 1),
+        "no decision put to him needs no parts": ("Das Problem ist behoben, die Prüfung ist grün.", 0),
     }
     failed = [name for name, (msg, n) in cases.items() if len(findings(msg)) != n]
     if hook({"stop_hook_active": True, "last_assistant_message": "Als Nächstes prüfe ich das."}) is not None:
@@ -233,6 +286,25 @@ def self_test():
         "the word in the answer only does not count": ("Alle Jobs sind fertig.", "prüf den Maschinisten", 0),
     }
     failed += [name for name, (msg, asked, n) in complete.items() if len(findings(msg, asked=asked)) != n]
+    todo = {
+        "TODO asked, a point open, the turn ends: found (A967)": ("Gepusht, alles grün.", "weiter mit der todo", ["X"], 1),
+        "TODO asked, nothing open: passes": ("Gepusht, alles grün.", "weiter mit der todo", [], 0),
+        "a point open, TODO not asked: passes": ("Gepusht, alles grün.", "prüf den Maschinisten", ["X"], 0),
+        "TODO asked, a point open, a question only he can answer: passes": ("Problem, Empfehlung und Begründung oben."
+                                                                             "\n\nWelche Seite gilt?", "todo weiter",
+                                                                             ["X"], 0),
+        "'todoliste' is no request": ("Gepusht.", "die todoliste ist lang", ["X"], 0),
+    }
+    failed += [name for name, (msg, asked, items, n) in todo.items()
+               if len(findings(msg, asked=asked, todo=items)) != n]
+    with tempfile.TemporaryDirectory() as tmp:
+        sample = Path(tmp) / "TODO.md"
+        sample.write_text("## Defekte\n\n- **A** x\n\n## Offene Arbeit\n\n- **B** y\n\n## Technische Schuld\n\n"
+                          "### C\n\n## Warten auf Daten oder Fremde\n\n- **D** z\n", encoding="utf-8")
+        if open_todo(sample) != ["A", "B"]:
+            failed.append(f"open_todo reads Defekte and Offene Arbeit only: {open_todo(sample)}")
+        if open_todo(Path(tmp) / "missing.md") != []:
+            failed.append("a missing TODO.md holds nothing open")
     with tempfile.TemporaryDirectory() as tmp:
         path = Path(tmp) / "t.jsonl"
         rows = [
@@ -264,8 +336,9 @@ def self_test():
     if failed:
         print("self-test FAILED: " + "; ".join(failed))
         return 1
-    print(f"self-test ok: {len(cases) + len(complete) + 9} cases - announcement at the end, trailing colon, English, "
-          f"code left out, continuation let through, extent when he asks for every element")
+    print(f"self-test ok: {len(cases) + len(complete) + len(todo) + 11} cases - announcement at the end, trailing colon, English, "
+          f"code left out, continuation let through, extent when he asks for every element, the parts of a decision, "
+          f"no end with an open TODO point he asked to work through")
     return 0
 
 

@@ -287,6 +287,58 @@ Fenster, die `ActionId.resx` ausblendet, belegt der offizielle Job-Guide: Ready 
 Reign, Ogi Namikiri Ready, Hypercharged, Full Metal Machinist je 30 s, Phantom Kamaitachi Ready 45 s,
 Silken Symmetry und Silken Flow 30 s. Der Code braucht sie nicht: Er liest die Restzeit zur Laufzeit.
 
+**Gemessen an seinen Mitschnitten (19.11.2026, A931; sein Auftrag vom 19.11.: Synergien und Kaskaden jedes Jobs).**
+Jeder eigene Status, den der Wirktext einer Aktion als Bedingung nennt („while under the effect of …“, „while … is
+active“), gegen das Statusblatt der Englischfassung; gezählt, wie oft er ablief, ohne dass in den letzten 0,6 s eine
+eigene Aktion kam, in allen ACT-Mitschnitten vom 10. bis 19.11.2026.
+- *Umfang:* 20 von 23 Jobs gemessen; Weiser und Blaumagier kommen in den Mitschnitten nicht vor, der Beastmaster (Crucible) ist nicht ausgewertet.
+- *Beschwörer:* Refulgent Lux 11 von 39, Further Ruin 7 von 66, Ruby's Glimmer 4 von 37 verfallen. Am Mitschnitt fiel
+  jeder Verfall von Further Ruin und Ruby's Glimmer in eine Strecke ohne angreifbares Ziel (12 bis 38 s ohne eigenen
+  Treffer auf einen Gegner: Phasenwechsel im Final Coil, Shinryu); Refulgent Lux verfiel sonst, wenn im Radius niemand
+  verletzt war – nach seiner Regel (Konzept 08, „Wann Lux Solaris zündet“) richtig.
+- *Weißmagier:* Sacred Sight 4 von 1074. *Astrologe:* Earthly Dominance geht von selbst in Giant Dominance über, kein
+  Verlust. Ley Lines und Starry Muse sind Buffs, die gewollt auslaufen.
+- *Übrige Jobs:* höchstens ein Verfall, jeweils am Kampfende.
+- *Schluss:* Proc-Kaskaden gehen in seinen Mitschnitten nicht verloren; ein Mangel läge, wenn, in der Ordnung innerhalb
+  der Fenster (zweiter Durchgang je Job).
+
+**Zweiter Durchgang: Burst-Procs im eigenen Burst (19.11.2026, A932).** Je Job die Aktion, die ein Merkmal mit dem
+Burst freischaltet („… Ready upon executing …“), gegen die eigenen Burst-Status beim Drücken, in denselben Mitschnitten:
+- *Im Fenster (100 %):* Goring Blade, Double Down, Lion Heart, Starcross, Rise of the Dragon, Dance of the Dawn,
+  Starfall Dance, Prefulgence, Vice of Thorns, Star Prism, Searing Flash (23 von 23), Fire's Reply, Plentiful Harvest,
+  Primal Ruination, Radiant Encore, Resonant Arrow, Oracle.
+- *Messung trägt nicht:* Kunai's Bane und Wildfire liegen auf dem Gegner, Darkside ist eine Leiste, Ley Lines
+  beschleunigt nur; Primal Rend folgt den drei Fell Cleaves, die Inner Release verbrauchen, und trifft ohnehin kritisch
+  und direkt.
+- *Vom Ablauf bedingt:* Perfectio 3 von 7 im Arcane Circle – jedes Enshroud bringt eines, auch das ungerade; Wind's
+  Reply hängt an Riddle of Wind; Comet in Black außerhalb von Starry Muse nur im Laufen oder gegen den Überlauf der
+  Farbe, wie The Balance es nennt (Pictomancer, unten).
+- *Schluss:* Keine Kaskade läuft am Burst vorbei. Wo eine Rotation The Balance übertreffen kann, liegt es nicht in der
+  festen Folge (sie deckt sich, „Vergleich mit The Balance“), sondern in dem, was ein Guide nicht kennt: Pausen, Kampfende,
+  die Fenster der Gruppe, Bewegung, Rudel (Konzept 03, „F · Über den Augenblick hinaus“, K1 bis K6).
+
+**Dritter Durchgang: Inhalt der Burstfenster und Regeln von xivanalysis (19.11.2026, A933).** Je Job die Aktionen
+und GCDs zwischen Beginn und Ende des eigenen Burst-Status (beim Debuff auf dem Gegner: des eigenen auf diesem Ziel),
+dazu die Regeln des xivanalysis-Katalogs (Stand deb2253, 08.11.2026), die ein Mitschnitt messen kann: DoT-Erneuerung
+vor der Zeit, Life Surge, Infuriate auf Nascent Chaos, Formless Fist.
+- *Umfang:* 21 von 23 Jobs mit Burstfenster gemessen (Weiser hat keinen Burst-Status; Blaumagier kommt nicht vor; der
+  Beastmaster ist nicht ausgewertet); DoT-Erneuerung bei allen 13 DoTs in den Mitschnitten.
+- *Voll:* Fight or Flight (3 × 8 GCDs mit allen Pflichtaktionen), No Mercy (3 × 8), Delirium (5 × 3), Lance Charge,
+  Technical Finish, Starry Muse, Reawakened, Divination, Chain Stratagem.
+- *Nur scheinbar unvollständig:* Primal Wrath fällt einen GCD nach dem Ende von Inner Release, Bloodfest eine
+  Sekunde vor No Mercy (beide 60 s), Battle Voice und Radiant Finale zwei Sekunden vor Raging Strikes, wie The Balance
+  sie ordnet; Tenri Jindo, Zesho Meppo, Phantom Kamaitachi und Brotherhood folgen 120- und 90-s-Abklingzeiten und
+  fallen in jedes zweite 60-s-Fenster; Gluttony geht nach dem doppelten Enshroud, nicht im Enshroud.
+- *Rotmagier:* Manafication 43 bis 63 s vor Embolden an der Puppe – die Puppe fiel nach 24 bis 44 s, und
+  `HoldCostsUse` gab sie frei, weil das Warten einen Einsatz gekostet hätte. Richtig nach The Balance („Align with
+  Embolden only if you're sure you won't lose a use“).
+- *DoT vor der Zeit:* Weißmagier 1526 Dia-Erneuerungen mit über 0,5 s Rest, davon 1324 im Laufen – das ist der Befund
+  unter „Weißmagier“. Barde zwölf Sekunden im Median: Iron Jaws am Ende des Bursts, gewollt. Übrige unter 5 s.
+- *Life Surge* (Dragoon) zweimal auf Wheeling Thrust, einmal auf Lance Barrage von fünf: an der Puppe beim Kampfbeginn,
+  wo Heavens' Thrust und Drakesbane noch nicht erreichbar waren. *Infuriate* nie auf Nascent Chaos (0 von 7).
+- *Nicht messbar aus dem Mitschnitt:* Kazematoi, Beast Gauge, Blood Gauge, Lilien und andere Leisten stehen in keiner
+  Zeile; sie prüft der Code-Abgleich je Job („Vergleich mit The Balance“).
+
 ### Die Statusbedingung: Der Status muss bis zum Losgehen liegen
 
 **Stufe „alle":** Eine Aktion mit Statusbedingung (`StatusNeed`, auf der Zielseite `TargetStatusNeed`)
@@ -529,6 +581,23 @@ Schadensausteilern Ressourcen und Buffs (A379), ihre Burstfenster (A381 bis A386
 betreffen, werden behoben, wo sich die bessere Wahl aus dem Spiel ableiten lässt und keine seiner Regeln dagegen steht;
 die übrigen nennt der Abgleich mit Grund. Weniger Schaden aus einer Sicherheitsregel bleibt (seine Präzisierung).
 
+**Seine These vom 20.11.2026** („alle von dir optimierten rotas schlechter als die von the balance … beweise das
+gegenteil“; A950, abgeschlossen A967). Ein Unterschied in Potenz über den Kampf entsteht nur dort, wo eine Regel von
+RSR von der des Guides abweicht oder der Code anders spielt, als seine Regel sagt. Beides ist je Job geprüft:
+- *Regeln:* jede Regel jedes Kampfjobs gegen The Balance (Tabellen dieses Abschnitts). Wo sie abweicht, ist sie mit
+  einem Modell gerechnet und so gebaut, dass sie in keinem gerechneten Fall hinter The Balance liegt: Samurai (A962,
+  spielt wie The Balance), Monk (A963, gleichauf im Mittel, Solar-Folge nie darunter), Maschinist (A964, Wildfire ohne
+  Full Metal Field nie darunter), Rotmagier (A966, nie unter The Balance, +0,13 % im Mittel). Ohne Abweichung ist der
+  Unterschied durch die Bauart null; ein Modell gleicher Regeln rechnete nichts Neues.
+- *Bewusst abweichend, seine Regeln:* Weiser, Phlegma (fremde Buffs kein tragender Grund); Gapcloser als Schaden nur
+  hinter Optionen (Paladin, Krieger, A954); Swiftcast für Wiederbelebungen. Weniger Schaden daraus ist gewollt.
+- *Im Spiel:* 19 Jobs am Puppenmitschnitt vom 20.11.2026 (A957); was dort vom Guide abwich, ist behoben – Abklinggruppen
+  mit einer Ladung, Searing Light bei Abklingzeit, Wildfire nach Full Metal Field, Mana vor Embolden (A957), die Sprünge
+  des Dragoon (A961). *Ohne Mitschnitt:* Weißmagier, Astrologe, Blaumagier (TODO „Weißmagier, Astrologe und Blaumagier
+  am ersten Puppenmitschnitt gegen The Balance“).
+- *Gegenthese:* „Gleiche Regeln auf dem Papier, anders im Spiel.“ Trifft zu – genau das fand der Mitschnitt viermal.
+  Darum gilt der Beleg je Job erst mit Mitschnitt; für die drei ohne steht er aus.
+
 ### Maschinist
 
 **Auto Crossbow fällt nur, wo es mehr bringt als Blazing Shot samt dem, was Blazing Shot nach sich zieht**
@@ -610,6 +679,7 @@ Sekundentakt") und löst die GCD-Abklingzeit aus; jede andere Aktion, Bewegung u
 | Bioblaster | schlägt Drill ab 3, Air Anchor ab 4, nie Chain Saw/Excavator | vor Air Anchor, Drill, Excavator und Chain Saw, ab 3 Gegnern | Bei genau drei Gegnern und gleichzeitig bereitem Air Anchor kommt Bioblaster einen GCD früher. Beide fallen innerhalb zweier GCDs; gleich ist die Potenz, nur Air Anchor oder Chain Saw rückt einen GCD nach hinten. Die Grenze 4 hängt am Wert der Batterie, den kein Tooltip nennt (The Balance: 266 Potenz je 10 Batterie, Stand 7.3). Nicht gebaut |
 | Automatenkönigin | 60 im Opener, 90 nach einer Minute, danach 100 direkt nach Air Anchor in jedem Zwei-Minuten-Fenster | dieselben ersten beiden; danach ruft sie der Schutz gegen das Überlaufen der Batterie | Modell über zehn Minuten (24.10.2026): keine Batterie verloren, die Königinnen verlassen nach der zweiten Minute die Zwei-Minuten-Fenster. Ihr Schaden zieht aus keinem eigenen Buff des Maschinisten Nutzen (Wildfire zählt nur seine Waffenfertigkeiten); der Gewinn der Ausrichtung kommt allein aus den Buffs der anderen. Nach seiner Regel ist fremdes Verhalten kein tragender Grund – derselbe Schluss wie für Reassemble (Konzept 17). Nicht gebaut |
 | Flamethrower | ab 2 Gegnern, wenn die Leiste nicht nutzbar ist; nie vor Hypercharge und den Werkzeugen; keine große Abklingzeit in den 11 s des Kanals | anstelle des Füllers, Einsatzregel oben | deckt sich bis auf die Länge des Fensters (A380) |
+| Wildfire im Zwei-Minuten-Fenster | „Not drifting Air Anchor, Chainsaw, Barrel Stabilizer, and Wildfire"; bei 2,50 s „Excavator > Full Metal Field > (Hypercharge + Wildfire)", im Opener vor Full Metal Field geweaved (Basic Guide und Openers, Patch 7.3, gelesen 21.11.2026) | Wildfire nur im späten Weave unmittelbar vor Full Metal Field (`nextGCD` ist Full Metal Field) oder, wenn Full Metal Field schon gefallen ist, im Weave danach vor Hypercharge (A957) | Gemessen am 20.11.2026 (2,44 s GCD): Full Metal Field fiel um 18:26:26,9, 0,2 s nachdem Wildfire bereit war; das Spiel nennt eine Aktion in ihrer letzten halben Sekunde schon frei (`IsActionOffCooldown`: „off-cooldown or slidecastable"), Full Metal Field ging, für den Weave davor war kein Platz. Bis A957 wartete Wildfire dann auf das nächste Full Metal Field zwei Minuten später: Wildfire alle 240 s statt 120 s. Jetzt geht es nach Full Metal Field mit Hypercharge, wie der Guide es für 2,50 s nennt. *Ohne anstehendes Full Metal Field (A964):* Steht kein Full Metal Field an und kommt Barrel Stabilizer nicht innerhalb der Dauer von Wildfire zurück (Wirktext, 10 s), geht Wildfire im späten Weave mit der nächsten Überhitzung, sobald Hypercharge darf (`ToolChargeSoon`), und Hypercharge folgt. Das ist das Raster des Guides („Not drifting … Wildfire“); bis A964 wartete Wildfire auf das nächste Full Metal Field (Fall 20.11.2026: nach dem Jobwechsel bereit um 18:23:18, gewartet bis 18:24:26, 68 s). *Rechnung (Wirktext: 240 Potenz je gelandeter Waffenfertigkeit, höchstens 6):* Ein Fenster mit Full Metal Field (es und fünf Blazing Shots) und eines ohne (fünf Blazing Shots und der nächste GCD in den 10 s) tragen beide 6 Stapel, 1.440 Potenz; die Ausrichtung auf Barrel Stabilizer bringt dem eigenen Schaden nichts. Das Warten verschiebt jeden folgenden Wildfire um die Wartezeit und kostet einen Einsatz, wo das Kampfende in diese Spanne fällt; sofort kostet keinen. *Preis:* Die Fenster liegen danach neben Barrel Stabilizer und neben den Buffs der Gruppe – nach seiner Regel kein tragender Grund (fremdes Verhalten, wie bei der Automatenkönigin) |
 
 ### AoE-Schwellen aller Jobs
 
@@ -657,6 +727,16 @@ Hier der Vorlauf (A343); Ressourcen und Buffs stehen unter „Schadensausteiler:
 - *Dragoon* (The Balance, Openers, Patch 7.5): kein Vorlauf im Standard-Opener; der Trank nach dem zweiten GCD, mit
   Lance Charge, vor Battle Litany. RSR nimmt ihn, sobald Battle Litany liegt – einen GCD später; der Trank wirkt 30 s
   und deckt das Fenster weiter. Nicht geändert.
+- *Dragoon, Life Surge im Burst* (A933): Life Surge macht den nächsten Waffenskill kritisch; den größten Ertrag bringt
+  er auf den beiden größten, Heavens' Thrust und Drakesbane (je 460 gegen 340 für Lance Barrage, für Chaotic Spring
+  und Wheeling Thrust von hinten und für Fang and Claw von der Flanke; Job-Guide, Patch 7.5, gelesen 19.11.2026). Upstreams Bedingung (e7d18b6fd) ließ unter Battle Litany und
+  Life of the Dragon jeden Nebenfinisher zu. Im Mitschnitt vom 15.11.2026 gingen so im ersten Burst beide Ladungen auf
+  Wheeling Thrust und Lance Barrage; Heavens' Thrust und zweimal Drakesbane fielen ohne sie ins selbe Fenster. Der große
+  Finisher steht nach jedem Nebenfinisher höchstens zwei GCDs später (Lance Barrage → Heavens' Thrust, Wheeling Thrust
+  und Fang and Claw → Drakesbane, Chaotic Spring → Wheeling Thrust → Drakesbane), und zwei Ladungen finden in 20 s
+  Battle Litany drei große Treffer. Ein Nebenfinisher bekommt Life Surge deshalb nur noch, wenn Battle Litany vor dem
+  nächsten GCD endet; dann fiele der große Treffer heraus. Im Kampf: 120 Potenz je Fehlgriff, mal dem Aufschlag des
+  kritischen Treffers, unter beiden Buffs.
 - *Viper* (Openers, Patch 7.55): Slither bei −0,5 s – RSR springt in der letzten halben Sekunde, wenn das Ziel
   außerhalb der Nahkampfreichweite steht (Konzept 04, „Der Sprung zum Ziel am Ende des Countdowns", A347); der Trank
   fällt nach dem dritten GCD. RSR nahm ihn mit „Experimental Pot Usage(used up to 5 seconds before SerpentsIre comes
@@ -674,6 +754,33 @@ Hier der Vorlauf (A343); Ressourcen und Buffs stehen unter „Schadensausteiler:
 
 Abgeglichen am 26.10.2026 gegen The Balance, Summoner Basic Guide („Patch Applicable: 7.55", zuletzt geändert am
 31.07.2026; die Opener-Seite zeigt die Folge nur als Bild). Die Searing-Light-Regeln selbst stehen in Konzept 12.
+
+**Rotmagier: Mana vor Embolden** (seine Frage, 20.11.2026, A953; Ursache A957). Die Nahkampf-Kombo beginnt, sobald
+beide Mana-Leisten die Schwelle erreichen; die Entfernung entscheidet nur darüber, ob Enchanted Riposte das Ziel
+erreicht (3 Yalm). Nah am Boss beginnt sie deshalb an der Schwelle, auf Abstand erst beim Herangehen – darum füllen sich
+die Leisten nur auf Abstand bis 100. Schwellen ohne „Attempt to pool …“ (ab Werk aus): 50 unter Embolden; sonst nach der
+Zeit bis zu seiner Rückkehr 60 (mehr als 80 s), 50 (40 bis 80 s), 70 (15 bis 40 s), 90 (die letzten 15 s). *Ursache des
+Befunds:* Upstreams Fassung (5dd3dac18) las die verstrichene Zeit statt der verbleibenden, mit denselben Grenzen: In
+den letzten 40 s vor Embolden galt 60, und der Fall „bis 15 s“ griff nie, weil Embolden in seinen ersten 20 s noch
+läuft. Der Pooling-Pfad daneben liest die verbleibende Zeit. Gemessen am 20.11.2026: Kombo um 19:04:57 bei 67|60, 24 s
+vor Embolden, und um 19:07:11 bei 68|62, 10 s davor; der Rotmagier kam beide Male mit 36|40 und 26|31 ins Fenster und
+hatte darunter keine Kombo ohne Manafication. Jetzt verbleibende Zeit (A957): An denselben Stellen wartet die Kombo bis
+70 beziehungsweise 90 und fällt unter Embolden. *Hergeleitet und gemessen (A966):* Die Kosten der Kombo liest RSR aus
+dem Aktionsblatt (Enchanted Riposte 20, Zwerchhau und Redoublement je 15, je nach Stufe 20, 35 oder 50); dieselben Kosten
+gelten unter Embolden und zwischen 40 und 80 s davor. Die Leiter davor (60, 70, 90) bleibt: Im Modell
+(`redmage_balance_model.py`, Wirktexte 21.11.2026, 39 Fälle aus GCD 2,40 bis 2,50 s und 3 bis 15 min) bringt sie mehr
+Kombos unter Embolden als die Regel von The Balance (50, in den letzten 15 s 73) – bei zehn Minuten 5 statt 3 – und liegt
+in 32 Fällen vor ihr; ein Halten, das nur das Überlaufen bis Embolden prüft, bringt nichts darüber. Ihr einziger Verlust
+war das Kampfende: Sie hielt Mana für ein Embolden, das erst nach dem Tod des Ziels zurückkam, und es fehlte eine Kombo
+(4, 8 und 14 min, bis 2,41 %). *Jetzt:* Kommt Embolden erst nach dem Tod des Ziels zurück (`BuffReturnsAfterDeath`,
+die korrigierte Zeit bis zum Tod wie `HoldCostsUse`, nur wenn das Ziel der letzte Gegner in Reichweite ist), beginnt die
+Kombo an ihren Kosten. Im Modell nie unter der bisherigen Leiter (+0,24 % im Mittel) und nie unter The Balance (+0,13 %
+im Mittel, bis +1,43 %). Ohne Messung der Zeit bis zum Tod gilt die Leiter. Leser: `RDM_Reborn` und `BeirutaRDM` (zentral,
+keine Richtungsentscheidung). The Balance (Red Mage Basic Guide, Patch 7.4, vom Abrufwerkzeug gelesen,
+wörtliche Ausschnitte, 20.11.2026): „Melee combo at 50|50+ mana“; „Always save enough mana for one melee combo under
+buffs“; Dreifach-Kombo zu zwei Minuten „with 73|73 or above mana (starting 15 seconds before Embolden …)“; „Double combo
+during these buff windows if you can (92|81 mana without Manafication)“; „In general, avoid overcapping mana“. 100|100
+ist kein Ziel. Der Pooling-Pfad (92|81 ab 30 s vorher) bleibt ab Werk aus und als „Experimental“ geführt.
 
 **Die Necrotize der ungeraden Minute warten auf das Zwei-Minuten-Fenster** (`SMN_Reborn.AttackAbility`, A375). The
 Balance: „Necrotize from your odd minute Energy Drain … should be saved for 2-minute buff windows as long as they are
@@ -694,6 +801,17 @@ wenige Sekunden vor Searing Light und dem Fenster der Gruppe.
 - *Nicht gewartet* wird, wenn der Burst automatisch aus ist, die nächste große Beschwörung nicht die des Bursts ist
   (ein anderer Beschwörer hält sie, Konzept 12) oder eine der beiden später zurückkommt als Energy Drain. Stirbt das
   Ziel, gehen die Ladungen wie bisher.
+- *Das Warten endet* (seine Meldung 20.11.2026: „beschwörer nutzt miasma-nova bzw. schmerzensflare nicht“, A952): Ist
+  die Burst-Beschwörung seit einem GCD bereit und das Fenster trotzdem nicht offen, hält sie etwas anderes zurück
+  (Bewegung, ein Gegner außer Reichweite, eine andere Regel), und die Ladungen gehen. Vorher wartete die Leiste ohne Ende:
+  Energy Drain verlangt sie leer, also standen Miasma-Nova (Necrotize), Schwäre (Fester) und Energy Drain zugleich still.
+  *Im Kampf:* höchstens ein GCD Warten über die Bereitschaft der Beschwörung hinaus, danach zwei Miasma-Nova und Energy
+  Drain wie ohne Rücklage.
+- *Schmerzensflare (Painflare)*, die Flächenausgabe derselben Leiste, hatte nur das Fenster und den sterbenden Boss; vor
+  dem nächsten Energy Siphon ging sie nie, und vor einem Rudel ohne Fenster blieb die Leiste voll, Energy Siphon und
+  Energy Drain aus. Jetzt dieselben drei Wege wie Miasma-Nova: Fenster, sterbendes Ziel, vor der Rückkehr von Energy
+  Drain/Energy Siphon (gemeinsame Abklingzeit), ohne Rücklage für das Fenster. Ob eine dieser Klemmen seine Beobachtung
+  erklärt, ist unbelegt, bis sein Mitschnitt da ist.
 
 **Eine offene Gunst verfällt mit der nächsten Beschwörung; RSR hält dafür keine Beschwörung zurück** (A462). Der
 Wirktext sagt nur „Effect of Garuda's Favor ends upon execution of certain summoner actions" (Job-Guide, abgerufen am
@@ -796,6 +914,7 @@ Tankbuster danach nicht zurück. Dieselbe Regel gilt für Celestial Intersection
 | Trank im Opener | nach dem Pull | bei unter 3 s im Countdown, im Kampf, sobald Presence of Mind bereit ist, nach „Tincture usage" und der Tinkturregel aller Jobs (Konzept 03, A780, A781) | weicht um rund drei Sekunden ab: Der Trank endet so viel früher, also vor dem letzten Glare seines Fensters. Nicht geändert – der Unterschied liegt unter einem GCD Trankwirkung, und das Fenster der Gruppe ist eine Annahme über sie |
 | Dia | dauerhaft, außer das Ziel stirbt in unter 15 s | DoT-Regel nach Zeit bis zum Tod gegen den Füller (`DotEffect`) | deckt sich, genauer: rechnet die Gewinnschwelle statt fester 15 s |
 | Glare IV | drei Einsätze unter Presence of Mind | sobald verfügbar | deckt sich |
+| Bewegung | Lilien decken „the majority of movement requirements“; Dia vor seiner Zeit nur „for when you are truly out of options“ (Basic Guide 7.3, gelesen 19.11.2026) | ab zwei Lilien eine Lilie vor Dia vor seiner Zeit, eine bleibt (Konzept 03, C6) | **geändert (A933):** vorher Dia vor jeder Lilie unter der Grenze |
 | Holy | in Dungeons stark (Betäubung), im Raid ab drei Gegnern | AoE-Zahl 3 (A344), dazu Streckung und Rückhaltungen der Betäubung | deckt sich |
 | Afflatus Misery | unter Buffs, wo es geht; keine Blutlilie überlaufen lassen | mit Opener-Option unter Buffs oder Presence of Mind; Lilien nur bei weniger als drei Blutlilien | deckt sich |
 | Angefangene Lilien-Sätze | vor Kampfende abschließen | keine eigene Regel | nicht gebaut: Schaden im Promillebereich, und am Kampfende ist eine Heilung ohne Bedarf keine Sicherheit |
@@ -816,17 +935,30 @@ Paladin (7.4, 17.12.2025), Dunkelritter (7.5, 14.08.2026), Revolverklinge (7.4, 
 Konzept 09; hier der Schaden. Keine Änderung: Alle Kernregeln decken sich. Die AoE-Schwelle der Tanks bleibt bei 2
 (oben, „AoE-Schwellen aller Jobs").
 
+*Ansturm der Tanks im Kampf (seine Vorgabe, 20.11.2026, A954):* „warum werden bei tanks auch die anstürmeffekte im
+nahkampf als angriff genutzt? … gerade bei wall to wall pulls rennt doch der tank zur nächsten gruppe und nutzt dafür
+das heranspringen. das ist durch den verbrauch im kampf weg … wenn überhaupt, dann solche nutzungen im kampf als option,
+aber eben nicht per default an.“ Gilt für alle Tanks: Ein Ansturm mit Ladungen geht im Kampf als Schaden nur hinter
+einer Option, ab Werk aus; ohne sie bleibt er der Bewegung (`MoveForwardAbility`). Betroffen sind Intervene (Paladin)
+und Onslaught (Krieger); Trajectory (Revolverklinge) und Shadowstride (Dunkelritter) nutzen die Rotationen nur zur
+Bewegung. Seine Präzisierung desselben Tages: „bei kämpfen direkt beim endboss mag das manchmal klappen, da keine großen
+wege, aber nicht bei dungeon instanzen, ally-raid“ – auch eingeschaltet geht der Ansturm deshalb nur gegen einen Boss
+(`IsBossFromIcon`, `IsBossFromTTK`): Bis zu seinem Tod folgt kein Rudel, für das die Ladung fehlen könnte. *Im Kampf:* Im
+Burst fehlen dem Paladin bis zu zwei Intervene, dem Krieger bis zu drei Onslaught an Schaden (The Balance gibt sie dort
+aus); dafür springt der Tank nach dem Rudel mit voller Ladung zum nächsten. Wer den Schaden am Boss will, schaltet die
+Option ein (CLAUDE.md, „Spielweise“).
+
 | Job | Punkt | The Balance | RSR | Stand |
 |---|---|---|---|---|
 | Krieger | Opener | Tomahawk bei −0,7 s, Infuriate eingewebt | Tomahawk bei unter 0,54 s, Infuriate in der ersten Einwebung | deckt sich |
 | Krieger | Surging Tempest | bei 7 bis 15 s Rest erneuern, nie über 31 s | Storm's Eye neun GCDs vor dem Ablauf (`StatusRefreshGcdCount`) | deckt sich: Bei rund 22 s Rest plus 30 s bleibt die Wirkung unter der Obergrenze von 60 s, es geht nichts verloren |
 | Krieger | Beast Gauge | Storm's Path nicht bei 90 bis 100, Infuriate nicht bei 60 bis 100 | Storm's Path bis 80, Infuriate bis 50 (`ActionCheck`) | deckt sich |
 | Krieger | Upheaval, Inner Release | auf Abklingzeit | auf Abklingzeit, Inner Release mit Surging Tempest | deckt sich |
-| Krieger | Onslaught | drei Ladungen in den geraden, eine in den ungeraden Fenstern | im Burst und vor dem Überlauf, nur im Stand; die Reichweite begrenzt die zentrale Sprungprüfung | weicht ab, wo Onslaught ihn bewegen würde: seine Regel (Konzept 04) |
+| Krieger | Onslaught | drei Ladungen in den geraden, eine in den ungeraden Fenstern | als Schaden nur mit „Use both stacks of Onslaught during burst while standing still“ oder „… when its about to overcap …“, beide ab Werk aus (seine Vorgabe, 20.11.2026, A954); sonst nur zur Bewegung | weicht ab: seine Vorgabe, die Ladungen für den Weg zum nächsten Rudel zu halten |
 | Paladin | Fight or Flight | auf Abklingzeit; Imperator direkt danach, vor Confiteor | Fight or Flight mit bereiten Folgen; Imperator und Requiescat in Fight or Flight | deckt sich |
 | Paladin | Circle of Scorn, Expiacion | in jedem Fight-or-Flight-Fenster | erst, wenn Fight or Flight und Imperator laufen oder abklingen | deckt sich |
 | Paladin | Atonement-Folge | zwischen den Fenstern aufheben, vor dem nächsten Royal Authority ausgeben | in Fight or Flight, vor dem Ablauf oder wenn Rage of Halone bereit ist | deckt sich |
-| Paladin | Intervene | zwei Ladungen in Fight or Flight | im Stand, mit Option alle Ladungen in Fight or Flight | deckt sich, mit seiner Bewegungsregel |
+| Paladin | Intervene | zwei Ladungen in Fight or Flight | als Schaden nur mit „Use Intervene for damage in combat“ (ab Werk aus, A954), dann im Stand, mit „Use up both stacks …“ alle Ladungen in Fight or Flight; sonst nur zur Bewegung | weicht ab: seine Vorgabe |
 | Dunkelritter | Edge of Shadow | gegen MP-Überlauf, gegen das Auslaufen von Darkside, im Burst | dieselben drei Lagen; im Burst und gegen das Auslaufen nur über der Rücklage für The Blackest Night | deckt sich (A197); bei knappen MP läuft Darkside aus, statt die Rücklage zu verbrauchen – der Text von „Keep at least 3000 MP" (A406) |
 | Dunkelritter | Bloodspiller, Shadowbringer | Blut nur im Burst oder gegen Überlauf; beide Ladungen Shadowbringer ins Zwei-Minuten-Fenster | Blut wie The Balance (A197); Shadowbringer eine Ladung an der Grenze, die letzte im Burst | deckt sich: Im 120-s-Takt ist die zweite Ladung genau zum Fenster zurück |
 | Revolverklinge | No Mercy | jede Minute, Einwebposition je GCD-Geschwindigkeit | auf Stufe 100 mit liegendem Bloodfest; beide haben 60 s Abklingzeit (Job-Guide 7.5) | deckt sich im Takt; die Einwebposition (früh oder spät je Geschwindigkeit) ist nicht geprüft |
@@ -854,29 +986,82 @@ Gelehrter (7.4, 27.12.2025), Weiser (7.3, 07.08.2025). Keine Änderung außer de
 
 ### Samurai: Meikyo Shisui und Higanbana
 
-**Keine Änderung** (26.10.2026, A381). The Balance (Samurai Basic Guide, „Patch Applicable: 7.4"; Opener-Bild „Dawntrail
-Patch 7.05") nutzt Meikyo Shisui im Fenster jeder Minute, um Higanbana „right on time" zu setzen – Iaijutsu verbraucht
-keinen Meikyo-Stapel –, und drückt Meikyo nach seiner „15 second rule", wenn Higanbana ausläuft, während die Sen noch
-aufgebaut werden. `SAM_Reborn` macht es umgekehrt: Meikyo wartet, solange Higanbana in sein Erneuerungsfenster fällt
-(ab Werk 6 GCDs), und Higanbana fällt nur ohne Meikyo-Stapel. Meikyo geht sonst nach jedem Midare oder Tendo, solange eine
-Ladung da ist, und an der vollen Ladung.
+**Gilt (A962): die Nutzung von The Balance.** The Balance (Samurai Basic Guide, „Patch Applicable: 7.4"; Opener-Bild
+„Dawntrail Patch 7.05") nutzt Meikyo Shisui im Fenster jeder Minute, um Higanbana „right on time" zu setzen – Iaijutsu
+verbraucht keinen Meikyo-Stapel –, und drückt Meikyo nach seiner „15 second rule", wenn Higanbana ausläuft, während die
+Sen noch aufgebaut werden. `SAM_Reborn` tut jetzt dasselbe: Higanbana geht auch unter Meikyo; Meikyo wartet nicht mehr,
+solange Higanbana in sein Erneuerungsfenster fällt, sondern verlangt nur, dass Higanbana auf dem Ziel liegt; und ein
+dritter Auslöser kommt hinzu – Higanbana im Erneuerungsfenster, nicht genau ein Sen, keine Kombo begonnen –, der auch
+die letzte Ladung nimmt. Das Erneuerungsfenster bleibt seine Einstellung (ab Werk 6 GCDs).
 
-- *Was es im Kampf ergibt* (`samurai_balance_model.py`, ein Boss, zehn Minuten, Potenzen Job-Guide 7.5): Mit der Regel
-  von `SAM_Reborn` liegt Higanbana 93,7 % der Zeit (die ersten 15 s eingerechnet), 15,8 s werden überschrieben; keine
-  Meikyo-Ladung verfällt, kein Sen doppelt, 12 Tendo und 17 Midare. Mit der Folge von The Balance, so übernommen, wie
-  `SAM_Reborn` sie tragen könnte: 97,3 %, aber 79,2 s überschrieben, gleich viele Tendo und Midare. Über 60 Kombinationen
-  aus GCD-Länge (2,10 bis 2,20 s), Erneuerungsfenster (2, 4, 6 GCDs) und Kampflänge (3 bis 15 min) bringt sie im Mittel
-  +0,29 % Potenz, zwischen −0,59 % und +1,60 %, in 4 Fällen weniger.
-- *Warum nicht gebaut:* Der Gewinn liegt im Promillebereich und unter der Unschärfe des Modells (Positionale stets
-  getroffen, keine Kritischen, keine Fähigkeiten außer Meikyo und Ikishoten); sein Vorzeichen wechselt mit GCD-Länge und
-  Kampflänge. Was The Balance darüber hinaus trägt – Higanbana „buffed", in den Gruppenbuffs der anderen –, ist nach
-  seiner Regel kein tragender Grund.
+- *Was es im Kampf ergibt* (`samurai_balance_model.py`, ein Boss, Potenzen Job-Guide 7.5): Über 60 Kombinationen aus
+  GCD-Länge (2,10 bis 2,20 s), Erneuerungsfenster (2, 4, 6 GCDs) und Kampflänge (3 bis 15 min) bringt die Nutzung von
+  The Balance gegenüber der bisherigen Regel im Mittel +0,29 % Potenz, zwischen −0,59 % und +1,60 %, in 4 Fällen weniger.
+  Bei zehn Minuten und GCD 2,17 s liegt Higanbana 97,3 % statt 93,7 % der Zeit, 79,2 statt 15,8 s werden überschrieben,
+  gleich viele Tendo und Midare, keine Ladung verfällt.
+- *Warum keine Mischung:* Kein Teil allein trägt den Gewinn – nur Higanbana unter Meikyo +0,11 % im Mittel, aber bis
+  −1,60 %; nur Meikyo nach The Balance −0,02 %. Und keine feste Regel erreicht in jedem Fall das Beste aus beiden: Über
+  30 Fälle (GCD 2,10 bis 2,20 s, 3 bis 15 min) und je fünf Erneuerungsfenster liegt die Nutzung von The Balance mit 6
+  GCDs im Mittel 0,13 % unter dem Besten je Fall, die bisherige Regel 0,45 %. Die Fälle, in denen die bisherige Regel
+  vorn lag, wechseln mit der GCD-Länge um Hundertstelsekunden (2,14 s: −0,43 % bei 15 min, 2,17 s: +0,77 %); das ist die
+  Lage der Fenster zueinander, keine Lage im Kampf, an der eine Regel ansetzen könnte. *Preis:* in diesen Lagen bis
+  −0,59 % gegen die bisherige Regel; nicht gegen The Balance, mit der die Rotation jetzt gleich spielt.
+- *Kein fester Wert:* „15 second rule" ist der Name bei The Balance; RSR liest keine 15 s, sondern das Erneuerungsfenster
+  von Higanbana – seine Einstellung in GCDs, mit der laufenden GCD-Länge. *Geprüft, seine Frage vom 21.11.2026 („wert
+  nicht ingame erkennbar?"):* ein Auslöser ganz aus dem Spiel, die Restzeit von Higanbana gegen die kürzeste Kombo bis
+  zu genau einem Sen ohne Meikyo (2 GCDs ohne Sen, 3 mit drei, 5 mit zwei), über 90 Fälle gegen das Erneuerungsfenster:
+  im Mittel −0,004 %, in 7 Fällen bis +0,07 %, in 3 bis −0,59 %. Er trägt nichts; es bleibt das Erneuerungsfenster, das
+  auch Higanbana selbst liest.
+- *Grenzen des Modells:* Positionale stets getroffen, keine Kritischen, keine Bewegung und keine Pause, Kenki ausgelassen,
+  ein Ziel. Unter mehreren Zielen sperrt `HiganbanaTargets` Higanbana unverändert.
 - *Opener:* The Balance setzt den zweiten Meikyo gleich nach dem ersten Tendo Kaeshi und Higanbana in GCD 7;
   `SAM_Reborn` hält ihn, weil noch kein Higanbana liegt, und setzt Higanbana in GCD 8 (Modell: 15,2 s). Ikishoten fällt
   einen GCD später als im Bild – nach dem dritten statt dem zweiten GCD, weil `SAM_Reborn` zwei GCDs Kampfzeit abwartet
   (`CombatElapsedLessGCD(2)`) –, der Trank danach statt nach dem ersten GCD; Senei, Ogi Namikiri und Zanshin folgen in
   derselben Reihenfolge, alles unter Fugetsu. Die Verschiebung ändert den eigenen Schaden nicht, nur die Lage zu den
   Gruppenbuffs der anderen.
+
+### Samurai: Kenki-Verklemmung, wenn Zanshin bereit ist und nicht gehen kann
+
+*Seine Meldung (19.11.2026):* „bei der trainingspuppe macht der samurai nur autoattacke über einen längeren zeitraum“.
+*Gemessen (sein Mitschnitt 19.11.2026, Living Memory, Build c93ec988b):* 28,3 s und 15,9 s ohne GCD, beide nach Ikishoten.
+Die Leiste (Mitschnittzeile 31) stand ab Jinpu um 20:12:54,9 auf 100 Kenki, bis Senei um 20:13:22,5 sie auf 75 senkte;
+„Zanshin Ready“ lag in beiden Strecken ungenutzt (Zanshin ohne Ziel, A923).
+*Die Kette am Code:*
+1. Die Kombo-Schläge sperren sich gegen Überlauf (`SamuraiRotation`, Upstream bd9c156b0): Hakaze, Gyofu, Jinpu, Shifu,
+   Fuga bis 95 Kenki, Gekko, Kasha, Mangetsu, Oka, Fuko bis 90, Yukikaze bis 85.
+2. `SAM_Reborn.AttackAbility` gibt Kenki nur aus, solange kein „Zanshin Ready“ liegt (`if (!HasZanshinReady)` um Shinten,
+   Kyuten, Senei, Guren) – es spart für Zanshin (50 Kenki).
+3. Kann Zanshin nicht gehen – kein Ziel, außer Reichweite (8 y) –, steigt Kenki mit jedem Kombo-Schlag bis 100; dann ist
+   kein GCD mehr zulässig, und ausgegeben wird nichts. Erst wenn „Zanshin Ready“ abläuft (30 s), gibt Senei Kenki aus, und
+   die Kombo geht weiter. Unter Meikyo hielt dieselbe Sperre Yukikaze, bis Meikyo ablief.
+*Gilt:* Mit „Zanshin Ready“ geht der Kenki-Verbrauch weiter, solange danach noch die Kosten von Zanshin bleiben – Kenki ab
+Zanshins Kosten plus denen des Verbrauchers (aus dem Aktionsblatt: 50 und 25). Zanshin bleibt so immer bezahlbar, und
+die Leiste läuft nie in die Sperre der Kombo. *Im Kampf:* Statt 28 s Auto-Attacke kommen Shinten und die Kombo; ist
+Zanshin dann möglich, geht es mit den verbliebenen 50 Kenki.
+*Klasse (alle Basisrotationen, 19.11.2026):* Leistensperren auf GCDs tragen außer dem Samurai der Krieger (Storm's Path bis
+80 Beast Gauge), der Dunkelritter (Stalwart Soul bis 80 Blood), der Ninja (Armor Crush bis 4 Kazematoi) und der Monk
+(Meditation unter 5 Chakra). Bei allen gibt es neben dem gesperrten GCD einen ohne Sperre (Storm's Eye, Unleash, Aeolian
+Edge, die Formen); nur beim Samurai trägt jeder Kombo-Schlag eine. Den Rest der Klasse – ein GCD, der nicht gehen kann,
+ohne dass eine Alternative kommt – deckt seine Vorgabe zur dynamischen Rotation (TODO).
+*Falsifikation:* (1) kein Defekt – widerlegt an Leiste und Spur. (2) Option falsch, Zanshin fehlt dann Kenki – nein: es
+bleiben immer seine Kosten. (3) ausgeliefert, nichts ändert sich – Shinten selbst kann nicht gehen (außer Nahkampfreichweite);
+dann geht auch die Kombo nicht, die Lage ist eine andere.
+*Audit und Code-Review (19.11.2026, sein Auftrag „ebenso für samurai: audit, codereview“, A926):*
+- *Kenki-Wege am Code:* Jeder Stand, in dem die Kombo sich sperrt (über 85, 90 oder 95 Kenki), hat seit A925 einen
+  Verbraucher: Zanshin ab 50 (bereit), Shinten oder Kyuten ab 50, Senei oder Guren ab 25 bei laufendem Ikishoten. Keiner
+  dieser Wege hängt noch an einer Sperre, die die Kombo zugleich hält.
+- *Pull ohne Countdown (A924):* Der Countdown-Pfad liefert Meikyo Shisui (bis 14 s vor dem Pull) und True North (bis 5 s);
+  beide nennen keine Potenz und gehen vor dem ersten GCD. Ein Trank geht dort nicht: `UseBurstMedicine` lehnt außerhalb
+  des Kampfes ohne Countdown für jede Rotation ab (A433).
+- *Puppenreihe (A923):* Zanshin, Kyuten, Guren und die Flächen-Iaijutsu zählen die Nachbarpuppen jetzt als Ziele.
+- *Behoben im Review:* Die Pull-Vorbereitung kehrte vor dem Zurücksetzen von Zielvorgabe, Sonderende und Heilprüfung
+  zurück, die die Wahl des GCD gesetzt haben kann; sie läuft jetzt danach. Ein Kommentar stand vor der falschen Methode.
+- *Geprüft, nicht geändert (Upstream-Zeilen ohne Wirkung im Kampf):* `MeleeMeditationcheck` nennt Tendo Goken doppelt;
+  der Meikyo-Zweig prüft `!HasFugetsuAndFuka` ein zweites Mal, nachdem der erste Zweig dafür schon zurückkehrt.
+- *Positionals:* Gekko und Kasha wählt die Rotation nach Stellung; die Stellung selbst macht BossMods Bewegungsmodul
+  (Konzept 02, „Bewegung in die Seite über BossMods Bewegungsmodul“).
+
 
 ### Barde: Lieder und Burst
 
@@ -952,7 +1137,7 @@ Ley-Lines- und Retrace-Einstellungen und dieselbe Regel fürs Laufen.
 | Manafont | am Ende von Astral Fire | bei 0 MP in Astral Fire | deckt sich |
 | High Thunder | erneuern, wenn unter 3 s übrig | im Erneuerungsfenster der DoT-Planung | deckt sich |
 | Amplifier, Xenoglossy | Amplifier etwa auf Abklingzeit ohne Polyglot-Überlauf; keine Xenoglossy verschenken | Amplifier nur ohne vollen Polyglot und nicht in den letzten 10 s von Enochian; Xenoglossy bei vollem Polyglot vor Enochian-Ende oder Amplifier (A379) | deckt sich |
-| Triplecast, Swiftcast | vor allem fürs Laufen und Einweben | Triplecast im Laufen, im Wechsel ins Eis und in Astral Fire; Swiftcast im Wechsel ins Eis – der Schwarzmagier hat keine Wiederbelebung | deckt sich im Zweck |
+| Triplecast, Swiftcast | seit 7.2 „primarily used for movement/weaving“; Blizzard III beim Eintritt ins Eis „ideally in Umbral Ice I“ (nach Transpose), „made instant via Swiftcast or Triplecast“ | Für jede Schwarzmagier-Rotation (`BlackMageRotation.InstantForIceEntry`, `InstantWhileMoving`): Ist der nächste GCD Blizzard III im Eis und nicht ohnehin sofort, erst Swiftcast, dann Triplecast; im Laufen vor einem Zauber mit Wirkzeit erst Triplecast, dann Swiftcast – der Schwarzmagier hat keine Wiederbelebung | **geändert (A951):** RSR verlangte für Swiftcast im Eis genau zwei Stapel Umbral Ice, die nach Transpose (einer) und nach Blizzard III (drei) nie anstehen; in seinem Mitschnitt vom 15.11.2026 (Puppe, 12,5 min) kam Swiftcast 3-mal, alle nach Flare Star. Im Laufen nutzte RSR nur Triplecast |
 | Ley Lines | „roughly off cooldown at the next available weaving window", die zweite Ladung für ein Fenster, das man durchstehen kann | bis A386 nie: die Einstellung dazu kam abgeschaltet | **geändert:** ab Werk an; RSR setzt Ley Lines im Stehen und hält die zweite Ladung zurück (ohne „Use both stacks of Leylines automatically"); nicht, während ein Gegner einen Flächenangriff wirkt (`ModifyLeyLinesPvE`, für jede Schwarzmagier-Rotation) |
 | Laufen | „utilizing polyglot stacks for Xenoglossy for movement/weaving/damage as needed"; Triplecast und Swiftcast vor allem fürs Laufen | Triplecast im Laufen; ist kein Zauber startbar, Paradox, Firestarter in Astral Fire, Xenoglossy oder Foul, erst dann Scathe (`BlackMageRotation.PolyglotWhileCastBlocked`, Konzept 03 „C6") | **geändert (A602):** vorher Scathe vor Xenoglossy, Polyglot nur am Überlauf |
 | Retrace | „If you need to move out of your Ley Lines for a longer duration … Retrace … once per Ley Lines duration" | im Kampf, im Stand außerhalb des Kreises, solange er noch einen GCD hält, nicht direkt nach Ley Lines | **geändert (A602):** ab Werk an; der zweite Zweig ohne diese Sperren entfällt |
@@ -1002,13 +1187,22 @@ Unterhalb der Stufe von Riddle of Fire bleibt es beim Bisherigen: Perfect Balanc
   tauschen die Plätze, beide unter beiden Buffs. Die Beschreibung der Rotation nennt einen „Lunar Solar Opener"; The
   Balance führt „Solar Lunar" und „Double Lunar", der Code folgt „Solar Lunar". Der Text ist Upstreams und widerspricht
   dem Code nur in der Benennung; nicht geändert.
-- *Nicht übernommen, mit Grund* (dasselbe Modell, gegen `MNK_Reborn` seit A412): The Balance als Ganzes +0,03 % im
-  Mittel, −0,25 % bis +0,15 %, 12 Kombinationen darunter. Riddle of Fire spät eingeschoben, für sich, und Perfect
-  Balance vor Riddle of Fire im ungeraden Solar-Fenster (Basic Guide; die Grafik der Openers-Seite nimmt im ungeraden
-  Fenster „the first opo within RoF"), für sich, liegen im Mittel bei ±0,00 %, je 12 darunter – beide verlieren in
-  diesen 12 denselben letzten Perfect Balance vor dem Kampfende. Die Solar-Folge von schwach nach stark bringt +0,04 %
-  (+0,02 bis +0,08 %). Promillebereich, unter der Unschärfe des Modells: kritische Treffer nur als Faktor auf Leaping
-  Opo, der Zeitpunkt des späten Einschubs angenommen, The Forbidden Chakra und Auto-Angriffe nicht gerechnet.
+- *Geändert: die Solar-Folge von schwach nach stark (A963).* The Balance ordnet die drei Waffenfertigkeiten einer
+  Solar-Folge „from weakest to strongest"; `MNK_Reborn` nahm stets Raptor, Coeurl, Opo-opo. Jetzt fragt RSR alle drei
+  Formen und nimmt die mit der geringsten Potenz zuerst. Die Potenz liest RSR aus dem Wirktext der Fertigkeit, die die
+  Form wählt (`ActionTooltip.TryHitPotency`): mit Fury der Form die „Fury Potency", sonst die Grundpotenz oder die mit
+  getroffenem Positional. Der sichere kritische Treffer von Leaping Opo zählt nicht mit, er hängt an Werten des Spielers.
+  *Im Modell* (156 Kombinationen): +0,034 % im Mittel, +0,015 % bis +0,083 %, in keinem Fall darunter; mit dem
+  kritischen Faktor von Leaping Opo +0,036 %; nach der Grundpotenz allein ohne Fury −0,020 %, 78 darunter – die Fury
+  trägt den Gewinn. Grund im Kampf: Die stärkste Fertigkeit fällt zuletzt, tiefer in Riddle of Fire und Brotherhood.
+- *Nicht übernommen, mit Grund* (dasselbe Modell, gegen `MNK_Reborn` mit der Solar-Folge): Riddle of Fire spät
+  eingeschoben und Perfect Balance vor Riddle of Fire im ungeraden Solar-Fenster (Basic Guide; die Grafik der
+  Openers-Seite nimmt im ungeraden Fenster „the first opo within RoF") liegen je und zusammen im Mittel bei −0,003 %,
+  12 Kombinationen darunter (bis −0,28 %), keine Mischung über der Solar-Folge allein. Ihr Unterschied zeigt sich nur
+  bei GCD 1,97 s und wechselt mit der Kampflänge das Vorzeichen (10 min −0,28 %, 11 min +0,05 %, 13 min +0,12 %): die
+  Lage der Fenster zum Kampfende, kein Merkmal im Kampf, an dem eine Regel ansetzen könnte. Unschärfe des Modells:
+  kritische Treffer nur als Faktor auf Leaping Opo, der Zeitpunkt des späten Einschubs angenommen, The Forbidden Chakra
+  und Auto-Angriffe nicht gerechnet.
 - *The Forbidden Chakra:* RSR hält es im letzten GCD, bevor Brotherhood abgeklungen ist, und wirkt es, sobald
   Brotherhood bereit ist – im selben Einschub noch davor. The Balance nennt keine Zurückhaltung. Hielte RSR es bis unter
   Brotherhood, liefe Chakra über, solange Brotherhood auf Riddle of Fire wartet; nicht geändert.
@@ -1083,3 +1277,20 @@ die Abklingzeit wie vorher.
   30 % Fehler – bei rund 150 000 Potenz in zehn Minuten 0,1 bis 0,2 %. Stets auf Abklingzeit wären −99: Ohne die
   Buffs der anderen, die nach seiner Spielweise kein tragender Grund sind, gewinnt die Ausrichtung knapp. Eine
   Fehlvorhersage kostet höchstens den Embolden-Anteil eines Einsatzes; die Sicherheit berührt die Regel nicht.
+
+### Churin- und Beiruta-Rotationen: Einstellungstexte gegen ihren Code
+
+Sein Auftrag vom 20.11.2026 („die 104 restlichen texte auch prüfen“), Stand 20.11.2026 (A936). Je Einstellung der 13
+fremden Rotationen ihr Text gegen jede Stelle, die sie liest, auch über eine abgeleitete Eigenschaft.
+- *Umfang:* 157 von 157 Einstellungen – 53 mit Zahl im Text, 104 ohne (BeirutaAST 17, BeirutaSGE 18, BeirutaSCH 27,
+  BeirutaWHM 14, BeirutaPCT 9, BeirutaRDM 8, BeirutaNIN 3, ChurinSMN 9; ChurinMNK, ChurinBRD, ChurinDNC, ChurinMCH
+  und ChurinDRK haben keine).
+- *Deckungsgleich:* jede. Beispiele, die genau hinzusehen verlangten: Die Bewegungs-Prognosis des Weisen geht nur, wenn
+  noch niemand einen Schild trägt (doppelte Verneinung in `CountMissing`); der Gelehrte wirft übrige Aetherflow-Stapel
+  vor dem nächsten Aetherflow ab (`FreshAetherflowSoon`); der Weißmagier heilt im Burst nicht nur fürs Laufen
+  (`CanUseMovementHeal`).
+- *Befund ohne Vorlage (Richtung des Autors):* Die Kampfvorgabe „AAC Cruiserweight M4 (Savage)“ des ChurinSMN schreibt
+  während des Kampfes die gespeicherten Einstellungen `AddCrimsonCyclone` und `SummonOrder` um und setzt sie danach nicht
+  zurück; nach dem Kampf gelten die Werte der Vorgabe weiter. Ob das gewollt ist, entscheidet sein Autor.
+- *Nach eigener Änderung:* „Uses Swiftcast or Acceleration“ (BeirutaRDM) gilt weiter – Acceleration immer, Swiftcast
+  ohne Rücklage für die Wiederbelebung (Konzept 11, A936).

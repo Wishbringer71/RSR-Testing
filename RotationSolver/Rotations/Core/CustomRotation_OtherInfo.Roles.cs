@@ -61,4 +61,23 @@ public partial class CustomRotation
 			return span < 0f ? 0 : (int)(span / recast) + 1;
 		}
 	}
+
+	/// <summary>
+	/// Whether <paramref name="buff"/> comes back only after the current target dies: its recast ends at or after the
+	/// target's corrected time to kill. A resource held for that buff is then held for nothing. Asked, like
+	/// <see cref="HoldCostsUse"/>, only while the target is the last hostile in range; false whenever no time to kill is
+	/// measured. Concept 14, "Rotmagier: Mana vor Embolden" (A966).
+	/// </summary>
+	/// <param name="buff">The buff a resource waits for.</param>
+	/// <returns>True when the buff returns only after the target dies.</returns>
+	public static bool BuffReturnsAfterDeath(IBaseAction buff)
+	{
+		if (buff == null || NumberOfHostilesInRange > 1 || CurrentTarget is not { } target || buff.Cooldown.HasOneCharge)
+		{
+			return false;
+		}
+
+		var ttk = target.GetCorrectedTTK();
+		return !float.IsNaN(ttk) && buff.Cooldown.RecastTimeRemainOneCharge >= ttk;
+	}
 }

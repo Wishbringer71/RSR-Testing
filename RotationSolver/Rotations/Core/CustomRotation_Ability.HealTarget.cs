@@ -18,16 +18,7 @@ public partial class CustomRotation
 	private bool EmergencyHealAheadOfGcd(IAction nextGCD, out IAction? act)
 	{
 		act = null;
-		_criticalMembers.Clear();
-		foreach (var member in DataCenter.PartyMembers)
-		{
-			if (member != null && !member.IsDead && member.MaxHp > 0 && member.IsInCriticalClass())
-			{
-				_criticalMembers.Add(member);
-			}
-		}
-
-		if (_criticalMembers.Count == 0)
+		if (CollectCriticalMembers() == 0)
 		{
 			return false;
 		}
@@ -59,6 +50,21 @@ public partial class CustomRotation
 			TraceEmergencyHeal(null, member, nextGCD, member.GameObjectId == Player?.GameObjectId ? DescribeHpPotionsHeld() : null);
 		}
 		return false;
+	}
+
+	/// <summary>The party members in the heal chain's critical class, into <see cref="_criticalMembers"/>; their number.</summary>
+	private static int CollectCriticalMembers()
+	{
+		_criticalMembers.Clear();
+		foreach (var member in DataCenter.PartyMembers)
+		{
+			if (member != null && !member.IsDead && member.MaxHp > 0 && member.IsInCriticalClass())
+			{
+				_criticalMembers.Add(member);
+			}
+		}
+
+		return _criticalMembers.Count;
 	}
 
 	/// <summary>

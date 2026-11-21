@@ -562,6 +562,42 @@ Heilpfade des Jobs ihrer eigenen Bedingungen wegen nicht – etwa weil seine Sch
 den der Tank beim freien GCD hat (im Fall vom 01.11. unter 24 %); dann kommen die übrigen Heilfähigkeiten des Pfads nach
 ihren Bedingungen vor, und Benediktion wartet, wie er es eingestellt hat. Beides zeigt die Trace-Zeile.
 
+### Der Heil-GCD für ein Mitglied der kritischen Klasse
+
+**Was geschah** (Vierergruppe, sein Mitschnitt vom 19.11.2026, 19:25:56 bis 19:26:09, Build c93ec988b; A927, A929). Der
+Tank fiel nach einer Tankbuster-Serie auf 39 %, der Weißmagier legte Regen, Tetragrammaton und Afflatus Solace auf ihn
+(69 %). Danach stand der Tank in der Vorhersage für einen GCD bei 0 % und 6 % (tatsächlich 45 % um 19:26:05,9); RSR
+wirkte zweimal Regen – auf zwei andere Mitglieder.
+
+**Ursache am Code.** Regen sucht sein Ziel unter den Mitgliedern ohne Regen (`TargetStatusProvide`); der Tank trug Regen,
+also nahm Regen das nächste Mitglied, und der Zweig für Regen steht in `HealSingleGCD` vor Cure II. Die Notfallheilung
+der Fähigkeiten (oben) geht nur, wenn sie ein Mitglied der kritischen Klasse erreicht; der GCD-Pfad prüft das nicht.
+Benediktion blieb richtig aus: Sie liest die kurze Vorausschau einer Sofortheilung (A213) – der Tank stand bei 69 %.
+
+**Regel (Ebene alle, die einen Heil-GCD haben: Heiler, Rotmagier, Beschwörer, Paladin, Blaumagier, Inhaltsrotationen).**
+Steht ein Mitglied in der kritischen Klasse, fragt der Heilpfad zuerst Flächen- und Einzel-Heil-GCD nur nach Heilungen,
+die ein solches Mitglied erreichen (sein Ziel oder unter den Getroffenen einer Fläche); jede andere lehnt `CanUse` in
+diesem Durchgang ab („MissesTheCriticalMember“). Findet sich keine – außer Reichweite, kein MP, Bewegung –, gilt der
+Heilpfad wie bisher. Was gewählt wird, bleibt bei der Rotation und ihren Bedingungen; nur das Ziel ist vorgegeben. Spur:
+„critical heal GCD -> <Aktion> on <Mitglied> …, critical … at …% forecast“, einmal je Heilung, Ziel und GCD.
+
+**Abwägung im Kampf.**
+- *N, wie bisher:* Ein Tank mit Regen in der kritischen Klasse bekommt den GCD erst, wenn kein anderes Mitglied ohne
+  Regen unter der Schwelle steht. Stimmt die Vorhersage, fehlt ihm die Heilung, die ihn trägt.
+- *Nur beim Weißmagier Regen hinter Cure II stellen:* behebt den Fall, lässt dieselbe Lage beim Astrologen (Aspected
+  Benefic), Gelehrten und Weisen (Schilde) offen. Verworfen (Universell zuerst).
+- *Der Durchgang vor dem Heilpfad (gewählt):* trifft jeden Heil-GCD jeder Rotation an einer Stelle.
+- *Preis:* Ist die Vorhersage zu düster – hier 0 % gegen 45 % –, geht ein GCD an den Tank, den ein anderes Mitglied
+  auch gebraucht hätte. Der andere wird im nächsten GCD geheilt; der Tank nach seiner Vorhersage nicht mehr. Sicherheit
+  vor Schaden: Die Vorhersage steuert sich selbst nach (`ScoreTtkForecast`).
+
+**Falsifikation.** (1) *Kein Defekt:* widerlegt am Mitschnitt (zweimal Regen auf andere bei 0 % und 6 % Vorhersage).
+(2) *Option falsch:* Der Durchgang nimmt eine schwächere Heilung, nur weil sie das Ziel trifft – dieselbe Rotation hätte
+sie für dieses Ziel auch gewählt; ihre Reihenfolge bleibt. (3) *Ausgeliefert, nichts ändert sich:* Kein GCD erreicht das
+Mitglied (Reichweite, Bewegung) – dann bleibt der alte Weg, und die Spur schreibt keine „critical heal GCD“-Zeile.
+*Vorhersage (A929):* Steht ein Mitglied in der kritischen Klasse, folgt eine Zeile „critical heal GCD -> … on <dieses
+Mitglied>“ oder keine; nie zwei Regen hintereinander auf andere.
+
 ### Die Füllheilung: heilen, wenn nichts anderes zu tun ist
 
 **Was sie tut.** „Use GCD heals when there's nothing else to do" (ab Werk an) läuft am Ende des GCD-Pfads, nach Heilung,
@@ -710,6 +746,59 @@ richtige — gegen einen Treffer zählt eine absolute Zahl. Bis A283 kam die Wah
 Stand das Mitglied mit den wenigsten Punkten über ihr, ging die Barriere an niemanden, obwohl ein anderes darunter stand.
 Seither filtert die Schwelle zuerst. Die Revolverklinge (Heart of Corundum, Heart of Stone, Aurora) und die
 PvP-Rotationen sortieren nirgends mehr nach Punkten.
+
+## Heilung außerhalb des Kampfes
+
+**Seine Vorgabe (19.11.2026):** „bei heilungen ausserhalb des kampfes prüfen, ob dort wirklich die gesamten sprüche
+verbraucht werden. das wäre kontraproduktiv. wenn kein kampf, dann eigene regeneration und ein einfacher hot sollten
+reichen bis zum nächsten gegner. im loop kritisch prüfen“. *Einordnung:* Vorgabe, Anwendung seiner Regel „Das Mittel
+richtet sich nach der Gefahr“ auf den Fall ohne Kampf.
+
+**Was gilt (A915):** Außerhalb des Kampfes (`DataCenter.InCombat` aus, die Bedingung des Spiels) geht von allen
+Heilungen jedes Jobs nur ein HoT, der als GCD ohne eigene Abklingzeit wirkt und nur MP oder nichts kostet (Regen,
+Aspected Benefic, Medica II und III). Erkannt am Wirktext („restores … HP“) und am Status, den die Aktion gibt; eine
+Aktion, die auch Schaden macht (Assise), fällt nicht darunter. Fähigkeiten mit Abklingzeit oder
+Ladungen (Benediction, Tetragrammaton, Essential Dignity, Lustrate, Druochole, Second Wind), Heilungen aus einer Leiste
+(Lilien), GCDs mit eigener Abklingzeit (Pneuma) und direkte GCD-Heilungen (Cure II, Physick, Diagnosis) warten auf den
+Kampf. Zentral in `BasicCheck` („BasicCheck:OutOfCombatHeal“), ohne eine Zeile in den Rotationen; je Aktion und Pause
+zwischen zwei Kämpfen eine Spurzeile „out-of-combat heal held: …“. Nicht im PvP. *Ausnahmen:* ein Gruppenmitglied, das Schaden über Zeit trägt
+(`DotOnParty.AnyDot`) oder unter Doom steht – dort sinkt die Gesundheit auch ohne Kampf –, und das Crucible, wo die
+Begleiter ihre Verluste bis zum Ende tragen (Konzept 21, K11). Unberührt: Wiederbelebung, Esuna, Schilde und Abwehr vor
+dem Pull (Pre-Regen im Countdown ist ein HoT und bleibt).
+
+- *Grundlage (gemessen, alle 19 Mitschnitte seiner Uploads):* Die natürliche Regeneration gibt außerhalb des Kampfes
+  10 % der maximalen LP je 3-s-Tick – in Städten, im Gebiet, im Dungeon (Tam-Tara), im Raid (M2) und in Pilgers Pfad
+  (Ebenen 71 bis 100); in Konzept 18 schon für den Weißmagier gemessen (25.10.2026). Von 30 % auf voll sind das 21 s,
+  eine übliche Pause zwischen zwei Rudeln. Im Kampf gibt sie 1 %.
+- *Was seine Mitschnitte zeigen (Heilungen auf Verbündete ohne Gegneraktion 5 s davor und 3 s danach):* Regen 24-mal
+  (19-mal auf volle Ziele), Divine Benison 5, Afflatus laetitiae 4, Asylum 2; Benediction, Tetragrammaton, Assise und
+  Presence of Mind nie. Die übrigen Fälle ohne Kampf laut ACT lagen vor dem Pull (Pre-Regen im Countdown, Eröffnung) oder
+  im letzten GCD vor dem Kampfende – RSR schrieb „combat started“ 0,1 s nach ihnen. *Ergebnis:* Die ganzen Sprüche
+  verbrauchte RSR außerhalb des Kampfes nicht; möglich war es, sobald „Heal party members out of combat“ an ist, weil
+  dann dieselben Schwellen wie im Kampf gelten, ohne Rücksicht auf Abklingzeit und Leiste.
+- *Optionen:* (0) wie bisher. (A) außerhalb des Kampfes nur GCDs mit MP oder ohne Kosten, ohne eigene Abklingzeit
+  (direkte Heilung und HoT). (B) wie A, aber nur der HoT – seine Vorgabe. (C) gar nichts, die Regeneration allein.
+- *Abwägung im Kampf:* Eine Abklingzeit außerhalb des Kampfes fehlt im nächsten Pull, wo der Tank den Schaden der Rudel
+  nimmt; Lilien füllen sich nur im Kampf nach. (A) spart beides, gibt aber MP für Heilung aus, die die Regeneration in
+  Sekunden erledigt. (B) nimmt das Ende der Regeneration vorweg, wo jemand tief steht und der nächste Pull sofort
+  kommt: Ein HoT läuft in den Pull hinein und heilt dort weiter. (C) lässt einen Tank, den der Pull bei 30 % trifft,
+  ohne diese Hilfe. (B) überwiegt.
+- *Heiler ohne solchen HoT* (seine Frage, 19.11.2026: „was ist mit heilern, die keine hots haben? gibt es die
+  überhaupt?“): Gelehrter und Weiser. Ihre HoTs sind Fähigkeiten mit Abklingzeit oder Leiste (Whispering Dawn, Sacred
+  Soil, Consolation; Physis II, Kerachole), ihre GCD-Heilungen heilen direkt (Physick, Diagnosis, Prognosis) oder legen
+  Schilde (Adloquium, Succor, die eukratischen). Außerhalb des Kampfes heilen sie deshalb nicht; die Regeneration macht in
+  höchstens 30 s voll. *Erwogen:* für sie die direkte GCD-Heilung mit MP freigeben. Sie kürzt nur ein bis zwei Ticks des
+  Wartens, und anders als ein HoT heilt sie nicht in den nächsten Pull hinein; zieht der Tank sofort weiter, gilt ab dem
+  Pull die volle Heilung, und die gesparten Abklingzeiten stehen bereit. *Preis:* die erste Heilung höchstens einen GCD
+  später. Nicht gebaut. Die Fee des Gelehrten heilt mit Embrace von sich aus; das ist keine Aktion des Spielers und
+  bleibt unberührt.
+- *Falsifikation:* (1) *Kein Defekt:* RSR verbrauchte in seinen Mitschnitten nichts Teures ohne Kampf. Gilt nur, weil
+  die Gruppe meist voll aus dem Kampf kam; der Code erlaubte es (Option „Heal party members out of combat“). (2) *Option
+  falsch – der Tank zieht sofort weiter:* Dann beginnt der nächste Kampf bei tiefer Gesundheit; im Kampf gelten wieder
+  alle Heilungen, und die gesparten Abklingzeiten stehen bereit. *Preis:* Bei Wall-to-Wall beginnt der Pull tiefer als
+  mit einer direkten Heilung davor. (3) *Ausgeliefert, und nichts ändert sich:* Ist „Heal party members out of combat“
+  aus, kommt außerhalb des Kampfes ohnehin keine Heilflagge; dann ändert sich nur etwas für Heilungen, die eine
+  Rotation selbst ohne Flagge wirkt. Messweg: die Spurzeile, Vorhersage `out-of-combat-heal-line-form`.
 
 ## Heilziele außerhalb der Gruppe: Figuren, die nur Einzelheilung besiegt
 

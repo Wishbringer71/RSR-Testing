@@ -73,17 +73,10 @@ public class BLM_RP : BlackMageRotation
 				}
 			}
 
-			if (CanMakeInstant && InUmbralIce && !IsParadoxActive)
+			// Concept 14 (A951): the instant goes to Blizzard III into the ice, and to a cast while moving.
+			if (InstantForIceEntry(nextGCD, out act) || InstantWhileMoving(nextGCD, out act))
 			{
-				if (SwiftcastPvE.CanUse(out act))
-				{
-					return true;
-				}
-
-				if (TriplecastPvE.CanUse(out act, usedUp: true))
-				{
-					return true;
-				}
+				return true;
 			}
 
 		}

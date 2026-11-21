@@ -58,4 +58,21 @@ public partial struct ActionTargetInfo
 		DeepDungeonCrowd.TraceWait(action.ID, reached[0]);
 		return true;
 	}
+
+	/// <summary>
+	/// Concept 03, "F · Über den Augenblick hinaus", K5 (A917): whether an enemy in an area attack's reach still lives when
+	/// the hit lands - its estimated time to kill against the cast time plus, for a GCD, the rest of the running GCD. An
+	/// enemy that falls before counts toward no area threshold. Without an estimate, for a single target and for friendly
+	/// actions it counts as before.
+	/// </summary>
+	private readonly bool LivesUntilItLands(IBattleChara enemy)
+	{
+		if (action.Setting.IsFriendly || IsSingleTarget || EffectRange <= 0)
+		{
+			return true;
+		}
+
+		var time = enemy.GetTTK();
+		return float.IsNaN(time) || time >= action.Info.NeededStatusMargin;
+	}
 }

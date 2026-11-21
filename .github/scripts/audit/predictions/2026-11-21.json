@@ -1,0 +1,9 @@
+[
+ {
+  "id": "burstwatch-leaps-listed",
+  "archive": "A960",
+  "kind": "present",
+  "situation": "ready but unused over the fight: ",
+  "match": "ready but unused over the fight: .*(Sternensturz|Wyrmodem|Brachiale Gewalt|Zinnober-Zyklon|Stardiver|Dragonfire Dive|Primal Rend|Crimson Cyclone) [0-9]+[,.][0-9] s in [0-9]+"
+ }
+]

@@ -170,10 +170,34 @@ Dragonfire Dive und Forked Raiju bekamen den Typ im Fork (A174), für die Bewegu
 Upstream setzte ihn in 7.5.7.14 ebenso. Welche Aktion bewegt, sagen die Blätter, und die CI hält jede gegen einen
 Bewegungstyp (Konzept 05, A498).
 
-*Warum nicht in der Zielwahl.* Dort hätte die Grenze die ausdrücklichen „Dangerous"-Schalter des Kriegers, des
-Beschwörers und des Ninja außer Kraft gesetzt, deren Text Sprünge auf jeden Abstand verspricht. Die Grenze sitzt
-deshalb als Zielfilter bei Intervene, das keinen solchen Schalter hat, und als Bedingung neben der eigenen Grenze der
-übrigen Rotationen. Eine künftige Sprungaktion ohne beides läse sie nicht; das ist der Preis, benannt in „Grenzen".
+*Welches Ziel ein Sprung nimmt (A961).* Ein Sprungangriff wählt sein Ziel unter denen innerhalb der zentralen Grenze,
+sobald dort eines steht; erst wenn keines dort steht, bleiben alle in Reichweite, und es entscheiden wie bisher die
+Grenze der Rotation, ihr „Dangerous"-Schalter oder die Bedingung nach `CanUse`. Die Einengung sitzt vor der Wahl nach
+Trefferzahl (`ActionTargetInfo`, vor `GetMostCanTargetObjects`), für jeden Sprung mit dem Typ `HostileMovingAttack`,
+in PvE und PvP, in jeder Rotation. Grund: Die gewöhnliche Zielwahl ordnet nach seiner Zielart und kennt die Grenze
+nicht; die Bedingung danach lehnte den Sprung auf dieses Ziel ab, und RSR fragte kein anderes. So brach der Code den
+Text der Einstellung („standing at the enemy (0 yalms), a gap closer is only damage and goes even with this set to
+0"), und der Text bindet. *Im Kampf, 20.11.2026, Puppen:* Der Dragoon stand in allen elf Fenstern des Lebens des
+Drachen in der Trefferfläche seiner Puppe (−1,09 y). Sternensturz wählte die Puppe mit den meisten HP, in neun Fenstern
+eine andere, 6,66 oder 14,77 y entfernt; Hochsprung und Illusionssprung, die nicht bewegen, gingen in denselben
+Fenstern auf genau diese Puppe. Seine Grenze lag darunter, Sternensturz blieb im Fenster aus und mit ihm
+Sternenkreuz. In den zwei Fenstern, in denen seine eigene Puppe die meisten HP hatte, kam er. Mit der Einengung springt
+er auf die Puppe, an der er steht, in jedem Fenster.
+
+*Warum kein harter Filter wie bei den Vorstößen.* Er hätte die „Dangerous"-Schalter des Kriegers, des Beschwörers und
+des Ninja außer Kraft gesetzt, deren Text Sprünge auf jeden Abstand verspricht. Die Einengung mit Rückfall tut das
+nicht: Sie greift nur, wenn ein Ziel innerhalb steht, und auf dieses springt auch der Schalter. Ein Vorwärts-Befehl,
+der Countdown und sein eigener Druck heben sie auf wie die Grenze selbst (`GapCloserAllowed`). Intervene und die
+Sprünge des Blaumagiers, des Beastmasters und der Phantomjobs tragen die Grenze zusätzlich als Zielfilter; für sie
+ändert sich nichts außer beim Schildansturm (unten).
+
+*Preis:* (1) Mit einem Schalter für Sprünge auf jeden Abstand geht der Sprung auf das nahe Ziel, solange eines innerhalb
+steht, nicht auf ein fernes mit mehr HP; die Lücke zum nächsten Rudel schließt er dann erst, wenn das nahe Ziel fällt.
+(2) Bei einem Sprung mit Fläche zählt die Trefferzahl erst unter den nahen Zielen; ein ferner Sprung mit mehr Treffern
+geht nur, wenn keines innerhalb steht – das ist, was die Grenze verspricht. (3) Der Schildansturm des Beastmasters
+nimmt ein Ziel, das er berührt, vor einem bis 3 y entfernten; weiter als bis zur Nahkampfreichweite geht er nie (seine
+Entscheidung W5 unverändert). Eine künftige Sprungaktion ohne den Typ läse die Grenze weiter nicht; die CI hält jede
+bewegende Aktion gegen einen Bewegungstyp (Konzept 05, A498).
 
 *Ausgeschlossen:* die Grenzen der Rotationen entfernen – sie dürfen enger sein als die zentrale, und ihr Text („Max
 distance") verspricht nur eine Obergrenze, die weiter gilt; die Rückwärtssprünge mit Angriff (Displacement, Yaten)

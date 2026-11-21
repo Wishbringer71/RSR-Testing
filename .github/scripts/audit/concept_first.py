@@ -31,8 +31,10 @@ from hook_io import read_hook_input  # noqa: E402
 ROOT = Path(__file__).resolve().parents[3]
 TOOLS = ("Edit", "Write", "MultiEdit", "NotebookEdit")
 PATH_TOKEN = re.compile(r"[\w.\-/]+")
-WRITE_FORM = re.compile(r"\bsed\s+(-\w+\s+)*-i|\bperl\s+(-\w+\s+)*-\w*i|\btee\b|(?<![<>&\d-])>>?(?!&)|"
+WRITE_FORM = re.compile(r"\bsed\s+(-\w+\s+)*-i|\bperl\s+(-\w+\s+)*-\w*i|\btee\b|"
                         r"\bopen\([^)]*['\"][wa]\+?['\"]|write_text\(|write_bytes\(|\bgit\s+apply\b|\bpatch\s")
+# A redirection writes only its own target; "=>" in a searched pattern or "> /tmp/x" after a reading command is none.
+REDIRECT = re.compile(r"(?<![<>&\d=-])>>?(?!&)\s*(?P<target>[\w.\-/]+)")
 REASON = ("Concept first (CLAUDE.md, 'Definition of Ready', his rule of 29.10.2026): no change under docs/ is open, "
           "so this code change would come before its concept. Write the concept part under docs/rotation-flow/ "
           "first - the loop, the decision, what changes in a fight - then the code.")
@@ -68,15 +70,18 @@ def merging(root):
 
 
 def shell_writes_code(command, root):
-    """Whether a shell command names a code path under RotationSolver*/ and carries a write form."""
+    """Whether a shell command names a code path under RotationSolver*/ and carries a write form, or redirects into one."""
+    prefix = str(root) + "/"
+
+    def is_code(token):
+        token = token[len(prefix):] if token.startswith(prefix) else token
+        return not token.startswith("/") and code_path(Path(root) / token, root) is not None and "." in Path(token).name
+
+    if any(is_code(m.group("target")) for m in REDIRECT.finditer(command)):
+        return True
     if not WRITE_FORM.search(command):
         return False
-    prefix = str(root) + "/"
-    for token in PATH_TOKEN.findall(command):
-        token = token[len(prefix):] if token.startswith(prefix) else token
-        if not token.startswith("/") and code_path(Path(root) / token, root) is not None and "." in Path(token).name:
-            return True
-    return False
+    return any(is_code(token) for token in PATH_TOKEN.findall(command))
 
 
 def decide(data, root):
@@ -142,7 +147,8 @@ def self_test():
             if shell(command) is None:
                 failed.append(f"a shell command writing code is refused: {command!r}")
         for command in (f"grep -n Foo {rel}", f"sed -n 1,20p {rel}", f"grep -n Foo {rel} 2>/dev/null | head",
-                        f"git diff --stat -- {rel}", "echo x > /tmp/out.txt", "sed -i 's/a/b/' TODO.md"):
+                        f"git diff --stat -- {rel}", "echo x > /tmp/out.txt", "sed -i 's/a/b/' TODO.md",
+                        f"grep -rn 'IsGeneralGCD =>\\|== 58' {rel} | head", f"git diff {rel} > /tmp/d.patch"):
             if shell(command) is not None:
                 failed.append(f"a shell command that does not write code goes through: {command!r}")
         (root / "docs" / "c.md").write_text("concept, extended\n")
@@ -160,8 +166,8 @@ def self_test():
         print("self-test FAILED: " + "; ".join(failed))
         return 1
     print("self-test ok: code without an open concept change refused, by Edit, Write and five shell write forms; "
-          "concept, build output, other files, reading, reading shell commands, an open or new concept change and a "
-          "merge let through")
+          "concept, build output, other files, reading, reading shell commands (a searched \"=>\", a redirection "
+          "elsewhere), an open or new concept change and a merge let through")
     return 0
 
 

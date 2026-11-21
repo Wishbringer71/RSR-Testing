@@ -181,9 +181,12 @@ public sealed class DRG_Reborn : DragoonRotation
 				(HasBattleLitany || LOTDTime > 0 ||
 				 LanceChargePvE.Cooldown.IsCoolingDown || BattleLitanyPvE.Cooldown.IsCoolingDown);
 
+			// Concept 14, "Dragoon, Life Surge im Burst" (A933): Heavens' Thrust or Drakesbane follows every lesser
+			// finisher within two GCDs, so a lesser one takes Life Surge only when Battle Litany ends before the next GCD.
 			var lsOnAltFinishersDuringBuff =
 				HasBattleLitany &&
 				LOTDTime > 0 &&
+				StatusHelper.PlayerWillStatusEndGCD(1, 0, true, StatusID.BattleLitany) &&
 				nextGCD.IsTheSameTo(true, ChaoticSpringPvE, LanceBarragePvE, WheelingThrustPvE, FangAndClawPvE);
 
 			var lsLowLevel =

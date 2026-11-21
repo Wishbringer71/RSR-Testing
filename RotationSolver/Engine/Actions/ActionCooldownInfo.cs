@@ -245,9 +245,13 @@ public readonly partial struct ActionCooldownInfo : ICooldown
 				}
 			}
 
-			if (!isEmpty)
+			// Concept 03, K2, "Nur Fähigkeiten mit Ladungen" (A957): only an action with charges keeps one back. The recast
+			// group outlives a job change and can still hold another job's longer total (Ley Lines' two charges before
+			// Searing Light), which held a one-charge action the game had already freed.
+			if (!isEmpty && MaxCharges > 1)
 			{
-				if (RecastTimeRemain > DataCenter.DefaultGCDRemain + (DataCenter.DefaultGCDTotal * gcdCountForAbility))
+				if (RecastTimeRemain > DataCenter.DefaultGCDRemain + (DataCenter.DefaultGCDTotal * gcdCountForAbility)
+					&& !FightEndsBeforeKeptChargesGo())
 				{
 					return RefuseCooldown("Cooldown:ChargesKept");
 				}

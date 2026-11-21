@@ -657,7 +657,7 @@
   },
   {
    "file": "RotationSolver/Engine/State/DataCenter.Universal.cs",
-   "code": "&& across <= (act.XAxisModifier / 2f) + member.HitboxRadius;",
+   "code": "return new(true, h.Position, Vector3.Normalize(direction), act.EffectRange + casterRadius, act.XAxisModifier / 2f, 0);",
    "values": [
     "2"
    ],
@@ -1318,6 +1318,16 @@
    "status": "exception",
    "loop": "A569",
    "reason": "Percent to share: the gear's effect text states its figures in percent; the divisor is the definition of the unit, as for the item texts and the rest prompt (A551, A564)."
+  },
+  {
+   "file": "RotationSolver/Engine/Helpers/ObjectHelper.PriorityAndImmunity.cs",
+   "code": "14586 => Service.Config.CrucibleSiren && BoundByCrawlingPiece(), // Crawling Piece",
+   "values": [
+    "14586"
+   ],
+   "status": "exception",
+   "loop": "A913",
+   "reason": "Upstream's row of the crawling piece in the game's BNpcName sheet (xivapi v2, 19.11.2026: \"crawling piece\"); an identifier of the game, not a tuned value. The fork adds only the bind condition to upstream's line."
   },
   {
    "file": "RotationSolver/Engine/Helpers/ObjectHelper.Jobs.cs",
@@ -2799,6 +2809,16 @@
    "status": "exception",
    "loop": "A904",
    "reason": "The action sheet counts recast in tenths of a second (Recast100ms); the conversion to seconds, not a figure of the game (A904)."
+  },
+  {
+   "file": "RotationSolver/Rotations/Melee/Samurai/SAM_Reborn.cs",
+   "code": "if ((!HiganbanaTargets || NumberOfAllHostilesInRange < 2) && HasFugetsuAndFuka && !WillFugetsuEnd && !WillFukaEnd && !MidareSetsugekkaReady)",
+   "values": [
+    "2"
+   ],
+   "status": "exception",
+   "loop": "A962",
+   "reason": "Upstream's bound for the option \"Prevent Higanbana use if theres more than one target\": fewer than two hostiles is the option text's \"not more than one target\", a count the text sets, not a figure of the game; the line was touched only to let Higanbana go under Meikyo Shisui (A962)."
   }
  ]
 }

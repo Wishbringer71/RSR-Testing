@@ -1422,6 +1422,38 @@
       "kind": "action",
       "source": "game data, xivapi v2 Action 3577 language=de, 2026-11-07",
       "note": "Black Mage filler in Astral Fire."
+    },
+    {
+      "de": "Miasma-Nova",
+      "en": "Necrotize",
+      "identifier": "NecrotizePvE",
+      "kind": "action",
+      "source": "game data, xivapi v2 Action 36990 language=de, 2026-11-20",
+      "note": "Summoner, Aetherflow spender on one target (replaces Fester at its level)."
+    },
+    {
+      "de": "Schmerzensflare",
+      "en": "Painflare",
+      "identifier": "PainflarePvE",
+      "kind": "action",
+      "source": "game data, xivapi v2 Action 3578 language=de, 2026-11-20",
+      "note": "Summoner, Aetherflow spender on an area."
+    },
+    {
+      "de": "Wyrmodem",
+      "en": "Dragonfire Dive",
+      "identifier": "DragonfireDivePvE",
+      "kind": "action",
+      "source": "game data, xivapi v2 Action 96 language=de, 2026-11-21",
+      "note": "Dragoon, leap onto the target (A960)."
+    },
+    {
+      "de": "Sternensturz",
+      "en": "Stardiver",
+      "identifier": "StardiverPvE",
+      "kind": "action",
+      "source": "game data, xivapi v2 Action 16480 language=de, 2026-11-21",
+      "note": "Dragoon, leap onto the target (A960)."
     }
   ]
 }

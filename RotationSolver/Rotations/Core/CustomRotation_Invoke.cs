@@ -296,6 +296,16 @@ public partial class CustomRotation
 
 			IBaseAction.AutoHealCheck = false;
 
+			// A930 (concept 03, "Dynamische Rotation", D2): no GCD for longer than a GCD although the game would take one.
+			gcdAction ??= DynamicFallback();
+
+			// A924: before the first GCD of a pull without a countdown, the rotation's countdown preparation - after the
+			// resets above, which the GCD's choice may have set.
+			if (PullPreparation(gcdAction) is { } preparation)
+			{
+				return preparation;
+			}
+
 			if (gcdAction != null)
 			{
 				// An ability goes while the GCD is not yet due, and after the action lead while the measured window still

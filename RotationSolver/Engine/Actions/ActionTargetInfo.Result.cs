@@ -146,6 +146,16 @@ public partial struct ActionTargetInfo
 		IEnumerable<IBattleChara> canTargets = GetCanTargets(skipStatusProvideCheck, skipTargetStatusNeedCheck, type, targetOverride);
 		var canAffects = GetCanAffects(skipStatusProvideCheck, skipTargetStatusNeedCheck, type, targetOverride);
 
+		// Concept 18, "Welches Ziel ein Sprung nimmt" (A961): a leap onto the target picks among those within "Only use
+		// damaging gap closers within this distance" whenever one stands there, before the choice by targets hit. The
+		// targeting order alone took the dummy with the most HP, 6.7 or 14.8 yalms off, the rotation's check refused the
+		// leap there, and Stardiver missed 9 of 11 windows while the Dragoon stood in his own dummy's hitbox. With none
+		// within, all stay: a rotation's switch for leaps at any range and its own check after CanUse keep their say.
+		if (action.Setting.SpecialType == SpecialActionType.HostileMovingAttack)
+		{
+			canTargets = WithinGapCloserBound(canTargets, (ActionID)action.ID);
+		}
+
 		// A Walking Dead bearer who is carried by his own attacks is supported with a HoT only, the
 		// owner's rule (concept 09): a heal action that grants no HoT does not take him as its target
 		// until StatusHelper.WalkingDeadCarriedBySelfHeal releases him. Here rather than in
@@ -492,8 +502,8 @@ public partial struct ActionTargetInfo
 				var along = specialType == SpecialActionType.FixedDistanceMoveBackward ? -distance : distance;
 				var landingPoint = new Vector3(playerPos.X + (MathF.Sin(facing) * along), playerPos.Y,
 					playerPos.Z + (MathF.Cos(facing) * along));
-				return (DataCenter.IsFixedDashSafe(playerPos, landingPoint),
-					"the landing point is in a danger zone", true);
+				return WithoutFloor(landingPoint, distance)
+					?? (DataCenter.IsFixedDashSafe(playerPos, landingPoint), "the landing point is in a danger zone", true);
 			}
 
 			case SpecialActionType.HostileMovingForward:
@@ -537,8 +547,8 @@ public partial struct ActionTargetInfo
 
 			case SpecialActionType.GroundTargetMove:
 				// The spot the area-move logic placed (FindTargetAreaMove) is where the move ends.
-				return (DataCenter.IsDashSafe(playerPos, destination),
-					"the way to the chosen spot crosses a danger zone", true);
+				return WithoutFloor(destination, Vector3.Distance(playerPos, destination))
+					?? (DataCenter.IsDashSafe(playerPos, destination), "the way to the chosen spot crosses a danger zone", true);
 
 			case SpecialActionType.HostileAttackBackstep:
 				// The attack itself does not move the player towards the target; the backstep carries
@@ -558,9 +568,10 @@ public partial struct ActionTargetInfo
 				}
 
 				var landing = playerPos + (away / length * action.Setting.BackstepDistance);
-				return DataCenter.IsFixedDashSafe(playerPos, landing)
-					? (true, string.Empty, true)
-					: (false, $"the backstep from {target.Name} lands in a danger zone", true);
+				return WithoutFloor(landing, action.Setting.BackstepDistance)
+					?? (DataCenter.IsFixedDashSafe(playerPos, landing)
+						? (true, string.Empty, true)
+						: (false, $"the backstep from {target.Name} lands in a danger zone", true));
 
 			default:
 				return (true, string.Empty, false);
@@ -602,6 +613,9 @@ public partial struct ActionTargetInfo
 		// Kept apart: a refusal without a target can repeat every frame (FindTargetAreaMove, TODO) and
 		// would otherwise hide the refusal of a dash that was actually measured.
 		var refusal = new DataCenter.MoveSafetyRefusal(action.Name, why, DateTime.Now);
+
+		TraceRefusal(action.Name, why);
+
 		if (measured)
 		{
 			DataCenter.LastMoveSafetyRefusal = refusal;

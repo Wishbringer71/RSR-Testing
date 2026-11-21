@@ -233,7 +233,7 @@ internal partial class Configs
 	private static readonly bool _crucibleYmir = true;
 
 	[ConditionBool, UI("Crucible of the Unbroken - Siren logic",
-	Description = "Prioritize Crawling Pieces, which bind you in place.",
+	Description = "Prioritize a Crawling Piece while it binds you: the bind lasts until it falls.\nUnbound, the most dangerous enemy comes first.",
 	Filter = DutySpecificCrucibleOfTheUnbroken)]
 	private static readonly bool _crucibleSiren = true;
 

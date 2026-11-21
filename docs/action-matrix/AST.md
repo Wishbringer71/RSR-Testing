@@ -1,6 +1,6 @@
 # AST — Abhängigkeitsmatrix
 
-Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-07; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
+Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-21; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `AstrologianRotation`
 - Rotation: `RotationSolver/Rotations/Healer/Astrologian/AST_Reborn.cs`
@@ -8,14 +8,14 @@ Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-07; nic
 
 ## Nutzung
 
-direkt: 49 · ungenutzt: 6
+direkt: 50 · ungenutzt: 5
 
 | Stufe | Aktion | Id | Art | Nutzung |
 |---|---|---|---|---|
 | alle | Sprint (`SprintPvE`) | 3 | System | direkt |
 | Heiler | Esuna (`EsunaPvE`) | 7568 | Spell | direkt |
 | Heiler | Lucid Dreaming (`LucidDreamingPvE`) | 7562 | Ability | direkt |
-| Heiler | Repose (`ReposePvE`) | 16560 | Spell | ungenutzt |
+| Heiler | Repose (`ReposePvE`) | 16560 | Spell | direkt |
 | Heiler | Rescue (`RescuePvE`) | 7571 | Ability | ungenutzt |
 | Heiler | Surecast (`SurecastPvE`) | 7559 | Ability | direkt |
 | Heiler | Swiftcast (`SwiftcastPvE`) | 7561 | Ability | direkt |
@@ -199,5 +199,4 @@ Maschinelle Liste; die Bewertung je Eintrag steht im Konzept.
 - Play I (`PlayIPvE`, Ability): ungenutzt — Behälter: der Knopf wird zu anderen Aktionen
 - Play II (`PlayIiPvE`, Ability): ungenutzt — Behälter: der Knopf wird zu anderen Aktionen
 - Play III (`PlayIiiPvE`, Ability): ungenutzt — Behälter: der Knopf wird zu anderen Aktionen
-- Repose (`ReposePvE`, Spell): ungenutzt
 - Rescue (`RescuePvE`, Ability): ungenutzt
