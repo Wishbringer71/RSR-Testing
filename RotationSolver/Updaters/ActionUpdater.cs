@@ -174,6 +174,7 @@ internal static partial class ActionUpdater
 			GazeWatch.EndFight();
 			// A820 (concept 03, "Bereit, aber nicht genutzt"): which cooldowns stood ready in this fight and did not come.
 			BurstWatch.EndFight();
+			DynamicRotation.FightEnded();
 			DataCenter.EnemyHitPlayerThisFight = false;
 			_startCombatTime = DateTime.MinValue;
 

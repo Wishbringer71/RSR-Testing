@@ -2513,7 +2513,9 @@ konzept, audit, codereview, fehlerbeseitigung“.
 - *D1, Sperre nach Ablehnung (gewählt):* Liefert `UseAction` „nein“ und nennt das Spiel für Aktion und Ziel einen Grund,
   ist die Aktion für dieses Ziel gesperrt; `CanUse` fragt das Spiel nur für gesperrte Aktionen, und sobald es 0 sagt,
   ist die Sperre weg. Kein fester Zeitraum: Das Spiel sagt, wann es wieder geht. Ohne Grund (0 beim Nachfragen, etwa
-  Zeitpunkt) sperrt RSR nicht.
+  Zeitpunkt) sperrt RSR nicht. Die Spurzeile dazu („refused by the game without a reason“) steht je Aktion und Ziel
+  einmal je Kampf (A957): Am 20.11.2026 waren es 5.523 der 6.521 Zeilen einer Sitzung, fast jede Aktion bei ihrem
+  ersten Druck, und damit ein Zeitpunkt, kein Befund.
 - *D2, Ausweg aus dem Leerlauf (gewählt):* Steht der GCD länger als einen GCD frei (dieselbe Strecke, die
   `GcdIdleWatch` misst) und wählt die Rotation keinen, fragt RSR die eigenen Schadens-GCDs der Rotation (mit im
   Wirktext genannter Potenz) ohne deren eigene Bedingungen (`ActionCheck`, `RotationCheck`), aber mit jeder zentralen

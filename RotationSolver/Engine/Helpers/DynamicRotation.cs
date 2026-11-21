@@ -12,7 +12,8 @@ namespace RotationSolver.Engine.Helpers;
 internal static class DynamicRotation
 {
 	private static readonly Dictionary<(uint Action, ulong Target), uint> _refused = [];
-	private static (uint Action, ulong Target) _tracedWithoutReason;
+	// Concept 03, D1 (A957): a refusal without a reason is a matter of timing; written once per action, target and fight.
+	private static readonly HashSet<(uint Action, ulong Target)> _tracedWithoutReason = [];
 
 	/// <summary>The game said no to <paramref name="action"/> pressed on its target.</summary>
 	internal static unsafe void PressFailed(IBaseAction action)
@@ -27,9 +28,8 @@ internal static class DynamicRotation
 		var status = manager->GetActionStatus(ActionType.Action, key.AdjustedID, key.Item2, false, false);
 		if (status == 0)
 		{
-			if (_tracedWithoutReason != key)
+			if (_tracedWithoutReason.Add(key))
 			{
-				_tracedWithoutReason = key;
 				DefenseTrace.Line($"dynamic rotation: {action.Name} refused by the game without a reason - not left out");
 			}
 
@@ -75,6 +75,12 @@ internal static class DynamicRotation
 	internal static void AreaChanged()
 	{
 		_refused.Clear();
-		_tracedWithoutReason = default;
+		_tracedWithoutReason.Clear();
+	}
+
+	/// <summary>A fight ended: the next one writes its refusals without a reason again.</summary>
+	internal static void FightEnded()
+	{
+		_tracedWithoutReason.Clear();
 	}
 }

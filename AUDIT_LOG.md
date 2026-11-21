@@ -27712,9 +27712,18 @@ so dass ein Flächen-GCD an einer einzelnen Puppe nicht gewählt wird. Ob sein B
   Sprünge gehen nur innerhalb „Only use damaging gap closers within this distance“; die stand am 04.11. auf 0 y (A528),
   und A529 behielt sie für alle Jobs außer dem Schildansturm (seine Entscheidung B). Preis nach den Wirktexten: 9 ×
   (840 + 1000) + 4 × (500 + 550) = 20.760 Potenz in 11 min. Nicht geändert; ihm vorgelegt.
+- *Dunkelritter (TODO „Dunkelritter greift an der Puppe eine zweite an“, A955):* Im Kampf 19:51 bis 19:59 trafen alle
+  Einzelzielangriffe dieselbe Puppe (231), dazu Schwärzeste Nacht einmal auf seinen Chocobo; der Build lag vor
+  a45c8cc8e (A948). Nach der Auflösungsbedingung des Punkts geschlossen.
 - *Übrige Jobs ohne Abweichung von Gewicht:* SAM, VPR, BRD, GNB, PLD, WAR, DRK (Abklingzeiten auf ihrer Zahl, keine
   GCD-Lücke); NIN siehe A956; BLM vor A951 gespielt (Spontaneität „not asked“, seither gebaut); die Pulls mit Zermürben
   und Stumpfsinn bei 0,0 s sind seine Drücke von Hand.
+- *Zeilenarten der Spur (Sitzung 20.11., 6.521 Zeilen):* „refused by the game without a reason - not left out“ 5.523 –
+  ein Druck, den das Spiel im Augenblick nicht nahm und beim Nachfragen nimmt (D1, Konzept 03): Zeitpunkt, kein Befund.
+  *Gebaut:* einmal je Aktion, Ziel und Kampf (`DynamicRotation.FightEnded`). „request without an answer: sequence N not
+  seen as a request - not counted“ 159 – eine Antwort des Servers auf eine Folge, die die Sperrenmessung nicht als
+  Sofortdruck erfasst hat; sie zählt nicht und verfälscht die Messung nicht; bleibt. Kein „pull: RSR opened“: Die Zeile
+  schließt Puppen aus (`NotFightingYet`), sie trennt an der Puppe also nicht seine Pulls von RSRs.
 - *Falsifikation:* Kein Defekt? Widerlegt je Fall durch Spur und Mitschnitt (oben). Option falsch? Ladungsprüfung: Für eine
   Aktion mit einer Ladung ohne fremde Füllung ist die Restzeit 0, die Änderung dort ohne Wirkung. Searing Light: Ein Buff
   früher als Solar deckt die Phase ganz, solange er höchstens 5 s vorher fällt (20 s Buff, 15 s Phase); weiter vorn deckt
