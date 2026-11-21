@@ -27708,7 +27708,7 @@ so dass ein Flächen-GCD an einer einzelnen Puppe nicht gewählt wird. Ob sein B
   (Leiste aus Zeile 31): Kombo um 19:04:57 bei 67|60, 24 s vor Embolden, und um 19:07:11 bei 68|62, 10 s davor; ins
   Fenster kam er mit 36|40 und 26|31. *Gebaut:* verbleibende Zeit. Die Zahlen bleiben Upstreams; ihre Herleitung steht
   als technische Schuld im TODO. Betroffen auch `BeirutaRDM` (zentral, keine Richtungsentscheidung).
-- *Dragoon, seine Einstellung:* Sternensturz 2 von 11 Fenstern des Lebens des Drachen, Drachenfeuersturz 2 von 6. Beide
+- *Dragoon, seine Einstellung:* Sternensturz 2 von 11 Fenstern des Lebens des Drachen, Wyrmodem 2 von 6. Beide
   Sprünge gehen nur innerhalb „Only use damaging gap closers within this distance“; die stand am 04.11. auf 0 y (A528),
   und A529 behielt sie für alle Jobs außer dem Schildansturm (seine Entscheidung B). Preis nach den Wirktexten: 9 ×
   (840 + 1000) + 4 × (500 + 550) = 20.760 Potenz in 11 min. Nicht geändert; ihm vorgelegt.
@@ -27789,6 +27789,28 @@ so dass ein Flächen-GCD an einer einzelnen Puppe nicht gewählt wird. Ob sein B
   umfassend sind und ob der Loop das Plateau erreichte, entscheidet kein Skript; das hängt am Inhalt. Preis: Ein Bericht
   über eine frühere Entscheidung in der zweiten Person („deine Entscheidung B“) kostet eine Runde.
 - *Prüfgrad:* Selbsttest grün, 66 Prüfschritte.
+
+### A960 · TODO: Sprungangriffe – die Vorlage zerfiel an der Messung; Dragoon-Ursache offen, Messmittel ergänzt (21.11.2026)
+
+- *Anlass:* TODO „Sprungangriffe innerhalb der Gapcloser-Grenze: Vorlage bis zum Plateau“ (A959), sein Auftrag „todo im
+  loop weitermachen“.
+- *Erhebung (Ebene alle):* Schadens-Sprünge unter `GapCloserAllowed` in PvE: Sternensturz und Wyrmodem (DRG), Brachiale
+  Gewalt (WAR, mit „YEET“-Rückfall ohne Grenze), Zinnober-Zyklon (SMN, Konzept 12), Gabelblitz (NIN, Option ab Werk
+  aus), Intervene und Onslaught (Tanks, A954), die Sprünge von Blaumagier und Beastmaster (A529); Corps-a-corps,
+  Trajectory und Shadowstride laufen als `HostileMovingForward` und lesen die Grenze nicht.
+- *Messung am Mitschnitt 20.11.2026 (Positionen aus Zeile 21/22, Trefferflächen 1,5 und 0,5 y aus Zeile 261):* Der Dragoon
+  stand in allen elf Fenstern bei −1,09 y in der Trefferfläche seiner Puppe; das Leben des Drachen lief jedes Mal 20 s
+  (Zeile 31, Zustand 2). Die Grenze von 0 y hätte die Sprünge also durchgelassen. Brachiale Gewalt kam 21 von 21.
+  *Gefunden statt dessen:* In beiden Treffern (17:44, 17:45) kam Sternensturz vor Nastrond, in allen neun Fehlschlägen
+  Nastrond zuerst; danach blieb Sternensturz bis zum Ende des Fensters aus, obwohl freie Weave-Plätze blieben.
+  Lage der Puppen in allen Fenstern gleich. Die Ursache am Code ist damit nicht gefunden: weiß ich nicht.
+- *Messmittel:* Die Zeile „ready but unused“ nahm Sprünge aus (`BurstWatch.Rebuild`: nur `None` und `MeleeRangedAttack`);
+  sie zählt jetzt auch `HostileMovingAttack`, die Schaden sind. Vorhersage `burstwatch-leaps-listed`.
+- *Folge:* Die Vorlage an ihn entfällt; der Punkt ist ein Defekt mit offener Ursache (TODO „Dragoon lässt Sternensturz
+  und Wyrmodem aus“). Der deutsche Name von Dragonfire Dive ist Wyrmodem (xivapi v2 Action 96, language=de); in A957,
+  Konzept 03 und im TODO stand der von mir gebildete „Drachenfeuersturz“, berichtigt, beide Namen jetzt in
+  `action_names_de.json`.
+- *Prüfgrad:* Mitschnitt ausgewertet; Code, Compile, Prüfschritte; im Spiel nicht beobachtet.
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
@@ -28181,3 +28203,4 @@ geben den Stand vom 14.10.2026 wieder.
 | C234 | A923, Konzept 03 und TODO (Stand 95d7f89db): Nach dem abgelehnten Ogi falle die Rotation auf Gekko, der Weg zum Stillstand sei am Code nicht zu finden | Gekko war selbst gesperrt: Kenki stand auf 100, jeder Kombo-Schlag sperrt sich gegen Überlauf, und der Verbrauch wartete auf Zanshin, das kein Ziel hatte. Die Leistenzeile des Mitschnitts zeigte es; ich hatte nur die Auswahl gelesen, nicht die Bedingungen der Aktionen selbst | A925 |
 | C235 | A819 und Konzept 02 (15.11.2026), meine Aussage an ihn: BossModReborn bewege ihn nach RSRs Seite (B2), RSR müsse deshalb nicht selbst bewegen (B1 verworfen) | BossMod bewegt nur mit eingeschalteter KI; an der Puppe lief sie nicht (er stand still auf der Diagonale), und keine Schnittstelle nimmt einen Schritt an. Die Voraussetzung war nie geprüft | A926 |
 | C236 | A926, C235 und Konzept 02 (Stand c479f65e9): Ohne eingeschaltete KI bewege BossMod nie, und keine Schnittstelle nehme einen Schritt von einem anderen Plugin an; RSR müsse deshalb selbst über einen Hook bewegen | BossMods Modul „Automatic movement“ bewegt ohne KI aus der aktiven Voreinstellung, und Voreinstellungen stehen über IPC. Gefunden von der unabhängigen Prüfung, am Quelltext bestätigt | A928 |
+| C237 | A957 und TODO (21.11.2026), meine Aussage an ihn: Sternensturz und Wyrmodem fehlten, weil sie nur innerhalb „Only use damaging gap closers within this distance“ (0 y) gehen | Widerlegt am Mitschnitt: der Dragoon stand in allen elf Fenstern bei −1,09 y in der Trefferfläche; Ursache offen (A960) |

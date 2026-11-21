@@ -2602,7 +2602,11 @@ ein. Kosten je Frame: ein Vergleich, solange kein Leerlauf läuft.
 Geltender Stand (A820): Kommt ein Cooldown, der eine eigene Abklinggruppe hat, im Kampf länger als einen GCD nicht,
 obwohl er bereit ist, schreibt RSR am Kampfende je Aktion, wie lange er bereit stand, wie oft ihn die Rotation fragte
 und mit welchem Grund `CanUse` ablehnte. Das Messmittel greift nicht ein; es zeigt, wo eine Rotation Schaden liegen
-lässt.
+lässt. Beobachtet werden auch die Sprungangriffe (`HostileMovingAttack`: Sternensturz, Wyrmodem, Primal Rend,
+Crimson Cyclone und andere), weil sie Schaden sind; ausgenommen bleiben reine Bewegung und Schutz (A960). Grund: Am
+20.11.2026 kam Sternensturz in 2 von 11 Fenstern des Lebens des Drachen, der Dragoon stand in allen elf in der
+Trefferfläche der Puppe (−1,09 y) und das Leben des Drachen lief 20 s; die Zeile nannte ihn nicht, weil sie Sprünge
+ausnahm, und der Grund blieb offen.
 
 - *Anlass:* Seine Puppensitzung vom 15.11.2026 (Build 9036b6874):
   - Der erste Burst kam bei Tänzer, Maschinist und Rotmagier 40 bis 73 s nach Kampfbeginn: Technischer Schritt nach
