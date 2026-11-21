@@ -1,6 +1,6 @@
 # SAM — Abhängigkeitsmatrix
 
-Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-20; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
+Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-21; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `SamuraiRotation`
 - Rotation: `RotationSolver/Rotations/Melee/Samurai/SAM_Reborn.cs`
@@ -131,7 +131,6 @@ direkt: 43 · nur gelesen: 2 · über andere Aktion: 1
 | Kasha | ComboIds | Shifu |
 | Mangetsu | ComboIds | Fuko |
 | Mangetsu | Regel prüft | Oka |
-| Meikyo Shisui | Regel prüft | Higanbana |
 | Midare Setsugekka | Regel prüft | Hagakure |
 | Ogi Namikiri | StatusNeed OgiNamikiriReady | Ikishoten |
 | Oka | ComboIds | Fuko |

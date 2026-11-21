@@ -2809,6 +2809,16 @@
    "status": "exception",
    "loop": "A904",
    "reason": "The action sheet counts recast in tenths of a second (Recast100ms); the conversion to seconds, not a figure of the game (A904)."
+  },
+  {
+   "file": "RotationSolver/Rotations/Melee/Samurai/SAM_Reborn.cs",
+   "code": "if ((!HiganbanaTargets || NumberOfAllHostilesInRange < 2) && HasFugetsuAndFuka && !WillFugetsuEnd && !WillFukaEnd && !MidareSetsugekkaReady)",
+   "values": [
+    "2"
+   ],
+   "status": "exception",
+   "loop": "A962",
+   "reason": "Upstream's bound for the option \"Prevent Higanbana use if theres more than one target\": fewer than two hostiles is the option text's \"not more than one target\", a count the text sets, not a figure of the game; the line was touched only to let Higanbana go under Meikyo Shisui (A962)."
   }
  ]
 }

@@ -27847,6 +27847,38 @@ so dass ein Flächen-GCD an einer einzelnen Puppe nicht gewählt wird. Ob sein B
   des Drachen ohne Sternensturz bleibt, während er in der Trefferfläche steht.
 - *Prüfgrad:* Mitschnitt ausgewertet, Code, Compile, Prüfschritte; im Spiel nicht beobachtet.
 
+### A962 · TODO: Samurai spielt Meikyo Shisui und Higanbana wie The Balance (21.11.2026)
+
+- *Anlass:* TODO „Jede Rotation gegen The Balance messen“, Samurai zuerst; sein Ziel vom 19.11.2026 (die Regel
+  verbessern, bis sie nicht mehr hinter The Balance liegt). A381 hatte die Nutzung von The Balance als Promillegewinn
+  „nicht gebaut“; das war meine Abwägung vor seinem Ziel, keine Entscheidung von ihm.
+- *Modell (`samurai_balance_model.py`, am Code von `SAM_Reborn` abgeglichen, Kenki-Änderung A925 berührt die GCD-Wahl
+  nicht):* The Balance gegen die bisherige Regel über 60 Fälle im Mittel +0,29 %, −0,59 % bis +1,60 %, 4 Fälle weniger.
+  Zerlegt: nur Higanbana unter Meikyo +0,11 % (bis −1,60 %), nur Meikyo nach The Balance −0,02 %. Gegen das Beste je Fall
+  aus beiden Regeln und fünf Erneuerungsfenstern (30 Fälle): The Balance mit 6 GCDs −0,13 % im Mittel, die bisherige
+  Regel −0,45 %; keine feste Regel trifft in jedem Fall das Beste, die Fälle wechseln mit der GCD-Länge um
+  Hundertstelsekunden (Lage der Fenster zueinander, kein Merkmal im Kampf).
+- *Geändert (`SAM_Reborn.AttackAbility`, `UseOgiAndHiganbana`):* Higanbana auch unter Meikyo; Meikyo verlangt nur
+  Higanbana auf dem Ziel statt eines Higanbana außerhalb des Erneuerungsfensters; die „15 second rule“ (Higanbana im
+  Erneuerungsfenster, nicht genau ein Sen, keine Kombo begonnen) als weiterer Auslöser, der auch die letzte Ladung nimmt.
+  Das Modell rechnet die neue Regel als „rsr“ (gleich „balance“), die alte als „hold“.
+- *Seine Frage (21.11.2026):* „wieso eine 15sekunden regel? wert nicht ingame erkennbar? widerspricht sowas nicht der
+  vorgabe: keine festen werte“. Im Code steht keine Zeit; der Auslöser liest das Erneuerungsfenster von Higanbana (seine
+  Einstellung in GCDs, mal laufender GCD). Der Name im Zwischenstand („fifteenSecondRule“) führte irre und heißt jetzt
+  nach dem, was er misst (`senForHiganbanaLate`). Geprüft im Modell: Auslöser ganz aus dem Spiel (Restzeit gegen die
+  kürzeste Kombo bis zu einem Sen) gegen das Erneuerungsfenster, 90 Fälle, im Mittel −0,004 %, 7 Fälle bis +0,07 %, 3 bis
+  −0,59 %; verworfen. *Zahlen:* Die Zeile mit `WillHaveXChargesGCD(2, 1)` blieb unberührt (der neue Auslöser ist ein
+  eigener Zweig); die Higanbana-Zeile trägt Upstreams `NumberOfAllHostilesInRange < 2`, die Grenze des Optionstexts
+  „more than one target“, als Ausnahme in `fixed_values.json`.
+- *Antithesen:* (1) Promille, unter der Unschärfe des Modells – gilt, aber sein Ziel fragt nach dem Rückstand gegen The
+  Balance, und den hat die Rotation jetzt nicht mehr. (2) In 4 von 60 Fällen war die alte Regel besser – ja, bis 0,59 %;
+  keine Bauart behält das ohne den Rückstand in den übrigen (Konzept 14). (3) Ausgeliefert, nichts ändert sich – unter
+  mehreren Zielen sperrt `HiganbanaTargets` Higanbana weiter; im Einzelzielkampf greift die Regel jede Minute.
+- *Vorhersage:* Im nächsten Samurai-Mitschnitt an einem Ziel geht Higanbana mindestens einmal unter Meikyo Shisui
+  (Zeile 21 Higanbana zwischen Zeile 26 und 30 des Status Meikyo Shisui), und im Opener folgt der zweite Meikyo direkt
+  auf das erste Tendo Kaeshi; widerlegt, wenn Higanbana über den Kampf nie unter Meikyo fällt.
+- *Prüfgrad:* Modell mit Selbsttest, Compile, Prüfschritte; im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

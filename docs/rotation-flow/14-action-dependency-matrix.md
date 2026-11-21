@@ -960,23 +960,34 @@ Gelehrter (7.4, 27.12.2025), Weiser (7.3, 07.08.2025). Keine Änderung außer de
 
 ### Samurai: Meikyo Shisui und Higanbana
 
-**Keine Änderung** (26.10.2026, A381). The Balance (Samurai Basic Guide, „Patch Applicable: 7.4"; Opener-Bild „Dawntrail
-Patch 7.05") nutzt Meikyo Shisui im Fenster jeder Minute, um Higanbana „right on time" zu setzen – Iaijutsu verbraucht
-keinen Meikyo-Stapel –, und drückt Meikyo nach seiner „15 second rule", wenn Higanbana ausläuft, während die Sen noch
-aufgebaut werden. `SAM_Reborn` macht es umgekehrt: Meikyo wartet, solange Higanbana in sein Erneuerungsfenster fällt
-(ab Werk 6 GCDs), und Higanbana fällt nur ohne Meikyo-Stapel. Meikyo geht sonst nach jedem Midare oder Tendo, solange eine
-Ladung da ist, und an der vollen Ladung.
+**Gilt (A962): die Nutzung von The Balance.** The Balance (Samurai Basic Guide, „Patch Applicable: 7.4"; Opener-Bild
+„Dawntrail Patch 7.05") nutzt Meikyo Shisui im Fenster jeder Minute, um Higanbana „right on time" zu setzen – Iaijutsu
+verbraucht keinen Meikyo-Stapel –, und drückt Meikyo nach seiner „15 second rule", wenn Higanbana ausläuft, während die
+Sen noch aufgebaut werden. `SAM_Reborn` tut jetzt dasselbe: Higanbana geht auch unter Meikyo; Meikyo wartet nicht mehr,
+solange Higanbana in sein Erneuerungsfenster fällt, sondern verlangt nur, dass Higanbana auf dem Ziel liegt; und ein
+dritter Auslöser kommt hinzu – Higanbana im Erneuerungsfenster, nicht genau ein Sen, keine Kombo begonnen –, der auch
+die letzte Ladung nimmt. Das Erneuerungsfenster bleibt seine Einstellung (ab Werk 6 GCDs).
 
-- *Was es im Kampf ergibt* (`samurai_balance_model.py`, ein Boss, zehn Minuten, Potenzen Job-Guide 7.5): Mit der Regel
-  von `SAM_Reborn` liegt Higanbana 93,7 % der Zeit (die ersten 15 s eingerechnet), 15,8 s werden überschrieben; keine
-  Meikyo-Ladung verfällt, kein Sen doppelt, 12 Tendo und 17 Midare. Mit der Folge von The Balance, so übernommen, wie
-  `SAM_Reborn` sie tragen könnte: 97,3 %, aber 79,2 s überschrieben, gleich viele Tendo und Midare. Über 60 Kombinationen
-  aus GCD-Länge (2,10 bis 2,20 s), Erneuerungsfenster (2, 4, 6 GCDs) und Kampflänge (3 bis 15 min) bringt sie im Mittel
-  +0,29 % Potenz, zwischen −0,59 % und +1,60 %, in 4 Fällen weniger.
-- *Warum nicht gebaut:* Der Gewinn liegt im Promillebereich und unter der Unschärfe des Modells (Positionale stets
-  getroffen, keine Kritischen, keine Fähigkeiten außer Meikyo und Ikishoten); sein Vorzeichen wechselt mit GCD-Länge und
-  Kampflänge. Was The Balance darüber hinaus trägt – Higanbana „buffed", in den Gruppenbuffs der anderen –, ist nach
-  seiner Regel kein tragender Grund.
+- *Was es im Kampf ergibt* (`samurai_balance_model.py`, ein Boss, Potenzen Job-Guide 7.5): Über 60 Kombinationen aus
+  GCD-Länge (2,10 bis 2,20 s), Erneuerungsfenster (2, 4, 6 GCDs) und Kampflänge (3 bis 15 min) bringt die Nutzung von
+  The Balance gegenüber der bisherigen Regel im Mittel +0,29 % Potenz, zwischen −0,59 % und +1,60 %, in 4 Fällen weniger.
+  Bei zehn Minuten und GCD 2,17 s liegt Higanbana 97,3 % statt 93,7 % der Zeit, 79,2 statt 15,8 s werden überschrieben,
+  gleich viele Tendo und Midare, keine Ladung verfällt.
+- *Warum keine Mischung:* Kein Teil allein trägt den Gewinn – nur Higanbana unter Meikyo +0,11 % im Mittel, aber bis
+  −1,60 %; nur Meikyo nach The Balance −0,02 %. Und keine feste Regel erreicht in jedem Fall das Beste aus beiden: Über
+  30 Fälle (GCD 2,10 bis 2,20 s, 3 bis 15 min) und je fünf Erneuerungsfenster liegt die Nutzung von The Balance mit 6
+  GCDs im Mittel 0,13 % unter dem Besten je Fall, die bisherige Regel 0,45 %. Die Fälle, in denen die bisherige Regel
+  vorn lag, wechseln mit der GCD-Länge um Hundertstelsekunden (2,14 s: −0,43 % bei 15 min, 2,17 s: +0,77 %); das ist die
+  Lage der Fenster zueinander, keine Lage im Kampf, an der eine Regel ansetzen könnte. *Preis:* in diesen Lagen bis
+  −0,59 % gegen die bisherige Regel; nicht gegen The Balance, mit der die Rotation jetzt gleich spielt.
+- *Kein fester Wert:* „15 second rule" ist der Name bei The Balance; RSR liest keine 15 s, sondern das Erneuerungsfenster
+  von Higanbana – seine Einstellung in GCDs, mit der laufenden GCD-Länge. *Geprüft, seine Frage vom 21.11.2026 („wert
+  nicht ingame erkennbar?"):* ein Auslöser ganz aus dem Spiel, die Restzeit von Higanbana gegen die kürzeste Kombo bis
+  zu genau einem Sen ohne Meikyo (2 GCDs ohne Sen, 3 mit drei, 5 mit zwei), über 90 Fälle gegen das Erneuerungsfenster:
+  im Mittel −0,004 %, in 7 Fällen bis +0,07 %, in 3 bis −0,59 %. Er trägt nichts; es bleibt das Erneuerungsfenster, das
+  auch Higanbana selbst liest.
+- *Grenzen des Modells:* Positionale stets getroffen, keine Kritischen, keine Bewegung und keine Pause, Kenki ausgelassen,
+  ein Ziel. Unter mehreren Zielen sperrt `HiganbanaTargets` Higanbana unverändert.
 - *Opener:* The Balance setzt den zweiten Meikyo gleich nach dem ersten Tendo Kaeshi und Higanbana in GCD 7;
   `SAM_Reborn` hält ihn, weil noch kein Higanbana liegt, und setzt Higanbana in GCD 8 (Modell: 15,2 s). Ikishoten fällt
   einen GCD später als im Bild – nach dem dritten statt dem zweiten GCD, weil `SAM_Reborn` zwei GCDs Kampfzeit abwartet
