@@ -39,8 +39,8 @@
   },
   {
    "repo": "FFXIV-CombatReborn/BossmodReborn",
-   "commit": "8d5ff8e21",
-   "date": "2026-11-16",
+   "commit": "91fbb365a",
+   "date": "2026-11-21",
    "use": "Crucible-Module, Mechaniken, Vertrag mit RSR (Konzept 21, Code.md), Blickliste GazeActions.g.cs (Konzept 13), Projektion in die 3D-Welt und Ringe im Modulcode (Konzept 13, A921)"
   },
   {

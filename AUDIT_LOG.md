@@ -27926,6 +27926,20 @@ so dass ein Flächen-GCD an einer einzelnen Puppe nicht gewählt wird. Ob sein B
   und Heat 50 erreicht sind und es bis zum nächsten Full Metal Field ausbleibt.
 - *Prüfgrad:* Modell mit Selbsttest, Compile, Prüfschritte; im Spiel nicht beobachtet.
 
+### A965 · Auftragsende: Upstream aktuell, BossModReborn 8d5ff8e21 → 91fbb365a ausgewertet (21.11.2026)
+
+- *Upstream:* `check_sync_state.py` nach Fetch: HEAD auf dem Stand von `upstream/main`, nichts einzupflegen.
+- *Quellen (`check_source_updates.py`):* 41 Quellen, 39 aktuell, `priestkos/FrontlineAdvisor` nicht erreichbar, eine
+  weitergezogen: BossModReborn, 10 Commits (16. bis 21.11.2026), 347 Dateien, fast alle Kampfmodule.
+- *Ausgewertet an den Stellen, die RSR liest:* Vertrag (`check_bmr_contract.py` gegen `AIHints.cs` am neuen Stand):
+  SpecialMode 5, PredictedDamageType 4 Glieder, Namen und Ordinale gleich. Blickliste (`gaze_actions.py generate`):
+  84 Blicke, 3 umgekehrt, 34 unsicher, Inhalt unverändert; „Gaze of the Void“ (Ex8 Enuo) ist eine Sammelfläche, kein
+  Blick. `Framework/Plugin.cs`, `Service.cs`, `DeepDungeonState.cs`: Aufzeichnung, Null-Schutz und Listenkopien ohne
+  Schnittstelle zu RSR. Pilgers Pfad (`PTFloorModule`, `DD80ForgivenProfanity`): Modulinhalt, den RSR nur über die
+  Hinweise liest. Kein Nutzen für eine Regel von RSR, kein Widerspruch. Stand eingetragen (`--record`).
+- *Prüfgrad:* Prüfskripte gegen den neuen Stand; die übrigen Kampfmodule nicht einzeln gelesen (Umfang: 4 der 347
+  Dateien inhaltlich, die übrigen nur nach Pfad gegen die Leser von RSR).
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
