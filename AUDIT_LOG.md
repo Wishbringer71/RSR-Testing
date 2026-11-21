@@ -28014,6 +28014,23 @@ so dass ein Flächen-GCD an einer einzelnen Puppe nicht gewählt wird. Ob sein B
 - *Umfang:* Zeilenarten der ganzen Sitzung; Tabellen 51 von 51; Vorhersagen 73 von 73.
 - *Prüfgrad:* Spur, Tabellen, Mitschnitt.
 
+### A969 · Wartepunkt „Ein gewählter Schlaf geht nicht hinaus“ an allen Spuren aufgelöst; Grund „the fight ended“ (21.11.2026)
+
+- *Anlass:* Abarbeiten der wartenden TODO-Punkte, deren Auflösung eine Spurzeile ist (seine Rüge vom 21.11.2026).
+- *Gemessen:* alle Spuren seiner Uploads seit dem 11.11.2026, ohne Doppelte: 9 Zeilen „sleep not cast“. Erster Grund:
+  4 × „the cast ended or was stopped“, 3 × „not castable: moving“ (einmal danach „too little time“, weil die Bewegung die
+  Zeit nahm), 2 × „the rule was not asked again: a GCD ahead of it in the path“. Nie „too little time“ als erster Grund –
+  die Bedarfsrechnung ist kein Defekt; Auflösungsbedingung erfüllt, Punkt geschlossen. Gesucht ohne Treffer: „arena edge:“,
+  „hit you from a source the object table does not hold“, „a kill by an item granted“, „tome converted“ (die übrigen
+  Wartepunkte bleiben).
+- *Befund:* Beide „GCD ahead“-Fälle (Pilgers Pfad, 15.11.2026) endeten mit dem Kampf 1 s und 12 s vor der Zeile; die
+  Regel wurde nicht mehr gefragt, weil der Kampf vorbei war. Die Zeile nannte einen GCD-Vorrang, den es nicht gab (Text
+  widerspricht dem Geschehen). *Behoben:* `ActionUpdater` setzt am Kampfende `SleepInterruptWatch.NoteLapse(null, "the
+  fight ended")`; ein früherer Grund bleibt der erste, dieser wird der letzte. Konzept 08, „Protokoll“.
+- *Vorhersage:* Endet ein Kampf nach der Wahl eines Schlafs vor dem Fenster, nennt „sleep not cast“ „the fight ended“;
+  widerlegt, wenn nach einem „combat ended“ zwischen Wahl und Zeile weiter „a GCD ahead of it in the path“ steht.
+- *Prüfgrad:* Spuren, Compile, Prüfschritte.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

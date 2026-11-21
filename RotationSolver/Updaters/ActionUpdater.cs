@@ -175,6 +175,8 @@ internal static partial class ActionUpdater
 			// A820 (concept 03, "Bereit, aber nicht genutzt"): which cooldowns stood ready in this fight and did not come.
 			BurstWatch.EndFight();
 			DynamicRotation.FightEnded();
+			// A969 (concept 08, "Protokoll"): a sleep chosen before the end lapses because the fight ended.
+			SleepInterruptWatch.NoteLapse(null, "the fight ended");
 			DataCenter.EnemyHitPlayerThisFight = false;
 			_startCombatTime = DateTime.MinValue;
 

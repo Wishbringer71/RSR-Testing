@@ -221,8 +221,3 @@ nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigt
   23.10. und 27.10.2026). Offen: ob Schlaf unterbrechbares Wirken stoppt, welche Anzahl bis zur Immunität die Regel
   lernt, welchen Rest beim Eintreffen. Auflösung: Protokolle mit Heiler oder Magier in Instanzen, danach die Bewertung,
   ob die Regel experimentell bleibt. Konzept 08, „Ein gegnerisches Wirken stoppen".
-- **Ein gewählter Schlaf geht nicht hinaus** (siebenmal an zwei Abenden, A453, A457). Ein oGCD schließt das Fenster
-  nicht (ein bereiter GCD geht vor, Fähigkeiten ruhen in den letzten 0,5 s); übrig bleiben Bewegung und ein Mitglied
-  in der kritischen Klasse, beides gewollt (A738: Bewegung). Auflösung: der erste Grund, den die Zeile „sleep not
-  cast …" nennt; heißt er „too little time" kurz nach der Wahl, ist die Bedarfsrechnung ein Defekt. Konzept 08, „Ein gegnerisches Wirken
-  stoppen".
