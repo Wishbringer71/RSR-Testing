@@ -563,9 +563,10 @@ Slipstream 520, Mountain Buster 160, Inferno 800, Earthen Fury 800, Aerial Blast
 **The Balance** (Summoner Basic Guide, 02.10.2026): „Searing Light should be used on cooldown to align with
 all other two minute party buffs, unless a specific buff delay is agreed upon by the entire party. Aligning
 with other party buffs should be prioritized over aligning with your own burst phases." Für einen einzelnen
-Beschwörer trifft RSR das: Die Abklingzeit von 120 s ist genau ein Demi-Zyklus, und die Zündung im
-Beschwörungsfenster fällt mit „on cooldown" zusammen. Mehrere Beschwörer behandelt The Balance nicht; dort
-gilt seine Vorgabe. Swiftcast auf Slipstream nennt The Balance als situativen Gewinn; nach seiner Spielweise
+Beschwörer trifft RSR das seit A957: Der Buff geht bei Abklingzeit und wartet höchstens einen GCD auf Solar
+(oben, „Sol-Bahamut läuft dem Buff davon“); die frühere Annahme, die Zündung im Beschwörungsfenster falle mit
+„on cooldown" zusammen, gilt nur bei 2,50 s GCD, weil die Demi-Abklingzeit mit dem Zaubertempo schrumpft. Mehrere
+Beschwörer behandelt The Balance nicht; dort gilt seine Vorgabe. Swiftcast auf Slipstream nennt The Balance als situativen Gewinn; nach seiner Spielweise
 bleibt Swiftcast für Wiederbelebungen.
 
 ### Gemessen: was im Kampf ankommt
