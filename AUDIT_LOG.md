@@ -27670,6 +27670,58 @@ so dass ein Flächen-GCD an einer einzelnen Puppe nicht gewählt wird. Ob sein B
 - *Gebaut:* nichts; Konzept 03 („Welche Puppe dein Kampf ist“) und TODO fortgeschrieben.
 - *Prüfgrad:* Mitschnitt und Spur ausgewertet; Wirkung von A948 statisch am Code, im Spiel nicht beobachtet.
 
+### A957 · Upload 20.11.2026: Puppenkämpfe gegen Konzepte und The Balance – Abklinggruppen, Searing Light, Wildfire (21.11.2026)
+
+- *Auftrag:* „die gesamten puppenkämpfe vollständig inhaltlich auf einhaltung der konzepte und im vergleich zu the balance
+  rotation testen und schauen, wo es negative abweichungen gibt …“ (20.11.2026). Build 4f9790fd4, Lebende Erinnerung.
+- *Verfahren:* ACT-Mitschnitt je Kampf (Skript im Notizordner, `fights2.py`): GCD-Abstände ab Wirkbeginn (Zeile 20) mit
+  Wirk- und eigener Abklingzeit, Abklinggruppen ≥ 30 s mit Ladungen; dazu je Kampf die Spurzeile „ready but unused“ mit
+  den Gründen. Erfasst: 22 Puppenkämpfe, 19 Jobs (SAM, MNK, DRG, RPR, NIN ×3, VPR, BRD, MCH, DNC, BLM, SMN, PCT, RDM, GNB,
+  PLD, WAR, DRK, SGE, SCH); WHM, AST und BLU spielten keinen Puppenkampf.
+- *GCD-Lücken:* mit Wirkzeiten gerechnet unter 1 % je Kampf außer DRG (23,5 s am Anfang), PCT (7,9 s), DNC (5,0 s), BLM
+  (2,8 s); die früher gemessenen Lücken bei PCT und SMN waren Wirkzeiten.
+- *Abklinggruppen über den Jobwechsel:* Bruderschaft (MNK) wartete auf Ikishoten (SAM), Ley-Linien (BLM) auf die Komplexe
+  Choreographie (DNC), das erste Wildfire (MCH) auf Sperrfeuer (BRD), Gleißender Schein (SMN) auf Ley-Linien – alle in
+  Gruppe 20, auf die Sekunde nach 120 s (240 s nach Ley-Linien mit zwei Ladungen). Spiel, kein Defekt; die späten
+  Opener dieser Jobs sind Folge der Testfolge an der Puppe.
+- *Defekt 1, Ladungsprüfung:* `CooldownCheck` hielt Gleißender Schein mit „ChargesKept“ noch 120 s, nachdem das Spiel ihn
+  freigab (Spur: bereit 120,5 s, 203 Ablehnungen „ChargesKept“), weil die Gruppe noch die 240-s-Gesamtdauer von Ley-Linien
+  trug; Sol-Bahamut wartete 29 s darauf (`searingSettled`; Bahamut 18:45:38, Solar erst 18:47:04). *Gebaut:* Die Prüfung
+  gilt nur für Aktionen mit mehr als einer Ladung (`MaxCharges`). Konzept 03, K2.
+- *Defekt 2, Beschwörer:* Die Demi-Beschwörungen kommen bei 2,35 s GCD alle 57 s (gemessen; The Balance, Summoner Basic
+  Guide 7.55: „the summon demi-primal abilities also scale with spell speed“), Searing Light alle 120 s; der Buff fiel 6
+  und 11 s nach Solar und wäre im nächsten Zyklus nach dem Ende der Phase frei geworden und bis zur nächsten Solar-Phase
+  gewartet [Schätzung, rund 95 s]. Meine Annahme in Konzept 12, „on cooldown“ falle für einen Beschwörer mit Solar
+  zusammen, war für GCDs unter 2,50 s falsch. *Gebaut:* Allein in der Gruppe und mit Burst geht ein bereiter Buff auch
+  außerhalb von Solar, wenn Solar nicht bis zum nächsten GCD bereit ist (`SearingLightOnCooldownAlone`; The Balance:
+  „Searing Light should be used on cooldown …“, „do not delay your demi-primals“). Seine Vorgabe (Phasenbuch mit
+  mehreren Beschwörern) bleibt unverändert.
+- *Defekt 3, Maschinist:* Wildfire nur 2 von 4 Fenstern (18:24:26, 18:28:25). Um 18:26:26,9 ging Full Metal Field 0,2 s,
+  nachdem Wildfire frei wurde; das Spiel nennt eine Aktion in ihrer letzten halben Sekunde schon frei
+  (FFXIVClientStructs, `IsActionOffCooldown`: „off-cooldown or slidecastable“), für den Weave davor war kein Platz, und
+  Wildfire wartete auf das nächste Full Metal Field. *Gebaut:* Wildfire auch im Weave direkt nach Full Metal Field, vor
+  Hypercharge; Hypercharge liest dafür auch den letzten GCD (The Balance, Machinist Basic Guide 7.3: „Excavator > Full
+  Metal Field > (Hypercharge + Wildfire)“). Konzept 14, Maschinist.
+- *Dragoon, seine Einstellung:* Sternensturz 2 von 11 Fenstern des Lebens des Drachen, Drachenfeuersturz 2 von 6. Beide
+  Sprünge gehen nur innerhalb „Only use damaging gap closers within this distance“; die stand am 04.11. auf 0 y (A528),
+  und A529 behielt sie für alle Jobs außer dem Schildansturm (seine Entscheidung B). Preis nach den Wirktexten: 9 ×
+  (840 + 1000) + 4 × (500 + 550) = 20.760 Potenz in 11 min. Nicht geändert; ihm vorgelegt.
+- *Übrige Jobs ohne Abweichung von Gewicht:* SAM, VPR, BRD, GNB, PLD, WAR, DRK (Abklingzeiten auf ihrer Zahl, keine
+  GCD-Lücke); NIN siehe A956; BLM vor A951 gespielt (Spontaneität „not asked“, seither gebaut); die Pulls mit Zermürben
+  und Stumpfsinn bei 0,0 s sind seine Drücke von Hand.
+- *Falsifikation:* Kein Defekt? Widerlegt je Fall durch Spur und Mitschnitt (oben). Option falsch? Ladungsprüfung: Für eine
+  Aktion mit einer Ladung ohne fremde Füllung ist die Restzeit 0, die Änderung dort ohne Wirkung. Searing Light: Ein Buff
+  früher als Solar deckt die Phase ganz, solange er höchstens 5 s vorher fällt (20 s Buff, 15 s Phase); weiter vorn deckt
+  er sie teilweise, dafür liegt er auf seiner Abklingzeit. Wildfire: Nach Full Metal Field fällt es in den ersten Weave;
+  Hypercharge folgt, weil es auf ein bereites Wildfire wartet (`WillHaveOneCharge(30)`). Ausgeliefert, und nichts ändert
+  sich? Bei 2,50 s GCD (Searing Light), bei Wildfire im Weave davor (der Normalfall), ohne Jobwechsel (Ladungsprüfung).
+- *Vorhersage:* Nächster Puppen-Upload mit einem Build ab diesem Commit: (1) Maschinist: Wildfire in jedem Fenster, Abstand
+  120 s (± ein GCD), im ACT-Mitschnitt; widerlegt bei einem Abstand von 240 s. (2) Beschwörer mit GCD unter 2,50 s:
+  Gleißender Schein im Abstand seiner Abklingzeit (120 s ± ein GCD); widerlegt bei einem Abstand über 125 s. (3) Nach
+  einem Jobwechsel kein „ChargesKept“ in „ready but unused“ für eine Aktion ohne Ladungen. Nicht maschinenlesbar, weil die
+  Spur keine Zeile je Einsatz schreibt.
+- *Prüfgrad:* Mitschnitt und Spur ausgewertet; Code, Compile, 66 Prüfschritte grün; im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

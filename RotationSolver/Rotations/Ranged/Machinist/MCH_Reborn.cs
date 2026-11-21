@@ -121,7 +121,7 @@ public sealed class MCH_Reborn : MachinistRotation
 					return true;
 				}
 			}
-			if (HasWildfire && IsLastAction(false, FullMetalFieldPvE))
+			if (HasWildfire && (IsLastAction(false, FullMetalFieldPvE) || IsLastGCD(false, FullMetalFieldPvE)))
 			{
 				if (HyperchargePvE.CanUse(out act, skipTTKCheck: true))
 				{
@@ -319,6 +319,10 @@ public sealed class MCH_Reborn : MachinistRotation
 			{
 				if (Heat >= 50 || HasHypercharged)
 				{
+					// Concept 14, "Wildfire im Zwei-Minuten-Fenster" (A957): late in the weave before Full Metal Field, or - when
+					// Full Metal Field went while Wildfire was still in its last half second - in the weave right after it, ahead
+					// of Hypercharge (The Balance: "Excavator > Full Metal Field > (Hypercharge + Wildfire)"). Before, it then
+					// waited two minutes for the next Full Metal Field.
 					if (WeaponRemain < (GCDTime(1) / 2) && nextGCD.IsTheSameTo(false, FullMetalFieldPvE))
 					{
 						if (WildfirePvE.CanUse(out act))
@@ -328,6 +332,12 @@ public sealed class MCH_Reborn : MachinistRotation
 								return true;
 							}
 						}
+					}
+
+					if (!IsOverheated && IsLastGCD(false, FullMetalFieldPvE) && WildfirePvE.CanUse(out act)
+						&& (!WildfireBoss || WildfirePvE.Target.Target.IsBossFromIcon()))
+					{
+						return true;
 					}
 				}
 			}

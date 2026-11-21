@@ -2968,6 +2968,17 @@ vorhergesagte bewegungen nicht von allen jobs gelesen? gründe?"; an der Version
   deren letzte Ladung wartet auf Gefahr, Konzept 07) und nicht für Bewegung mit fester Strecke. Spurzeile je Aktion und
   Kampf „fight end: … charges released“, Vorhersage `fight-end-charges-line-form`. *Ausgeliefert, und nichts ändert
   sich:* Ohne gemessene Zeit bis zum Tod oder bei mehreren Gegnern bleibt alles wie bisher.
+- *Nur Fähigkeiten mit Ladungen (Upload 20.11.2026, A957):* Abklinggruppen gelten über den Jobwechsel hinweg, sie sind
+  Plätze im Spiel, keine Jobs (gemessen: Bruderschaft kam erst, als Ikishoten des Samurai abgelaufen war; Ley-Linien
+  wartete auf die Komplexe Choreographie des Tänzers, das erste Wildfeuer auf das Sperrfeuer des Barden – alle drei in
+  Gruppe 20, jeweils auf die Sekunde nach 120 s). Das ist Spiel, kein Defekt. Die Ladungsprüfung aber las die Gruppe
+  samt der Gesamtdauer der Aktion, die sie zuletzt gefüllt hatte: Nach Ley-Linien (zwei Ladungen, 240 s Gesamtdauer)
+  hielt sie Gleißender Schein – eine Ladung – noch 120 s, nachdem das Spiel ihn freigab, und Sol-Bahamut wartete
+  29 s auf ihn (die Beschwörung wartet auf einen bereiten Buff, Konzept 12). Eine Aktion mit einer Ladung hat keine
+  zurückzuhalten: Die Prüfung gilt nur, wo die Aktion selbst mehr als eine Ladung hat (`MaxCharges` des Spiels für
+  Stufe und Aktion). *Im Kampf:* Nach einem Jobwechsel kommt jede Abklingzeit mit einer Ladung, sobald das Spiel sie
+  freigibt. *Gegenthese:* „Eine Aktion mit einer Ladung, die frei ist, steht nie in der Prüfung.“ Ohne fremde Füllung
+  der Gruppe trifft das zu (die Restzeit ist dann 0); die Änderung ist dort ohne Wirkung und nur nach dem Wechsel wirksam.
 
 **Vorbild: die Kampfrotationen von BossMod** (seine Frage, 19.11.2026: „bringt eigentlich der ai-kampf modus in bossmod
 reborn oder in bossmod was? ist da was, dass rsr verbessern könnte? … ich meine die dortige kampfrotation";

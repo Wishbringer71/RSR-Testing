@@ -28,4 +28,18 @@ public sealed partial class SMN_Reborn
 
 		return TimeSpan.FromMilliseconds(now - _burstSummonReadySince).TotalSeconds > WeaponTotal;
 	}
+
+	/// <summary>
+	/// Concept 12, "Sol-Bahamut läuft dem Buff davon" (A957): the demi summons' recast shortens with spell speed, so below a
+	/// 2.50 s GCD Solar Bahamut comes before Searing Light and the buff turns ready outside the phase. A lone Summoner with
+	/// burst on then fires it on cooldown (The Balance: "Searing Light should be used on cooldown") instead of holding it up
+	/// to a whole cycle for the next Solar. Not while the burst summon comes by the next GCD - that wait is the burst rule's
+	/// own - and not with another Summoner in the party, where the phase book decides.
+	/// </summary>
+	/// <param name="bigSummonReady">Whether the burst summon is ready by the next GCD.</param>
+	private bool SearingLightOnCooldownAlone(bool bigSummonReady)
+	{
+		// Out of combat its own check holds it (ModifySearingLightPvE: InCombat).
+		return IsBurst && !bigSummonReady && !AnotherSummonerInParty && SearingLightPvE.EnoughLevel;
+	}
 }

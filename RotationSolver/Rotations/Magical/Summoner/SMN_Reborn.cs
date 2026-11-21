@@ -601,6 +601,7 @@ public sealed partial class SMN_Reborn : SummonerRotation
 
 		var mayFireSearingLight = burstInSolar
 			|| burstAboutToStart
+			|| SearingLightOnCooldownAlone(bigSummonReady)
 			|| (AnotherSummonerInParty
 				&& ((inBigInvocation && BurstPhaseHeldByAnother)
 					|| (AllSearingPhasesHeld && fallbackBlockIsWorthIt && !HasAnySearingLight)));
