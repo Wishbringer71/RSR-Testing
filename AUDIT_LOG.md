@@ -28313,6 +28313,20 @@ dem TODO entfernt.
 *Umfang:* Wirktexte 172 von 172 mit „combat“ gelesen; Jobs mit einer Vorbereitung außerhalb des Kampfs 6 von 6 am Code
 geprüft.
 
+### A979 · Wartepunkte des TODO gegen den Upload vom 21. bis 25.11.2026 (26.11.2026)
+
+*Rotation jedes Jobs, Beastmaster (21 Kämpfe, Brett 2 und 3):* Ketten über Rally (24) und Rallying Cheer (3) getragen
+(„bst chain: … carries chain N on“), der Abschluss mit Äxten 34-mal für zwei oder mehr Gegner gehalten, mit Potenz und
+TP-Lage in der Zeile („bst finisher: axes held …“, A889); Borrow je Kampf einmal, gebunden an One with Nature des
+Horns (Konzept 01); Shield Charge drei- bis sechsmal je Kampf, gehalten nur unter der Abstandsgrenze (W2). Kein Verlust
+außer der Hornlücke (A975). Blaumagier und die 13 Churin- und Beiruta-Rotationen liefen nicht (geladen: WHM, SMN, PLD,
+DRK, RDM, BST, DNC, VPR, RPR, NIN, MNK, DRG, BLU, SCH; im Kampf nur WHM, SMN, BST, DNC, RDM und ein weiterer Nahkämpfer).
+*Übrige Wartepunkte:* Lumina `ExtractText` (Dalamud weiter 15.0.4.1), Weißmagier/Astrologe/Blaumagier an der Puppe, Ninja
+an der Puppe, Blaumagier Apokalypsis, Todeswand („arena edge“ 0 Zeilen), Charakterwerte, Absturz vom 11.11., Crucible-
+Flucht und Zauberbücher, Bretter 3 bis 5 (fortgeschrieben in A973), Teraflare, Samurai, Treffer ohne Objekt, FATE-Modul,
+Wirken stoppen: ohne die Daten, auf die sie warten. Technische Schuld: keine Auflösungsbedingung erfüllt.
+*Umfang:* Wartepunkte 16 von 16 und technische Schuld 13 von 13 gegen ihre Bedingung geprüft.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

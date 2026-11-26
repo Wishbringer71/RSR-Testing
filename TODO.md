@@ -137,7 +137,7 @@ nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigt
   (Weißmagier) und Life Surge (Dragoon); diese beiden Klassen auch in den 13 Churin- und Beiruta-Rotationen geprüft,
   ohne Befund. Die 13 Churin- und Beiruta-Rotationen sind verträglich (A936).
   Ihre 157 Einstellungstexte decken sich mit dem Code (A936). Blaumagier statisch: jeder Zauber, den die Matrix als
-  ungenutzt führte, gebaut oder mit Grund ausgeschlossen (A940 bis A945). *Nächster Schritt:* Blaumagier, Beastmaster und die
+  ungenutzt führte, gebaut oder mit Grund ausgeschlossen (A940 bis A945). Beastmaster am Mitschnitt vom 21. bis 23.11.2026 (21 Kämpfe auf Brett 2 und 3, A979): Ketten getragen, Abschlüsse aus Grund gehalten, kein Verlust außer der Hornlücke (Wartepunkt „Beastmaster: nach dem Fall des Begleiters kein Horn mehr“). *Nächster Schritt:* Blaumagier und die
   Burstfolgen der 13 am nächsten Mitschnitt, in dem sie laufen. *Konzept:* 14 (je Job), 03 „F · Über den Augenblick hinaus“.
 
 - **Blaumagier: Apokalypsis** (A944). *Im Kampf:* Liegt Apokalypsis ohne Sterblichkeit im Set, wirkt RSR ihn nie.
