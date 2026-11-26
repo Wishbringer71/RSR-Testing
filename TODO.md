@@ -45,9 +45,14 @@ GCD laufen darf. *Konzept:* 01, B2 und W1.
 ### Rotmagier: 17 s ohne Angriff auf Zephirin (Singularitäts-Reaktor) · N
 *Im Kampf (24.11.2026, 18:22:24 bis 18:22:41, A973):* Zephirin war zielbar und wirkte „Heiliges Kreuz“ (5264, 20 s;
 BossModReborn: Raidwide, Schaden nach seinen Rest-LP). Seine Auto-Angriffe trafen Zephirin, RSR wählte keinen GCD:
-jeder Angriff mit `NoTarget`, Nobler Impakt mit `GameStatus`. Die Spur nennt keinen Grund. *Ort:* Zielwahl
-(`TargetFilter`, `ObjectHelper.IsAttackable`) für BNpc 0x1454 während des Wirkens. *Nächster Schritt:* am Code
-bestimmen, welche Prüfung das zielbare Add verwirft, dann Loop. *Konzept:* 03, Zielwahl.
+jeder Angriff mit `NoTarget`, Nobler Impakt mit `GameStatus`. Die Spur nennt keinen Grund. *Ursache (am Code):*
+`ObjectHelper.IsAttackable` liest „Previously engaged targets“ – den Text der Einstellung „Engage settings“, ab Werk
+`AllTargetsWhenSoloInDuty` in der Gruppe – als „hat gerade ein Ziel“ (`TargetObject is not null`); Zephirin wirkte auf
+sich selbst und hatte keines, obwohl die Gruppe und RSR ihn bis 18:22:24 angriffen. Der Text bindet. Dieselbe
+Lesart tragen `TargetsHaveTarget`, `AllTargetsWhenSolo` und `SoloDeepDungeonSmart` im Kampf. *Nächster Schritt:* Loop
+zur Frage, woran „schon im Kampf mit der Gruppe“ zu messen ist (Feindliste des Spiels, eigene Treffer der Gruppe,
+Kampfmerker des Gegners) – mit der Antithese der Gegner, die mit fremden Spielern kämpfen (offene Welt). *Konzept:* 03,
+Zielwahl.
 
 ## Offene Arbeit
 
