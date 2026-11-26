@@ -117,7 +117,7 @@
   },
   {
    "repo": "ofnature/Daedalus",
-   "commit": "6ba52aa11",
+   "commit": "9b7352e10",
    "date": "2026-11-26",
    "use": "Feldnotizen, Rotationen aller Jobs, Crucible (A600, A660)"
   },
@@ -183,7 +183,7 @@
   },
   {
    "repo": "t3knical/DalamudPlugins",
-   "commit": "fe0d18361",
+   "commit": "880152f6a",
    "date": "2026-11-26",
    "use": "Tekz-BossmodReborn-Fork (Zielvorrang je Kampf), BeastMasterHelper (A667)"
   },

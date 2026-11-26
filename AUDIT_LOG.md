@@ -28326,6 +28326,9 @@ an der Puppe, Blaumagier Apokalypsis, Todeswand („arena edge“ 0 Zeilen), Cha
 Flucht und Zauberbücher, Bretter 3 bis 5 (fortgeschrieben in A973), Teraflare, Samurai, Treffer ohne Objekt, FATE-Modul,
 Wirken stoppen: ohne die Daten, auf die sie warten. Technische Schuld: keine Auflösungsbedingung erfüllt.
 *Umfang:* Wartepunkte 16 von 16 und technische Schuld 13 von 13 gegen ihre Bedingung geprüft.
+*Quellen am Auftragsende (`check_source_updates.py`, 26.11.2026):* 41 Quellen, zwei bewegt, beide nur `repo.json`:
+Daedalus 9b7352e10 (Versionen der Schwester-Plugins Hephaestus 0.2.0 und Orion 0.1.10, kein Code von Daedalus),
+t3knical/DalamudPlugins 880152f6a (Download-Zähler). Kein Nutzen für RSR; fortgeschrieben. Upstream: kein neuer Commit.
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
