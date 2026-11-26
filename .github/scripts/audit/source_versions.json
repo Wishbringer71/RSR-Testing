@@ -3,7 +3,7 @@
  "sources": [
   {
    "repo": "aers/FFXIVClientStructs",
-   "commit": "c4b4d5ecb",
+   "commit": "a318c0b05",
    "date": "2026-11-26",
    "use": "Client-API"
   },

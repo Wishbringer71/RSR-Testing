@@ -28124,6 +28124,31 @@ so dass ein Flächen-GCD an einer einzelnen Puppe nicht gewählt wird. Ob sein B
     Sapphire (9), t3knical (5, Downloadzahlen), Splatoon (2, alte Ultimate-Skripte): kein Bezug zu einer Regel von RSR.
 - *Prüfgrad:* Compile, Prüfskripte (67 mit `check_setting_swap.py`, Regressionsfall am Stand davor); im Spiel ungesehen.
 
+### A972 · TODO im vollen Loop: Referenzprüfung ohne zweite Sitzung, Dalamud beim Bauen aktuell (26.11.2026)
+
+- *Auftrag:* „weiter mit den punkten in der todo im vollen loop“. Defekte und Offene Arbeit leer; je übriger Punkt die
+  Auflösungsbedingung gemessen.
+- *RefCheck für RebornMaterial 7.5.8.4 (A971), geschlossen:* Statt `RefCheck` aus Retainer-Repricer in einer zweiten
+  Sitzung ein eigenes Werkzeug, `.github/tools/refscan` (System.Reflection.Metadata aus dem SDK, keine neue Abhängigkeit):
+  jede Referenz auf eine andere Assembly mit Name und Signatur gegen Typ und Basistypen, Weiterleitungen gefolgt.
+  Selbsttest: zwei Fassungen einer Bibliothek, die zweite ohne eine gerufene Methode – 8 von 8 Referenzen aufgelöst
+  gegen die erste (geerbt, verschachtelt, generisch), genau ein Befund gegen die zweite. Ein erster Entwurf las den
+  Kopf einer Typspezifikation falsch und ließ dadurch die Referenzen auf generische Typen ungeprüft; der Selbsttest
+  zeigte es als „2 with a parent not checked“, behoben. Ergebnis gegen Dalamud 15.0.4.1 (Verteilung vom 19.11.2026):
+  RebornMaterial 310, ECommons 1.160, RotationSolver 1.720 Referenzen auf fremde Assemblies, 0 unaufgelöst. Ungeprüft
+  nur Referenzen auf generische Instanzen eigener Typen (37, 752, 238) und drei Array-Zugriffe der Laufzeit. Konzept 24,
+  Skill `upstream-sync` Schritt 5 fortgeschrieben.
+- *Befund am eigenen Hilfsmittel:* `cloud_build.sh` holte Dalamud nur, wenn es fehlte; hier baute alles seit dem
+  10.11.2026 gegen 15.0.4.0, die CI und er gegen 15.0.4.1. Jetzt vergleicht es die Fassung der Verteilung bei jedem Lauf
+  und holt neu bei Abweichung. Gegen 15.0.4.1 gebaut: ohne Fehler und Warnung.
+- *Übrige Punkte, Bedingung gemessen:* Lumina `ExtractText` – die Lumina in Dalamud 15.0.4.1 trägt die Markierung nicht
+  („Use ToString()“ 0-mal), wartet. Die zwölf übrigen Wartepunkte warten auf einen Upload oder auf ihn; keiner hat einen
+  neuen. Die elf Punkte technischer Schuld: keine Auflösungsbedingung erfüllt (kein Eingriff in die drei Modelle, in
+  Searing Light oder die Zustandskommandos; Bozja, Aquapolis und die zweite Installation nicht genannt; keine neue Quelle
+  für Schildwerte, Geschwister-Ids oder Hilfsaktionen).
+- *Quellen:* FFXIVClientStructs a318c0b05 (ein Commit an `PoseTypeInfo`, von RSR nicht gelesen) fortgeschrieben.
+- *Prüfgrad:* Werkzeug mit Selbsttest, Compile gegen 15.0.4.1, Prüfskripte.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
