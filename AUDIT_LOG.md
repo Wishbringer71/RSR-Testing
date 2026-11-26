@@ -28373,6 +28373,11 @@ ein Oder.
 und Umbral Soul vor dem nächsten Pull. Beastmaster, `DefenseTrace.log`: Eine Zeile „horn relief: … from the pull“ nur in
 einem Kampf, der ohne Begleiter beginnt; nach „the familiar was gone“ folgt die Ankunft ohne den Zusatz. Crucible: Unter
 der Linie „crucible item: … Tonic (at N % HP“ nur, wenn kein reiner Heilgegenstand gehalten ist, der hebt.
+*Quellen am Auftragsende (`check_source_updates.py`, 26.11.2026):* 41 Quellen, eine bewegt: BeirutaNa1na/
+RotationSolverReborn 5acdc27f3 („CD Plan UI“, 26.11.2026) – Auswahl der Plan-Dateien für Beirutas Timeline-Pläne in
+Savage und Ultimate, Texte der Optionen und eine Liste abwählbarer Planaktionen der vier Beiruta-Heiler. Am Kampf
+ändert sie nichts, was eine Regel des Forks trägt; die Schutzregeln des Forks lesen BossModReborn, nicht diese Pläne.
+Kein Nutzen, fortgeschrieben. priestkos/FrontlineAdvisor nicht erreichbar (wie zuvor). Upstream: kein neuer Commit.
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
