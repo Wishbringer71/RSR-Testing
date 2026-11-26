@@ -412,6 +412,26 @@ die eigene Wirkzeit nicht, ein Zauber, der davor beginnt, wird im Fenster abgebr
 Die Liste lädt aus Upstreams Repository und nur, wenn die Datei im Konfigurationsordner fehlt oder die Liste
 zurückgesetzt wird; ein neuer Eintrag von Upstream erreicht eine bestehende Datei nicht von selbst.
 
+**Status, die die eigenen Aktionen sperren** (Upstream, `StatusHelper.LocksActions`, ausgewertet A971). Trägt der
+Spieler einen Status, dessen Zeile im Statusblatt `LockActions` setzt oder dessen eigener Wirktext im englischen Blatt
+„unable to execute actions“ sagt, und reicht er über den laufenden GCD und eine Sekunde hinaus, wählt RSR nichts.
+Upstream 7.5.8.11 (38afb1730) nahm dafür drei „Out of the Action“ ohne das Flag von Hand auf (1113, 1284, 1462). Der
+Text trifft im Blatt 17 Zeilen ohne das Flag (xivapi v2, 26.11.2026): diese drei, Fetters 3755, Bonds of Loathing 4185
+und zwölf Verwandlungen („Transformed into a toad and unable to execute actions“: Toad dreimal, Occult Toad, Imp,
+Piggy, Chicken, Odder, Owlet, Away with the Fae, Beyond Beleafed, Miracle of Nature). Im Kampf: Unter ihnen nimmt das
+Spiel keine Aktion an; RSR drückte bisher weiter ins Leere, jetzt wartet es, und mit dem Ende des Status geht die
+Rotation weiter. Die Erkennung über den Text ist die allgemeine Regel, die Upstreams Liste einschließt, und gilt auch für
+einen künftigen Status mit demselben Text. Dieselbe Erkennung liest die Sperre der eigenen Abwehr (Konzept 09,
+„Spielerweite Sperre und Frist“, `PlayerAbilitiesLocked`), die bisher nur das Flag und Amnesia las. Seit Upstream
+7.5.8.11 zählt ein Status ohne Restzeit als endlos und sperrt damit; vorher sperrte er nie. Das Statusblatt führt 23
+dauerhafte nützliche Status mit `LockActions` (xivapi v2, 26.11.2026), darunter Mounted, Passenger, In Event,
+Preoccupied, Affixed, Restricted Access – unter ihnen nimmt das Spiel ohnehin keine Aktion an. *Gegenthese:* Ein solcher
+Status, unter dem das Spiel doch Aktionen annimmt, hielte RSR an. Für „Unlimited“ (2781), „Earthen Accord“ (778) und
+„Resonant“ (1438) ist unbelegt, ob das Spiel darunter eigene oder Inhaltsaktionen annimmt. *Messweg:* Sperrt ein
+Status ohne Restzeit, schreibt RSR einmal je Status und Gebiet „actions held by a status without an end: …“ ins
+`DefenseTrace.log`; in einem Inhalt, in dem er dabei handeln konnte, zeigt die Zeile den Status, der aus der Regel
+fällt.
+
 ---
 
 ## C · Muster, die in jedem Job wiederkehren
@@ -1842,6 +1862,15 @@ jeder Versuch belegte ein Webfenster. Jetzt plant RSR ihn außerhalb von Pilgers
 
 *Ursache:* Die Liste `BadStatus` enthielt nur Gründe des Augenblicks – Abklingzeit, kein Gegenstand, Zustand, nicht
 gelernt –, keinen Ortsgrund. A613 verließ sich darauf, dass die Prüfung die Ablehnung des Spiels liest (C179).
+
+*Was der Server ablehnt (Upstream 7.5.8.11, 513ed3739, ausgewertet A971):* Eine Aktion, die der Client angenommen
+hat, kann der Server noch ablehnen; er meldet das mit ActorControl 0x2BC, der Aktions-Id und der Nummer der Meldung
+(`Watcher`, `DataCenter.AddActionRejected`). Upstream nutzt das für Bodenziele: Lehnte der Server eine Bodenheilung ab,
+geht sie 5 s lang auf den Wirker selbst (Konzept 07, „Sachstand (A398)“). Die Dynamische Rotation (D1) liest dagegen, was der
+Client beim Drücken ablehnt, und lässt Bodenziele aus. Beides ergänzt sich ohne Doppelung. RSR schreibt jede
+Serverablehnung einmal je Aktion, Meldung und Gebiet ins `DefenseTrace.log` („the server rejected …“). Ob ein solcher
+Fall auch bei Aktionen auf ein Ziel vorkommt und eine Regel braucht, zeigt erst diese Zeile; ohne sie ist die Lage
+unbelegt.
 
 *Gegenthesen, mit Versuch der Widerlegung:*
 - „Das Spiel antwortet außerhalb mit 0 und lehnt erst beim Einsatz ab": Dann fängt die Liste nichts. Die Messzeile nennt

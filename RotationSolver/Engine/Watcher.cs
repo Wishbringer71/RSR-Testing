@@ -109,6 +109,7 @@ public static partial class Watcher
 			else if (category == ActionRejectedCategory && p2 == 1 && entityId == Player.Object?.EntityId)
 			{
 				DataCenter.AddActionRejected(p3);
+				DynamicRotation.ServerRejected(p3, p1);
 				if (Service.Config.InDebug)
 				{
 					PluginLog.Debug($"[Watcher] The server rejected action {p3} (log message {p1}).");

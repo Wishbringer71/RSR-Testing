@@ -1,9 +1,11 @@
+using Dalamud.Game;
 using Dalamud.Game.ClientState.Statuses;
 using ECommons.Automation;
 using ECommons.DalamudServices;
 using ECommons.GameFunctions;
 using ECommons.GameHelpers;
 using ECommons.Logging;
+using System.Text.RegularExpressions;
 namespace RotationSolver.Engine.Helpers;
 
 public static partial class StatusHelper
@@ -155,6 +157,42 @@ public static partial class StatusHelper
 
 	private static HashSet<uint>? _amnesiaIds;
 
+	private static readonly Dictionary<uint, bool> _unableToExecuteActions = [];
+	private static readonly object _unableGate = new();
+	private static readonly Regex UnableWording = new("unable to execute actions", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+
+	/// <summary>
+	/// Whether the status's own effect text in the client's English sheet says the bearer is "unable to execute actions",
+	/// whatever language the client shows: Out of the Action without the LockActions flag, Fetters 3755, Bonds of Loathing
+	/// and twelve transformations (Toad, Imp, Piggy ...), 17 rows without the flag (concept 03, A971). False when the sheet
+	/// cannot be read.
+	/// </summary>
+	internal static bool UnableToExecuteActions(uint statusId)
+	{
+		lock (_unableGate)
+		{
+			if (_unableToExecuteActions.TryGetValue(statusId, out var known))
+			{
+				return known;
+			}
+
+			var result = false;
+			try
+			{
+				var sheet = Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.Status>(ClientLanguage.English);
+				result = sheet != null && sheet.TryGetRow(statusId, out var row) && UnableWording.IsMatch(row.Description.ExtractText());
+			}
+			catch (Exception)
+			{
+				// A sheet that cannot be read answers nothing; the LockActions flag still holds.
+				result = false;
+			}
+
+			_unableToExecuteActions[statusId] = result;
+			return result;
+		}
+	}
+
 	/// <summary>
 	/// Whether the player can use no ability right now, and for how much longer: a status whose row in the
 	/// client's status sheet locks actions (a stun, sleep, petrification and some 260 others), or Amnesia, which
@@ -175,7 +213,7 @@ public static partial class StatusHelper
 				continue;
 			}
 
-			if (_amnesiaIds.Contains(status.StatusId) || (TryGetStatusRow(status.StatusId, out var row) && row.LockActions))
+			if (_amnesiaIds.Contains(status.StatusId) || LocksActions(status, -1f))
 			{
 				locked = true;
 				rest = Math.Max(rest, status.RemainingTime);

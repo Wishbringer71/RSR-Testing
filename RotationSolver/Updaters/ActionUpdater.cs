@@ -344,6 +344,11 @@ internal static partial class ActionUpdater
 		{
 			if (StatusHelper.LocksActions(status, minRemaining))
 			{
+				if (status.RemainingTime == 0f)
+				{
+					DynamicRotation.HeldByEndlessStatus(status.StatusId);
+				}
+
 				return true;
 			}
 		}

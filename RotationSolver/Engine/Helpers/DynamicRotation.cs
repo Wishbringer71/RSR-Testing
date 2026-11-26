@@ -14,6 +14,29 @@ internal static class DynamicRotation
 	private static readonly Dictionary<(uint Action, ulong Target), uint> _refused = [];
 	// Concept 03, D1 (A957): a refusal without a reason is a matter of timing; written once per action, target and fight.
 	private static readonly HashSet<(uint Action, ulong Target)> _tracedWithoutReason = [];
+	// Concept 03, "Was das Spiel hier ablehnt" and "Status, die die eigenen Aktionen sperren" (A971): written once per area.
+	private static readonly HashSet<(uint Action, uint Message)> _tracedServerRejections = [];
+	private static readonly HashSet<uint> _tracedEndlessLocks = [];
+
+	/// <summary>The server rejected <paramref name="actionId"/> after the client sent it, with log message <paramref name="message"/>.</summary>
+	internal static void ServerRejected(uint actionId, uint message)
+	{
+		if (_tracedServerRejections.Add((actionId, message)))
+		{
+			var name = Service.GetSheet<Lumina.Excel.Sheets.Action>().GetRowOrDefault(actionId)?.Name.ToString() ?? actionId.ToString();
+			DefenseTrace.Line($"the server rejected {name} ({actionId}) with log message {message}");
+		}
+	}
+
+	/// <summary>A status without an end that sets LockActions holds every action of the player.</summary>
+	internal static void HeldByEndlessStatus(uint statusId)
+	{
+		if (_tracedEndlessLocks.Add(statusId))
+		{
+			var name = StatusHelper.StatusNameOf(statusId);
+			DefenseTrace.Line($"actions held by a status without an end: {name} ({statusId})");
+		}
+	}
 
 	/// <summary>The game said no to <paramref name="action"/> pressed on its target.</summary>
 	internal static unsafe void PressFailed(IBaseAction action)
@@ -76,6 +99,8 @@ internal static class DynamicRotation
 	{
 		_refused.Clear();
 		_tracedWithoutReason.Clear();
+		_tracedServerRejections.Clear();
+		_tracedEndlessLocks.Clear();
 	}
 
 	/// <summary>A fight ended: the next one writes its refusals without a reason again.</summary>

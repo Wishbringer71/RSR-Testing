@@ -655,7 +655,7 @@ public static partial class StatusHelper
 		}
 
 		return (StatusID)status.StatusId is StatusID.OutOfTheAction_1113 or StatusID.OutOfTheAction_1284 or StatusID.OutOfTheAction_1462
-			|| (TryGetStatusRow(status.StatusId, out var row) && row.LockActions);
+			|| (TryGetStatusRow(status.StatusId, out var row) && row.LockActions) || UnableToExecuteActions(status.StatusId);
 	}
 
 	/// <summary>
