@@ -51,6 +51,12 @@ public sealed partial class RotationSolverPlugin : IAsyncDalamudPlugin
 		M3.Initialize(pluginInterface, Service.Config);
 		M3Tooltip.Handler = ImguiTooltips.ShowTooltip;
 
+		M3Brand.Name = Name;
+		M3Brand.Version = typeof(RotationSolverPlugin).Assembly.GetName().Version?.ToString() ?? string.Empty;
+		M3Brand.FallbackIcon = FontAwesomeIcon.Fire;
+		M3Brand.LogoCornerFraction = 0.047f;
+		M3Brand.SetLogoResource(typeof(RotationSolverPlugin).Assembly, "RotationSolver.Images.Logo.png");
+
 		_dis.Add(new Service());
 
 		ActionTracer.Init();
@@ -282,6 +288,7 @@ public sealed partial class RotationSolverPlugin : IAsyncDalamudPlugin
 			return;
 		}
 
+		M3Window.DefaultDensity = Service.Config.UiCompactLayout ? M3Density.Tight : M3Density.Compact;
 		M3.BeginFrame();
 		windowSystem.Draw();
 	}
@@ -480,6 +487,7 @@ public sealed partial class RotationSolverPlugin : IAsyncDalamudPlugin
 		BMRTimeline_IPCSubscriber.Dispose();
 		BMRPlan_IPCSubscriber.Dispose();
 		Navmesh_IPCSubscriber.Dispose();
+		BMRCrucible_IPCSubscriber.Dispose();
 		Wrath_IPCSubscriber.Dispose();
 
 		await saveLists;

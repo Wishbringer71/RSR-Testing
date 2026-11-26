@@ -511,39 +511,49 @@ internal partial class Configs
 	[UI("Tint color", Parent = nameof(ReddenDisabledHotbarActions))]
 	public Vector4 HotbarDisabledTintColor { get; set; } = new(1f, 0f, 0f, 0.40f);
 
-	[ConditionBool, UI("Show setting descriptions inline",
-		Description = "Prints each setting's description underneath its name instead of only in the hover tooltip. Turn this off for a denser list.",
-		Filter = UiCustomize)]
-	private static readonly bool _uiInlineDescriptions = true;
-
-	[UI("Interface accent colour",
-		Description = "This acts as the primary color that all other colors are derived from.",
+	[UI("Accent color",
+		Description = "The whole color scheme is built from this one color. Pick a preset, or the last swatch for your own color.",
 		Filter = UiCustomize)]
 	public Vector4 UiAccentColor { get; set; } = new(0.690f, 0.125f, 0.122f, 1f);
 
 	[UI("Text size",
-		Description = "Scales the text in every RSR window, on top of Dalamud's own font settings.",
+		Description = "Scales the text, on top of Dalamud's own font size.",
 		Filter = UiCustomize)]
-	[Range(0.75f, 1.75f, ConfigUnitType.Percent, 0.01f)]
+	[Range(0.75f, 2f, ConfigUnitType.Multiplier, Step = 0.05f)]
 	public float UiTextScale { get; set; } = 1f;
 
-	[UI("Element size",
-		Description = "Scales the padding, spacing and controls in every RSR window. Turn it down for a more compact layout; text keeps to the Text size setting.",
+	[UI("Control size",
+		Description = "Scales buttons, switches, fields and the other controls.",
 		Filter = UiCustomize)]
-	[Range(0.75f, 1.75f, ConfigUnitType.Percent, 0.01f)]
+	[Range(0.75f, 2f, ConfigUnitType.Multiplier, Step = 0.05f)]
 	public float UiElementScale { get; set; } = 1f;
 
-	[UI("Padding",
-		Description = "Scales the space around and between things in every RSR window: window edges, card and row padding, and the gaps between items. Buttons, icons and text keep their size.",
+	[UI("Spacing",
+		Description = "Scales the space around and between things, without resizing them.",
 		Filter = UiCustomize)]
-	[Range(0.25f, 2f, ConfigUnitType.Percent, 0.01f)]
-	public float UiPaddingScale { get; set; } = 1.5f;
+	[Range(0.5f, 2f, ConfigUnitType.Multiplier, Step = 0.05f)]
+	public float UiPaddingScale { get; set; } = 1f;
 
 	[UI("Animation length",
-		Description = "Scales how long animations take in every RSR window, such as menus, folding windows and moving selections. Set it to 0% to turn animations off.",
+		Description = "How long animations take, such as folding a window or opening a card. 0% turns them off.",
 		Filter = UiCustomize)]
-	[Range(0f, 2f, ConfigUnitType.Percent, 0.01f)]
+	[Range(0f, 2f, ConfigUnitType.Percent, Step = 0.05f)]
 	public float UiMotionScale { get; set; } = 1f;
+
+	[UI("Compact layout",
+		Description = "Tighter padding and shorter rows, so more fits on screen.",
+		Filter = UiCustomize, Order = 1)]
+	public bool UiCompactLayout { get; set; } = false;
+
+	[ConditionBool, UI("Inline descriptions",
+		Description = "Show each setting's description under its name. Turn it off to show descriptions on hover instead.",
+		Filter = UiCustomize, Order = 2)]
+	private static readonly bool _uiInlineDescriptions = true;
+
+	[UI("Icons-only sidebar",
+		Description = "Turn the sidebar into a narrow strip of icons. Hover an icon to see its name.",
+		Filter = UiCustomize, Order = 3)]
+	public bool UiIconSidebar { get; set; } = false;
 
 	[ConditionBool, UI("Show a toast when a command queues an action",
 		Description = "Confirms each action that a /rotation DoAction command adds to the queue.",
@@ -762,7 +772,7 @@ internal partial class Configs
 	[ConditionBool, UI("Sprint when a party tank sprints (non-tanks only)", Parent = nameof(UseAbility))]
 	private static readonly bool _autoSprintWithTank = false;
 
-	[ConditionBool, UI("Use beneficial ground-targeted actions", Description = "1.    Self-Target Fallback:\r\nIf range is zero, always targets the player and returns all affectable targets at the player's position.\r\n2.    Preferred Positions (OnLocations):\r\n•    Tries to get predefined beneficial positions for the current territory.\r\n•    If none are found and the content is a trial or raid, uses fallback points (e.g., 0,0 or 100,100 point as those are the center of arenas most of the time).\r\n•    Picks the closest point to the player, applies a small random offset, and checks if it’s within effect range.\r\n•    If so, returns that as the target area.\r\n3.    Boss Positional Fallback:\r\n•    If the current target is a boss with positional requirements and within range, uses the boss’s position (or a point within range) as the target area.\r\n4.    Party Member Fallback:\r\n•    Gathers party members within range + effect range.\r\n•    Attempts to find a party member who is being attacked (tank or focus target).\r\n•    If found, calculates whether to stay at the player’s position or move closer to the tank, based on distances and effect range.\r\n•    If not found or not needed, defaults to the player’s position.", Filter = HealingActionCondition, Section = 5)]
+	[ConditionBool, UI("Use beneficial ground-targeted actions", Description = "Places ground-targeted heals like Asylum, Sacred Soil and Earthly Star. RSR tries these spots in order:\r\n1. The party tank, when that option is on.\r\n2. The closest saved spot in this map's Beneficial AoE locations, when you are near it. Trials and full-party raids with no saved spot use the arena center.\r\n3. The boss.\r\n4. A point between you and the party member being targetted by the boss.\r\n5. Your own position.\r\nEvery spot is kept inside the action's range and your line of sight.", Filter = HealingActionCondition, Section = 5)]
 	private static readonly bool _useGroundBeneficialAbility = true;
 
 	[JobConfig, UI("Use them while moving", Parent = nameof(UseGroundBeneficialAbility))]

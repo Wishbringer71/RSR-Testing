@@ -73,10 +73,8 @@ internal static class BMRTimeline_IPCSubscriber
 	[EzIPC("Hints.IsDashSafe", true)]
 	internal static readonly Func<Vector3, Vector3, bool>? IsDashSafe;
 
-	// Hints.IsFixedDashSafe is not subscribed: BossModReborn registers it as (float range, bool backwards) from the
-	// player's facing, and the (Vector3, Vector3) subscription it had here failed on every call, which the safe
-	// wrapper turned into "unsafe" - every fixed dash and backstep was refused while BossModReborn ran (A313). RSR
-	// computes the landing point itself and asks Hints.IsDashSafe about that path.
+	[EzIPC("Hints.IsFixedDashSafe", true)]
+	internal static readonly Func<float, bool, bool>? IsFixedDashSafe;
 
 	internal static void Dispose() => IPCSubscriber_Common.DisposeAll(_disposalTokens);
 }

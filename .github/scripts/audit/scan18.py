@@ -51,12 +51,9 @@ ACCEPTED = {
         'internal persisted index, no UI and no label - stored state, not a promise to the user',
     'ForkVersion':
         'the fork migration count, read in Configs.Migrate in the same file; no UI and no label - stored state (A500)',
-    'UiPaddingScale':
-        'read outside this tree: Configs implements RebornMaterial.IM3Settings, and the package '
-        '(7.5.6.2, upstream 27f6acb41) reads it through that interface (name found in its DLL)',
-    'UiMotionScale':
-        'read outside this tree, as UiPaddingScale: an IM3Settings member since RebornMaterial 7.5.7.6 '
-        '(upstream 0c44a19ac); get_UiMotionScale is in the package DLL',
+    'SpacingDefaultUpdated':
+        'stored state without a label: upstream\'s one-time flag that moves a padding scale left at the old '
+        'default of 1.5 to the new 1.0, read in Configs.UpdateSpacingDefault in the same file (7ad68bdc5, A971)',
 }
 
 

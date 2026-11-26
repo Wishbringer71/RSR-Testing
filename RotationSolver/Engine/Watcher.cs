@@ -15,6 +15,7 @@ public static partial class Watcher
 {
 	private const uint CancelAbilityCategory = 15;
 	private const uint EnemyDotTickCategory = 0x605;
+	private const uint ActionRejectedCategory = 0x2BC;
 
 	// A heal-over-time tick on a target, amount in the second parameter: the aggregated one with 0 in the first, a ground
 	// effect's with its status there - beside the damage-over-time tick above (DeathRecap reads both so; A432).
@@ -104,6 +105,14 @@ public static partial class Watcher
 			{
 				// K4 probe (A557): an enemy's cast stopped on a board.
 				CrucibleBoard.RecordCastStopped(entityId, p1, p2, p3, p4);
+			}
+			else if (category == ActionRejectedCategory && p2 == 1 && entityId == Player.Object?.EntityId)
+			{
+				DataCenter.AddActionRejected(p3);
+				if (Service.Config.InDebug)
+				{
+					PluginLog.Debug($"[Watcher] The server rejected action {p3} (log message {p1}).");
+				}
 			}
 		}
 		catch (Exception ex)

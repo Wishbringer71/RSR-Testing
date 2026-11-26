@@ -459,10 +459,7 @@ public partial class MainWindow
 				drewSeparator = true;
 			}
 
-			var tooltip = GetRotationConfigTooltip(rotation, config);
-			var supporting = Service.Config.UiInlineDescriptions ? tooltip : null;
-
-			DrawRotationConfigRow(config, rotation, OtherCommandType.Rotations, supporting, tooltip);
+			DrawRotationConfigRow(config, rotation, OtherCommandType.Rotations, GetRotationConfigTooltip(rotation, config));
 		}
 
 		DrawJobTargetPriorities();
@@ -509,6 +506,11 @@ public partial class MainWindow
 					OtherConfiguration.AdloquiumTankPriority = list;
 					_ = OtherConfiguration.SaveAdloquiumTankPriority();
 				});
+		}
+
+		if (Player.Object.IsJobs(Job.BST))
+		{
+			DrawBeastmasterPreferredKinships();
 		}
 
 		if (!Player.Object.IsJobs(Job.AST))
