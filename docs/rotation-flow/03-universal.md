@@ -2629,7 +2629,13 @@ Rotation in der Strecke gewählt hatte (keinen oder welchen) und welche GCDs `Ca
 die Bilanz zählt nur „GCD free with nothing queued 50,90 s“. Ohne die Zeile bleibt jeder solche Stillstand eine
 Vermutung; der Schaden ist ein ganzer Burst. *Bauart:* Es sitzt dort, wo die Rotation entscheidet
 (`ActionUpdater.UpdateNextAction`), liest die Ablehnungen, die `ActionTracer.Reject` ohnehin meldet, und greift nicht
-ein. Kosten je Frame: ein Vergleich, solange kein Leerlauf läuft.
+ein. Kosten je Frame: ein Vergleich, solange kein Leerlauf läuft. *Nur beobachtete Zeit (A973):* Liegt zwischen zwei
+Aufrufen mehr als ein GCD – RSR stand aus, oder zwischen zwei Gebieten lief keine Rotation –, endet die Strecke dort,
+und die nächste beginnt neu. Bis dahin zählte der erste Frame des nächsten Kampfs die ganze Pause: Seine Spur vom 22.
+bis 25.11.2026 nannte „gcd idle: 1680,6 s“, 592,7 s, 538,0 s, 232,9 s und 171,7 s, jeweils kurz nach Kampfbeginn. Im
+Kampf wirkt dasselbe Maß über D2: Mit der aufgeblähten Strecke hätte der Ausweg schon im ersten Frame eines Kampfs
+gegriffen, in dem die Rotation bewusst keinen GCD wählt (in diesem Upload nicht beobachtet: „instead of none“ höchstens
+nach 5,4 s).
 
 Geltender Stand (A820): Kommt ein Cooldown, der eine eigene Abklinggruppe hat, im Kampf länger als einen GCD nicht,
 obwohl er bereit ist, schreibt RSR am Kampfende je Aktion, wie lange er bereit stand, wie oft ihn die Rotation fragte

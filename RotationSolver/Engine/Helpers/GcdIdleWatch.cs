@@ -39,6 +39,15 @@ internal static class GcdIdleWatch
 		var delta = _lastFrame == DateTime.MinValue ? 0f : (float)(now - _lastFrame).TotalSeconds;
 		_lastFrame = now;
 
+		// A973: more than a GCD between two calls is time RSR did not watch - it stood off, or no rotation ran between two
+		// areas. The stretch ends there and the next one starts afresh; before, the first frame of the next fight added the
+		// whole pause ("gcd idle: 1680.6 s", 25.11.2026), and D2 read it as a GCD long missed.
+		if (delta > DataCenter.DefaultGCDTotal)
+		{
+			Close();
+			delta = 0f;
+		}
+
 		var idle = DataCenter.InCombat && DataCenter.IsActivated() && DataCenter.HasHostilesInRange
 			&& Player.Object is { IsDead: false, IsCasting: false } && DataCenter.DefaultGCDRemain <= 0f;
 		if (!idle)
