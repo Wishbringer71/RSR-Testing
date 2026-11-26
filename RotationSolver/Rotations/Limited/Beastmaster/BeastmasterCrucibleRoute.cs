@@ -568,6 +568,11 @@ public partial class BeastmasterRotation
 			{
 				share += item.Value;
 			}
+			else if (TryItem(crucible, slot, CrucibleItemKind.MaxHp, out var tonic))
+			{
+				// A973: the Beast Tonic heals its share below the line (K8, rule 1).
+				share += tonic.HealShare;
+			}
 		}
 
 		return share;

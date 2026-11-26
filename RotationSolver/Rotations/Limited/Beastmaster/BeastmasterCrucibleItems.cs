@@ -119,6 +119,9 @@ public partial class BeastmasterRotation
 		RegexOptions.CultureInvariant | RegexOptions.Singleline);
 	private static readonly Regex CuresFamiliar = new(@"^Instantly cures most instances of (?<ailment>\w+) for familiar",
 		RegexOptions.CultureInvariant);
+	// A973: the share of HP an item that raises maximum HP restores with it - "while also restoring 10% of HP", "and restoring
+	// 10% of HP".
+	private static readonly Regex RestoresAlso = new(@"\b(?:also|and) restoring (?<share>\d+)% of HP", RegexOptions.CultureInvariant);
 	private static readonly Regex RaisesMaxHp = new(
 		@"^Grants (?<status>.+?) while also restoring \d+% of HP to self or familiar\..*?Increases maximum HP by",
 		RegexOptions.CultureInvariant | RegexOptions.Singleline);
@@ -198,11 +201,12 @@ public partial class BeastmasterRotation
 			}
 			else if (InflictsSelf.Match(text) is { Success: true } feral)
 			{
-				// A673: as its tempered counterpart - a buff, or maximum HP -, with the status it lays on the player.
+				// A673: as its tempered counterpart - a buff, or maximum HP -, with the status it lays on the player. A973: the
+				// share of HP it restores as well.
 				items[id] = new CrucibleItem(text.Contains("Increases maximum HP", StringComparison.Ordinal) ? CrucibleItemKind.MaxHp
 					: CrucibleItemKind.Buff, 0f, false, name, feral.Groups["status"].Value,
 					RaisesMagic: text.Contains("Increases magic damage dealt", StringComparison.Ordinal),
-					SelfStatus: feral.Groups["self"].Value);
+					HealShare: RestoredShare(text), SelfStatus: feral.Groups["self"].Value);
 			}
 			else if (ConvertText.Match(text) is { Success: true } convert)
 			{
@@ -243,7 +247,9 @@ public partial class BeastmasterRotation
 			}
 			else if (RaisesMaxHp.Match(text) is { Success: true } maxHp)
 			{
-				items[id] = new CrucibleItem(CrucibleItemKind.MaxHp, 0f, false, name, maxHp.Groups["status"].Value);
+				// A973: "while also restoring 10% of HP" - a heal under the line as well (K8, rule 1).
+				items[id] = new CrucibleItem(CrucibleItemKind.MaxHp, 0f, false, name, maxHp.Groups["status"].Value,
+					HealShare: RestoredShare(text));
 			}
 			else if (Resists.Match(text) is { Success: true } resists)
 			{
@@ -335,6 +341,11 @@ public partial class BeastmasterRotation
 
 		DefenseTrace.Line($"crucible items read: {items.Count}, token and loot boosts: {(eyes.Count > 0 ? string.Join(", ", eyes) : "none")}");
 		return items;
+
+		static float RestoredShare(string text)
+		{
+			return RestoresAlso.Match(text) is { Success: true } restores && Share(restores, out var share) ? share : 0f;
+		}
 
 		static bool Share(Match match, out float share)
 		{
@@ -537,7 +548,7 @@ public partial class BeastmasterRotation
 
 		if (InCombat && hp < line)
 		{
-			slot = BestHeal(crucible, hp, line);
+			slot = BestHeal(crucible, hp, line, withTonic: true);
 			why = $"at {hp:P0} HP (line {line:P0})";
 		}
 
@@ -1626,29 +1637,42 @@ public partial class BeastmasterRotation
 	}
 
 	// The healing item that lifts the player to the line with the least, a potion before ash at the same heal; while none
-	// does, the largest.
-	private static unsafe int BestHeal(InstanceContentCrucibleOfTheUnbroken* crucible, float hp, float line, bool familiar = false)
+	// does, the largest. A973: with <paramref name="withTonic"/> (below the line, K8 rule 1) the Beast Tonic counts with the
+	// share it restores, behind an item that only heals at the same share - it stays for the boss, where it raises the
+	// maximum too; not where the heal is to fill the maximum it raises (A717).
+	private static unsafe int BestHeal(InstanceContentCrucibleOfTheUnbroken* crucible, float hp, float line, bool familiar = false,
+		bool withTonic = false)
 	{
 		var best = -1;
 		CrucibleItem bestItem = default;
+		var bestIsTonic = false;
 		for (var slot = 0; slot < crucible->Inventory.Length; slot++)
 		{
 			// For the familiar only what names it: Crucible Ash heals you and the allies near you, and the familiar stands at
 			// the enemy (A577).
+			var isTonic = false;
 			if (!TryItem(crucible, slot, CrucibleItemKind.Heal, out var item) || (familiar && item.Allies))
 			{
-				continue;
+				if (!withTonic || familiar || !TryItem(crucible, slot, CrucibleItemKind.MaxHp, out var tonic) || tonic.HealShare <= 0f)
+				{
+					continue;
+				}
+
+				item = tonic with { Kind = CrucibleItemKind.Heal, Value = tonic.HealShare, Allies = false };
+				isTonic = true;
 			}
 
 			var lifts = hp + item.Value >= line;
 			var bestLifts = best >= 0 && hp + bestItem.Value >= line;
+			var preferredAtEqual = (bestIsTonic && !isTonic) || (bestIsTonic == isTonic && bestItem.Allies && !item.Allies);
 			if (best < 0
 				|| (lifts && !bestLifts)
-				|| (lifts && bestLifts && (item.Value < bestItem.Value || (item.Value == bestItem.Value && bestItem.Allies && !item.Allies)))
-				|| (!lifts && !bestLifts && item.Value > bestItem.Value))
+				|| (lifts && bestLifts && (item.Value < bestItem.Value || (item.Value == bestItem.Value && preferredAtEqual)))
+				|| (!lifts && !bestLifts && (item.Value > bestItem.Value || (item.Value == bestItem.Value && bestIsTonic && !isTonic))))
 			{
 				best = slot;
 				bestItem = item;
+				bestIsTonic = isTonic;
 			}
 		}
 
@@ -1759,7 +1783,9 @@ public partial class BeastmasterRotation
 	// gear the run wears, or (A668, the shop's scale) the gear <paramref name="gear"/> it weighs; 0 for any other.
 	private static float HealShareOf(CrucibleItem item, List<CrucibleGear>? gear = null)
 	{
+		// A973: the Beast Tonic's own share - K8 takes it below the line (rule 1).
 		return item.Kind == CrucibleItemKind.Heal ? item.Value
+			: item.Kind == CrucibleItemKind.MaxHp ? item.HealShare
 			: item.HealShare > 0f && (gear != null ? Carries(gear, item.HealCarrying) : WearsGearNamed(item.HealCarrying))
 				? item.HealShare : 0f;
 	}

@@ -1,0 +1,9 @@
+[
+ {
+  "id": "crucible-tonic-heals",
+  "archive": "A973",
+  "kind": "present",
+  "situation": "crucible items at the start of fight [0-9]+: .*Tonic",
+  "match": "crucible item: .*Tonic (at [0-9]+ % HP \\(line|against a boss)"
+ }
+]
