@@ -39,7 +39,22 @@ public sealed partial class SMN_Reborn
 	/// <param name="bigSummonReady">Whether the burst summon is ready by the next GCD.</param>
 	private bool SearingLightOnCooldownAlone(bool bigSummonReady)
 	{
-		// Out of combat its own check holds it (ModifySearingLightPvE: InCombat).
-		return IsBurst && !bigSummonReady && !AnotherSummonerInParty && SearingLightPvE.EnoughLevel;
+		// Out of combat its own check holds it (ModifySearingLightPvE: InCombat). A974: only where the group's raid buffs come
+		// in this fight - the grid "on cooldown" aligns with; without them it fell beside every burst phase.
+		return IsBurst && !bigSummonReady && !AnotherSummonerInParty && SearingLightPvE.EnoughLevel && GroupBurstWatch.AnySeen;
+	}
+
+	/// <summary>
+	/// Concept 12 (A974, his report of 26.11.2026: Searing Light off the burst phase): a lone Summoner in a fight without the
+	/// group's raid buffs fires the buff that came loose from Solar in the next burst phase - any big summon, or the slot just
+	/// before one - not on cooldown beside them (Pilgrim's Traverse: 17 to 32 s ahead of Solar). Solar keeps the first claim:
+	/// the burst summon still waits up to a GCD for the buff.
+	/// </summary>
+	/// <param name="bigSummonReady">Whether the burst summon is ready by the next GCD - then the burst rule decides.</param>
+	/// <param name="inOrBeforeDemi">Whether a big summon stands, or one comes by the next GCD.</param>
+	private bool SearingLightInAnyDemiAlone(bool bigSummonReady, bool inOrBeforeDemi)
+	{
+		return IsBurst && !bigSummonReady && inOrBeforeDemi && !AnotherSummonerInParty && SearingLightPvE.EnoughLevel
+			&& !GroupBurstWatch.AnySeen;
 	}
 }

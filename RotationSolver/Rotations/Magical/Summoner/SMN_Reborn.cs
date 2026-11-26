@@ -599,9 +599,15 @@ public sealed partial class SMN_Reborn : SummonerRotation
 		var burstAboutToStart = IsBurst && bigSummonReady
 			&& (NextBigSummonIsBurst || minorSummonsOpen);
 
+		var demiAboutToStart = !inBigInvocation
+			&& (SummonBahamutPvE.Cooldown.WillHaveOneCharge(WeaponRemain)
+				|| (SummonSolarBahamutPvE.EnoughLevel
+					&& SummonSolarBahamutPvE.Cooldown.WillHaveOneCharge(WeaponRemain)));
+
 		var mayFireSearingLight = burstInSolar
 			|| burstAboutToStart
 			|| SearingLightOnCooldownAlone(bigSummonReady)
+			|| SearingLightInAnyDemiAlone(bigSummonReady, inBigInvocation || demiAboutToStart)
 			|| (AnotherSummonerInParty
 				&& ((inBigInvocation && BurstPhaseHeldByAnother)
 					|| (AllSearingPhasesHeld && fallbackBlockIsWorthIt && !HasAnySearingLight)));
@@ -611,10 +617,6 @@ public sealed partial class SMN_Reborn : SummonerRotation
 		// this Searing Light took the only slot before the demi and the shield was locked out for the
 		// phase (RadiantAegisDueBeforeDemi). Any demi, not only the burst one, and with burst switched
 		// off as well: every demi replaces Carbuncle.
-		var demiAboutToStart = !inBigInvocation
-			&& (SummonBahamutPvE.Cooldown.WillHaveOneCharge(WeaponRemain)
-				|| (SummonSolarBahamutPvE.EnoughLevel
-					&& SummonSolarBahamutPvE.Cooldown.WillHaveOneCharge(WeaponRemain)));
 		if (demiAboutToStart && RadiantAegisAheadOfRaidwide
 			&& RadiantAegisPvE.CanUse(out act, usedUp: true, skipStatusProvideCheck: true))
 		{

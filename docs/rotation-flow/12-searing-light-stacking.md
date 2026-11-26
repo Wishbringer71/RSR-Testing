@@ -13,7 +13,8 @@ Die Prüfhistorie steht in `AUDIT_LOG.md` (A78, A89, A112–A115, A126, A127, A1
 - **Ein Beschwörer:** Searing Light fällt im Einschiebeplatz **vor** der Burst-Beschwörung (Solar Bahamut,
   unterhalb seiner Stufe Demi-Bahamut), und die Beschwörung wartet dafür, wenn der Buff bereit ist oder in den
   Platz des Warte-GCDs zurückkehrt. So steht der Buff vor dem ersten Burstschaden, und sein Takt bleibt an
-  Solar gebunden.
+  Solar gebunden. Läuft Solar dem Buff davon (schnellerer GCD), geht er bei Abklingzeit, wenn andere Mitglieder
+  in diesem Kampf Raidbuffs setzen, sonst in der nächsten Demi-Phase (A957, A974).
 - **Mehrere Beschwörer:** Die Ladung bleibt bei Solar, bis ein anderer dort zuvorkommt. Stand im letzten
   eigenen Solar-Fenster ein fremder Searing Light, ist jede große Beschwörung ein Zündfenster. Sind alle
   Burstphasen dauerhaft von anderen belegt, weicht die Ladung in den Titan-Block aus, in den Ifrit-Block nur,
@@ -147,6 +148,32 @@ Vorgabe, oben) unverändert. *Gegenthese:* „Ein Buff vor Bahamut oder Phönix 
 Trifft für die Phase zu; Warten kostet aber bis zu 95 s Buff, und die Gruppen-Buffs der anderen liegen
 auf dem Zwei-Minuten-Raster, nicht auf deinem Solar. Die Annahme, Buff und Solar fielen beim einzigen
 Beschwörer ohnehin zusammen, ist für GCDs unter 2,50 s widerlegt.
+
+**„Bei Abklingzeit" nur, wo Gruppen-Buffs kommen (A974, seine Meldung vom 26.11.2026: „beschwörer abweichung
+searing light von burstphase").** Die Begründung von A957 trägt nur dort, wo andere Mitglieder Zwei-Minuten-Buffs
+setzen; ohne sie gibt es kein Raster, auf das der Buff fallen könnte, und er fällt neben jede Burstphase.
+*Gemessen (seine Mitschnitte vom 20. bis 25.11.2026, 63 eigene Searing Lights):* In Pilgers Pfad (ohne
+Raidbuff eines anderen) fiel er fünfmal 17 bis 32 s **vor** Sol-Bahamut – bei 20 s Buff und 15 s Phase deckt er
+die Phase dann zu höchstens 3 s oder gar nicht –, in Mistwake 3 bis 14 s nach Solar und danach 17 bis 25 s vor
+Phönix und Bahamut, also in keiner Demi-Phase. In Edens Tor fiel er bei der Litanei des Dragoons (+1 bis +2 s),
+während Bahamut 8 bis 15 s davor lag – dort trug die Regel. *Die Regel jetzt:* Bin ich der einzige Beschwörer,
+und hat in diesem Kampf noch kein anderes Mitglied einen Raidbuff gesetzt (`GroupBurstWatch`, K3 in Konzept 03),
+zündet der Buff nur in einer Burstphase – jeder großen Beschwörung (Solar, Bahamut, Phönix) – oder im Platz
+unmittelbar davor; Solar bleibt die erste Wahl, weil die Burst-Beschwörung weiter höchstens einen GCD auf ihn
+wartet. Kommt ein Gruppen-Buff, gilt „bei Abklingzeit" wie bisher. Der Vorrang der Burstphasen ist seine Vorgabe
+(oben: „nächste anstehende Burstphase (Bahamut oder Phoenix)"). *Im Kampf:* Pilgers Pfad, 23.11.2026 20:40:46:
+Der Buff ging 27,6 s vor Solar und lief 7,6 s vor ihrem Beginn aus; jetzt wartet er bis in den Platz vor Solar.
+Mistwake, 19:03:28: Er ging 23,8 s vor Phönix; jetzt kommt er mit Phönix. *Gegenthese 1 (Buff geht verloren):* Das
+Warten kostet je Zyklus höchstens den Abstand bis zur nächsten Demi (rund 57 s bei 2,35 s GCD) statt bis zur nächsten
+Solar (bis 95 s, A957). Ein Buff außerhalb jeder Demi trägt nur Füller und Searing Flash; die Demi-Phase trägt die
+Beschwörung, Enkindle und Astral Flow [Schätzung: der Anteil, um den eine Demi-Phase je Sekunde mehr bringt, ist nicht
+gemessen]. *Gegenthese 2 (Gruppe ohne beobachteten Buff):* Am Pull kennt die Uhr noch keinen Gruppen-Buff. Dort geht
+der Buff ohnehin mit Solar; danach zählen die beobachteten. Ein Mitglied, das seinen Buff in einem Rudel nicht
+setzt, zählt in diesem Rudel nicht – der Buff folgt dann deiner Burstphase. *Gegenthese 3 (ausgeliefert, und nichts
+ändert sich):* Läge der Buff schon in einer Demi-Phase, änderte sich nichts; gemessen lag er in Pilgers Pfad und
+Mistwake außerhalb. *Offen (K3):* In einer Gruppe mit Buffs folgt er der eigenen Abklingzeit, nicht der Uhr der
+Gruppe; in Mistwake lag er 10 bis 13 s hinter den Buffs des Barden (TODO „Rotationen aller Jobs über den Augenblick
+hinaus").
 
 **Keine Sonde:** Die Entscheidung fällt im Code, aus der Bereitschaft der Beschwörung und des Buffs, die
 beide hier und jetzt lesbar sind. Eine Messung, deren Auswertung über das Modell liefe, kostete je Wert
