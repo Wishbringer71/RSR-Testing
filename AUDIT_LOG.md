@@ -28212,6 +28212,36 @@ Tänzer 9, „Schlitzer“ 2), sieben ACT-Mitschnitte (20. bis
   und „critical class“ ist die Regel widerlegt.
 - *Prüfgrad:* Compile, Prüfskripte; Wirkung im Kampf offen bis zum nächsten Brett mit Ausdauermittel.
 
+### A974 · Beschwörer: Searing Light neben der Burstphase – seine Meldung zu A973 (26.11.2026)
+
+*Seine Meldung (26.11.2026):* „du hast einen defekt nicht erkannt: beschwörer abweichung searing light von burstphase“.
+*Geprüft und bestätigt (ACT, 20. bis 25.11.2026, 63 von 63 eigenen Searing Lights, Abstand zur nächsten großen
+Beschwörung und zu den Raidbuffs anderer Mitglieder):*
+- Pilgers Pfad (23.11., kein Raidbuff eines anderen): fünfmal 17 bis 32 s vor Sol-Bahamut (20:40:46 +27,6 s, 20:43:38
+  +32,0 s, 20:45:57 +21,3 s, 20:54:26 +24,4 s, 21:17:02 +16,9 s); bei 20 s Buff und 15 s Phase deckt er sie zu höchstens
+  3 s oder gar nicht.
+- Mistwake (25.11.): 3 bis 14 s nach Solar, ab 19:03 17 bis 25 s vor Phönix und Bahamut; die Buffs des Barden lagen
+  10 bis 13 s vor ihm.
+- Edens Tor (23.11.): +1 bis +2 s zur Litanei des Dragoons, Bahamut 8 bis 15 s davor – dort trug die Regel.
+*Ursache:* meine Regel aus A957 („Searing Light bei Abklingzeit“ für den einzigen Beschwörer, wenn Solar nicht bis zum
+nächsten GCD bereit ist). Ihr Grund – das Zwei-Minuten-Raster der Gruppen-Buffs – fehlt, wo kein anderes Mitglied einen
+Raidbuff setzt; dort fiel der Buff neben jede Burstphase. *Warum A973 es nicht fand:* Ich las den Beschwörer nur auf
+den Leerlauf im Turm, nicht auf die Lage seiner Buffs; die Vorhersage von A957 prüfte nur den Abstand zwischen zwei
+Buffs (120 s ± ein GCD), nicht seine Lage zur Phase – sie bestätigte die Änderung, nicht ihre Wirkung im Kampf.
+*Behoben (Konzept 12, „„Bei Abklingzeit" nur, wo Gruppen-Buffs kommen“):* Allein und ohne beobachteten Raidbuff eines
+anderen in diesem Kampf (`GroupBurstWatch.AnySeen`) zündet der Buff nur in einer großen Beschwörung oder im Platz davor;
+mit Gruppen-Buffs bleibt „bei Abklingzeit“. Solar behält den Vorrang (die Beschwörung wartet weiter höchstens einen GCD).
+*Klasse:* Die übrigen Stellen aus A957 (Wildfire im eigenen Zwei-Minuten-Fenster, Mana vor Embolden) binden an den
+eigenen Burst; keine zündet bei Abklingzeit ohne Raster. Das Abdeckungsmodell (`searing_light_coverage.py`) rechnet den
+einzelnen Beschwörer mit Solar alle 120 s, ohne Lauf der Demi gegen den Buff; es berührt die Änderung nicht.
+*Offen:* in einer Gruppe mit Buffs die Ausrichtung an ihrer Uhr statt an der eigenen Abklingzeit (Mistwake, K3; TODO
+„Rotationen aller Jobs über den Augenblick hinaus“).
+*Vorhersage (ACT, von Hand):* Im nächsten Mitschnitt eines Beschwörers ohne Raidbuff eines anderen liegt jeder eigene
+Searing Light in einer großen Beschwörung oder höchstens einen GCD davor; ein Abstand über einen GCD vor ihr oder nach
+ihrem Ende widerlegt die Regel. Messung mit demselben Verfahren (Aktion 0x64C9 gegen 0x9080, 0x1D03, 0x64E7).
+*Prüfgrad:* Compile, Prüfskripte; Wirkung im Kampf offen bis zum nächsten Mitschnitt.
+*Umfang:* Searing Light 63 von 63 gemessen, ACT-Mitschnitte 7 von 7.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -28605,3 +28635,4 @@ geben den Stand vom 14.10.2026 wieder.
 | C236 | A926, C235 und Konzept 02 (Stand c479f65e9): Ohne eingeschaltete KI bewege BossMod nie, und keine Schnittstelle nehme einen Schritt von einem anderen Plugin an; RSR müsse deshalb selbst über einen Hook bewegen | BossMods Modul „Automatic movement“ bewegt ohne KI aus der aktiven Voreinstellung, und Voreinstellungen stehen über IPC. Gefunden von der unabhängigen Prüfung, am Quelltext bestätigt | A928 |
 | C237 | A957 und TODO (21.11.2026), meine Aussage an ihn: Sternensturz und Wyrmodem fehlten, weil sie nur innerhalb „Only use damaging gap closers within this distance“ (0 y) gehen | Widerlegt am Mitschnitt: der Dragoon stand in allen elf Fenstern bei −1,09 y in der Trefferfläche; Ursache offen (A960) |
 | C238 | C237 und A960 (21.11.2026): Die Grenze für Sprungangriffe hielt Sternensturz nicht zurück, der Abstand sei ausgeschlossen (−1,09 y) | Widerlegt: gemessen war der Abstand zur Puppe, an der er stand; der Sprung wählte die Puppe mit den meisten HP, 6,66 oder 14,77 y entfernt, und dort lehnte die Grenze ab (A961) |
+| C239 | A957 (21.11.2026), Konzept 12: „bei schnellerem GCD läuft der Buff bei seiner Abklingzeit, und keiner geht verloren“ für den einzigen Beschwörer | Widerlegt für Kämpfe ohne Raidbuff eines anderen: der Buff fiel 17 bis 32 s vor Solar und in keine Demi-Phase (A974) | A974 |
