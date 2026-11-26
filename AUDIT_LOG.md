@@ -28242,6 +28242,55 @@ ihrem Ende widerlegt die Regel. Messung mit demselben Verfahren (Aktion 0x64C9 g
 *Prüfgrad:* Compile, Prüfskripte; Wirkung im Kampf offen bis zum nächsten Mitschnitt.
 *Umfang:* Searing Light 63 von 63 gemessen, ACT-Mitschnitte 7 von 7.
 
+### A975 · Beastmaster: Messmittel für die Strecke ohne Begleiter (TODO-Defekt aus A973) (26.11.2026)
+
+*Gegenstand:* TODO-Defekt „Beastmaster: nach dem Tod des Begleiters 18 s ohne Horn“, Konzept 01 (B2, B6, W1), Code
+`BST_Reborn` (Hornwahl, Ablöse), `BaseAction.CanUse` (`CastRunsIntoGCD`), `ActionUpdater.CanDoAction`.
+*Messung:* Am 21.11.2026 auf Brett 3 trat es zweimal auf, im ersten Versuch von Kampf 16 (13:41:20 bis 13:41:39) und im
+zweiten (13:42:53 bis 13:43:12), je nachdem der Geist fiel und sein Horn leer stand. Gigantoad und Lamb standen auf
+bereiten Hörnern (`GameStatus` nur viermal abgelehnt), er stand still (ACT, keine Positionsänderung), und kein Ruf begann
+zu wirken (ACT, Zeile 20). Die Ablehnungen der Hörner zählt die Spur über den ganzen Kampf (Animationssperre 1672 bis
+2084, `CastRunsIntoGCD` 1872 bis 2208); eine Ablehnung durch das Spiel steht nur einmal je Kampf, eine des Servers gab es
+in diesen Builds noch nicht als Zeile (A971).
+*Ausgeschlossen am Code:* die Sperre einer laufenden Hornzuweisung (`BattlehornAssignmentPending`, nur außerhalb des
+Kampfs gesetzt); Laufen (er stand). *Nicht entscheidbar aus den Daten:* ob die Wahl das Horn ablehnte, ob das Tor zum
+Drücken zu war, oder ob das Spiel den Ruf nicht nahm.
+*Gebaut (Konzept 01, B6 „Wo der Ruf ausbleibt“):* Jede Strecke ohne Begleiter im Kampf – jetzt auch nach dem Fall eines
+Begleiters – zählt je Frame die Sekunden mit bereitem Horn, mit gewähltem Horn, davon mit geschlossenem Tor, und die
+begonnenen Rufe; über einen GCD stehen sie in ihrer Zeile, auch ohne Ankunft („none came - the fight ended | you fell |
+RSR did not run on“). Teildatei `BST_Reborn.Relief.cs`.
+*Verworfen:* jedes Horn in der Gefahr in den GCD laufen zu lassen (W1-Ausnahme erweitert). Ein Begleiter ohne Heilung
+oder Schutz zog den Gegner hier nicht von ihm ab (der Montisaurus traf ihn weiter, während Lamb und Gigantoad draußen
+waren), Zähnefletschen lag beide Male in der Abklingzeit; ohne Ursache wäre es geraten.
+*Vorhersage:* `horn-stretch-line-form` (`predictions/2026-11-26.json`). *Prüfgrad:* Compile, Prüfskripte; Ursache offen
+bis zum nächsten Lauf mit einer solchen Strecke (TODO, Wartepunkt).
+
+### A976 · Zielwahl: „Previously engaged“ heißt im Kampf mit dir oder der Gruppe (TODO-Defekt aus A973) (26.11.2026)
+
+*Gegenstand:* TODO-Defekt „Rotmagier: 17 s ohne Angriff auf Zephirin“, Konzept 03, `ObjectHelper.IsAttackable`.
+*Ursache:* Die Einstellung „Engage settings“ lautet „Previously engaged targets (Non-Tanks)“ und in der Gruppe ebenso
+für die Voreinstellung; RSR prüfte „hat gerade ein Ziel“. Zephirin wirkte „Heiliges Kreuz“ auf sich selbst (20 s,
+Raidwide nach seinen Rest-LP) und hatte keines. Der Text bindet (code.md).
+*Gebaut:* `ObjectHelper.IsEngagedWithParty` – ein Ziel, der Spieler auf seiner Feindschaftsliste (`UIState.Hater`), oder
+in einer Instanz die bestehende Prüfung `IsEngaged` (A612). Für alle vier Einstellungen, die „schon im Kampf“ fragen.
+Optionen, Abwägung und drei Gegenthesen im Konzept. *Wirkung im Kampf:* Ein Add, das die Gruppe angreift und das auf
+sich selbst wirkt, bleibt Ziel; ein Rudel, das noch nicht kämpft, nicht. Flächen folgen derselben Prüfung (A884).
+*Vorhersage (von Hand, ACT und Spur):* In einem Kampf mit einem Add, das auf sich selbst wirkt, steht keine „gcd idle“-
+Zeile mit `NoTarget` für alle Angriffe, solange das Add zielbar ist und angegriffen wurde.
+*Prüfgrad:* Compile, Prüfskripte; Laufzeit offen.
+
+### A977 · K3 gemessen: Warten auf den Gruppenburst verworfen (TODO „Über den Augenblick hinaus“) (26.11.2026)
+
+*Gegenstand:* `GroupBurstWatch` an seiner Spur vom 21. bis 25.11.2026 (337 Zeilen „group burst:“, 192 Gruppenbursts,
+103 Paare mit bekannter Vorhersage); Messskript im Notizordner (`gb_a977.py`, Bursts als Häufung binnen 25 s).
+*Ergebnis:* Erkennung richtig (zwölf Raidbuffs aller beteiligten Jobs, kein Fremdkörper). Vorhersage zu ungenau: in
+Kämpfen über 180 s 36 von 90 innerhalb ±5 s; Uhr aus Bursts mit zwei Buffs bei 120 s: 23 von 44; selbstprüfende Uhr
+(halten nur nach eingetroffener Vorhersage): 3 von 17 (±2,5 s) und 8 von 24 (±5 s) richtig.
+*Entscheidung:* Kein Verstärker wartet auf die vorhergesagte Gruppe; K1 mit der Uhr der Gruppe entfällt. Die Beobachtung
+bleibt (A974 liest sie). Konzept 03, K3. *Gegenthese:* In einer festen Gruppe hielte der Takt – nicht sein Profil;
+dasselbe Skript zeigte es an einem solchen Upload.
+*Umfang:* Gruppenbursts 192 von 192, Vorhersagen 103 von 103 mit bekanntem Wert (7 ohne).
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
