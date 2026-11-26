@@ -20,13 +20,17 @@ if ! command -v dotnet >/dev/null || ! dotnet --list-sdks | grep -q '^10\.'; the
 	curl -sSL https://dot.net/v1/dotnet-install.sh -o "$work/dotnet-install.sh"
 	bash "$work/dotnet-install.sh" --channel 10.0 --install-dir "$HOME/.dotnet" >/dev/null
 fi
-if [ ! -f "$dalamud/Dalamud.dll" ]; then
+# The distribution's current version against the one fetched last: a copy fetched once stayed while the CI and the
+# player built against newer Dalamud - 15.0.4.0 from 10.11.2026 here, 15.0.4.1 there (A972). Offline the copy stays.
+latest="$(curl -sSL --max-time 20 https://goatcorp.github.io/dalamud-distrib/version 2>/dev/null || true)"
+if [ ! -f "$dalamud/Dalamud.dll" ] || { [ -n "$latest" ] && [ "$latest" != "$(cat "$dalamud/.distrib-version" 2>/dev/null)" ]; }; then
 	echo "fetching the Dalamud distribution into $dalamud"
 	mkdir -p "$dalamud"
 	curl -sSL https://goatcorp.github.io/dalamud-distrib/latest.zip -o "$work/dalamud.zip"
 	unzip -q -o "$work/dalamud.zip" -d "$dalamud"
+	[ -n "$latest" ] && printf '%s' "$latest" > "$dalamud/.distrib-version"
 fi
-echo "dotnet $(dotnet --version), Dalamud in $dalamud"
+echo "dotnet $(dotnet --version), Dalamud in $dalamud ($(cat "$dalamud/.distrib-version" 2>/dev/null || echo "version not recorded"))"
 [ "${1:-}" = "--fetch" ] && exit 0
 
 cd "$root"
