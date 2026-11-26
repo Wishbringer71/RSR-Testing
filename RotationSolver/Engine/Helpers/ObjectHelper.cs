@@ -433,10 +433,10 @@ public static partial class ObjectHelper
 			|| DataCenter.CurrentTargetToHostileType switch
 			{
 				TargetHostileType.AllTargetsCanAttack => true,
-				TargetHostileType.TargetsHaveTarget => battleChara.TargetObject is not null,
-				TargetHostileType.AllTargetsWhenSolo => DataCenter.PartyMembers.Count == 1 || battleChara.TargetObject is not null,
+				TargetHostileType.TargetsHaveTarget => battleChara.IsEngagedWithParty(),
+				TargetHostileType.AllTargetsWhenSolo => DataCenter.PartyMembers.Count == 1 || battleChara.IsEngagedWithParty(),
 				TargetHostileType.AllTargetsWhenSoloInDuty => (DataCenter.PartyMembers.Count == 1 && (Svc.Condition[ConditionFlag.BoundByDuty] || Svc.Condition[ConditionFlag.BoundByDuty56]))
-									|| battleChara.TargetObject is not null,
+									|| battleChara.IsEngagedWithParty(),
 				TargetHostileType.SoloDeepDungeonSmart => IsSoloDeepDungeonSmartAttackable(battleChara),
 				_ => true,
 			};
@@ -466,12 +466,12 @@ public static partial class ObjectHelper
 	{
 		if (DataCenter.InCombat)
 		{
-			return battleChara.TargetObject is not null;
+			return battleChara.IsEngagedWithParty();
 		}
 
 		if (DataCenter.PartyMembers.Count > 1)
 		{
-			return battleChara.TargetObject is not null;
+			return battleChara.IsEngagedWithParty();
 		}
 
 		var hasEngagedNearby = false;
@@ -488,7 +488,7 @@ public static partial class ObjectHelper
 
 		if (hasEngagedNearby)
 		{
-			return battleChara.TargetObject is not null;
+			return battleChara.IsEngagedWithParty();
 		}
 
 		IBattleChara? nearest = null;

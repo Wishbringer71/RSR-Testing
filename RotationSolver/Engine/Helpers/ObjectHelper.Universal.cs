@@ -658,4 +658,35 @@ public static partial class ObjectHelper
 				&& !StatusHelper.PlayerHasStatus(false, StatusHelper.NoNeedHealingStatusBesidesDeathTrigger))
 			|| StatusHelper.PlayerCanBeHealed();
 	}
+
+	/// <summary>
+	/// Concept 03, "„Previously engaged" heißt: schon im Kampf mit dir oder der Gruppe" (A976): the text of "Engage settings"
+	/// binds - an enemy already fighting, not only one holding a target now. It holds a target, it has the player on its
+	/// enmity list (the game's enemy list: attacked, hit, or bound by his healing), or - in a duty, where every enemy in combat
+	/// fights the party - it takes part in a fight as <see cref="IsEngaged"/> reads it (combat flag, target, a cast at
+	/// another). Outside a duty that flag holds for enemies fighting strangers too, so there only target and enemy list
+	/// count. A pack not fighting yet has none of them, so nothing new is pulled.
+	/// </summary>
+	internal static unsafe bool IsEngagedWithParty(this IBattleChara battleChara)
+	{
+		if (battleChara.TargetObject is not null)
+		{
+			return true;
+		}
+
+		var state = FFXIVClientStructs.FFXIV.Client.Game.UI.UIState.Instance();
+		if (state != null)
+		{
+			var haters = state->Hater.Haters;
+			for (var i = 0; i < state->Hater.HaterCount && i < haters.Length; i++)
+			{
+				if (haters[i].EntityId == battleChara.EntityId)
+				{
+					return true;
+				}
+			}
+		}
+
+		return (Svc.Condition[ConditionFlag.BoundByDuty] || Svc.Condition[ConditionFlag.BoundByDuty56]) && battleChara.IsEngaged();
+	}
 }

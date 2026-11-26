@@ -1439,6 +1439,28 @@ dazu die Gruppe.
   (`DataCenter.NotFightingYet`), für die Flächen, die Zielwahl und die Schlafregel; ob sie gilt, sagt
   `DataCenter.GuardsAgainstPull` – außerhalb der Tiefen Gewölbe dieser Schalter, in ihnen deren Optionen (Konzept 23).
 
+*„Previously engaged" heißt: schon im Kampf mit dir oder der Gruppe (A976).* Der Text der Einstellung bindet: „Previously
+engaged targets (Non-Tanks)“ und in der Gruppe ebenso „All targets when solo …, or previously engaged“. RSR las ihn als „hat
+gerade ein Ziel“ (`TargetObject`). Ein Gegner, der auf sich selbst wirkt, hat keines, auch wenn die Gruppe ihn längst
+angreift. *Im Kampf (24.11.2026, Singularitäts-Reaktor, Rotmagier):* Zephirin wirkte „Heiliges Kreuz“ (20 s; BossModReborn:
+Raidwide, Schaden nach seinen Rest-LP). RSR griff ihn bis 18:22:24 an und dann 17 s nicht mehr, nur die Auto-Angriffe trafen
+weiter. *Optionen:* (a) Nullvariante. (b) Die Feindliste des Spiels (`UIState.Hater`): jeder Gegner, auf dessen
+Feindschaftsliste du stehst – angegriffen, getroffen oder, als Heiler, über deine Heilung gebunden. (c) Die bestehende
+Prüfung `IsEngaged` (A612: Kampfmerker, Ziel, ein Wirken auf einen anderen): auch Gegner im Kampf mit fremden Spielern, in
+der offenen Welt also deren Ziele.
+(d) Treffer der Gruppe selbst mitschreiben: dieselbe Antwort wie (b) und (c), mit eigener Buchführung. *Gewählt:*
+Ein Ziel, (b) und (c) zusammen, (c) nur in einer Instanz (`BoundByDuty`), wo jeder Gegner im Kampf mit deiner Gruppe kämpft.
+*Abwägung im Kampf:* (b) deckt jeden Gegner, den du schon angegriffen hast – Zephirin nach dem ersten Treffer um 18:22:22.
+(c) deckt in der Instanz auch ein Add, das wirkend erscheint und noch keiner traf. Keines zieht einen neuen Gegner: Ein
+Rudel, das noch nicht kämpft, steht in keiner Feindliste und trägt keinen Kampfmerker. *Gegenthese 1 (offene Welt):*
+Ein Gegner im Kampf mit Fremden zählte mit (c) als gebunden, und RSR griffe ihn an. Darum (c) nur in Instanzen; draußen
+zählen nur Ziel und deine Feindliste. *Gegenthese 2 (Heiler):* Über die Heilung stehen Heiler auf der Liste jedes Gegners,
+der mit der Gruppe kämpft; das ist „gebunden“ im Sinn des Textes. *Gegenthese 3 (ausgeliefert, und nichts ändert sich):*
+Stünde Zephirin auf keiner Liste und trüge keinen Merker, bliebe es beim Stillstand; RSR traf ihn dreimal, er stand auf
+der Liste. *Ort:* eine Prüfung `ObjectHelper.IsEngagedWithParty` für jede Einstellung, die „schon im Kampf“ fragt
+(`TargetsHaveTarget`, `AllTargetsWhenSolo`, `AllTargetsWhenSoloInDuty`, `SoloDeepDungeonSmart` im Kampf). Kosten je
+Gegner und Frame: bis zu 32 Vergleiche gegen die Feindliste.
+
 *Die Einstellung „Engage settings" gilt auch für Flächen (A884):* Ein Gegner, der noch nicht kämpft und den RSR nach seiner
 Einstellung nicht selbst angriffe (`ObjectHelper.IsAttackable` lehnt ihn ab), wird auch von keiner Fläche getroffen – mit
 und ohne „Don't pull new enemies with AoE", außerhalb der Tiefen Gewölbe (dort entscheiden deren Optionen). Grund: Der Text
