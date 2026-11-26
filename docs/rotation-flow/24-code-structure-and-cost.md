@@ -471,7 +471,7 @@ trägt, ist nicht gemessen (unbelegt; Upstream nennt „drastically improved per
 hardware“ ohne Zahl).
 *Antithese 2 – das Risiko ist angekündigt und abgedeckt:* ClientStructs entfernt einen Member erst nach einer Zeit als
 Warnung. Er baut den Branch vor dem Spielen; ein entfernter Member wird dann ein Fehler beim Bauen, nicht im Kampf. Der
-Abgleich mit Upstream prüft die Referenzen gegen die laufende Dalamud-Fassung (Skill `upstream-sync`, `RefCheck`).
+Abgleich mit Upstream prüft die Referenzen gegen die laufende Dalamud-Fassung (Skill `upstream-sync`, `refscan`).
 *Antithese 3 – Logistik:* Zurück zu Dalamuds Weg hieße, Upstreams Kerndatei dauerhaft abweichend zu führen; jeder Sync
 brächte Konflikte an derselben Stelle.
 *Ergebnis:* Upstreams direkter Weg bleibt, eingeschränkt auf die zentrale Stelle: Status liest der Fork nur über
@@ -482,6 +482,19 @@ der Fork zuerst Dalamud oder ECommons, ClientStructs nur, wo es dort keinen Weg 
 bevor RSR neu erscheint; dasselbe gilt heute schon für jeden der übrigen ClientStructs-Zugriffe.
 
 ## Wie es gemessen bleibt
+
+### Referenzen fertig gebauter Bibliotheken gegen Dalamud
+
+ECommons und RebornMaterial kommen fertig gebaut, gegen die Dalamud-Fassung ihres Builds. Fehlt einer ihrer Member im
+Dalamud, das beim Spieler läuft, baut RSR trotzdem, und erst der Pfad, der den Member ruft, fällt im Spiel aus
+(`MissingMethodException`): ein Fenster, eine Regel, im Kampf. *Anforderung:* Bei jedem Sync, der ECommons,
+RebornMaterial oder die Dalamud-Fassung ändert, prüft `.github/tools/refscan` jede Referenz dieser Bibliotheken und von
+RSR selbst auf eine andere Assembly gegen die Dalamud-Bibliotheken: Name und Signatur am Typ oder an einem Basistyp,
+Weiterleitungen gefolgt. Ein Selbsttest baut zwei Fassungen einer Bibliothek, von denen die zweite eine gerufene Methode
+nicht mehr hat, und verlangt genau diesen einen Befund. Ungeprüft bleiben nur Referenzen innerhalb derselben Assembly
+und die Array-Zugriffe der Laufzeit; das Werkzeug zählt sie getrennt. Es ersetzt `RefCheck` aus Retainer-Repricer, das
+eine zweite Sitzung mit diesem Repository verlangte (A423), und ist eigener Code (A972). Nicht in der CI: Es kostet zwei
+Builds je Lauf und sagt nur nach einem solchen Sync etwas Neues (Kosten der CI, unten).
 
 ### Kosten der CI
 
