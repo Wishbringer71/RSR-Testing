@@ -368,6 +368,35 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
   Vorgabe kein Grund. *Ergebnis:* C, entschieden (seine Frage zeigt den Wunsch, „auf Wunsch" schließt D aus): Wahl nach
   Abdeckung der Schwächen aller Kämpfe des Bretts, gewichtet nach Zahl der Gegner, dazu ein Heiler und, wo Gegner
   unterbrechbar wirken, einer, der unterbricht.
+  - *Gattungen, die eine Mechanik des Bretts verlangt (A971):* BossModReborn (a4fd07db9, 25.11.2026, Werkzeugquelle)
+    nennt je Gegner des Crucible, welche Gattung eine seiner Mechaniken löst (`PreferredKinship`, 47 Angaben an 31 Modulen, über
+    `Crucible.PreferredKinships`; Upstream 7.5.8.11, 98ca4da98, zeigt die Liste nur an): Seelen-Begleiter unterbrechen
+    (Soul Crush: Fanaticism, Ossify, Rallying Cheer, Void Paralyze, Confound …), Wellen-Begleiter nehmen Buffs (Quelling
+    Wave: Damage Up nach Fanaticism oder Clear Mind, Blaze und Ice Spikes, Popoto Skin), Aschen-Begleiter reinigen
+    (Scouring Ash: Gift, Lähmung, Blindheit, Erfrierung, Windburn), Unholde ignorieren Rückstoß (Vileskin: Typhoon,
+    Shockwave, Tsunami, Landslip …). Die Rotation setzt jede dieser Fähigkeiten genau dafür ein (`InterruptAbility`,
+    `DispelAbility`, `AntiKnockbackAbility`, Quelling Wave über ihre Statusbedingung). *Regel:* Eine Gattung, die
+    BossModReborn für einen Gegner des Bretts nennt (Brett über `XBMContent` → `ContentFinderCondition`, wie
+    BossModReborns Gruppe), ist eine Rolle wie der Unterbrecher: nach den Heilern ein Begleiter je verlangter Gattung, in
+    der Reihenfolge, wie viele Gegner des Bretts sie nennen; der Seelen-Begleiter kommt wie bisher auch ohne
+    BossModReborn, sobald RSR ein unterbrechbares Wirken gesehen hat. Jede Rolle zählt zum Kern, eine Rolle wird nur mit
+    derselben Gattung getauscht, und ein Team einer Gattung entfällt, wo das gemischte eine Rolle anderer Gattung hält –
+    wie bisher beim Unterbrecher. Die Begründung im Teamfenster nennt die Mechanik aus BossModReborn. *Im Kampf:* Brett 1
+    nennt Seele, Welle und Asche (Pas de Seul, Bone Bishop, Banemite, Piscodemon); vorher kam der Seelen-Begleiter erst
+    nach einer Sichtung und Welle oder Asche nur, wenn sie eine Schwäche trafen. Jetzt reinigt im ersten Lauf ein
+    Aschen-Begleiter das Gift von Venom Web, und ein Wellen-Begleiter nimmt Damage Up, wenn Fanaticism durchgeht. Die
+    übrigen vier Bretter nennen alle vier Gattungen. *Preis:* bis zu vier Plätze im Kern; unter „Score“ ist das kleinste
+    sichere Team damit größer (weniger In-Unterzahl-Bonus), und ein Team einer Gattung kommt auf Brettern mit mehreren
+    verlangten Gattungen nicht mehr in Frage (750 Punkte). Sicherheit vor Punkten, nach seiner Regel gewichtet mit der
+    Wahrscheinlichkeit: Die genannten Mechaniken stehen im Ablauf des Gegners, sie kommen in jedem Kampf.
+    *Gegenthese 1 (kein Gewinn):* Ein Rückstoß ohne Wand oder Fläche dahinter kostet nichts. Hält teilweise: Ob jeder
+    der genannten Rückstöße schadet, ist unbelegt; BossModReborn nennt den Grund, nicht die Folge. Der Platz kostet
+    höchstens eine Schwächenabdeckung, die der Rest des Teams meist mitträgt [Schätzung: bei 10 bis 15 Plätzen und
+    neun Schwächenarten]. *Gegenthese 2:*
+    Ohne BossModReborn oder mit einer Fassung ohne die Schnittstelle bleibt alles wie vorher. *Gegenthese 3 (ausgeliefert,
+    und nichts ändert sich):* Fehlt ihm ein Begleiter der Gattung, gibt es die Rolle nicht; die Wahl übernimmt er selbst
+    (Option C). *Ausgeschlossen:* die Liste nur anzeigen (Upstreams Weg): Sie bliebe neben einer Empfehlung stehen, die
+    sie nicht kennt.
   - *Teamgröße nach Punkten (A698):* Ein kleineres Team bringt In Unterzahl I bis III (`XBMScoreBonus` 4 bis 6: 6 oder
     7, 4 oder 5, 1 bis 3 Begleiter; 1.250, 2.500, 4.250 auf jedem Brett). Die Größen liest RSR aus den Bedingungen des
     Blatts („a team of 6 or 7 familiars"), die Punkte aus `XBMContent` (K15); `TeamSize` (10 bis 15) ist die Obergrenze,

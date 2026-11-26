@@ -536,6 +536,14 @@ internal static class CrucibleBoard
 	private static uint _boardContent;
 	private static uint _board;
 
+	/// <summary>K7 (A971): the ContentFinderCondition of the board <paramref name="board"/> (XBMContent row) - BossModReborn's
+	/// group of its modules; 0 without the row.</summary>
+	internal static uint ContentOf(uint board)
+	{
+		var sheet = Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.XBMContent>();
+		return sheet != null && sheet.TryGetRow(board, out var row) ? (uint)row.Unknown33 : 0;
+	}
+
 	/// <summary>
 	/// K15 (A695): the XBMContent row of the board the player is on - the row whose ContentFinderCondition is the current
 	/// one; 0 outside the Crucible.
