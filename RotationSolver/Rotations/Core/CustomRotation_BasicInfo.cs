@@ -168,6 +168,8 @@ public partial class CustomRotation : ICustomRotation
 	/// </summary>
 	protected virtual void UpdateInfo() { }
 
+	protected virtual bool ShouldDelayCommandAction(IBaseAction action) => false;
+
 	/// <summary>
 	/// Services outside the rotation, called every frame the player is loaded - whether RSR is on or off, in an area
 	/// transition and in a cutscene too, after the frame's lists are built. For what chooses no combat action: reading and

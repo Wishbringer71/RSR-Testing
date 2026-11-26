@@ -324,6 +324,8 @@ internal abstract class UnitSearchable(PropertyInfo property) : Searchable(prope
 {
 	public ConfigUnitType Unit { get; } = property.GetCustomAttribute<RangeAttribute>()?.UnitType ?? ConfigUnitType.None;
 
+	public float Step { get; } = property.GetCustomAttribute<RangeAttribute>()?.Step ?? 0f;
+
 	public override string Description
 	{
 		get
@@ -340,7 +342,7 @@ internal abstract class UnitSearchable(PropertyInfo property) : Searchable(prope
 	protected string Format(float value)
 	{
 		return Unit == ConfigUnitType.Percent
-			? $"{value * 100f:F1}{Unit.ToSymbol()}"
+			? $"{(value * 100f).ToString(Step >= 0.01f ? "F0" : "F1")}{Unit.ToSymbol()}"
 			: $"{value:F2}{Unit.ToSymbol()}";
 	}
 }

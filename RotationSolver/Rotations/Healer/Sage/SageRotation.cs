@@ -101,11 +101,13 @@ public partial class SageRotation
 	static partial void ModifyDosisPvE(ref ActionSetting setting)
 	{
 		setting.IsFriendly = false;
+		setting.ActionCheck = () => !HasEukrasia;
 	}
 
 	static partial void ModifyDiagnosisPvE(ref ActionSetting setting)
 	{
 		setting.TargetType = TargetType.BeAttacked;
+		setting.ActionCheck = () => !HasEukrasia;
 		setting.GCDSingleHeal = true;
 		setting.IsFriendly = true;
 	}
@@ -162,6 +164,7 @@ public partial class SageRotation
 	static partial void ModifyPrognosisPvE(ref ActionSetting setting)
 	{
 		setting.IsFriendly = true;
+		setting.ActionCheck = () => !HasEukrasia;
 		setting.CreateConfig = () => new ActionConfig()
 		{
 			AoeCount = 1,
@@ -286,6 +289,7 @@ public partial class SageRotation
 
 	static partial void ModifyDyskrasiaPvE(ref ActionSetting setting)
 	{
+		setting.ActionCheck = () => !HasEukrasia;
 		setting.CreateConfig = () => new ActionConfig()
 		{
 			AoeCount = 3,
@@ -373,6 +377,7 @@ public partial class SageRotation
 	static partial void ModifyDosisIiPvE(ref ActionSetting setting)
 	{
 		setting.IsFriendly = false;
+		setting.ActionCheck = () => !HasEukrasia;
 	}
 
 	static partial void ModifyPhlegmaIiPvE(ref ActionSetting setting)
@@ -439,6 +444,7 @@ public partial class SageRotation
 	static partial void ModifyDosisIiiPvE(ref ActionSetting setting)
 	{
 		setting.IsFriendly = false;
+		setting.ActionCheck = () => !HasEukrasia;
 	}
 
 	static partial void ModifyPhlegmaIiiPvE(ref ActionSetting setting)
@@ -479,6 +485,7 @@ public partial class SageRotation
 		{
 			AoeCount = 3,
 		};
+		setting.ActionCheck = () => !HasEukrasia;
 	}
 
 	static partial void ModifyEukrasianDyskrasiaPvE(ref ActionSetting setting)

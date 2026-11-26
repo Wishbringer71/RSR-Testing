@@ -112,9 +112,7 @@ internal static class BossModUpdater
 
 			DataCenter.BMRIsPositionSafe = BMRTimeline_IPCSubscriber.IsPositionSafe;
 			DataCenter.BMRIsDashSafe = BMRTimeline_IPCSubscriber.IsDashSafe;
-			// A fixed dash or a backstep has a landing point RSR computes (ActionTargetInfo.CheckMovementSafety); the
-			// question is the same as for a free dash, so the same endpoint answers it (A313).
-			DataCenter.BMRIsFixedDashSafe = DataCenter.BMRIsDashSafe;
+			DataCenter.BMRIsFixedDashSafe = BMRTimeline_IPCSubscriber.IsFixedDashSafe;
 		}
 		catch
 		{

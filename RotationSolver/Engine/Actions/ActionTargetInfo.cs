@@ -66,7 +66,7 @@ public partial struct ActionTargetInfo(IBaseAction action)
 	/// <returns>
 	/// A <see cref="List{IBattleChara}"/> containing the valid targets.
 	/// </returns>
-	private readonly List<IBattleChara> GetCanTargets(bool skipStatusProvideCheck, bool skipTargetStatusNeedCheck, TargetType type, TargetType targetOverride)
+	private readonly List<IBattleChara> GetCanTargets(bool skipStatusProvideCheck, bool skipTargetStatusNeedCheck, TargetType type, TargetType targetOverride, Func<IBattleChara, bool>? targetFilter = null)
 	{
 		if (DataCenter.AllTargets == null)
 		{
@@ -115,7 +115,7 @@ public partial struct ActionTargetInfo(IBaseAction action)
 			{
 				// "Only attack targets on screen" is about attacking; a party member behind the camera is
 				// still on the party list and still needs the heal.
-				if ((IsTargetFriendly || TargetOnScreen(target)) && CanUseTo(target) && action.Setting.CanTarget(target)
+				if ((IsTargetFriendly || TargetOnScreen(target)) && CanUseTo(target) && action.Setting.CanTarget(target) && (targetFilter?.Invoke(target) ?? true)
 					&& (!config.MinHPFeature || target.GetHealthRatio() > config.MinHPPercent))
 				{
 					validTargets.Add(target);

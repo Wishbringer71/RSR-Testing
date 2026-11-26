@@ -518,14 +518,10 @@ public sealed partial class WAR_Reborn : WarriorRotation
 	private static readonly StatusID[] ShakeItOffStrips = [StatusID.Damnation, StatusID.Vengeance, StatusID.Bloodwhetting];
 
 	// Picks a party member under the Nascent Flash threshold: by the lowest HP%, optionally healers only,
-	// or by the heal target order (concept 07). The target filter is swapped in for this call only and
-	// restored afterwards.
-	// Wicked bodge but it works for now
-	// TODO: make a more generic "target filter swap" method in ActionSetting
+	// or by the heal target order (concept 07). The conditions go in as this call's target filter, on top of
+	// the action's own CanTarget, so nothing on the shared setting changes (A971).
 	private bool NascentFlashCanUse(out IAction? act, bool healersOnly, bool byDanger = false)
 	{
-		var setting = NascentFlashPvE.Setting;
-		var canTarget = setting.CanTarget;
 		var healRatio = Math.Min(FlashHeal, NascentFlashPvE.Config.AutoHealRatio);
 
 		var held = false;
@@ -538,21 +534,12 @@ public sealed partial class WAR_Reborn : WarriorRotation
 		// IsUnprotectedForHealing is CanBeHealed - true while NO invulnerability is up - with Living Dead not
 		// counted while its hold is off (A306): the candidate is unprotected. CanBeHealed read negated here, which let only the invulnerable through - Nascent Flash went to a tank under
 		// Holmgang, Superbolide, Hallowed Ground or Living Dead, and to nobody else (A226).
-		setting.CanTarget = t => canTarget(t)
-			&& t.GetForecastHealthRatio(true) < healRatio
-			&& t.IsUnprotectedForHealing()
-			&& !t.HasStatus(false, StatusHelper.HealingIneffectiveStatus)
-			&& (!healersOnly || t.IsJobCategory(JobRole.Healer))
-			&& (!held || WinsTriageOverWarrior(t, warriorAboutToDie));
-
-		try
-		{
-			return NascentFlashPvE.CanUse(out act, targetOverride: byDanger ? TargetType.Heal : TargetType.LowHPPercent);
-		}
-		finally
-		{
-			setting.CanTarget = canTarget;
-		}
+		return NascentFlashPvE.CanUse(out act, targetOverride: byDanger ? TargetType.Heal : TargetType.LowHPPercent,
+			targetFilter: t => t.GetForecastHealthRatio(true) < healRatio
+				&& t.IsUnprotectedForHealing()
+				&& !t.HasStatus(false, StatusHelper.HealingIneffectiveStatus)
+				&& (!healersOnly || t.IsJobCategory(JobRole.Healer))
+				&& (!held || WinsTriageOverWarrior(t, warriorAboutToDie)));
 	}
 	#endregion
 }
