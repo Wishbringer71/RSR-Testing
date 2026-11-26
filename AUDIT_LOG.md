@@ -28149,6 +28149,69 @@ so dass ein Flächen-GCD an einer einzelnen Puppe nicht gewählt wird. Ob sein B
 - *Quellen:* FFXIVClientStructs a318c0b05 (ein Commit an `PoseTypeInfo`, von RSR nicht gelesen) fortgeschrieben.
 - *Prüfgrad:* Werkzeug mit Selbsttest, Compile gegen 15.0.4.1, Prüfskripte.
 
+### A973 · Uploads 21. bis 25.11.2026: Brett 3, Ausdauermittel, Leerlaufmessung, Vorhersagen (26.11.2026)
+
+*Gegenstand:* `DefenseTrace.log` (sieben neue Sitzungen vom 21.11. bis 25.11.2026, Builds d10ce05bb und 186ac7db6; 421
+Kampfbeginne nach dem ersten GCD der Liste: Weißmagier 223, Beschwörer oder Gelehrter 155, Beastmaster 21, „Stoß“ 11,
+Tänzer 9, „Schlitzer“ 2), sieben ACT-Mitschnitte (20. bis
+25.11.2026), 54 gelernte Tabellen gegen den Upload vom 20.11.2026. `BestiaryTrace.log` trägt keine neue Sitzung (letzte
+18.11.2026).
+- *Brett 3, Tod am 21.11.2026 (Kampf 16, Elite):* Nach Kampf 15 (59 % Verlust) stand er bei 34 %. Der Laden auf Zug 3
+  meldete „no way is safe“ und empfahl für 1190 von 1500 Marken die Genji-Handschuhe; der Weg empfahl rechts (Kampf,
+  dann Lager), er nahm links (Elite, dann Schatz). Im Kampf hielt der Geist nach Zähnefletschen 41 s alle Treffer von ihm
+  ab („Gedeckt“), fiel dann; von 990 LP fiel er in 18 s auf null. Wiederholt um 13:41:55, Tod um 13:43:16. Zwei Befunde:
+  - *Behoben – das Bestien-Ausdauermittel heilt mit:* RSR führte es als „mehr maximale LP“ mit Heilwert null; K8 nahm
+    es nur gegen einen Boss, Laden und Weg zählten seine 10 % nicht. Jetzt liest RSR den Anteil aus dem Wirktext, K8
+    nimmt es unter der Linie (hinter einem reinen Heiltrank gleicher Heilung), Laden, Schatz und Weg zählen ihn. Nicht
+    in den Wegen, die auf volle LP füllen (A717). Konzept 21, K8 Regel 1 und Laden.
+  - *Offen – 18 s ohne Horn nach dem Tod des Geists:* TODO, Defekt „Beastmaster: nach dem Tod des Begleiters 18 s ohne
+    Horn“. Hier ohne Wirkung auf den Ausgang (Zähnefletschen in der Abklingzeit, ohne Deckung griff der Gegner weiter
+    ihn an), aber W1 sagt „höchstens einen GCD“, gemessen waren es sieben.
+- *Behoben – Leerlaufmessung zählte Zeit ohne Beobachtung:* „gcd idle“ nannte 1680,6 s, 592,7 s, 538,0 s, 232,9 s und
+  171,7 s kurz nach Kampfbeginn; `GcdIdleWatch.Frame` addierte die Zeit seit dem letzten Aufruf, auch eine Pause ohne
+  Rotation. Jetzt endet eine Strecke bei einer Lücke über einen GCD. Konzept 03, „GCD-Leerlauf“. Der Ausweg D2 liest
+  dasselbe Maß; eine Fehlauslösung zeigt dieser Upload nicht („instead of none“ höchstens nach 5,4 s, 16 Zeilen).
+- *Behoben – Beutezeile ohne Angebot:* Ein Fenster, das das Spiel noch nicht gefüllt hatte, schrieb „take nothing;
+  leave “; jetzt „nothing offered“.
+- *Offen – Rotmagier ohne Angriff auf Zephirin:* TODO, Defekt „Rotmagier: 17 s ohne Angriff auf Zephirin“.
+- *Ohne Defekt:* Beschwörer im Turm der Paradigmenbrecher, 25.11.2026 19:31: 29,5 s ohne GCD in der Phase mit
+  „Schwarzes/Weißes Programm“ – er spielte die Sonderaktionen (Invertierung, Partikelsalve), die Jobaktionen sperrt das
+  Spiel (`GameStatus`). Pilgers Pfad, 23.11.2026 20:21: „Heißes Herz“ legt Pyretisch (960); RSR lernte es beim ersten
+  Wirken („learned: … damages every action“) und brach zweimal ein Wirken dafür ab; die beiden Toten der Gruppe handelten
+  selbst. Die Wiederbelebungszeilen wechseln an einem frisch gefallenen Körper rund eine Sekunde lang zwischen „moving“
+  und „a candidate“ (224 und 174 Zeilen); die Wiederbelebung kam nach 1,1 und 4,2 s. „refused by the game without a
+  reason“ steht je Aktion, Ziel und Kampf einmal (433 Zeilen Dia über 421 Kampfenden).
+- *Tode (ACT):* Die übrigen Tode kamen aus vollen oder fast vollen LP durch eine Mechanik (Alexander: „Göttliches
+  Urteil“ mit 215 % der maximalen LP); keine Heilfrage. Die 12,4 s ohne GCD in M4 fielen in einen Phasenwechsel ohne
+  Ziel.
+- *Gelernte Tabellen:* gewachsen, was gespielt wurde (Flächen 197 → 256, Tankbuster 109 → 129, Crucible-Lasten und
+  -Verluste je Rang); `TankbusterMarkerWithoutHit` 12 → 10 und die Spielfassung 4 → 2 (Alterung, wie gebaut);
+  `ActionPenaltyCasts` neu mit Heißes Herz (43322) und Absolutes Feuga (20239), je Status 960. Schichten mit der
+  Spielfassung 2026.11.03 wie die Kopfzeile.
+- *Vorhersagen (`evaluate_predictions.py`, neue Sitzungen):* beobachtet unter anderem `crucible-synced`,
+  `gear-held-traced`, `burst-held-traced`, `gcd-idle-line-form`, `dynamic-refused-line-form`, `movement-check-line-form`,
+  `critical-heal-gcd-line-form`. Widerlegt in der Form der Vorhersage, nicht des Codes: `group-burst-line-form`
+  (deutsche Kürzel mit Umlaut, TÄN und MÖN; Muster berichtigt) und `burstwatch-leaps-listed` (ohne Bindung an den Job:
+  scheitert in jeder Sitzung ohne Dragoon; Zinnober-Zyklon ist ein GCD, den BurstWatch nicht führt; jetzt an einen
+  Dragoon-Kampf gebunden – offen, er spielte keinen). `crucible-spoils-line-form` widerlegt durch die Zeile ohne
+  Angebot (behoben, Muster ergänzt). Wie in A957 erklärt: `level-below-cap` überholt (A822), `bst-axe-waits-for-tp` und
+  `bst-horn-waits-for-lock` Bedingungen der Rotation (dazu vier Frames `GameStatus`), `team-start-event` (Start ohne
+  Klick im Fenster), `burstwatch-no-general-actions` (technische Schuld). `board-familiar-loss` widerlegt in der Prämisse der
+  Vorhersage: `CrucibleBoard` schreibt die Zeile nur, wenn der Lauf einen neuen Höchstwert speichert („the heaviest so
+  far stored“); am 22.11. blieb der Verlust darunter, am 21.11. endete der Lauf auf Brett 3 vor dem Endkampf. Am 23.11.
+  stand sie (18:00:08).
+- *Wartepunkte des TODO:* Brett 3 lief (Eintrag fortgeschrieben). Ohne Daten: Ninja an der Puppe, Teraflare, Samurai,
+  Weißmagier/Astrologe/Blaumagier an der Puppe, Arenagrenze („arena edge“ 0 Zeilen), Treffer ohne Objekt, Crucible-
+  Flucht und Zauberbücher, Absturz vom 11.11. Die Spur „group burst:“ liegt jetzt vor (Gruppen mit Raidbuffs);
+  ihre Auswertung für K3 steht im TODO-Punkt „Rotationen aller Jobs über den Augenblick hinaus“ und ist nicht Teil dieser
+  Auswertung.
+- *Umfang:* Sitzungen 7 von 7; ACT-Mitschnitte 7 von 7 für Tode; GCD-Leerläufe 89 von 89 gemessen, die 17 über 8 s je
+  einzeln gelesen; Tabellen 54 von 54 verglichen; Vorhersagen alle des Verzeichnisses gegen alle Sitzungen.
+- *Vorhersage:* `crucible-tonic-heals` (`predictions/2026-11-26.json`): Hält er zu Kampfbeginn ein Ausdauermittel und
+  fällt unter die Linie, steht „crucible item: … Tonic at N % HP (line …)“; ohne diese Zeile bei gehaltenem Ausdauermittel
+  und „critical class“ ist die Regel widerlegt.
+- *Prüfgrad:* Compile, Prüfskripte; Wirkung im Kampf offen bis zum nächsten Brett mit Ausdauermittel.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

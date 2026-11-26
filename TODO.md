@@ -30,6 +30,25 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
 
 ## Defekte
 
+### Beastmaster: nach dem Tod des Begleiters 18 s ohne Horn · N
+*Im Kampf (21.11.2026, Brett 3, Kampf 16, A973):* Der Geist fiel um 13:41:20; Gigantoad und Lamb standen auf
+bereiten Hörnern, er selbst unter der Linie und ohne Heiler. Bis zu seinem Tod um 13:41:39 kam kein Begleiter, über
+sieben GCDs; RSR lehnte beide Hörner über den Kampf je 1872-mal mit `CastRunsIntoGCD` und rund 2000-mal mit der
+Animationssperre ab. W1 verspricht höchstens einen GCD Verzug. Gerettet hätte ihn hier keiner (Zähnefletschen lag in
+der Abklingzeit, ohne Deckung griff der Gegner weiter ihn an), in einem anderen Kampf fehlt so der Begleiter mit
+seinem Schaden und als Ziel der nächsten Deckung. *Ort:* `BST_Reborn.CallNextHorn` und `SituationalHorn` (der Ruf in
+der Gefahr ohne Horn, das heilt oder schützt, geht durch den gewöhnlichen Zweig und damit unter W1),
+`BaseAction.CanUse` (`CastRunsIntoGCD`). *Nächster Schritt:* am Code bestimmen, warum das Fenster aus Sperre und
+Wirkzeit in keinem der sieben GCDs offen war, dann Loop zur Frage, ob in der Gefahr ohne Begleiter jedes Horn in den
+GCD laufen darf. *Konzept:* 01, B2 und W1.
+
+### Rotmagier: 17 s ohne Angriff auf Zephirin (Singularitäts-Reaktor) · N
+*Im Kampf (24.11.2026, 18:22:24 bis 18:22:41, A973):* Zephirin war zielbar und wirkte „Heiliges Kreuz“ (5264, 20 s;
+BossModReborn: Raidwide, Schaden nach seinen Rest-LP). Seine Auto-Angriffe trafen Zephirin, RSR wählte keinen GCD:
+jeder Angriff mit `NoTarget`, Nobler Impakt mit `GameStatus`. Die Spur nennt keinen Grund. *Ort:* Zielwahl
+(`TargetFilter`, `ObjectHelper.IsAttackable`) für BNpc 0x1454 während des Wirkens. *Nächster Schritt:* am Code
+bestimmen, welche Prüfung das zielbare Add verwirft, dann Loop. *Konzept:* 03, Zielwahl.
+
 ## Offene Arbeit
 
 ## Technische Schuld
@@ -190,7 +209,8 @@ nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigt
 
 - **Beastmaster: Bretter 3 bis 5 und die Meisterbretter am ersten Mitschnitt prüfen** (Crucible-Strategien K1 bis K14,
   zuletzt A643, A644). Brett 2 lief am 08.11.2026 (A683): Die Tablitauren fielen gemeinsam, die Aetheric Charges zählten
-  nach ihrer gemessenen Gefahr. Gebaut, aber an keinem seiner Läufe gesehen, sind diese Regeln (Quellen: Blätter,
+  nach ihrer gemessenen Gefahr. Brett 3 lief am 21., 22. und 23.11.2026 (A973), ohne eine der Regeln unten zu
+  brauchen; auf Brett 2 fielen die Taurus-Ebenbilder am 21.11. gemeinsam („kill rule … held/released“). Gebaut, aber an keinem seiner Läufe gesehen, sind diese Regeln (Quellen: Blätter,
   BossMod-Module, Daedalus' Feldnotizen, GluttonyCombos Aufzeichnungen):
   - Tötungsregeln für Lamien, Morpho und Abaddon, Myconid in der Pfütze und die Sanduhr des Todes beim
     Königs-Ahriman-Ebenbild (A675);
