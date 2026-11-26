@@ -3172,6 +3172,38 @@ den jobweisen Abläufen.
   für jeden Job gleich gilt: die Zählung der Flächen (oben), kein DoT auf Gegner, die bald sterben (D), freie Ladungen vor
   dem Tod des Bosses (K2).
 
+- *K6, Leisten zwischen zwei Rudeln, aus den Wirktexten aller Jobs (A978; xivapi v2, ActionTransient und TraitTransient,
+  Suche nach „combat“, 26.11.2026, 169 und 3 Treffer, jeder Satz gelesen):* Kein Text nennt eine Leiste, die beim
+  Verlassen des Kampfs verfällt; seit 7.2 laufen auch Astral Fire und Umbral Ice nicht mehr ab (The Balance, Black Mage
+  Basic Guide, Patch 7.4, über das Abrufwerkzeug: „the removal of Astral Fire/Umbral Ice timers in Patch 7.2“; der
+  Wirktext von Blizzard III und Fire III nennt keine Dauer). Was verfällt, sind Status mit Dauer – das gilt im Kampf wie
+  danach und braucht keine Regel für das Rudelende. Die Texte nennen dagegen Vorbereitungen, die *nur außerhalb* des
+  Kampfs wirken; je Job geprüft, ob die Rotation sie zwischen den Rudeln nutzt:
+  - Mönch, „Opens all five chakra when used outside of combat“ (Steeled/Forbidden/Enlightened Meditation): genutzt, ohne
+    Gegner in Reichweite und im Countdown (`MNK_Reborn`).
+  - Piktomant, Motive „Cast immediately when used outside of combat“: genutzt (`PCT_Reborn.DrawMotifs`, `!InCombat`).
+  - Ninja, Hide „Restores 2 charges to all mudra“, „Cannot be executed while in combat“: genutzt außerhalb des Kampfs
+    (Option „UseHide“) und im Countdown.
+  - Weise, Addersgall „Can be charged outside of combat“: läuft ohne Zutun.
+  - Beastmaster, Hörner „Retreat outside of combat will not affect recast timer“: im Rückzug vor dem nächsten Kampf
+    (B5, A681).
+  - *Schwarzmagier, Umbral Soul* „Grants Umbral Ice III and 3 Umbral Hearts, and also restores 10,000 MP when used while
+    outside of combat. Can only be executed while under the effect of Umbral Ice.“ *Nicht genutzt:* `BLM_Default`
+    fragt Umbral Soul nur im Kampf ab der sechsten Sekunde (`MaintainStatus`, `CombatElapsedLess(6)`), außerhalb des
+    Kampfs nie. *Im Kampf:* Endet ein Rudel in Astral Fire mit wenig MP, beginnt das nächste mit Blizzard III oder
+    Transpose und einem Eisschritt, bevor Feuer geht; in Umbral Ice mit fehlenden Herzen ebenso mit Blizzard IV.
+    The Balance (ebenda): „you will often be able to use Umbral Soul to get back to full MP with three Umbral Hearts“;
+    Transpose „in order to swap to Umbral Ice to allow use of Umbral Soul“. *Regel:* Außerhalb des Kampfs geht der
+    Schwarzmagier in Astral Fire mit Transpose nach Umbral Ice und wirkt in Umbral Ice Umbral Soul, solange Umbral Ice,
+    Herzen (ab Blizzard IV) oder MP nicht voll sind; danach nichts mehr bis zum Kampf. *Gegenthese 1 (der Pull kommt
+    gerade):* Umbral Soul ist ein GCD; fällt der Pull in ihn, kommt der erste Angriff höchstens einen GCD später, aber mit
+    vollen MP und drei Herzen statt eines Eisschritts im Kampf. *Gegenthese 2 (Astral Fire halten):* Kurz vor dem nächsten
+    Rudel wäre Feuer direkt stärker. Außerhalb des Kampfs ist der Abstand zum nächsten Rudel unbekannt; Astral Fire mit
+    leeren MP trägt keinen Feuerzauber, und von Umbral Ice III mit vollen MP ist Feuer einen Fire III entfernt – den
+    die Rotation ohnehin wirkt. *Gegenthese 3 (ausgeliefert, und nichts ändert sich):* Hält ihn der Countdown-Pfad schon
+    vorher bereit, ändert sich zwischen Rudeln ohne Countdown trotzdem etwas – dort fragte niemand. *Ebene:* nur der
+    Schwarzmagier; die übrigen Jobs oben brauchen nichts.
+
 **K4 – Bewegung: Sofortzauber für eine vorhergesagte Bewegung aufheben** (geprüft, nicht gebaut, A919):
 - *Was RSR schon weiß:* wann eine Fläche auf deinem Platz aktiv wird (`MovementLock.SpotDangerIn`, aus BossModReborns
   Zonen, `Hints.ForbiddenZonesNextActivation`), und wie lange gezaubert werden darf (`Hints.MaxCastTime`). Passt kein

@@ -1,6 +1,6 @@
 # BLM — Abhängigkeitsmatrix
 
-Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-21; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
+Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-26; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `BlackMageRotation`
 - Rotation: `RotationSolver/Rotations/Magical/BlackMage/BLM_Default.cs`, `RotationSolver/Rotations/Magical/BlackMage/BLM_RP.cs`
@@ -107,6 +107,7 @@ direkt: 38 · über andere Aktion: 2
 | Thunder | Regel sperrt vorher | Thunder IV |
 | Transpose | Regel prüft | Fire III |
 | Transpose | Regel prüft | Paradox |
+| Transpose | Regel prüft | Umbral Soul |
 | Triplecast | Regel sperrt vorher | Paradox |
 | Triplecast | Regel prüft | Swiftcast |
 | Triplecast | Regel sperrt vorher | Swiftcast |

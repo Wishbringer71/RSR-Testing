@@ -171,9 +171,9 @@ gemessen]. *Gegenthese 2 (Gruppe ohne beobachteten Buff):* Am Pull kennt die Uhr
 der Buff ohnehin mit Solar; danach zählen die beobachteten. Ein Mitglied, das seinen Buff in einem Rudel nicht
 setzt, zählt in diesem Rudel nicht – der Buff folgt dann deiner Burstphase. *Gegenthese 3 (ausgeliefert, und nichts
 ändert sich):* Läge der Buff schon in einer Demi-Phase, änderte sich nichts; gemessen lag er in Pilgers Pfad und
-Mistwake außerhalb. *Offen (K3):* In einer Gruppe mit Buffs folgt er der eigenen Abklingzeit, nicht der Uhr der
-Gruppe; in Mistwake lag er 10 bis 13 s hinter den Buffs des Barden (TODO „Rotationen aller Jobs über den Augenblick
-hinaus").
+Mistwake außerhalb. *In einer Gruppe mit Buffs* folgt er der eigenen Abklingzeit, nicht einer Uhr der Gruppe; in
+Mistwake lag er 10 bis 13 s hinter den Buffs des Barden. Auf die vorhergesagte Gruppe zu warten ist gemessen verworfen:
+ihre Bursts kamen in seinen Inhalten zu selten zur vorhergesagten Zeit (Konzept 03, K3, A977).
 
 **Keine Sonde:** Die Entscheidung fällt im Code, aus der Bereitschaft der Beschwörung und des Buffs, die
 beide hier und jetzt lesbar sind. Eine Messung, deren Auswertung über das Modell liefe, kostete je Wert

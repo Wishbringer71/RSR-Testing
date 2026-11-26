@@ -63,6 +63,12 @@ public class BLM_Default : BlackMageRotation
 	protected override bool EmergencyAbility(IAction nextGCD, out IAction? act)
 	{
 		// Retrace runs in GeneralAbility only, with its option's "in combat" and the hold right after Ley Lines (A602).
+		// Concept 03, K6 (A978): out of combat Astral Fire goes to Umbral Ice, where Umbral Soul fills it for the next pack.
+		if (!InCombat && InAstralFire && UmbralSoulPvE.Info.EnoughLevelAndQuest() && TransposePvE.CanUse(out act))
+		{
+			return true;
+		}
+
 		//To Fire
 		if (CurrentMp >= 7200 && UmbralIceStacks == 2 && ParadoxPvE.EnoughLevel)
 		{
@@ -735,6 +741,15 @@ public class BLM_Default : BlackMageRotation
 	private bool MaintainStatus(out IAction? act)
 	{
 		act = null;
+		// Concept 03, K6 (A978): out of combat Umbral Soul "grants Umbral Ice III and 3 Umbral Hearts, and also restores 10,000
+		// MP" - the next pack starts full instead of with an ice step in combat. Once full, nothing more until the fight.
+		if (!InCombat)
+		{
+			var heartsFull = !BlizzardIvPvE.EnoughLevel || UmbralHearts >= MaxSoulCount;
+			return InUmbralIce && (UmbralIceStacks < MaxSoulCount || !heartsFull || (Player != null && CurrentMp < Player.MaxMp))
+				&& UmbralSoulPvE.CanUse(out act);
+		}
+
 		if (CombatElapsedLess(6))
 		{
 			return false;
