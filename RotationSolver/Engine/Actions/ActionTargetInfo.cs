@@ -132,7 +132,7 @@ public partial struct ActionTargetInfo(IBaseAction action)
 			foreach (var figure in DataCenter.HealToDefeatTargets.GetObjectInRadius(Range))
 			{
 				if (CheckStatus(figure, skipStatusProvideCheck, skipTargetStatusNeedCheck) && CanUseTo(figure)
-					&& action.Setting.CanTarget(figure))
+					&& action.Setting.CanTarget(figure) && (targetFilter?.Invoke(figure) ?? true))
 				{
 					validTargets.Add(figure);
 				}
@@ -147,7 +147,7 @@ public partial struct ActionTargetInfo(IBaseAction action)
 			foreach (var spiked in DataCenter.SpikedHostiles.GetObjectInRadius(Range))
 			{
 				if (CheckStatus(spiked, skipStatusProvideCheck, skipTargetStatusNeedCheck) && CanUseTo(spiked)
-					&& action.Setting.CanTarget(spiked))
+					&& action.Setting.CanTarget(spiked) && (targetFilter?.Invoke(spiked) ?? true))
 				{
 					validTargets.Add(spiked);
 				}

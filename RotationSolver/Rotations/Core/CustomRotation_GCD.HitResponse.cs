@@ -113,22 +113,12 @@ public partial class CustomRotation
 				continue;
 			}
 
-			// The target filter is swapped in for this call only and restored afterwards, as for Nascent Flash.
-			var setting = sleep.Setting;
-			var canTarget = setting.CanTarget;
+			// The chosen enemy goes in as this call's target filter, on top of the action's own CanTarget (concept 24, A971).
 			var chosenId = enemy.GameObjectId;
-			setting.CanTarget = t => canTarget(t) && t.GameObjectId == chosenId;
-			try
+			if (!sleep.CanUse(out act, skipAoeCheck: true, skipTTKCheck: true, targetFilter: t => t.GameObjectId == chosenId))
 			{
-				if (!sleep.CanUse(out act, skipAoeCheck: true, skipTTKCheck: true))
-				{
-					SleepInterruptWatch.NoteLapse(enemy, DataCenter.IsMoving ? $"{sleep.Name} not castable: moving" : $"{sleep.Name} not castable now");
-					continue;
-				}
-			}
-			finally
-			{
-				setting.CanTarget = canTarget;
+				SleepInterruptWatch.NoteLapse(enemy, DataCenter.IsMoving ? $"{sleep.Name} not castable: moving" : $"{sleep.Name} not castable now");
+				continue;
 			}
 
 			SleepInterruptWatch.AimAt(enemy, sleep, left, needed, _sleepTries);

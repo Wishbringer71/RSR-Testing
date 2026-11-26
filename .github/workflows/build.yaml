@@ -146,6 +146,12 @@ jobs:
       - name: Check statuses are read through GetStatuses, not StatusList
         run: python3 .github/scripts/audit/check_status_list.py
 
+      # A rule that swaps an action's shared setting for one call and restores it picks the same targets as CanUse's
+      # target filter, so nothing fails when one comes back; every merge sets it against upstream's form again
+      # (concept 24, "Eine Zielbedingung je Aufruf geht als Zielfilter", A971).
+      - name: Check no rule swaps an action's shared setting for one call
+        run: python3 .github/scripts/audit/check_setting_swap.py
+
       # A stored list is written back whole on every save, so one that is never loaded destroys its
       # own file on the first save of the session. That happened to the learned damage potentials:
       # the load line went into the Init nobody calls, and what several evenings of pulls had rated

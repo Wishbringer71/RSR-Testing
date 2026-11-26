@@ -184,7 +184,7 @@ public partial struct ActionTargetInfo
 
 		if (RuleTargetId != 0)
 		{
-			return FindCommandObjectTarget(RuleTargetId, canAffects, skipStatusProvideCheck, skipTargetStatusNeedCheck);
+			return FindCommandObjectTarget(RuleTargetId, canAffects, skipStatusProvideCheck, skipTargetStatusNeedCheck, targetFilter);
 		}
 
 		var commandTarget = DataCenter.GetCommandTarget(action);
