@@ -105,6 +105,10 @@ nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigt
 
 ## Warten auf Daten oder Fremde
 
+- **Lumina: `ExtractText` veraltet** (A971). *Im Kampf:* nichts; der Build bricht an 127 Stellen, sobald Dalamud die
+  Lumina-Fassung ab 88c106d (24.11.2026) liefert, und ohne Build kein Plugin. *Auflösung:* mit dieser Dalamud-Fassung
+  auf `ToString()` umstellen, im selben Build gegen eine Stichprobe von Texten mit Makros geprüft. *Konzept:* 24.
+
 - **RefCheck für RebornMaterial 7.5.8.4** (A971). *Im Kampf:* Fehlt ein Member, den RebornMaterial aus Dalamud ruft,
   fällt RSR erst auf dem Pfad aus (`MissingMethodException`), etwa beim Öffnen eines Fensters. *Auflösung:* `tools/RefCheck`
   aus Retainer-Repricer in einer eigenen Sitzung gegen `bin/Release` (Skill `upstream-sync`, Schritt 5). *Konzept:* 24.

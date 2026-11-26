@@ -421,7 +421,10 @@ und zwölf Verwandlungen („Transformed into a toad and unable to execute actio
 Piggy, Chicken, Odder, Owlet, Away with the Fae, Beyond Beleafed, Miracle of Nature). Im Kampf: Unter ihnen nimmt das
 Spiel keine Aktion an; RSR drückte bisher weiter ins Leere, jetzt wartet es, und mit dem Ende des Status geht die
 Rotation weiter. Die Erkennung über den Text ist die allgemeine Regel, die Upstreams Liste einschließt, und gilt auch für
-einen künftigen Status mit demselben Text. Dieselbe Erkennung liest die Sperre der eigenen Abwehr (Konzept 09,
+einen künftigen Status mit demselben Text. *Gegenthese:* Unter einer Verwandlung handelt der Spieler mit ihren eigenen
+Aktionen (Tiefe Gewölbe, Daedalus v0.1.130, 21.11.2026). Widerlegt für diese: Transfiguration (565, 4708) sagt
+„inhibiting use of actions“ oder nur „Corporeal form has been altered“ und trägt das Flag nicht (xivapi v2, 26.11.2026);
+sie sperrt nicht, und die Verwandlungsaktionen der Gewölbe (Konzept 23) gehen weiter. Dieselbe Erkennung liest die Sperre der eigenen Abwehr (Konzept 09,
 „Spielerweite Sperre und Frist“, `PlayerAbilitiesLocked`), die bisher nur das Flag und Amnesia las. Seit Upstream
 7.5.8.11 zählt ein Status ohne Restzeit als endlos und sperrt damit; vorher sperrte er nie. Das Statusblatt führt 23
 dauerhafte nützliche Status mit `LockActions` (xivapi v2, 26.11.2026), darunter Mounted, Passenger, In Event,

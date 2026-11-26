@@ -28086,7 +28086,43 @@ so dass ein Flächen-GCD an einer einzelnen Puppe nicht gewählt wird. Ob sein B
   rejected …“ höchstens einmal je Aktion und Gebiet; steht sie für eine Bodenfläche zweimal in Folge binnen 5 s, hält
   der Rückfall nicht. Im Crucible nennt das Teamfenster für Brett 1 Begleiter mit „… the board asks for (…)“ für Seele,
   Welle und Asche; fehlt die Angabe bei geladenem BossModReborn, kam die Liste nicht an.
-- *Prüfgrad:* Compile, Prüfskripte (66 und `check_setting_swap.py` mit Regressionsfall); im Spiel ungesehen.
+- *Code-Review (high, 4824119ed..24b75ad58):* fünf Befunde, alle behoben in d54ac5b78 – der Preis unter „Level“ fehlte im
+  Konzept; die Begründung im Teamfenster nannte die Mechanik auch beim zweiten Begleiter einer Gattung und alle Gründe;
+  die Doku von `PlayerAbilitiesLocked` widersprach dem Code; die Spurzeile der Dauersperre kam auch aus dem
+  Diagnosefenster; das Prüfskript übersah einen typisierten Zwischenwert.
+- *Audit, Durchgang 1 (mechanisch, 26.11.2026, d54ac5b78):* 67 Prüfschritte über jede Datei des Baums, grün.
+- *Audit, Durchgang 2 (inhaltlich, 26.11.2026, d54ac5b78) über Merge und Synergien:* Zustand ohne Rücksetzung – die
+  Spursätze von `DynamicRotation` leert der Gebietswechsel, Upstreams Ablehnungszeiten `ResetAllRecords`, der Textcache
+  der Sperre hängt an Spieldaten; ohne Befund. Gemischte Einheiten – Millisekunden gegen `TickCount64`, Yalm je Aktion,
+  Gattungsnummern RSR gegen BossModReborn (beide 0 bis 8 in derselben Folge, gemessen); ohne Befund. Text widerspricht
+  Code – ein Befund (Doku `PlayerAbilitiesLocked`, behoben). Schlüsselkollision – Gründe je Gattung, Spursätze je
+  (Aktion, Meldung) und Status; ohne Befund. Nebenläufigkeit – der ActorControl-Hook schreibt dieselben Sätze, die der
+  Gebietswechsel leert; beide laufen im Spielthread [Schätzung: der Hook ruft die Netzverarbeitung im Frame auf, wie die
+  übrigen Leser dieses Hooks]. Früherer Zweig verdeckt späteren – „Place them on the party tank“ kehrt vor „Cover most“
+  zurück, wie vor dem Merge; ohne Befund. Regel ohne Ende, gelernte Maxima, Messwert aus der eigenen Steuerung – keine
+  neue Stelle dieser Art.
+- *Quellen am Auftragsende (`check_source_updates.py`, 26.11.2026):* 41 Quellen, 13 neu, 27 unverändert, eine
+  unerreichbar (FrontlineAdvisor). Je neue Quelle die Commits seit dem ausgewerteten Stand gelesen:
+  - BossmodReborn 91fbb365a..a4fd07db9 (15): Crucible-Schnittstelle zu RSR (oben ausgewertet, gebaut), Module aus
+    Shadowbringers und Endwalker nachgezogen, Replay-Korrekturen; nichts, was RSR ändert.
+  - Daedalus 8684c7938..6ba52aa11 (25): Verwandlungen der Tiefen Gewölbe handeln (v0.1.130/131) – widerlegt die
+    Gegenthese zur Sperre nicht, Transfiguration trägt den Sperrtext nicht (Konzept 03); Halt vor der Landung von
+    Pyretic über ein fremdes Signal (v0.1.132) – RSR hält über `ActionPenaltyWatch` (A439) und lernt das Wirken, ohne
+    Signal; kein Nutzen.
+  - Beiruta (RotationSolverReborn-Fork) 996f28183..faf626ea5 (8, davon vier über Upstream hinaus): eingebaute Pläne für
+    Beirutas Heiler, „Pending heals counted in HP checks so heals don't double up“. Geprüft am Mitschnitt vom 14.11.2026
+    (Weißmagier, ACT): 7 von 110 eigenen Einzelheilungen folgten binnen 1,5 s auf eine eigene desselben Ziels, das Ziel
+    stand dabei bei 42 bis 84 % (meist Cure II, dann Regen) – kein Doppelheilen belegt. Grenze: ein Mitschnitt, ein Job.
+  - lalalazy c941afe43..4f20d098d (41): Ports derselben Upstream-Änderungen; GluttonyCombo hält Vileskin für den
+    Rückstoß von Cauterize – RSR hält Vileskin für Rückstöße schon (`BeastmasterFamiliars`), die neue Gattungsrolle
+    bringt den Unhold auf dieses Brett.
+  - Lumina 6447e12c7..3c3ef0be5 (7): `ExtractText` als veraltet markiert, Ersatz `ToString()`. RSR baut mit CS0618 als
+    Fehler; sobald Dalamud diese Lumina liefert, bricht der Build an 127 Stellen (10 davon Upstream). Nicht vorab
+    umgestellt: Ob `ToString()` in der heutigen Lumina dasselbe liefert, ist unbelegt. TODO.
+  - FFXIVClientStructs (18): Strukturen, die RSR nicht liest (Posen, InfoProxyDetail, ClientSelectData). RebornMaterial
+    (3): Korrekturen, wirksam erst mit Upstreams nächster Paketversion. WrathCombo (5), Henchman (2), XelsCombatAI (3),
+    Sapphire (9), t3knical (5, Downloadzahlen), Splatoon (2, alte Ultimate-Skripte): kein Bezug zu einer Regel von RSR.
+- *Prüfgrad:* Compile, Prüfskripte (67 mit `check_setting_swap.py`, Regressionsfall am Stand davor); im Spiel ungesehen.
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

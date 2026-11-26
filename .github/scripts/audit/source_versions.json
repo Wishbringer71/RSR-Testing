@@ -3,8 +3,8 @@
  "sources": [
   {
    "repo": "aers/FFXIVClientStructs",
-   "commit": "7f509ce13",
-   "date": "2026-11-21",
+   "commit": "c4b4d5ecb",
+   "date": "2026-11-26",
    "use": "Client-API"
   },
   {
@@ -27,20 +27,20 @@
   },
   {
    "repo": "BeirutaNa1na/RotationSolverReborn",
-   "commit": "996f28183",
-   "date": "2026-11-21",
+   "commit": "faf626ea5",
+   "date": "2026-11-26",
    "use": "Beiruta-Rotationen"
   },
   {
    "repo": "dajoey/lalalazy",
-   "commit": "c941afe43",
-   "date": "2026-11-21",
+   "commit": "4f20d098d",
+   "date": "2026-11-26",
    "use": "GluttonyCombo, LazyCrucible: Crucible-Aufzeichnungen, Sanduhr, Futter (A674, A679)"
   },
   {
    "repo": "FFXIV-CombatReborn/BossmodReborn",
-   "commit": "91fbb365a",
-   "date": "2026-11-21",
+   "commit": "a4fd07db9",
+   "date": "2026-11-26",
    "use": "Crucible-Module, Mechaniken, Vertrag mit RSR (Konzept 21, Code.md), Blickliste GazeActions.g.cs (Konzept 13), Projektion in die 3D-Welt und Ringe im Modulcode (Konzept 13, A921)"
   },
   {
@@ -63,8 +63,8 @@
   },
   {
    "repo": "Knightmore/Henchman",
-   "commit": "7330c6362",
-   "date": "2026-11-12",
+   "commit": "471c0dea4",
+   "date": "2026-11-26",
    "use": "Automatisierung (A160)"
   },
   {
@@ -81,8 +81,8 @@
   },
   {
    "repo": "Landelor/XelsCombatAI",
-   "commit": "35fcc6504180c0bfc6392757e3fdc4a713f0ed12",
-   "date": "2026-10-18",
+   "commit": "687c505ad",
+   "date": "2026-11-26",
    "use": "Kampf-KI"
   },
   {
@@ -99,8 +99,8 @@
   },
   {
    "repo": "LTS-FFXIV/RebornMaterial",
-   "commit": "561edc1aa",
-   "date": "2026-11-17",
+   "commit": "1e29926f6",
+   "date": "2026-11-26",
    "use": "Oberfläche (Hilfsfenster)"
   },
   {
@@ -111,14 +111,14 @@
   },
   {
    "repo": "NotAdam/Lumina",
-   "commit": "6447e12c7",
-   "date": "2026-11-11",
+   "commit": "3c3ef0be5",
+   "date": "2026-11-26",
    "use": "Blätter lesen"
   },
   {
    "repo": "ofnature/Daedalus",
-   "commit": "8684c7938",
-   "date": "2026-11-21",
+   "commit": "6ba52aa11",
+   "date": "2026-11-26",
    "use": "Feldnotizen, Rotationen aller Jobs, Crucible (A600, A660)"
   },
   {
@@ -141,8 +141,8 @@
   },
   {
    "repo": "PunishXIV/WrathCombo",
-   "commit": "a45783818",
-   "date": "2026-11-10",
+   "commit": "c06bf3927",
+   "date": "2026-11-26",
    "use": "anderes Rotationswerkzeug (konzepte.md)"
   },
   {
@@ -177,14 +177,14 @@
   },
   {
    "repo": "SapphireServer/Sapphire",
-   "commit": "aab9cb2347eb0ec42e85ee3e117a0c177b9b3070",
-   "date": "2026-10-06",
+   "commit": "53ac408ae",
+   "date": "2026-11-26",
    "use": "Server-Nachbau (Mechanik)"
   },
   {
    "repo": "t3knical/DalamudPlugins",
-   "commit": "3344272b1",
-   "date": "2026-11-21",
+   "commit": "fe0d18361",
+   "date": "2026-11-26",
    "use": "Tekz-BossmodReborn-Fork (Zielvorrang je Kampf), BeastMasterHelper (A667)"
   },
   {
@@ -237,8 +237,8 @@
   },
   {
    "repo": "PunishXIV/Splatoon",
-   "commit": "f396ef6",
-   "date": "2026-11-19",
+   "commit": "0acc9086e",
+   "date": "2026-11-26",
    "use": "Projection, IPC, Einstellungen der Projection (Konzept 13, A920, A921)"
   },
   {
