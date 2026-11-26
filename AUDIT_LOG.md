@@ -28041,6 +28041,53 @@ so dass ein Flächen-GCD an einer einzelnen Puppe nicht gewählt wird. Ob sein B
   außerhalb des Sets gemeldet.
 - *Prüfgrad:* Spuren.
 
+### A971 · Upstream 7.5.8.11 (42efb269e): gemergt, je Änderung ausgewertet, Synergien gebaut (26.11.2026)
+
+- *Gemessen:* vier Upstream-Commits (38afb1730, 7ad68bdc5, 98ca4da98, 513ed3739), 14 Konflikte in `main`, zwei weitere
+  beim Merge in den Arbeits-Branch. `main` 8af962d59 (Merge 6724d634f, Fork-Version 7.5.8.11), Branch-Merge 4824119ed;
+  Build und 66 Prüfschritte grün an beiden.
+- *Zielfilter (38afb1730):* übernommen. Die drei Fork-Wege, die `CanTarget` fragen, ohne dass Upstream sie kennt
+  (Figuren, die nur Heilung besiegt; Gegner mit Stacheln; das Ziel einer Regel), fragten den Filter nach dem Merge
+  nicht – Nascent Flash mit „By danger“ hätte eine Figur über der Schwelle wählen können. Nachgezogen, dazu der Wirker
+  der Flächenheilung um sich. Die vier Fork-Stellen, die `CanTarget` tauschten (Nascent Flash, `CanUseOnLowestBelow`,
+  Schlaf, `HelpTankbusterTarget`), nehmen jetzt den Filter; `check_setting_swap.py` sperrt den Tausch (am Stand davor:
+  die vier und Upstreams frühere in `PhantomDefault`). Konzept 24. Nicht übernommen als Filter: die Sprungweiten der
+  Rotationen (Konzept 18, „Warum kein harter Filter“).
+- *`ShouldDelayCommandAction`:* nur BeirutaPCT nutzt sie; keine Fork-Rotation hält einen befohlenen Druck zurück –
+  kein Bedarf.
+- *Weiser, Grundzauber unter Eukrasia gesperrt:* übernommen; SGE_Reborn drückt die eukrasische Aktion selbst. Konzept 01.
+- *Sperrstatus (`LocksActions`):* übernommen, verallgemeinert: statt drei Ids der Wirktext „unable to execute actions“
+  im englischen Blatt, 17 Zeilen ohne das Flag (xivapi v2, 26.11.2026). Die Sperre der Abwehr
+  (`PlayerAbilitiesLocked`) liest dieselbe Prüfung; vorher fehlten ihr diese 17. Konzept 03, 09.
+- *Bodenflächen (513ed3739):* Upstreams Prüfung (Reichweite, Boden, Sicht, Ablehnung durch den Server) übernommen; die
+  Fork-Abdeckung („Cover most“, A398) läuft danach weiter und prüft ihre Stellen ebenso. Konzept 07.
+- *Feste Sprünge:* BossModReborns `Hints.IsFixedDashSafe` (a4fd07db9) rechnet denselben Landepunkt wie der Fork;
+  angeschlossen mit der Weite aus dem Wirktext je Aktion. Upstreams `FixedMoveDistance` (ab Werk 15 Yalm) nicht
+  übernommen: eine feste Zahl, die der Fork je Aktion aus dem Text kennt (`BackstepDistance`). Repelling Shot bleibt
+  Rücksprung vom Ziel (A313).
+- *Serverablehnung (0x2BC):* ergänzt die Dynamische Rotation (Client-Ablehnung, ohne Bodenziele); Messzeile „the server
+  rejected …“. Konzept 03.
+- *Bevorzugte Begleiter (98ca4da98):* Upstream zeigt die Liste nur an; der Fork nimmt sie in die Teamwahl als Rollen
+  (Seele, Welle, Asche, Unhold je Brett, nach Zahl der Gegner). Konzept 21.
+- *Fremde Rotationen (RabbsBLM, BeirutaPCT, BeirutaRDM, PhantomDefault, RDM_Reborn-Countdown):* Upstream löste
+  Zweitinstanzen und getauschte Einstellungen auf; dieselbe Klasse in den Rotationen des Forks gesucht: keine Stelle
+  außer den vier oben. RDM_Reborn: Veraero im Countdown mit `skipStatusProvideCheck` statt einer Zweitinstanz, im
+  Kampf gleich.
+- *UI (7ad68bdc5), RebornMaterial 7.5.8.2 → 7.5.8.4:* übernommen; `scan18.py` führt `SpacingDefaultUpdated`, die
+  Einträge für `UiPaddingScale` und `UiMotionScale` entfallen (jetzt gelesen). RefCheck für RebornMaterial 7.5.8.4 steht
+  aus (eigene Sitzung, TODO).
+- *UI-Tooltips:* Die Rotationsoptionen zeigen ihre Beschreibung jetzt über RebornMaterial (`M3SettingRow`, mit
+  „Inline descriptions“ aus); dessen `M3Tooltip` reicht sie an `M3Tooltip.Handler` weiter, den RSR auf
+  `ImguiTooltips.ShowTooltip` setzt (dekompiliert, RebornMaterial 7.5.8.4) – die lesbare Zeilenlänge (A654) gilt weiter.
+- *Umfang:* Upstream-Commits 4 von 4; geänderte Dateien 15, 26, 11 und 8, je Datei der Diff gelesen; in 7ad68bdc5 bei
+  `MainWindow_Navigation.cs` und den Fenstern ohne reine Layoutzeilen (Abstände, Breiten, Farben, Symbole), in
+  `packages.lock.json` und im Changelog nur die Versionszeilen. Konflikte 16 von 16.
+- *Vorhersage:* Im nächsten `DefenseTrace.log` mit Bodenheilern und BossModReborn steht bei einer Ablehnung „the server
+  rejected …“ höchstens einmal je Aktion und Gebiet; steht sie für eine Bodenfläche zweimal in Folge binnen 5 s, hält
+  der Rückfall nicht. Im Crucible nennt das Teamfenster für Brett 1 Begleiter mit „… the board asks for (…)“ für Seele,
+  Welle und Asche; fehlt die Angabe bei geladenem BossModReborn, kam die Liste nicht an.
+- *Prüfgrad:* Compile, Prüfskripte (66 und `check_setting_swap.py` mit Regressionsfall); im Spiel ungesehen.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

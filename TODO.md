@@ -105,6 +105,10 @@ nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigt
 
 ## Warten auf Daten oder Fremde
 
+- **RefCheck für RebornMaterial 7.5.8.4** (A971). *Im Kampf:* Fehlt ein Member, den RebornMaterial aus Dalamud ruft,
+  fällt RSR erst auf dem Pfad aus (`MissingMethodException`), etwa beim Öffnen eines Fensters. *Auflösung:* `tools/RefCheck`
+  aus Retainer-Repricer in einer eigenen Sitzung gegen `bin/Release` (Skill `upstream-sync`, Schritt 5). *Konzept:* 24.
+
 - **Weißmagier, Astrologe und Blaumagier am ersten Puppenmitschnitt gegen The Balance** (A967). *Im Kampf:* Spielt der
   Code anders als seine Regel, fehlt Schaden, ohne dass der Regelabgleich es zeigt (viermal am 20.11.2026 bei anderen
   Jobs). *Auflösung:* sein nächster Puppenmitschnitt mit einem dieser Jobs: GCD-Lücken, Abklinggruppen und Burstfenster
