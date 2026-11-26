@@ -32,6 +32,14 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
 
 ## Offene Arbeit
 
+### Rotationen aller Jobs über den Augenblick hinaus: Leisten und Aufbauten am Ende eines Rudels (K6) · N
+Sein Auftrag vom 19.11.2026 (A901). *Im Kampf:* Eine Leiste oder ein Aufbau, der zwischen zwei Rudeln verfällt, ist
+verlorener Schaden in jedem Dungeon; eine Leiste, die stehen bleibt, braucht keine Regel. *Stand:* K1 erster Schritt (A914),
+K2 (A916), K5 erster Schritt (A917), K4 geprüft ohne Verlust (A919), K6 im eigenen Fenster ohne Verlust (A933, A937); K3
+gemessen, Warten auf die Gruppe verworfen (A977). *Nächster Schritt:* je Job aus den Wirktexten bestimmen, welche
+Ressource außerhalb des Kampfs oder nach einer Zeit verfällt, und nur dort eine Regel im Loop. *Konzept:* 03, „F · Über den
+Augenblick hinaus“, K5 und K6.
+
 ## Technische Schuld
 
 Ohne Wirkung im Kampf oder bewusst eingegangen; je Kosten und Auflösungsbedingung.
@@ -119,17 +127,6 @@ nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigt
   Puppen (`ObjectHelper.IsAttackable`), nach seinem Ziel. *Auflösung:* sein nächster Puppen-Upload mit einem
   Build ab a45c8cc8e: Nach einem Fallenlassen kommt die nächste Aktion des Spielers auf die Puppe binnen eines GCD.
   *Konzept:* 03 („Welche Puppe dein Kampf ist“).
-
-- **Rotationen aller Jobs über den Augenblick hinaus** (sein Auftrag vom 19.11.2026; A901). *Wirkung im Kampf:*
-  Verstärker, Zeitgeber und DoTs laufen heute in vorhergesagte Pausen, Ressourcen bleiben beim Tod des Ziels übrig, der
-  eigene Burst richtet sich nach der eigenen Uhr statt nach den Raidbuffs, die wirklich auf dir liegen. *Nächster
-  Schritt:* K3 – Beobachtung gebaut (A904); nach seinem nächsten Upload aus einer Gruppe mit Raidbuffs die Spur
-  „group burst:“ auswerten, dann eigene Verstärker auf den Gruppenburst warten lassen; K1 erster Schritt gebaut
-  (A914: allein jede Pause im Fenster, in der Gruppe nur im ersten GCD), K2 gebaut (A916: gehaltene Ladungen vor dem
-  Tod des Bosses frei), K5 erster Schritt gebaut (A917: Flächen zählen nur, wer den Treffer erlebt), danach K1 mit der
-  Uhr der Gruppe aus K3, dann K6 je Job (im eigenen Fenster ohne gemessenen Verlust: alle eigenen Burstfenster voll, A933, A937) – mit den Leisten und Aufbauten am Ende eines Rudels (K5, A918) und den
-  Bewegungsmitteln (K4, A919: allgemein geprüft, kein gemessener Verlust). *Konzept:* 03, „F · Über den
-  Augenblick hinaus".
 
 - **Rotation jedes Jobs: Synergien und Kaskaden innerhalb des Jobs** (sein Auftrag vom 19.11.2026: „danach die
   rotationen jedes jobs auf verbesserungspotential prüfen. innerhalb des jobs durch auswertung der eigenschaften der

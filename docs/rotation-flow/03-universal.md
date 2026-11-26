@@ -3290,6 +3290,19 @@ den jobweisen Abläufen.
   - *Spur:* je Raidbuff eine Zeile „group burst: JOB used AKTION, status #ID on N members, recast R s - next group buff
     in X s“ (Job statt Name). Sein nächster Upload aus einer Gruppe mit Raidbuffs zeigt, ob Erkennung und Takt stimmen;
     erst dann wartet ein eigener Verstärker darauf (Gegenthese 6).
+- *Gemessen: Warten auf die Uhr verworfen (A977, seine Spur vom 21. bis 25.11.2026, 337 Zeilen „group burst:“, 192
+  Gruppenbursts).* Die Erkennung stimmt: jeder Raidbuff der Gruppe (Technical Finish, Searing Light, Arcane Circle,
+  Embolden, Battle Litany, Chain Stratagem, Dokumori, Mug, Battle Voice, Radiant Finale, Divination, Brotherhood), kein
+  Fremdkörper. Die Vorhersage trägt nicht: In Kämpfen über 180 s kam der nächste Gruppenburst 36 von 90 Mal innerhalb von
+  ±5 s der Vorhersage (Median +2,4 s, zehntes Perzentil −49 s, neunzigstes +31 s); eine Uhr aus Bursts mit mindestens zwei
+  Buffs und 120 s Takt traf 23 von 44 Mal. Auch eine Uhr, die sich selbst prüft – halten nur, wenn die letzte Vorhersage
+  im selben Kampf eintraf –, lag danach 14 von 17 Mal (±2,5 s) und 16 von 24 Mal (±5 s) daneben. In seinen Inhalten
+  (Allianzraids, Prüfungen und Dungeons in Zufallsgruppen) setzen die Mitspieler ihre Buffs nicht im festen Takt.
+  *Folge:* Kein eigener Verstärker wartet auf die vorhergesagte Gruppe; ein Halten hätte öfter gegen den Burst gewartet
+  als mit ihm, und jeder Fehlgriff kostet Laufzeit des eigenen Buffs. Die Beobachtung bleibt: Sie sagt, *ob* Gruppen-Buffs
+  kommen (Konzept 12, A974: Searing Light bei Abklingzeit nur dann). *Gegenthese (feste Gruppe, Savage):* Dort hielte der
+  Takt. Nicht widerlegt, aber nicht sein Profil; die Messung oben ist das Werkzeug, mit dem ein späterer Upload aus einer
+  festen Gruppe das zeigen würde (Skript im Archiv A977). K1 „mit der Uhr der Gruppe“ entfällt damit.
 - *Die Uhr der Gruppe:* wie die eigene Burst-Uhr (D, „Der Burst des Jobs als Uhr"): Ein Burst der Gruppe beginnt, wenn
   ein solcher Status nach einer Lücke kommt; der Takt ist der Median der Abstände im Kampf, der Anteil P die Summe der
   Schadensanteile, solange sie liegen *[die Prozentwerte stehen nicht im Statustext; bis zur Messung zählt jeder
