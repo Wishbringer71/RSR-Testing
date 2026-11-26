@@ -226,6 +226,20 @@ them where they cover the most party members" (ab Werk an) wird sie mit der Stel
 verglichen: Deckt eine davon mehr Mitglieder ab (bei Heilungen: mehr Verletzte), geht die Fläche dorthin; bei
 Gleichstand bleibt die übliche Stelle, unter mehreren gleich guten die, um die die Getroffenen am dichtesten stehen.
 
+**Jede Stelle hält vor dem Spiel (Upstream 7.5.8.11, 513ed3739, ausgewertet A971):** Die übliche Stelle und jede
+Stelle an einem Mitglied werden auf die Reichweite weniger einen halben Yalm gekürzt, auf den Boden gelegt (ein Strahl
+2,5 Yalm über bis 6 Yalm unter dem Punkt), und eine Stelle gilt nur, wenn ihr Höhenunterschied zum Spieler die Reichweite
+nicht übersteigt und der Spieler sie sieht (Strahl von Augenhöhe). „Place them on the party tank“ nimmt zuerst einen
+Tank in Haltung, dann einen ohne, und nur, wenn die gekürzte Stelle ihn noch deckt. Lehnt der Server eine Bodenfläche
+trotzdem ab (Konzept 03, „Was das Spiel hier ablehnt“), geht sie 5 s lang auf den Wirker. Im Kampf: Vorher konnte die
+Fläche auf einer Treppenstufe, hinter einer Säule oder genau an der Reichweitengrenze liegen; das Spiel lehnte sie ab,
+und RSR versuchte dieselbe Stelle im nächsten Bild wieder, bis die Lage sich änderte. Jetzt geht sie an eine Stelle,
+die das Spiel annimmt, oder an den Wirker. Die Fork-Stelle an den Mitgliedern prüft seit A971 dasselbe; ein Mitglied,
+dessen Stelle nicht hält, ist kein Kandidat. *Kosten:* zwei Strahlen je Kandidat, bei „Cover most“ also bis zu 16 je
+Prüfung einer Bodenfläche mit acht Mitgliedern, nur solange eine solche Aktion bereit ist und geprüft wird. *Preis:*
+Die 5 s nach einer Ablehnung sind Upstreams feste Zahl; in dieser Zeit liegt die Fläche am Wirker, auch wenn die Gruppe
+woanders steht. Danach steht die Aktion bei einer gewirkten Fläche ohnehin in ihrer Abklingzeit.
+
 **Im Kampf:** Prüfung, Boss in der Mitte bei 100/100, die Gruppe sammelt sich am Südrand, 20 Yalm von der Mitte, für
 einen Stack, dann kommt der Raidwide. Vorher landete Sacred Soil (Wirkradius 15 Yalm laut Blatt) in der Mitte und
 deckte Tank und Nahkämpfer, die Gruppe am Stack nahm den Treffer ohne die 10 % Minderung. Jetzt liegt sie am Stack, wenn dort mehr stehen. Steht die Gruppe in

@@ -125,6 +125,11 @@ kennt — die acht Stufen sind größtenteils diesem Modell geschuldet. Der frü
 Erneuerungsgrund; Schaden verbraucht sie, und der Zweig legte sie im Pull alle paar Sekunden neu auf. Die
 Barriere im Pull läuft über die gemeinsame Heilerregel `TryPullUpkeepOnTank` als Eukrasia-Ziel in Stufe 1
 (`PullBarrierDue`, Option `UsePreEukrasianDiagnosis`, ab Werk an; Konzept 15, V1).
+Unter Eukrasia geht keiner der Grundzauber, die Eukrasia umwandelt (Dosis I–III, Diagnosis, Prognosis, Dyskrasia I–II;
+`ActionCheck`, Upstream 7.5.8.11, 38afb1730, ausgewertet A971): Das Spiel macht aus dem gedrückten Grundzauber die
+eukrasische Fassung, ein Dosis III unter einem Eukrasia, das für eine Barriere gesetzt war, legte also Eukrasian Dosis
+statt der Barriere. Die Rotation drückt unter Eukrasia die eukrasische Aktion selbst (Stufe 1 und Anti-Brick); sie
+verliert dadurch nichts.
 
 **Kardia folgt der Aggro (A567).** Kardion heilt seinen Träger, wenn der Weise bestimmte Schadenszauber landet (170
 Potenz je Treffer; Kardia ist eine Fähigkeit ohne Mana mit 5 s Wiederverwendung, Job-Guide und xivapi, 05.11.2026).
