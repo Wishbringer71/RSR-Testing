@@ -309,7 +309,7 @@ internal static partial class ActionUpdater
 			return false;
 		}
 
-		if (PlayerHasLockActions())
+		if (PlayerHasLockActions(trace: true))
 		{
 			return false;
 		}
@@ -332,7 +332,7 @@ internal static partial class ActionUpdater
 		return RSCommands.CanDoAnAction(ActionHelper.CanUseGCD);
 	}
 
-	internal static bool PlayerHasLockActions()
+	internal static bool PlayerHasLockActions(bool trace = false)
 	{
 		if (DataCenter.IsPvP)
 		{
@@ -344,7 +344,8 @@ internal static partial class ActionUpdater
 		{
 			if (StatusHelper.LocksActions(status, minRemaining))
 			{
-				if (status.RemainingTime == 0f)
+				// Only where the rotation is held (A971), not when the debug window asks.
+				if (trace && status.RemainingTime == 0f)
 				{
 					DynamicRotation.HeldByEndlessStatus(status.StatusId);
 				}

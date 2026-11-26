@@ -28,7 +28,8 @@ ROOTS = [Path('RotationSolver')]
 
 # Strings first, so that a // or /* inside one does not hide the code after it; then comments. Newlines are kept.
 TOKENS = re.compile(r'@"(?:[^"]|"")*"|\$?"(?:\\.|[^"\\\n])*"|\'(?:\\.|[^\'\\\n])\'|//[^\n]*|/\*.*?\*/', re.DOTALL)
-SAVE = re.compile(r'\bvar\s+(\w+)\s*=\s*(?:[\w.]+\.)?[Ss]etting\.(\w+)\s*;')
+# The saved value: `var x = ...` or a typed local (`Func<IBattleChara, bool> x = ...`).
+SAVE = re.compile(r'(?:\bvar|[\w.]+(?:<[^;=()]*>)?\??)\s+(\w+)\s*=\s*(?:[\w.]+\.)?[Ss]etting\.(\w+)\s*;')
 
 
 def strip_comments(text):
@@ -49,8 +50,7 @@ def check(text):
     assignment over several lines counts as one."""
     code = strip_comments(text)
     events = [(m.start(), 'save', m.group(1), m.group(2)) for m in SAVE.finditer(code)]
-    events += [(m.start(), 'assign', m.group(2).strip(), m.group(1)) for m in ASSIGN.finditer(code)
-               if not code[max(0, m.start() - 64):m.start()].rstrip().endswith('var ' + m.group(0).split('=')[0].strip())]
+    events += [(m.start(), 'assign', m.group(2).strip(), m.group(1)) for m in ASSIGN.finditer(code)]
     events.sort()
     saved = set()     # (local, member) once captured
     replaced = set()  # (local, member) whose member was then set to something other than the local
@@ -96,6 +96,10 @@ def self_test():
                 && t.GetHealthRatio() < ratio;
             try { return action.CanUse(out act); }
             finally { setting.CanTarget = canTarget; }''',
+        'CanTarget saved in a typed local': '''
+            Func<IBattleChara, bool> keep = action.Setting.CanTarget;
+            action.Setting.CanTarget = t => keep(t) && t.IsAlive;
+            action.Setting.CanTarget = keep;''',
         'ActionCheck on a named action': '''
             var check = NascentFlashPvE.Setting.ActionCheck;
             NascentFlashPvE.Setting.ActionCheck = () => false;
@@ -141,7 +145,7 @@ def self_test():
         raise AssertionError('a fork rotation was let through')
 
     print('self-test ok: a swap of CanTarget (also set over several lines), TargetType or ActionCheck through a\n'
-          '  local, the action or a named action is caught; a composition in Modify, a read, a target filter, a\n'
+          '  local (var or typed), the action or a named action is caught; a composition in Modify, a read, a target filter, a\n'
           '  comment, a string, a different member, a cache filled on first use and a switch written back are not;\n'
           '  only the foreign rotations are left alone')
 

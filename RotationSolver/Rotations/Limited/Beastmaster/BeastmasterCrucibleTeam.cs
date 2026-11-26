@@ -736,6 +736,7 @@ public partial class BeastmasterRotation
 				+ "The game gave no familiar's rank, and no result window showed one: ranks count by the board's sync only.";
 		}
 
+		var holders = RoleHolders(chosen, needs);
 		foreach (var pick in chosen)
 		{
 			var hit = new List<string>();
@@ -747,9 +748,10 @@ public partial class BeastmasterRotation
 				}
 			}
 
-			var kinOfPick = KinOf(pick.Pet);
+			// A971: the mechanic only on the familiar that holds the kin's role - a second of the kin holds none.
+			var roleKin = holders.TryGetValue(pick.Pet, out var held) ? held.Kin : BeastmasterKinType.None;
 			var why = (pick.Safe ? "heals or protects; " : string.Empty)
-				+ (needs.Reasons.TryGetValue(kinOfPick, out var mechanic) ? $"{kinOfPick} the board asks for ({mechanic}); " : string.Empty)
+				+ (needs.Reasons.TryGetValue(roleKin, out var mechanic) ? $"{roleKin} the board asks for ({mechanic}); " : string.Empty)
 				+ (hit.Count > 0 ? $"hits {string.Join(", ", hit)}" : "no weakness of this board")
 				+ (pick.OverRank ? string.Empty : "; below the board's rank")
 				+ (learning.TryGetValue(pick.Pet, out var learns)
@@ -1124,10 +1126,11 @@ public partial class BeastmasterRotation
 
 			List<BeastmasterKinType> kins = [.. count.Keys];
 			kins.Sort((a, b) => count[a] != count[b] ? count[b].CompareTo(count[a]) : a.CompareTo(b));
+			// The window names the first mechanic and how many more ask for the kin - all of them ran to eight on a board.
 			var joined = new Dictionary<BeastmasterKinType, string>(reasons.Count);
 			foreach (var (kin, list) in reasons)
 			{
-				joined[kin] = string.Join("; ", list);
+				joined[kin] = list.Count > 1 ? $"{list[0]}; {list.Count - 1} more" : list[0];
 			}
 
 			return new KinNeeds(kins, joined);

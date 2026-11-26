@@ -194,8 +194,9 @@ public static partial class StatusHelper
 	}
 
 	/// <summary>
-	/// Whether the player can use no ability right now, and for how much longer: a status whose row in the
-	/// client's status sheet locks actions (a stun, sleep, petrification and some 260 others), or Amnesia, which
+	/// Whether the player can use no ability right now, and for how much longer: a status that holds every action as
+	/// <see cref="LocksActions"/> reads it - LockActions in the client's status sheet (a stun, sleep, petrification and some
+	/// 260 others), Out of the Action, or "unable to execute actions" in the English effect text (A971) -, or Amnesia, which
 	/// blocks every ability without that flag ("Unable to use abilities"; rows 5, 1092 and 4210, recognised by the
 	/// generator's names from the English sheet, so the client language does not matter).
 	/// <paramref name="rest"/> is the longest remaining time among them, 0 when none names an end. Recognition

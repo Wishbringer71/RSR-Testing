@@ -381,13 +381,15 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     der Reihenfolge, wie viele Gegner des Bretts sie nennen; der Seelen-Begleiter kommt wie bisher auch ohne
     BossModReborn, sobald RSR ein unterbrechbares Wirken gesehen hat. Jede Rolle zählt zum Kern, eine Rolle wird nur mit
     derselben Gattung getauscht, und ein Team einer Gattung entfällt, wo das gemischte eine Rolle anderer Gattung hält –
-    wie bisher beim Unterbrecher. Die Begründung im Teamfenster nennt die Mechanik aus BossModReborn. *Im Kampf:* Brett 1
+    wie bisher beim Unterbrecher. Die Begründung im Teamfenster nennt beim Träger der Rolle die erste Mechanik aus
+    BossModReborn und wie viele Gegner die Gattung verlangen. *Im Kampf:* Brett 1
     nennt Seele, Welle und Asche (Pas de Seul, Bone Bishop, Banemite, Piscodemon); vorher kam der Seelen-Begleiter erst
     nach einer Sichtung und Welle oder Asche nur, wenn sie eine Schwäche trafen. Jetzt reinigt im ersten Lauf ein
     Aschen-Begleiter das Gift von Venom Web, und ein Wellen-Begleiter nimmt Damage Up, wenn Fanaticism durchgeht. Die
     übrigen vier Bretter nennen alle vier Gattungen. *Preis:* bis zu vier Plätze im Kern; unter „Score“ ist das kleinste
     sichere Team damit größer (weniger In-Unterzahl-Bonus), und ein Team einer Gattung kommt auf Brettern mit mehreren
-    verlangten Gattungen nicht mehr in Frage (750 Punkte). Sicherheit vor Punkten, nach seiner Regel gewichtet mit der
+    verlangten Gattungen nicht mehr in Frage (750 Punkte); unter „Level“ behält jede Rolle ihren Begleiter auch über der
+    Obergrenze des Bretts, bis zu vier Plätze weniger für Nachzügler, die leveln. Sicherheit vor Punkten, nach seiner Regel gewichtet mit der
     Wahrscheinlichkeit: Die genannten Mechaniken stehen im Ablauf des Gegners, sie kommen in jedem Kampf.
     *Gegenthese 1 (kein Gewinn):* Ein Rückstoß ohne Wand oder Fläche dahinter kostet nichts. Hält teilweise: Ob jeder
     der genannten Rückstöße schadet, ist unbelegt; BossModReborn nennt den Grund, nicht die Folge. Der Platz kostet
