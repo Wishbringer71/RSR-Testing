@@ -2070,7 +2070,9 @@ kurzen Einsätze der anderen (Entfesseln, Scheidender Schlag).
     `CastRunsIntoGCD`), eine Ablehnung durch das Spiel nur einmal je Kampf, eine Ablehnung des Servers gab es in diesem
     Build noch nicht als Zeile (A971). Ohne Messung bleibt jede Behebung eine Vermutung; der Schaden ist ein Begleiter,
     der 18 s fehlt, und mit ihm das Ziel der nächsten Deckung. *Bauart:* Die Ablöse misst ohnehin die Strecke ohne
-    Begleiter; sie beginnt jetzt auch, wenn der Begleiter fällt (nicht nur beim Fortschicken), und zählt je Frame, ob ein
+    Begleiter; sie beginnt jetzt auch, wenn der Begleiter fällt (nicht nur beim Fortschicken), und zu Kampfbeginn ohne
+    Begleiter – ein ausbleibender erster Ruf kostet dasselbe –, dann mit „from the pull“ in der Zeile, damit die Auswertung
+    der Ablöse sie nicht mitzählt (Code-Review A980). Sie zählt je Frame, ob ein
     Horn mit Begleiter bereit ist, ob die Rotation es als nächste Aktion gewählt hat, ob das Tor zum Drücken dabei zu ist
     (Wirkzeit oder Animationssperre, `ActionUpdater.GateClosedByCastOrLock`) und wie oft ein Ruf zu wirken beginnt. Ist
     die Strecke länger als ein GCD, steht das am Ende in ihrer Zeile – auch wenn kein Begleiter mehr kommt (Kampfende,

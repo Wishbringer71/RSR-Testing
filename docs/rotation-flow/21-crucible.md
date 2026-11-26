@@ -2104,9 +2104,12 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
      voraus (Konzept 03, „Die Schwelle nach der Vorhersage, wo kein Heiler lebt", A641).
      *Das Bestien-Ausdauermittel heilt mit* (A973): Sein Wirktext stellt einen Anteil der LP wieder her („Grants Liquid
      Constitution while also restoring 10% of HP to self or familiar"; die wilde Fassung ebenso, „… and restoring 10% of
-     HP"). Unter der Linie zählt es deshalb als Heilgegenstand mit diesem Anteil, auch gegen Gegner ohne Boss-Symbol; bei
-     gleicher Heilung geht ein Gegenstand vor, der nur heilt – das Ausdauermittel bleibt so für den Boss (11), wo es
-     zusätzlich das Maximum hebt. Nicht in den Wegen, die auf volle LP füllen (das letzte Auffüllen im Endkampf, A695;
+     HP"). Unter der Linie zählt es deshalb als Heilgegenstand mit diesem Anteil, auch gegen Gegner ohne Boss-Symbol.
+     Hebt auch ein Gegenstand, der nur heilt, über die Linie, geht dieser vor, auch wenn er mehr heilt; das
+     Ausdauermittel kommt erst, wo keiner das schafft, und unter mehreren, die es nicht schaffen, bei gleicher Heilung
+     nach dem reinen. So bleibt es für den Boss (11), wo es zusätzlich das Maximum hebt (Code-Review A980: Bis dahin nahm
+     K8 das kleinste Mittel, das hebt, und damit das Ausdauermittel vor jedem größeren Heiltrank; der Preis der Regel ist
+     ein Heiltrank, der mehr heilt als nötig). Nicht in den Wegen, die auf volle LP füllen (das letzte Auffüllen im Endkampf, A695;
      der Begleiter für „Unversehrte Bestien"; die Heilung, die keiner mehr braucht, A664): Es hebt das Maximum, das die
      Heilung füllen soll (A717). Laden und Weg zählen seinen Anteil wie den eines Heilgegenstands, weil Regel 1 ihn nimmt.
      *Im Kampf (21.11.2026, Brett 3):* Nach Kampf 15 stand er bei 34 %; der Laden auf Zug 3 nannte „no way is safe", ein
@@ -2116,8 +2119,8 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
      Wert null geführt war und K8 es nur gegen einen Boss nahm. Im Elitekampf 16 fiel er von 34 % ohne Heilung auf null.
      Mit der Regel zählt jedes Ausdauermittel 10 % für 105 Marken – je Marke rund das Zwanzigfache der Handschuhe.
      *Gegenthese 1 (Reserve für den Boss):* Ein Ausdauermittel unter der Linie fehlt dem Endkampf. Widerlegt, soweit es
-     reicht: Unter der Linie entscheidet das Überleben dieses Kampfs, und bei gleicher Heilung geht ein reiner Heiltrank
-     vor. *Gegenthese 2 (es hätte ihn nicht gerettet):* 10 % sind 515 von 5.146 LP, bei 55 LP je Sekunde rund 9 s. Für
+     reicht: Unter der Linie entscheidet das Überleben dieses Kampfs, und hebt ein reiner Heiltrank über die Linie, geht
+     er vor. *Gegenthese 2 (es hätte ihn nicht gerettet):* 10 % sind 515 von 5.146 LP, bei 55 LP je Sekunde rund 9 s. Für
      Kampf 16 allein stimmt das; der Laden hätte aber mehrere gekauft (sechs freie Gegenstandsplätze), und jeder zählt
      im nächsten Kampf wieder. *Gegenthese 3 (ausgeliefert, und nichts ändert sich):* Es wirkt nur, wenn er Ausdauermittel
      hält. Laden und Schatz zählen sie jetzt (eine Skala, K13); die Beute nimmt sie wie bisher, solange Plätze frei

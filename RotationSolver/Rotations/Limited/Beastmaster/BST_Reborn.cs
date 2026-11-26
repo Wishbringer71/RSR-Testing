@@ -1455,6 +1455,7 @@ public sealed partial class BST_Reborn : BeastmasterRotation
 			return;
 		}
 
+		NoteFamiliarOut();
 		if (_noneOutSince != DateTime.MinValue)
 		{
 			if (InCombat)

@@ -3201,8 +3201,18 @@ den jobweisen Abläufen.
     Rudel wäre Feuer direkt stärker. Außerhalb des Kampfs ist der Abstand zum nächsten Rudel unbekannt; Astral Fire mit
     leeren MP trägt keinen Feuerzauber, und von Umbral Ice III mit vollen MP ist Feuer einen Fire III entfernt – den
     die Rotation ohnehin wirkt. *Gegenthese 3 (ausgeliefert, und nichts ändert sich):* Hält ihn der Countdown-Pfad schon
-    vorher bereit, ändert sich zwischen Rudeln ohne Countdown trotzdem etwas – dort fragte niemand. *Ebene:* nur der
-    Schwarzmagier; die übrigen Jobs oben brauchen nichts.
+    vorher bereit, ändert sich zwischen Rudeln ohne Countdown trotzdem etwas – dort fragte niemand. *Gegenthese 4 (der
+    Pull beginnt mit Feuer; Code-Review A980):* „Außerhalb des Kampfs“ gilt auch im Augenblick nach dem ersten eigenen
+    Treffer: Das Kampfflag des Spiels kam in seinen ACT-Mitschnitten vom 20. bis 25.11.2026 im Median 0,88 s nach dem
+    ersten eigenen Treffer eines Pulls, im 90. Perzentil nach 1,03 s (186 Pulls mit direkt treffender Aktion, Zeile 21/22
+    gegen Zeile 260; ein Schwarzmagier ist darin nicht gespielt, der Verzug hängt am Kampfflag, nicht am Job; wie viel
+    davon die Abfrage von ACT beiträgt, ist unbelegt). Öffnet Fire III den Pull – im Countdown oder auf ein Rudel –, steht
+    Astral Fire III in diesem Fenster ohne Kampfflag; Transpose ginge nach Umbral Ice I, Fire IV fiele weg, und ein
+    zweites Fire III kostete einen GCD. Die Gegenthese hält, deshalb gilt die Regel nur nach einem Kampfende, solange
+    seither keine eigene Aktion kam außer Transpose und Umbral Soul selbst (`DataCenter.NoOwnActionSinceCombatEnded`; eine
+    Aktion zählt mit ihrer Wirkung, `Watcher`, also im selben Augenblick wie Astral Fire). Vor dem ersten Kampf nach dem
+    Laden und nach einem Gebietswechsel gilt sie nicht: Dort fehlt das Rudel davor, und das nächste beginnt wie bisher.
+    *Ebene:* nur der Schwarzmagier; die übrigen Jobs oben brauchen nichts.
 
 **K4 – Bewegung: Sofortzauber für eine vorhergesagte Bewegung aufheben** (geprüft, nicht gebaut, A919):
 - *Was RSR schon weiß:* wann eine Fläche auf deinem Platz aktiv wird (`MovementLock.SpotDangerIn`, aus BossModReborns

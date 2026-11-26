@@ -108,9 +108,11 @@ direkt: 38 · über andere Aktion: 2
 | Transpose | Regel prüft | Fire III |
 | Transpose | Regel prüft | Paradox |
 | Transpose | Regel prüft | Umbral Soul |
+| Transpose | Regel sperrt vorher | Umbral Soul |
 | Triplecast | Regel sperrt vorher | Paradox |
 | Triplecast | Regel prüft | Swiftcast |
 | Triplecast | Regel sperrt vorher | Swiftcast |
+| Umbral Soul | Regel sperrt vorher | Transpose |
 | Xenoglossy | Regel prüft | Amplifier |
 
 ## Wechselwirkungen und Zeit

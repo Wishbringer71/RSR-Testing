@@ -28330,6 +28330,50 @@ Wirken stoppen: ohne die Daten, auf die sie warten. Technische Schuld: keine Auf
 Daedalus 9b7352e10 (Versionen der Schwester-Plugins Hephaestus 0.2.0 und Orion 0.1.10, kein Code von Daedalus),
 t3knical/DalamudPlugins 880152f6a (Download-Zähler). Kein Nutzen für RSR; fortgeschrieben. Upstream: kein neuer Commit.
 
+### A980 · Code-Review und Audit über die Arbeit vom 26.11.2026 (3f6aa28c8..a37670d34) (26.11.2026)
+
+*Anlass:* Sein Auftrag „weiter mit noch evtl. offenen Todos im vollen loop“; Defekte und offene Arbeit im TODO leer, also
+nach der Reihenfolge im Kopf des TODO Konzeptprüfung, Audit und Code-Review über die 16 Commits seit 3f6aa28c8 (A973 bis
+A979), 12 Code-Dateien.
+*Code-Review (vier Blickwinkel: Zeile für Zeile, entferntes Verhalten, Aufrufer, CLAUDE.md), drei Befunde, alle behoben:*
+- *Schwarzmagier verliert Astral Fire III am Pull (wichtig):* Die Regel aus A978 ging außerhalb des Kampfs mit Transpose
+  von Astral Fire nach Umbral Ice. „Außerhalb des Kampfs“ gilt aber auch nach dem ersten eigenen Treffer, bis das
+  Kampfflag kommt: in seinen ACT-Mitschnitten vom 20. bis 25.11.2026 im Median 0,88 s, im 90. Perzentil 1,03 s (186
+  Pulls mit direkt treffender Aktion, Zeile 21/22 gegen 260; kein Schwarzmagier darin, der Verzug hängt am Flag; wie viel
+  die Abfrage von ACT beiträgt, ist unbelegt). Ein Pull mit Fire III hätte in diesem Fenster Transpose bekommen, Fire IV
+  verloren und ein zweites Fire III gebraucht. Jetzt gilt die Regel nur nach einem Kampfende ohne eigene Aktion seither,
+  außer Transpose und Umbral Soul selbst (`DataCenter.LastCombatEndedAt`, `NoOwnActionSinceCombatEnded`; eine Aktion
+  zählt mit ihrer Wirkung, im selben Augenblick wie Astral Fire). Konzept 03, K6, Gegenthese 4. Mein Fehler in A978:
+  Ich prüfte die Regel zwischen zwei Rudeln, nicht am Übergang in den Kampf.
+- *Ausdauermittel vor einem größeren Heiltrank (wichtig):* `BestHeal` nahm unter der Linie das kleinste Mittel, das
+  hebt; das Ausdauermittel (10 %) ging damit vor jedem größeren Heiltrank, obwohl Konzept 21 schrieb, es bleibe für den
+  Boss. Jetzt geht ein reiner Heilgegenstand, der hebt, vor; das Ausdauermittel kommt, wo keiner hebt. Preis: ein
+  Heiltrank, der mehr heilt als nötig. Konzept 21, K8 Regel 1, und Gegenthese 1 nachgezogen. Mein Fehler in A973: Der
+  Konzeptsatz folgerte aus der Gleichstandsregel mehr, als sie trug.
+- *Strecke ohne Begleiter zu Kampfbeginn als Ablöse geschrieben (gering):* Seit A975 begann die Strecke auch zu
+  Kampfbeginn ohne Begleiter, Konzept 01, B6, nannte nur Fortschicken und Fall. Die Messung bleibt – ein ausbleibender
+  erster Ruf kostet dasselbe –, die Zeile trägt dann „, from the pull“, damit die Auswertung der Ablöse sie trennt.
+  Die Vorhersage `horn-stretch-line-form` bleibt gültig (der Zusatz steht vor „ | a horn ready“).
+- *Geprüft ohne Befund:* `IsEngagedWithParty` (Feindliste, im Inhalt `IsEngaged`; Aufrufer `IsAttackable` und die
+  Tiefen-Gewölbe-Wahl), `GroupBurstWatch.AnySeen` (Rücksetzung je Kampf über `Sync`), `SearingLightInAnyDemiAlone`
+  (zwischen zwei Demis liegen mindestens 45 s, der Burst-Summon bleibt vorn), `GcdIdleWatch` (`DefaultGCDTotal` ist
+  nie 0, solange das Spiel eine GCD-Länge kennt), die Beutezeile (jedes Angebot bekommt ein Urteil), die Einheit der
+  Heilanteile (beide über `Percent`, Anteil).
+*Audit, Durchgang 1 (mechanisch):* alle 12 Code-Dateien des Bereichs gelesen, Diff und umschließende Funktionen.
+*Durchgang 2 (Defektklassen):* Messwert hängt an der Regel – nein (AnySeen liest fremde Buffs, die Hornstrecke die
+Wahl). Regel ohne Ende – Umbral Soul endet bei vollem Eis, Herzen und MP. Zustand ohne Rücksetzung – Feststellungen
+oben; `LastCombatEndedAt` bleibt über einen Gebietswechsel, dort setzt `ResetAllRecords` die Zeit der letzten Aktion, die
+Regel gilt dann nicht. Gemischte Einheiten – nein. Text widerspricht Code – zwei Fälle, oben behoben. Schlüsselkollision,
+Nebenläufigkeit – nicht berührt. Gelernte Maxima ohne Alterung – `_leaveSeconds` (Bestand von B6 aus der Fork-Arbeit, hier
+nicht geändert). Früherer Zweig verdeckt späteren – BLM-Notfallzweig und Rückkehr außerhalb des Kampfs geprüft, SMN-Kette ist
+ein Oder.
+*Prüfgrad:* statisch und Compile; `run_ci_checks.py` grün; im Kampf nicht beobachtet.
+*Vorhersage:* Schwarzmagier, ACT-Mitschnitt: Nach einem Pull mit Fire III folgt kein Transpose vor dem Kampfflag
+(Zeile 21 Fire III, dann ohne Zeile 21 Transpose bis Zeile 260); nach einem Rudel ohne nächstes in Reichweite Transpose
+und Umbral Soul vor dem nächsten Pull. Beastmaster, `DefenseTrace.log`: Eine Zeile „horn relief: … from the pull“ nur in
+einem Kampf, der ohne Begleiter beginnt; nach „the familiar was gone“ folgt die Ankunft ohne den Zusatz. Crucible: Unter
+der Linie „crucible item: … Tonic (at N % HP“ nur, wenn kein reiner Heilgegenstand gehalten ist, der hebt.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

@@ -14,6 +14,11 @@ public sealed partial class BST_Reborn
 	private static int _reliefCasts;
 	private static bool _reliefWasCasting;
 
+	// A980: whether a familiar has been out since the player was last out of combat without one, and whether the stretch
+	// began at the pull - then its line says so, and the count of reliefs (B6) leaves it out.
+	private static bool _reliefFamiliarInFight;
+	private static bool _reliefFromPull;
+
 	// A975: a stretch without a familiar starts afresh - also where the familiar fell instead of being sent off.
 	private static void StartStretchWithoutFamiliar(DateTime since)
 	{
@@ -22,6 +27,13 @@ public sealed partial class BST_Reborn
 		_reliefCasts = 0;
 		_reliefWasCasting = false;
 		_reliefFrame = since;
+		_reliefFromPull = since != DateTime.MinValue && !_reliefFamiliarInFight;
+	}
+
+	// A980: a familiar is out, before or in the fight.
+	private static void NoteFamiliarOut()
+	{
+		_reliefFamiliarInFight = true;
 	}
 
 	// A975: one frame of a stretch without a familiar in combat; it ends without one - the fight over, the player fallen, or
@@ -39,6 +51,11 @@ public sealed partial class BST_Reborn
 			}
 
 			_noneOutSince = DateTime.MinValue;
+		}
+
+		if (!InCombat)
+		{
+			_reliefFamiliarInFight = false;
 		}
 
 		if (!InCombat || Player is not { IsDead: false } player)
@@ -77,13 +94,14 @@ public sealed partial class BST_Reborn
 		_reliefWasCasting = casting;
 	}
 
-	// A975: what the stretch measured, for a stretch longer than a GCD.
+	// A975: what the stretch measured, for a stretch longer than a GCD; A980: whether it began at the pull, for any.
 	private static string StretchDetail(DateTime end)
 	{
-		return (end - _noneOutSince).TotalSeconds > DataCenter.DefaultGCDTotal
+		var pull = _reliefFromPull ? ", from the pull" : string.Empty;
+		return pull + ((end - _noneOutSince).TotalSeconds > DataCenter.DefaultGCDTotal
 			? $" | a horn ready {_reliefReady:F1} s, chosen {_reliefChosen:F1} s, of that with the gate closed {_reliefGateClosed:F1} s;"
 				+ $" calls begun {_reliefCasts}"
-			: string.Empty;
+			: string.Empty);
 	}
 
 	private static bool AnyHornReadyWithFamiliar()

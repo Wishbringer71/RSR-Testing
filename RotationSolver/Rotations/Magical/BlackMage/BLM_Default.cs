@@ -63,8 +63,10 @@ public class BLM_Default : BlackMageRotation
 	protected override bool EmergencyAbility(IAction nextGCD, out IAction? act)
 	{
 		// Retrace runs in GeneralAbility only, with its option's "in combat" and the hold right after Ley Lines (A602).
-		// Concept 03, K6 (A978): out of combat Astral Fire goes to Umbral Ice, where Umbral Soul fills it for the next pack.
-		if (!InCombat && InAstralFire && UmbralSoulPvE.Info.EnoughLevelAndQuest() && TransposePvE.CanUse(out act))
+		// Concept 03, K6 (A978): out of combat Astral Fire goes to Umbral Ice, where Umbral Soul fills it for the next pack -
+		// only after a fight, not in the instant after the pull's first Fire III, before the combat flag (A980).
+		if (DataCenter.NoOwnActionSinceCombatEnded && InAstralFire && UmbralSoulPvE.Info.EnoughLevelAndQuest()
+			&& TransposePvE.CanUse(out act))
 		{
 			return true;
 		}
@@ -745,6 +747,14 @@ public class BLM_Default : BlackMageRotation
 		// MP" - the next pack starts full instead of with an ice step in combat. Once full, nothing more until the fight.
 		if (!InCombat)
 		{
+			// A980: only between two packs - after a fight, with nothing of one's own since but this preparation; the pull's
+			// first instant, before the combat flag, keeps the rotation's own spell.
+			if (!DataCenter.NoOwnActionSinceCombatEnded
+				&& !(DataCenter.LastCombatEndedAt != DateTime.MinValue && IsLastAction(ActionID.TransposePvE, ActionID.UmbralSoulPvE)))
+			{
+				return false;
+			}
+
 			var heartsFull = !BlizzardIvPvE.EnoughLevel || UmbralHearts >= MaxSoulCount;
 			return InUmbralIce && (UmbralIceStacks < MaxSoulCount || !heartsFull || (Player != null && CurrentMp < Player.MaxMp))
 				&& UmbralSoulPvE.CanUse(out act);

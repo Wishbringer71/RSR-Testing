@@ -31,6 +31,19 @@ internal static partial class DataCenter
 
 	internal static uint LastPullTerritoryId { get; set; }
 
+	// A980 (concept 03, K6): when the last combat ended (set by ActionUpdater).
+	internal static DateTime LastCombatEndedAt { get; set; } = DateTime.MinValue;
+
+	/// <summary>
+	/// Concept 03, K6, Gegenthese 4 (A980): out of combat, and no own action has taken effect since the last fight ended - the
+	/// stretch between two packs. The game's combat flag comes after the first own hit of a pull (his ACT logs, 20.-25.11.2026:
+	/// median 0.88 s); that hit counts as an action here, in the same moment its effect lands, so the pull's first instant
+	/// is not taken for the time between packs. Before the first fight after loading, and after a change of area
+	/// (<see cref="ResetAllRecords"/>), there is no such stretch.
+	/// </summary>
+	internal static bool NoOwnActionSinceCombatEnded => !InCombat && LastCombatEndedAt != DateTime.MinValue
+		&& TimeSinceLastAction > DateTime.Now - LastCombatEndedAt;
+
 	/// <summary>
 	/// The party's first living tank, or null if there is none.
 	/// </summary>

@@ -1638,8 +1638,9 @@ public partial class BeastmasterRotation
 
 	// The healing item that lifts the player to the line with the least, a potion before ash at the same heal; while none
 	// does, the largest. A973: with <paramref name="withTonic"/> (below the line, K8 rule 1) the Beast Tonic counts with the
-	// share it restores, behind an item that only heals at the same share - it stays for the boss, where it raises the
-	// maximum too; not where the heal is to fill the maximum it raises (A717).
+	// share it restores, behind an item that only heals - wherever one of those lifts too (A980), and at the same share
+	// where none lifts -, so it stays for the boss, where it raises the maximum too; not where the heal is to fill the
+	// maximum it raises (A717).
 	private static unsafe int BestHeal(InstanceContentCrucibleOfTheUnbroken* crucible, float hp, float line, bool familiar = false,
 		bool withTonic = false)
 	{
@@ -1664,10 +1665,11 @@ public partial class BeastmasterRotation
 
 			var lifts = hp + item.Value >= line;
 			var bestLifts = best >= 0 && hp + bestItem.Value >= line;
-			var preferredAtEqual = (bestIsTonic && !isTonic) || (bestIsTonic == isTonic && bestItem.Allies && !item.Allies);
+			// A980: among items that lift, one that only heals comes before the tonic, even at a larger heal.
+			var smallerOfKind = item.Value < bestItem.Value || (item.Value == bestItem.Value && bestItem.Allies && !item.Allies);
 			if (best < 0
 				|| (lifts && !bestLifts)
-				|| (lifts && bestLifts && (item.Value < bestItem.Value || (item.Value == bestItem.Value && preferredAtEqual)))
+				|| (lifts && bestLifts && ((bestIsTonic && !isTonic) || (bestIsTonic == isTonic && smallerOfKind)))
 				|| (!lifts && !bestLifts && (item.Value > bestItem.Value || (item.Value == bestItem.Value && bestIsTonic && !isTonic))))
 			{
 				best = slot;
