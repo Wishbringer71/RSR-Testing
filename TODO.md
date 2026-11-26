@@ -30,18 +30,6 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
 
 ## Defekte
 
-### Beastmaster: nach dem Tod des Begleiters 18 s ohne Horn · N
-*Im Kampf (21.11.2026, Brett 3, Kampf 16, A973):* Der Geist fiel um 13:41:20; Gigantoad und Lamb standen auf
-bereiten Hörnern, er selbst unter der Linie und ohne Heiler. Bis zu seinem Tod um 13:41:39 kam kein Begleiter, über
-sieben GCDs; RSR lehnte beide Hörner über den Kampf je 1872-mal mit `CastRunsIntoGCD` und rund 2000-mal mit der
-Animationssperre ab. W1 verspricht höchstens einen GCD Verzug. Gerettet hätte ihn hier keiner (Zähnefletschen lag in
-der Abklingzeit, ohne Deckung griff der Gegner weiter ihn an), in einem anderen Kampf fehlt so der Begleiter mit
-seinem Schaden und als Ziel der nächsten Deckung. *Ort:* `BST_Reborn.CallNextHorn` und `SituationalHorn` (der Ruf in
-der Gefahr ohne Horn, das heilt oder schützt, geht durch den gewöhnlichen Zweig und damit unter W1),
-`BaseAction.CanUse` (`CastRunsIntoGCD`). *Nächster Schritt:* am Code bestimmen, warum das Fenster aus Sperre und
-Wirkzeit in keinem der sieben GCDs offen war, dann Loop zur Frage, ob in der Gefahr ohne Begleiter jedes Horn in den
-GCD laufen darf. *Konzept:* 01, B2 und W1.
-
 ### Rotmagier: 17 s ohne Angriff auf Zephirin (Singularitäts-Reaktor) · N
 *Im Kampf (24.11.2026, 18:22:24 bis 18:22:41, A973):* Zephirin war zielbar und wirkte „Heiliges Kreuz“ (5264, 20 s;
 BossModReborn: Raidwide, Schaden nach seinen Rest-LP). Seine Auto-Angriffe trafen Zephirin, RSR wählte keinen GCD:
@@ -211,6 +199,14 @@ nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigt
 
   Auflösung: Zeilen „a kill by an item granted", „a hit the … tome converted" und die Flucht in einem Lauf, der diese
   Gegenstände hält; dann je Abweichung Loop. Konzept 21, K8 („Über das Brett", „Zauberbücher"), Weg.
+
+- **Beastmaster: nach dem Fall des Begleiters kein Horn mehr** (A973, A975). *Im Kampf:* Am 21.11.2026 auf Brett 3 kam
+  nach dem Fall des Geists zweimal kein Begleiter mehr (18 und 19 s bis zu seinem Tod), obwohl zwei Hörner bereit waren
+  und er stillstand; kein Ruf begann zu wirken. Die Ursache zeigt die Spur nicht. *Gebaut (A975):* die Zeile „horn
+  relief: … | a horn ready …, chosen …, of that with the gate closed …; calls begun …“ für jede Strecke ohne Begleiter
+  über einen GCD, auch ohne Ankunft. *Auflösung:* sein nächster Lauf mit einer solchen Strecke: „chosen 0 s“ – die Wahl
+  lehnt ab (Gründe in „ready but unused“); gewählt, Tor zu – das Drücken wartet; gewählt, Tor offen, kein Ruf – Spiel oder
+  Server („the server rejected …“); dann Loop an der Stelle. *Konzept:* 01, B6 „Wo der Ruf ausbleibt“ und W1.
 
 - **Beastmaster: Bretter 3 bis 5 und die Meisterbretter am ersten Mitschnitt prüfen** (Crucible-Strategien K1 bis K14,
   zuletzt A643, A644). Brett 2 lief am 08.11.2026 (A683): Die Tablitauren fielen gemeinsam, die Aetheric Charges zählten

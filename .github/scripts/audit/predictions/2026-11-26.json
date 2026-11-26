@@ -5,5 +5,12 @@
   "kind": "present",
   "situation": "crucible items at the start of fight [0-9]+: .*Tonic",
   "match": "crucible item: .*Tonic (at [0-9]+ % HP \\(line|against a boss)"
+ },
+ {
+  "id": "horn-stretch-line-form",
+  "archive": "A975",
+  "kind": "each",
+  "situation": "horn relief: .*without a familiar.*\\| a horn ready",
+  "match": "horn relief: [0-9]+[,.][0-9] s without a familiar(,| until).*\\| a horn ready [0-9]+[,.][0-9] s, chosen [0-9]+[,.][0-9] s, of that with the gate closed [0-9]+[,.][0-9] s; calls begun [0-9]+$"
  }
 ]

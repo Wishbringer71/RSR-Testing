@@ -2063,6 +2063,21 @@ kurzen Einsätze der anderen (Entfesseln, Scheidender Schlag).
     fiel schon früh im GCD – dann bleibt es bei 2,5 s; die kann nur ein Ruf ohne Abtreten kürzen (unbelegt).
   - *Messmittel:* Je Abtreten des Zyklus schreibt RSR, wie lange der Begleiter bis zum Verschwinden brauchte und wie
     lange danach kein Begleiter draußen war; hält die Regel den Schlag, eine Zeile mit dem Grund, einmal je Halt.
+  - *Wo der Ruf ausbleibt (A975):* *Anforderung:* Am 21.11.2026 auf Brett 3 kam nach dem Fall des Geists zweimal kein
+    Begleiter mehr, 18 und 19 s bis zu seinem Tod, obwohl Gigantoad und Lamb auf bereiten Hörnern standen und er
+    stillstand; kein Ruf begann zu wirken (ACT, Zeile 20). W1 verspricht höchstens einen GCD Verzug. Die Spur zeigt
+    nicht, woran es lag: Die Ablehnungen der Hörner zählt sie nur über den ganzen Kampf (Animationssperre,
+    `CastRunsIntoGCD`), eine Ablehnung durch das Spiel nur einmal je Kampf, eine Ablehnung des Servers gab es in diesem
+    Build noch nicht als Zeile (A971). Ohne Messung bleibt jede Behebung eine Vermutung; der Schaden ist ein Begleiter,
+    der 18 s fehlt, und mit ihm das Ziel der nächsten Deckung. *Bauart:* Die Ablöse misst ohnehin die Strecke ohne
+    Begleiter; sie beginnt jetzt auch, wenn der Begleiter fällt (nicht nur beim Fortschicken), und zählt je Frame, ob ein
+    Horn mit Begleiter bereit ist, ob die Rotation es als nächste Aktion gewählt hat, ob das Tor zum Drücken dabei zu ist
+    (Wirkzeit oder Animationssperre, `ActionUpdater.GateClosedByCastOrLock`) und wie oft ein Ruf zu wirken beginnt. Ist
+    die Strecke länger als ein GCD, steht das am Ende in ihrer Zeile – auch wenn kein Begleiter mehr kommt (Kampfende,
+    eigener Fall). *Auswertung:* „chosen 0 s" bei bereitem Horn heißt, die Wahl lehnt ab – die Gründe nennt die Zeile
+    „ready but unused"; gewählt, aber das Tor zu, heißt, das Drücken wartet; gewählt, Tor offen und kein Wirkbeginn
+    heißt, das Spiel oder der Server nimmt den Ruf nicht („the server rejected …", A971). Kosten je Frame: ein Vergleich
+    und drei Abfragen, nur ohne Begleiter im Kampf.
   - *Vorrang des Rufs (A800):* Ist kein Begleiter draußen, geht der Ruf des nächsten Horns vor jede andere Fähigkeit;
     davor bleibt nur Schutz in der Gefahr (Scaleskin, B2). *Gemessen (sein Lauf vom 14.11.2026, Brett 2):* Nach dem
     Abtreten kam der Nachfolger 0,9 s später, wo keine andere Fähigkeit dazwischenkam, und 3,1 bis 3,4 s später, wo RSR
