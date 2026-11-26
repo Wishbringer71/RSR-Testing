@@ -32,14 +32,6 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
 
 ## Offene Arbeit
 
-### Rotationen aller Jobs über den Augenblick hinaus: Leisten und Aufbauten am Ende eines Rudels (K6) · N
-Sein Auftrag vom 19.11.2026 (A901). *Im Kampf:* Eine Leiste oder ein Aufbau, der zwischen zwei Rudeln verfällt, ist
-verlorener Schaden in jedem Dungeon; eine Leiste, die stehen bleibt, braucht keine Regel. *Stand:* K1 erster Schritt (A914),
-K2 (A916), K5 erster Schritt (A917), K4 geprüft ohne Verlust (A919), K6 im eigenen Fenster ohne Verlust (A933, A937); K3
-gemessen, Warten auf die Gruppe verworfen (A977). *Nächster Schritt:* je Job aus den Wirktexten bestimmen, welche
-Ressource außerhalb des Kampfs oder nach einer Zeit verfällt, und nur dort eine Regel im Loop. *Konzept:* 03, „F · Über den
-Augenblick hinaus“, K5 und K6.
-
 ## Technische Schuld
 
 Ohne Wirkung im Kampf oder bewusst eingegangen; je Kosten und Auflösungsbedingung.

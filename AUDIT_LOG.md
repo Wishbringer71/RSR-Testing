@@ -28291,6 +28291,28 @@ bleibt (A974 liest sie). Konzept 03, K3. *Gegenthese:* In einer festen Gruppe hi
 dasselbe Skript zeigte es an einem solchen Upload.
 *Umfang:* Gruppenbursts 192 von 192, Vorhersagen 103 von 103 mit bekanntem Wert (7 ohne).
 
+### A978 · K6: Leisten zwischen zwei Rudeln je Job; Schwarzmagier mit Umbral Soul außerhalb des Kampfs (26.11.2026)
+
+*Gegenstand:* TODO „Rotationen aller Jobs über den Augenblick hinaus“, letzter offener Schritt (K6, Leisten und Aufbauten
+am Ende eines Rudels). *Quellen:* xivapi v2, ActionTransient (169 Texte mit „combat“) und TraitTransient (3), jeder Satz
+gelesen, 26.11.2026; The Balance, Black Mage Basic Guide (Patch 7.4, über das Abrufwerkzeug, Zitate laut Werkzeug
+wörtlich, nicht selbst gegengelesen); Code der Rotationen.
+*Ergebnis:* Keine Leiste verfällt laut Wirktext beim Verlassen des Kampfs; die Elemente des Schwarzmagiers laufen seit 7.2
+nicht mehr ab. Vorbereitungen, die nur außerhalb des Kampfs wirken: Mönch (Chakra), Piktomant (Motive), Ninja (Hide),
+Weise (Addersgall), Beastmaster (Rückzug) – genutzt; Schwarzmagier (Umbral Soul: Umbral Ice III, drei Herzen, volle MP)
+– nicht genutzt, `MaintainStatus` fragte nur im Kampf ab der sechsten Sekunde.
+*Gebaut (Konzept 03, K6):* `BLM_Default` – außerhalb des Kampfs Transpose aus Astral Fire, dann Umbral Soul, bis Eis,
+Herzen und MP voll sind. Die fremden Schwarzmagier-Rotationen (`BLM_RP`, `RabbsBLM`) bleiben unberührt.
+*Vorhersage (ACT, von Hand):* Endet ein Rudel als Schwarzmagier ohne volle MP oder Herzen, steht vor dem nächsten Kampf
+Umbral Soul (Aktion 16506) des Spielers, nach Astral Fire mit Transpose (149) davor; fehlt es bei einer Pause von mehr als
+zwei GCDs, ist die Regel widerlegt.
+*Abschluss des TODO-Punkts:* K1 erster Schritt (A914), K2 (A916), K3 gemessen und Warten verworfen (A977), K4 ohne
+Verlust (A919), K5 erster Schritt (A917), K6 im Fenster ohne Verlust (A933, A937) und zwischen Rudeln (hier). Punkt aus
+dem TODO entfernt.
+*Prüfgrad:* Compile, Prüfskripte; Laufzeit offen bis zum nächsten Schwarzmagier-Mitschnitt.
+*Umfang:* Wirktexte 172 von 172 mit „combat“ gelesen; Jobs mit einer Vorbereitung außerhalb des Kampfs 6 von 6 am Code
+geprüft.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
