@@ -77,6 +77,14 @@ What this release changes in the fight. For the whole distance from upstream, se
   raidwide is announced; one lily stays for healing. Lilies grow back on time, so this costs no heal over the fight and
   each one brings Afflatus Misery a step closer. Setting: "Use a lily instead of an early Dia while moving", on by
   default.
+- **Black mage: the fork's rules on the new rotation.** The black mage now plays upstream's new rotation, and it keeps
+  what the fork's did: when you move or no spell can start, Paradox, Xenoglossy or Foul, Thunder, Triplecast or
+  Swiftcast and a Firestarter Fire III in Astral Fire come before Scathe, also while BossMod's AI moves you or a
+  knockback runs; Foul only where it hits harder than Xenoglossy on the enemies it reaches; Addle in both defense
+  branches; Retrace on by default. Between two packs it refills Umbral Ice, hearts and MP with Umbral Soul. Its count of
+  enemies for Flare and Foul now uses RSR's one check for enemies not fighting yet: with "Don't pull new enemies with
+  AoE" on, an enemy casting at the ground or a row of training dummies no longer turns the area spells into single
+  target ones.
 - **Dragoon: Life Surge on Heavens' Thrust and Drakesbane in the burst.** Under Battle Litany both charges went to
   whichever finisher came next, Wheeling Thrust or Lance Barrage included, while Heavens' Thrust and Drakesbane followed
   in the same window. A lesser finisher now takes Life Surge only when Battle Litany ends before the next weaponskill.
