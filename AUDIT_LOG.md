@@ -28489,6 +28489,68 @@ der Merge-Basis oder in upstream/main unter demselben Text steht - die Konstrukt
 (liefert BossModReborn 0 während einer Ausfallzeit?); `BLM_Reborn` gegen Konzept 03 K6, A602, A978, A980.
 *Prüfgrad:* Compile und Prüfskripte; nicht gespielt.
 
+### A983 · Upstream 7.5.8.11 im Arbeits-Branch zu Ende ausgewertet: Schwarzmagier auf `BLM_Reborn`, Merge-Reste (27.11.2026)
+
+*Gegenstand:* Die offenen Punkte aus A982 nach dem Merge von main in den Branch (0b9aeab72): die Fork-Regeln des
+Schwarzmagiers gegen Upstreams `BLM_Reborn` (c79f584a5), die Trainingspuppen in `NotFightingYet`, die Bewegungsstichprobe,
+Ausfallzeit roh gegen `NormalizeTimer`; dazu, was `check_fixed_values.py` nach dem neuen Upstream-Tag 7.5.8.12 meldete.
+*Schwarzmagier, je Fork-Regel gegen `BLM_Reborn` (Konzepte 01, 03 K6, 14):*
+- K6, Umbral Soul zwischen zwei Rudeln (A978, A980): von `BLM_Reborn` selbst getragen (`TryDowntimeMaintenance`), dazu
+  die Pause im Kampf ohne Gegner. Gegenthese 4 (Pull mit Fire III vor dem Kampfflag) widerlegt: Die Pflege läuft nur
+  ohne Gegner in 25 Yalm, und Transpose wartet 4 s, Umbral Soul 1,5 s nach der letzten eigenen Aktion. Gemessen an
+  seinen ACT-Mitschnitten vom 20. bis 25.11.2026 (Zeile 21/22 gegen 260): 269 von 269 Pulls mit direkt treffendem
+  eigenem Zauber oder Angriff bekamen das Kampfflag binnen 1,5 s (höchstens 1,12 s, Median 0,63 s); ausgenommen 54 mit
+  einer Beschwörung und 3 mit Kullerklumpen (AE54, Pilgerpfad; 2 davon über 1,5 s). Der Fork-Baustein
+  `DataCenter.NoOwnActionSinceCombatEnded` samt `LastCombatEndedAt` hatte danach keinen Leser mehr. *Bilanz vor dem
+  Entfernen:* gebaut für `BLM_Default` (A980), im Kampf ohne Wirkung, weil nichts ihn liest; entfernt.
+- Bewegung und Eis-Eintritt (A951): `BLM_Reborn` trägt beides mit eigenen Einstellungen (Triplecast und Swiftcast im
+  Laufen, Swiftcast vor Transpose für Blizzard III, ab Werk an; Triplecast dafür ab Werk aus). Übernommen; ab Werk bleibt
+  Triplecast dem Laufen vorbehalten, wie The Balance ihn seit 7.2 vor allem nutzt. `BlackMageRotation.InstantForIceEntry`
+  und `InstantWhileMoving` hatten keinen Leser mehr; entfernt (gebaut für `BLM_Default`, A951).
+- Kein Zauber startbar (A602, Konzept 03 C6): `BLM_Reborn` griff nur im Laufen. Jetzt auch bei `CastStartBlocked` (KI von
+  BossMod, Rückstoß, Zeitgrenze), und Firestarter in Astral Fire vor Scathe (`TryMovementFallbackGCD`). Der Fork-Baustein
+  `PolyglotWhileCastBlocked` ging darin auf; entfernt, `fork_placement.json` nachgezogen.
+- Foul gegen Xenoglossy nach den Potenzen der Wirktexte (A344): in `TryUsePolyglot` übernommen; vorher zählte dort nur
+  „zwei Ziele“.
+- Addle über `UseAddle` in beiden Abwehrzweigen (Konzept 02): `BLM_Reborn` hatte Addle nur in der Flächenabwehr, ohne
+  das Halten auf einem Rudel.
+- Retrace ab Werk an (A602): Upstream ab Werk aus; der Grund aus A602 (The Balance, „once per Ley Lines duration“) gilt
+  unverändert. Ley Lines, Manafont, Thunder: die Einstellungen der Basis (`ModifyLeyLinesPvE`, `ModifyManafontPvE`,
+  `FoulPvE`-AoeCount 2, `ModifyRetracePvE`) gelten für `BLM_Reborn` ohne Zutun; Thunder führt `HighThunder_3872` in der
+  eigenen Statusliste.
+- *Befund derselben Klasse wie A833:* `BLM_Reborn` zählte Flächenziele mit einer eigenen Kopie von „Don't pull new enemies“
+  (`TargetObject == null`). Mit dem Schalter an fiel eine Gruppe aus der Zählung, sobald ein Gegner darin kurz ohne Ziel
+  wirkte, und jede Reihe Trainingspuppen; in den Tiefen Gewölben galt der allgemeine Schalter statt deren Optionen.
+  Jetzt `DataCenter.PullsIfHit`, ohne das Ziel selbst (A832). Andere private Kopien: keine (Suche nach
+  `NoNewHostiles && … TargetObject == null` über alle Rotationen).
+*Merge-Reste (Klasse: Konfliktauflösung behielt eine Upstream-Zeile, die Upstream geändert hatte):* gesucht über jede
+`.cs`-Datei, die Upstream zwischen 42efb269e und 7688affca änderte – Zeilen in HEAD, die in der alten, aber nicht in der
+neuen Upstream-Fassung stehen. Zwei Reste: die Bewegungsstichprobe (`IsTargetMoving`) und die Raidwide/Tankbuster-
+Zeilen in `BossModUpdater` (`damageIn > 0f`, seit `NormalizeTimer` überflüssig). Übrige Treffer sind belegte
+Fork-Entscheidungen (TargetUpdater, StatusHelper aus A982; die Raidwide-Maske A218/A273; die Selbstheilung in der
+Zielwahl).
+- Bewegungsstichprobe: Upstream antwortet je 75 ms einmal; die Fork-Fassung (A788) je Bild. Die Schwelle von 0,01 Yalm
+  hing damit an der Bildrate: bei 144 Bildern je Sekunde las sie erst ab 1,4 Yalm/s Bewegung, das Raster ab 0,13 Yalm/s.
+  A788 verlangt nur, dass jeder Aufruf im Bild dieselbe Antwort bekommt; das hält das Raster auch. Übernommen
+  (Konzept 11).
+*A982, übrige offene Punkte:* Trainingspuppen in `NotFightingYet` – schon seit A923 im Fork (`!enemy.IsDummy()`), Upstreams
+Zeilen gehen in `DataCenter.PullsIfHit` auf. Ausfallzeit roh: BossModReborn (a4fd07d, 25.11.2026,
+`StateMachine.NextTransitionWithFlag`) liefert in einer Ausfallzeit keine 0, sondern die geplante Zeit des nächsten
+Übergangs, negativ, wenn ein Zustand über seine erwartete Dauer läuft. Die rohen Leser nehmen das als „steht an“: der
+Tank-Schutz (`StatusHelper.TankProtection`) gibt dann volle Unterstützung frei, das Halten eines Buffs vor einer Ausfallzeit
+(`ActionBasicInfo.HeldForDowntime`) hält; `NormalizeTimer` machte daraus „nie“. Die übrigen Leser verlangen `> 0`. Der
+Fork-Stand bleibt. Eigener Fehler unterwegs: Eine Suche nach den Lesern war auf zehn Zeilen gekappt und zeigte den
+Tank-Schutz nicht; die Gegenprobe fand ihn.
+*Fork-Version:* Upstream taggte 7688affca nachträglich als 7.5.8.12; `Directory.Build.props` nachgezogen.
+*Prüfgrad:* Compile, `run_ci_checks.py` 68 von 68; Kampfflag-Verzug am Mitschnitt gemessen; nicht gespielt.
+*Vorhersage (ACT, von Hand):* Schwarzmagier mit `BLM_Reborn`: Nach einem Rudel ohne nächstes in 25 Yalm steht Transpose
+(149) aus Astral Fire, dann Umbral Soul (16506) vor dem nächsten Pull; nach einem Pull mit Fire III folgt kein Transpose
+vor Zeile 260. Laufen in Astral Fire mit Firestarter und ohne Paradox, Polyglot und Triplecast: Fire III (152) ohne
+Wirkzeit statt Scathe (156).
+*Umfang:* Fork-Änderungen an `BLM_Default` aus dem Diff 42efb269e..911163059: 12 von 12 gegen `BLM_Reborn` geprüft,
+die Fork-Einstellungen der Basis `BlackMageRotation`: 4 von 4; Merge-Reste: 128 von 128 `.cs`-Dateien, die Upstream
+zwischen 42efb269e und 7688affca änderte, mechanisch, die 17 übrigen Treffer nach den zwei Behebungen von Hand.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
