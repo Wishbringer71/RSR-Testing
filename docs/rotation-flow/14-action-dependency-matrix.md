@@ -99,7 +99,7 @@ der Abgleich nicht verfolgt. Beim Blaumagier stehen Chelonian Gate (Auspicious T
 of Frost) dort, ebenfalls ohne Befund: Der Status ist die Bedingung des Folgezaubers, dessen Text im selben
 Wirktext steht (Divine Cataract, White Death), und `BlueMageRotation` verlangt ihn dort über `StatusNeed`
 (Blatt `ActionTransient` 23273 und 23267, xivapi v2, 16.11.2026).
-- Manafont wird in `BLM_Default` und `BLM_RP` nur innerhalb von `if (InAstralFire)` gewirkt.
+- Manafont wird in `BLM_Reborn` nur in Astral Fire gewirkt (`NeedManafont`).
 - Improvised Finish wirkt `DNC_Reborn` nur unter `ImprovisedFinishPvEReady` — der Knopf von
   Improvisation ist dann Improvised Finish, Improvisation liegt also.
 - Die Eukrasia-Aktionen wirkt `SGE_Reborn` nur unter Eukrasia: hinter `if (!HasEukrasia) { … return … }`
@@ -1128,19 +1128,19 @@ Stufe 92 ändert sich nichts. Upstream hat dieselbe Bedingung in `BeirutaPCT` ge
 
 **Deckt sich bis auf Ley Lines (A386), das Laufen und Retrace (A602)**, gegen The Balance, Black Mage Basic Guide
 („Patch Applicable: 7.4", 19.12.2025, abgerufen 26.10. und 06.11.2026; er nennt Regeln, keine Folge im
-Zwei-Minuten-Fenster). Geprüft an `BLM_Default`; `BLM_RP` („Powerdox", ausdrücklich zum Testen) trägt dieselben
-Ley-Lines- und Retrace-Einstellungen und dieselbe Regel fürs Laufen.
+Zwei-Minuten-Fenster). Geprüft an `BLM_Reborn`, das seit Upstream c79f584a5 (26.11.2026) `BLM_Default` und `BLM_RP`
+ersetzt (A983); `RabbsBLM` ist fremd und trägt nur die Regeln der Basis (`BlackMageRotation`).
 
 | Punkt | The Balance | RSR | Stand |
 |---|---|---|---|
-| Astral Fire | sechs Fire IV für Flare Star, danach Despair und Paradox | Flare Star, sobald bereit; Despair und Paradox nach Mana | deckt sich im Ergebnis; die Zahl der Fire IV folgt aus dem Mana, nicht aus einer Zählung |
-| Manafont | am Ende von Astral Fire | bei 0 MP in Astral Fire | deckt sich |
-| High Thunder | erneuern, wenn unter 3 s übrig | im Erneuerungsfenster der DoT-Planung | deckt sich |
-| Amplifier, Xenoglossy | Amplifier etwa auf Abklingzeit ohne Polyglot-Überlauf; keine Xenoglossy verschenken | Amplifier nur ohne vollen Polyglot und nicht in den letzten 10 s von Enochian; Xenoglossy bei vollem Polyglot vor Enochian-Ende oder Amplifier (A379) | deckt sich |
-| Triplecast, Swiftcast | seit 7.2 „primarily used for movement/weaving“; Blizzard III beim Eintritt ins Eis „ideally in Umbral Ice I“ (nach Transpose), „made instant via Swiftcast or Triplecast“ | Für jede Schwarzmagier-Rotation (`BlackMageRotation.InstantForIceEntry`, `InstantWhileMoving`): Ist der nächste GCD Blizzard III im Eis und nicht ohnehin sofort, erst Swiftcast, dann Triplecast; im Laufen vor einem Zauber mit Wirkzeit erst Triplecast, dann Swiftcast – der Schwarzmagier hat keine Wiederbelebung | **geändert (A951):** RSR verlangte für Swiftcast im Eis genau zwei Stapel Umbral Ice, die nach Transpose (einer) und nach Blizzard III (drei) nie anstehen; in seinem Mitschnitt vom 15.11.2026 (Puppe, 12,5 min) kam Swiftcast 3-mal, alle nach Flare Star. Im Laufen nutzte RSR nur Triplecast |
-| Ley Lines | „roughly off cooldown at the next available weaving window", die zweite Ladung für ein Fenster, das man durchstehen kann | bis A386 nie: die Einstellung dazu kam abgeschaltet | **geändert:** ab Werk an; RSR setzt Ley Lines im Stehen und hält die zweite Ladung zurück (ohne „Use both stacks of Leylines automatically"); nicht, während ein Gegner einen Flächenangriff wirkt (`ModifyLeyLinesPvE`, für jede Schwarzmagier-Rotation) |
-| Laufen | „utilizing polyglot stacks for Xenoglossy for movement/weaving/damage as needed"; Triplecast und Swiftcast vor allem fürs Laufen | Triplecast im Laufen; ist kein Zauber startbar, Paradox, Firestarter in Astral Fire, Xenoglossy oder Foul, erst dann Scathe (`BlackMageRotation.PolyglotWhileCastBlocked`, Konzept 03 „C6") | **geändert (A602):** vorher Scathe vor Xenoglossy, Polyglot nur am Überlauf |
-| Retrace | „If you need to move out of your Ley Lines for a longer duration … Retrace … once per Ley Lines duration" | im Kampf, im Stand außerhalb des Kreises, solange er noch einen GCD hält, nicht direkt nach Ley Lines | **geändert (A602):** ab Werk an; der zweite Zweig ohne diese Sperren entfällt |
+| Astral Fire | sechs Fire IV für Flare Star, danach Despair und Paradox | Flare Star, sobald bereit; Despair und Paradox nach Mana; auf Stufe 100 der Opener nach Wahl („Standard 5+7" oder „Alternative Flare") | deckt sich im Ergebnis |
+| Manafont | am Ende von Astral Fire | nur in Astral Fire, nicht vor einem ausstehenden Flare Star (`NeedManafont`) | deckt sich |
+| High Thunder | erneuern, wenn unter 3 s übrig | unter 3 s Restdauer auf einem Ziel, das länger lebt (`NeedsThunderRefreshSoon`), sonst nach der Einstellung der Aktion; die Statusliste führt `HighThunder_3872` | deckt sich |
+| Amplifier, Xenoglossy | Amplifier etwa auf Abklingzeit ohne Polyglot-Überlauf; keine Xenoglossy verschenken | Amplifier nur ohne vollen Polyglot; Xenoglossy am Überlauf (vor dem Ende von Enochian oder vor Amplifier) und im Burst (`TryUsePolyglot`) | deckt sich |
+| Triplecast, Swiftcast | seit 7.2 „primarily used for movement/weaving“; Blizzard III beim Eintritt ins Eis „ideally in Umbral Ice I“ (nach Transpose), „made instant via Swiftcast or Triplecast“ | Swiftcast vor Transpose am Ende von Astral Fire, damit Blizzard III in Umbral Ice sofort fällt (Einstellung, ab Werk an); Triplecast dafür nur mit eigener Einstellung, ab Werk aus; im Laufen vor einem Zauber mit Wirkzeit erst Triplecast, dann Swiftcast (zwei Einstellungen, ab Werk an) | deckt sich; Triplecast bleibt ab Werk dem Laufen vorbehalten, wie The Balance ihn seit 7.2 vor allem nutzt. Die Fork-Bausteine dafür (`InstantForIceEntry`, `InstantWhileMoving`, A951) hat `BLM_Reborn` ersetzt (A983) |
+| Ley Lines | „roughly off cooldown at the next available weaving window", die zweite Ladung für ein Fenster, das man durchstehen kann | im Kampf im Stehen, ab Werk an; die zweite Ladung bleibt zurück, außer mit „Use all Ley Lines charges on cooldown", unter Gruppenbuffs, im Burst und in den ersten 15 s; nicht, während ein Gegner einen Flächenangriff wirkt (`ModifyLeyLinesPvE`, für jede Schwarzmagier-Rotation) | deckt sich |
+| Laufen | „utilizing polyglot stacks for Xenoglossy for movement/weaving/damage as needed"; Triplecast und Swiftcast vor allem fürs Laufen | im Laufen oder wenn kein Zauber startbar ist (Konzept 03 „C6"): Paradox, Xenoglossy oder Foul, Thunder, Triplecast oder Swiftcast, Firestarter in Astral Fire, erst dann Scathe (`TryMovementFallbackGCD`); Foul nur, wo es nach den Potenzen der Wirktexte mehr trifft als Xenoglossy (A344) | **geändert (A602, auf `BLM_Reborn` A983):** vorher Scathe vor Xenoglossy, Polyglot nur am Überlauf; `BLM_Reborn` griff nur im Laufen und ohne Firestarter |
+| Retrace | „If you need to move out of your Ley Lines for a longer duration … Retrace … once per Ley Lines duration" | im Kampf, im Stand außerhalb des Kreises, solange er noch einen GCD hält, nicht direkt nach Ley Lines | **geändert (A602, auf `BLM_Reborn` A983):** ab Werk an |
 
 *Laufen im Kampf:* Läuft er ohne Bewegungssperre oder führt ihn BossMods KI, und sind Triplecast und Paradox verbraucht,
 wirkte RSR Scathe – 100 Potenz für 800 MP, in Astral Fire die halbe MP eines Fire IV – und hielt bis zu drei Polyglot

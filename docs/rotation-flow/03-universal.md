@@ -922,8 +922,8 @@ merklich schneller zu beenden; sie kostet Geld, und sie für einen gewöhnlichen
   - *Optionen:* A nichts; B je Job eine Kopie der Voreinstellung (für Referenztypen, außer Zeichenketten); C je Job ein
     neues leeres Objekt (`new()`); D die Felder als Fabrik statt als Instanz.
   - *Abwägung:* A lässt den Fehler in jeder ersten Sitzung eines Jobs oder einer Rotation stehen – bei jedem neuen Nutzer,
-    nach jedem Zurücksetzen der Konfiguration, bei jeder neu gewählten Rotation (etwa `BLM_RP` neben `BLM_Default`, die
-    drei Namen teilen). C trifft heute dasselbe, weil alle drei Voreinstellungen leer sind, bricht aber still, sobald eine
+    nach jedem Zurücksetzen der Konfiguration, bei jeder neu gewählten Rotation (etwa `BLM_RP` neben `BLM_Default` bis
+    Upstream c79f584a5, die drei Namen teilten). C trifft heute dasselbe, weil alle drei Voreinstellungen leer sind, bricht aber still, sobald eine
     Voreinstellung Inhalt bekommt. D ändert die Form der Felder in `Configs` und jeden künftigen Merge Upstreams daran. B:
     Stärke – eine Kopie, was immer die Voreinstellung enthält; die Voreinstellung wird nie mehr verändert; die
     gespeicherte Form (`Dictionary<Job, …>`) bleibt, keine Umstellung gespeicherter Dateien. Schwäche – eine Abschrift
@@ -1438,6 +1438,11 @@ dazu die Gruppe.
   Wen die Rotation anvisiert, will sie treffen (A832). Die Prüfung „kämpft noch nicht" ist eine einzige
   (`DataCenter.NotFightingYet`), für die Flächen, die Zielwahl und die Schlafregel; ob sie gilt, sagt
   `DataCenter.GuardsAgainstPull` – außerhalb der Tiefen Gewölbe dieser Schalter, in ihnen deren Optionen (Konzept 23).
+  Auch eine Rotation mit eigener Flächenzählung fragt sie, über `DataCenter.PullsIfHit`: `BLM_Reborn` (Upstream
+  c79f584a5) zählte mit einer eigenen Kopie des Schalters („ohne Ziel“). Mit dem Schalter an warf sie eine Gruppe aus
+  der Zählung, sobald ein Gegner darin kurz ohne Ziel auf den Boden wirkte, und jede Reihe Trainingspuppen; der
+  Schwarzmagier wirkte dort Einzelzauber statt Flare und Foul. In den Tiefen Gewölben las sie den allgemeinen Schalter
+  statt deren Optionen. Wie im allgemeinen Pfad zählt das Ziel selbst dabei nicht (A983).
 
 *„Previously engaged" heißt: schon im Kampf mit dir oder der Gruppe (A976).* Der Text der Einstellung bindet: „Previously
 engaged targets (Non-Tanks)“ und in der Gruppe ebenso „All targets when solo …, or previously engaged“. RSR las ihn als „hat
@@ -3188,31 +3193,35 @@ den jobweisen Abläufen.
   - Beastmaster, Hörner „Retreat outside of combat will not affect recast timer“: im Rückzug vor dem nächsten Kampf
     (B5, A681).
   - *Schwarzmagier, Umbral Soul* „Grants Umbral Ice III and 3 Umbral Hearts, and also restores 10,000 MP when used while
-    outside of combat. Can only be executed while under the effect of Umbral Ice.“ *Nicht genutzt:* `BLM_Default`
-    fragt Umbral Soul nur im Kampf ab der sechsten Sekunde (`MaintainStatus`, `CombatElapsedLess(6)`), außerhalb des
-    Kampfs nie. *Im Kampf:* Endet ein Rudel in Astral Fire mit wenig MP, beginnt das nächste mit Blizzard III oder
-    Transpose und einem Eisschritt, bevor Feuer geht; in Umbral Ice mit fehlenden Herzen ebenso mit Blizzard IV.
-    The Balance (ebenda): „you will often be able to use Umbral Soul to get back to full MP with three Umbral Hearts“;
-    Transpose „in order to swap to Umbral Ice to allow use of Umbral Soul“. *Regel:* Außerhalb des Kampfs geht der
-    Schwarzmagier in Astral Fire mit Transpose nach Umbral Ice und wirkt in Umbral Ice Umbral Soul, solange Umbral Ice,
-    Herzen (ab Blizzard IV) oder MP nicht voll sind; danach nichts mehr bis zum Kampf. *Gegenthese 1 (der Pull kommt
-    gerade):* Umbral Soul ist ein GCD; fällt der Pull in ihn, kommt der erste Angriff höchstens einen GCD später, aber mit
-    vollen MP und drei Herzen statt eines Eisschritts im Kampf. *Gegenthese 2 (Astral Fire halten):* Kurz vor dem nächsten
-    Rudel wäre Feuer direkt stärker. Außerhalb des Kampfs ist der Abstand zum nächsten Rudel unbekannt; Astral Fire mit
-    leeren MP trägt keinen Feuerzauber, und von Umbral Ice III mit vollen MP ist Feuer einen Fire III entfernt – den
-    die Rotation ohnehin wirkt. *Gegenthese 3 (ausgeliefert, und nichts ändert sich):* Hält ihn der Countdown-Pfad schon
-    vorher bereit, ändert sich zwischen Rudeln ohne Countdown trotzdem etwas – dort fragte niemand. *Gegenthese 4 (der
-    Pull beginnt mit Feuer; Code-Review A980):* „Außerhalb des Kampfs“ gilt auch im Augenblick nach dem ersten eigenen
-    Treffer: Das Kampfflag des Spiels kam in seinen ACT-Mitschnitten vom 20. bis 25.11.2026 im Median 0,88 s nach dem
-    ersten eigenen Treffer eines Pulls, im 90. Perzentil nach 1,03 s (186 Pulls mit direkt treffender Aktion, Zeile 21/22
-    gegen Zeile 260; ein Schwarzmagier ist darin nicht gespielt, der Verzug hängt am Kampfflag, nicht am Job; wie viel
-    davon die Abfrage von ACT beiträgt, ist unbelegt). Öffnet Fire III den Pull – im Countdown oder auf ein Rudel –, steht
-    Astral Fire III in diesem Fenster ohne Kampfflag; Transpose ginge nach Umbral Ice I, Fire IV fiele weg, und ein
-    zweites Fire III kostete einen GCD. Die Gegenthese hält, deshalb gilt die Regel nur nach einem Kampfende, solange
-    seither keine eigene Aktion kam außer Transpose und Umbral Soul selbst (`DataCenter.NoOwnActionSinceCombatEnded`; eine
-    Aktion zählt mit ihrer Wirkung, `Watcher`, also im selben Augenblick wie Astral Fire). Vor dem ersten Kampf nach dem
-    Laden und nach einem Gebietswechsel gilt sie nicht: Dort fehlt das Rudel davor, und das nächste beginnt wie bisher.
-    *Ebene:* nur der Schwarzmagier; die übrigen Jobs oben brauchen nichts.
+    outside of combat. Can only be executed while under the effect of Umbral Ice.“ *Im Kampf ohne sie:* Endet ein Rudel
+    in Astral Fire mit wenig MP, beginnt das nächste mit Blizzard III oder Transpose und einem Eisschritt, bevor Feuer
+    geht; in Umbral Ice mit fehlenden Herzen ebenso mit Blizzard IV. The Balance (ebenda): „you will often be able to use
+    Umbral Soul to get back to full MP with three Umbral Hearts“; Transpose „in order to swap to Umbral Ice to allow use
+    of Umbral Soul“. *Regel (`BLM_Reborn`, `TryDowntimeMaintenance`, Upstream c79f584a5, 26.11.2026):* Ohne Gegner in
+    Reichweite geht der Schwarzmagier in Astral Fire mit Transpose nach Umbral Ice und wirkt dort Umbral Soul, solange
+    Umbral Ice, Herzen oder MP nicht voll sind – außerhalb des Kampfs 4 s (Transpose) und 1,5 s (Umbral Soul) nach seiner
+    letzten eigenen Aktion, im Kampf ohne Gegner nach 2,5 s; danach nichts mehr bis zum Kampf. Der Fork baute dieselbe
+    Regel in `BLM_Default` (A978, A980); mit `BLM_Default` entfiel sie, und `BLM_Reborn` trägt sie selbst, dazu die Pause
+    im Kampf, die der Fork nicht kannte (A983). *Gegenthese 1 (der Pull kommt gerade):* Umbral Soul ist ein GCD; fällt
+    der Pull in ihn, kommt der erste Angriff höchstens einen GCD später, aber mit vollen MP und drei Herzen statt eines
+    Eisschritts im Kampf. *Gegenthese 2 (Astral Fire halten):* Kurz vor dem nächsten Rudel wäre Feuer direkt stärker.
+    Außerhalb des Kampfs ist der Abstand zum nächsten Rudel unbekannt; Astral Fire mit leeren MP trägt keinen
+    Feuerzauber, und von Umbral Ice III mit vollen MP ist Feuer einen Fire III entfernt – den die Rotation ohnehin wirkt.
+    *Gegenthese 3 (ausgeliefert, und nichts ändert sich):* Hält ihn der Countdown-Pfad schon vorher bereit, ändert sich
+    zwischen Rudeln ohne Countdown trotzdem etwas – dort fragte niemand. *Gegenthese 4 (der Pull beginnt mit Feuer; A980):*
+    „Außerhalb des Kampfs“ gilt auch im Augenblick nach dem ersten eigenen Treffer, bis das Kampfflag des Spiels kommt.
+    Öffnet Fire III den Pull, stünde Astral Fire III in diesem Fenster ohne Kampfflag; Transpose ginge nach Umbral Ice I,
+    Fire IV fiele weg, und ein zweites Fire III kostete einen GCD. *Widerlegt am Code und am Mitschnitt (A983):* Die
+    Pflege läuft nur ohne Gegner in 25 Yalm (`HasHostilesInMaxRange`, `GeneralGCD`); das Ziel des Pulls steht in
+    Reichweite des Zaubers. Und der erste eigene Treffer setzt die Zeit seit der letzten Aktion zurück, also warten
+    Transpose danach 4 s und Umbral Soul 1,5 s. In seinen ACT-Mitschnitten vom 20. bis 25.11.2026 kam das Kampfflag nach
+    dem ersten direkt treffenden eigenen Zauber oder Angriff in 269 von 269 Pulls binnen 1,5 s (höchstens 1,12 s, Median
+    0,63 s; Zeile 21/22 gegen Zeile 260; ein Schwarzmagier ist darin nicht gespielt, der Verzug hängt am Kampfflag, nicht
+    am Job; wie viel davon die Abfrage von ACT beiträgt, ist unbelegt). Nicht gezählt sind 54 Pulls mit einer
+    Beschwörung, deren Treffer erst die Begleiter setzen, und 3 mit Kullerklumpen (Aktion AE54 im Pilgerpfad), davon 2
+    über 1,5 s (1,59 s und 7,65 s); dort hält nur die erste Sperre, solange das Ziel in Reichweite steht. Beginnt ein
+    Pull ohne eigenen Treffer – der Tank zieht, der Schwarzmagier wirkt noch –, steht er wie zwischen zwei Rudeln, und die Regel gilt dort zu Recht. *Ebene:* nur der Schwarzmagier; die übrigen Jobs oben
+    brauchen nichts.
 
 **K4 – Bewegung: Sofortzauber für eine vorhergesagte Bewegung aufheben** (geprüft, nicht gebaut, A919):
 - *Was RSR schon weiß:* wann eine Fläche auf deinem Platz aktiv wird (`MovementLock.SpotDangerIn`, aus BossModReborns

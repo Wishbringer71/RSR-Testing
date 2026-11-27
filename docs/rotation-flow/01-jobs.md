@@ -410,15 +410,17 @@ gegeneinander abwägt statt eine gegen eine Schwelle.
 Die 12 Farbaktionen sind faktisch eine Level-Kette mit sechs parallelen
 Strängen — die breiteste Filler-Struktur im Repo.
 
-### BLM — 818 LOC, 5 Configs *(BLM_Default)*
+### BLM — rund 1700 LOC, 10 Configs *(BLM_Reborn)*
+
+Gezählt am 27.11.2026.
 
 ```
-├ 1  Burst     Flare Star
-├ 2  Phase     InFireOrIce (Kernautomat, ausgelagert)
-├ 3  Element   AddElementBase
-├ 4  Bewegung  PolyglotWhileCastBlocked, Firestarter in Astral Fire (kein Zauber startbar, A602)
-├ 5  Filler    Scathe
-└ 6  Erhalt    MaintainStatus
+├ 1  Notfall   Manafont am Ende von Astral Fire (NeedManafont)
+├ 2  Element   TryEnterStanceFromNeutral, TrySingleTargetGCD / TryAoeGCD
+├ 3  Polyglot  TryUsePolyglot (Überlauf, Burst; Foul nur, wo es Xenoglossy übertrifft, A344)
+├ 4  Bewegung  TryMovementFallbackGCD (im Laufen oder kein Zauber startbar; Firestarter in Astral Fire, A602, A983)
+├ 5  Filler    Scathe (Einstellung, ab Werk aus)
+└ 6  Pause     TryDowntimeMaintenance (Transpose und Umbral Soul ohne Gegner, Konzept 03 K6)
 ```
 
 Fast die gesamte Logik liegt in privaten Hilfsmethoden statt in `GeneralGCD` — **das architektonische Gegenmodell zu

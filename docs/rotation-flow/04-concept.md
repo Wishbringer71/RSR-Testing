@@ -125,9 +125,9 @@ Unter etwa 15 Zweigen lohnt der Umbau nicht.
 
 Diese Ordnung — Recovery vor Resource vor Burst vor Dot vor Aoe vor Combo vor Filler —
 ist eine Prioritätsaussage und über alle Jobs vergleichbar. **Der Name dagegen ist die
-Information des Jobs.** `BLM_Default` zeigt es: Seine Helfer heißen `GoIce`,
-`MaintainIce`, `DoFire`, `AddThunder`, `UsePolyglot` — `GoIce` sagt mehr als
-`IceRecovery`, und eine erzwungene Taxonomie würde die Datei verschlechtern. Beides in
+Information des Jobs.** `BLM_Reborn` zeigt es: Seine Helfer heißen
+`TryEnterStanceFromNeutral`, `TryDowntimeMaintenance`, `TryMovementFallbackGCD`, `TryUsePolyglot` —
+`TryDowntimeMaintenance` sagt mehr als `IceRecovery`, und eine erzwungene Taxonomie würde die Datei verschlechtern. Beides in
 einen Bezeichner zu zwingen wäre der Fehler; die Reihenfolge ist gemeinsam, der Name
 gehört dem Job.
 

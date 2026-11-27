@@ -171,7 +171,6 @@ internal static partial class ActionUpdater
 			DefenseTrace.Line($"combat ended after {(now - _startCombatTime).TotalSeconds:F0} s");
 			DataCenter.LastPullSeconds = (float)(now - _startCombatTime).TotalSeconds;
 			DataCenter.LastPullTerritoryId = DataCenter.Territory?.Id ?? 0;
-			DataCenter.LastCombatEndedAt = now;
 			// A809 (concept 13, "Kampfende"): a fight's gaze registrations end here, also with RSR off after a wipe.
 			GazeWatch.EndFight();
 			// A820 (concept 03, "Bereit, aber nicht genutzt"): which cooldowns stood ready in this fight and did not come.

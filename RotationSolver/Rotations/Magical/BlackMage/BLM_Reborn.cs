@@ -25,8 +25,10 @@ public sealed class BLM_Reborn : BlackMageRotation
 	[RotationConfig(CombatType.PvE, Name = "Use all Ley Lines charges on cooldown", Parent = nameof(UseLeyLines), Tooltip = "Spends both Ley Lines charges on cooldown instead of pooling a charge for raid buffs.")]
 	public bool UseBothLeyLinesCharges { get; set; } = false;
 
+	// On by default (A602, A983): The Balance, Black Mage Basic Guide, uses Retrace "once per Ley Lines duration" when the
+	// circle has to be left for longer; its 40 s recast serves nothing else.
 	[RotationConfig(CombatType.PvE, Name = "Use Retrace when outside Ley Lines", Tooltip = "Relocates active Ley Lines to your position when standing still outside Circle of Power.")]
-	public bool UseRetrace { get; set; } = false;
+	public bool UseRetrace { get; set; } = true;
 
 	[RotationConfig(CombatType.PvE, Name = "Use Swiftcast + Transpose for instant Blizzard III", Tooltip = "Weaves Swiftcast before Transpose at the end of Astral Fire so Blizzard III fires instantly under Umbral Ice.")]
 	public bool UseSwiftcastForB3 { get; set; } = true;
@@ -142,7 +144,10 @@ public sealed class BLM_Reborn : BlackMageRotation
 				}
 				if (Vector3.Distance(CurrentTarget.Position, other.Position) <= effectRange + other.HitboxRadius)
 				{
-					if (Service.Config.NoNewHostiles && other.TargetObject == null)
+					// The one pull check of every area (concept 03, A833, A983): a fighting enemy casting at the ground and a
+					// training dummy are no new enemies; in a deep dungeon its own options decide. Not for the chosen target
+					// itself: whom the rotation aims at, it means to hit (A832).
+					if (other.GameObjectId != CurrentTarget.GameObjectId && DataCenter.PullsIfHit(other))
 					{
 						return 0;
 					}
@@ -170,7 +175,7 @@ public sealed class BLM_Reborn : BlackMageRotation
 				}
 				if (Vector3.Distance(center.Position, other.Position) <= effectRange + other.HitboxRadius)
 				{
-					if (Service.Config.NoNewHostiles && other.TargetObject == null)
+					if (other.GameObjectId != center.GameObjectId && DataCenter.PullsIfHit(other))
 					{
 						hitsNewHostile = true;
 						break;
@@ -616,10 +621,16 @@ public sealed class BLM_Reborn : BlackMageRotation
 		return base.MoveBackAbility(nextGCD, out act);
 	}
 
-	[RotationDesc(ActionID.ManawardPvE)]
+	[RotationDesc(ActionID.ManawardPvE, ActionID.AddlePvE)]
 	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
 	{
 		if (ManawardPvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		// Addle in both defense branches, for every job that has it (concept 02, A983).
+		if (UseAddle(out act))
 		{
 			return true;
 		}
@@ -629,7 +640,7 @@ public sealed class BLM_Reborn : BlackMageRotation
 	[RotationDesc(ActionID.AddlePvE, ActionID.ManawardPvE)]
 	protected sealed override bool DefenseAreaAbility(IAction nextGCD, out IAction? act)
 	{
-		if (AddlePvE.CanUse(out act))
+		if (UseAddle(out act))
 		{
 			return true;
 		}
@@ -1480,7 +1491,9 @@ public sealed class BLM_Reborn : BlackMageRotation
 	{
 		act = null;
 
-		if (!IsMoving || !InCombat || !HasHostilesInRange)
+		// Also where no spell with a cast time can start without moving - BossMod's AI, a knockback, a cast limit (concept
+		// 03, "C6", A602, A983).
+		if ((!IsMoving && !CastStartBlocked) || !InCombat || !HasHostilesInRange)
 		{
 			return false;
 		}
@@ -1518,6 +1531,13 @@ public sealed class BLM_Reborn : BlackMageRotation
 		}
 
 		if (IsParadoxActive && ParadoxPvE.CanUse(out act, skipStatusProvideCheck: true))
+		{
+			return true;
+		}
+
+		// Firestarter makes Fire III instant and free; in Astral Fire it keeps the element, and the GCD otherwise goes to
+		// Scathe or nowhere (A602, A983).
+		if (InAstralFire && HasFire && FireIiiPvE.CanUse(out act))
 		{
 			return true;
 		}
@@ -1686,7 +1706,9 @@ public sealed class BLM_Reborn : BlackMageRotation
 
 		if (AoeTargetCount >= 2 || !XenoglossyPvE.EnoughLevel)
 		{
-			if (FoulPvE.Info.EnoughLevelAndQuest() && FoulPvE.CanUse(out act, skipAoeCheck: true))
+			// Foul where it also out-damages Xenoglossy on the targets it hits, by the tooltips' potencies (A344, A983).
+			if (FoulPvE.Info.EnoughLevelAndQuest() && FoulPvE.CanUse(out act, skipAoeCheck: true) && (!XenoglossyPvE.EnoughLevel
+				|| ActionTooltip.AreaOutdamagesSingle(FoulPvE.ID, FoulPvE.Target.AffectedTargets.Length, XenoglossyPvE.ID)))
 			{
 				return true;
 			}

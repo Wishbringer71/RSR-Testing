@@ -354,10 +354,6 @@
    "member": "internal static unsafe bool SendAway() => ActionManager.Instance() is var manager && manager != null"
   },
   {
-   "file": "RotationSolver/Rotations/Magical/BlackMage/BlackMageRotation.cs",
-   "member": "protected bool PolyglotWhileCastBlocked(out IAction? act)"
-  },
-  {
    "file": "RotationSolver/Rotations/Tank/DarkKnight/DarkKnightRotation.cs",
    "member": "protected override IBaseAction? Invulnerability => LivingDeadPvE;"
   },
