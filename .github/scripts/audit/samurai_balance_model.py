@@ -5,12 +5,13 @@
 Not a code scanner - a model calculator. The question: The Balance (Samurai Basic Guide, "Patch Applicable: 7.4", read
 26.10.2026) uses Meikyo Shisui in every 60-s window to put Higanbana up "right on time" - Iaijutsu does not use up a
 Meikyo stack -, and its "15 second rule" presses Meikyo when Higanbana runs out while Sen are still being built.
-SAM_Reborn does the opposite: it keeps Meikyo back while Higanbana runs out within its refresh window and casts
-Higanbana only without Meikyo stacks. Does that cost Higanbana time on the target, Meikyo charges or Sen - damage of
-the Samurai's own, not only the alignment with other players' buffs, which the owner's rule does not count?
+SAM_Reborn did the opposite until A962 (policy 'hold'): it kept Meikyo back while Higanbana ran out within its refresh
+window and cast Higanbana only without Meikyo stacks. Since A962 it takes The Balance's use (policy 'rsr', the same as
+'balance'). The question stays: what does the former rule cost in Higanbana time on the target, Meikyo charges or Sen -
+damage of the Samurai's own, not only the alignment with other players' buffs, which the owner's rule does not count?
 
 The GCD choice of SAM_Reborn is mirrored by hand from RotationSolver/Rotations/Melee/Samurai/SAM_Reborn.cs (GeneralGCD
-and the Meikyo Shisui branch of AttackAbility, as of 7e6a428a9); a change there needs the same change here (TODO,
+and the Meikyo Shisui branch of AttackAbility, as of A962); a change there needs the same change here (TODO,
 technical debt). Figures: job guide, patch 7.5 (na.finalfantasyxiv.com/jobguide/samurai, read 26.10.2026) - Higanbana
 200 and 50 every 3 s for 60 s, Meikyo Shisui 3 weaponskills in 20 s, recast 55 s, 2 charges, Tendo 30 s, Fugetsu and
 Fuka 40 s, Fuka 13 % faster GCD, Ikishoten 120 s with Ogi Namikiri Ready 30 s, Tsubame-gaeshi Ready 30 s.
@@ -22,7 +23,7 @@ Kenki and its abilities left out (they do not change the GCD choice here), Higan
 The self-test checks the rules of the model against hand-built cases and that a constructed defect - Higanbana never
 refreshed - shows as lost uptime.
 
-Usage: python3 .github/scripts/audit/samurai_balance_model.py [-t] [-b]   (-t trace, -b trace The Balance's use)
+Usage: python3 .github/scripts/audit/samurai_balance_model.py [-t] [-h]   (-t trace, -h trace the rule before A962)
 """
 import sys
 
@@ -103,14 +104,14 @@ def higan_due(s, t):
 
 
 def choose_gcd(s, t, no_refresh=False, policy="rsr"):
-    """SAM_Reborn.GeneralGCD for one boss target; policy 'balance' lets Higanbana go under Meikyo Shisui, as The
-    Balance does ("Iaijutsu does not count as one of the three Weaponskills on Meikyo")."""
+    """SAM_Reborn.GeneralGCD for one boss target; Higanbana goes under Meikyo Shisui, as The Balance does ("Iaijutsu
+    does not count as one of the three Weaponskills on Meikyo") - except under policy 'hold', the rule before A962."""
     # UseOgiAndHiganbana
     if s.ogi_until > t:
         if (s.higan_until > t and buffs(s, t)) or s.ogi_until - t <= GCD:
             return "ogi"
     if (buffs(s, t) and s.fugetsu_until - t > BUFF_ENDING and s.fuka_until - t > BUFF_ENDING
-            and (policy == "balance" or not meikyo(s, t)) and len(s.sen) == 1 and higan_due(s, t)
+            and (policy != "hold" or not meikyo(s, t)) and len(s.sen) == 1 and higan_due(s, t)
             and not no_refresh):
         return "higanbana"
     # UseAoeFinishers: Kaeshi Namikiri
@@ -195,11 +196,12 @@ def do_gcd(s, t, g):
 
 
 def choose_meikyo(s, t, policy):
-    """The Meikyo Shisui branch of SAM_Reborn.AttackAbility (policy 'rsr'), or The Balance's use ('balance')."""
+    """The Meikyo Shisui branch of SAM_Reborn.AttackAbility: The Balance's use ('rsr', 'balance'), or the rule before
+    A962 ('hold')."""
     if meikyo(s, t):
         return False
     tsubame_ready = s.tsubame is not None and s.tsubame_until > t
-    if policy == "rsr":
+    if policy == "hold":
         near_cap = s.meikyo_charges + GCD / MEIKYO_RECAST >= 2
         if not (tsubame_ready or near_cap):
             if s.meikyo_charges < 2:
@@ -209,7 +211,7 @@ def choose_meikyo(s, t, policy):
         outer = (not buffs(s, t)) or (s.higan_until > t and not higan_due(s, t))
         inner = (not buffs(s, t)) or tsubame_ready or s.last == "tendo_kaeshi"
         return outer and inner
-    # The Balance's use, as SAM_Reborn could take it over: the same branch without the hold while Higanbana is due, and
+    # The Balance's use, as SAM_Reborn takes it since A962: the same branch without the hold while Higanbana is due, and
     # one more trigger - the "15 second rule": Higanbana runs out while Sen are being built, the combo is finished, so
     # Meikyo brings the Sen; that trigger may spend the last charge.
     due = higan_due(s, t)
@@ -296,15 +298,16 @@ def self_test():
     s.higan_until = 5.0
     s.higan_casts = 1
     assert choose_gcd(s, 0.0) == "higanbana"
-    # The same under Meikyo: SAM_Reborn keeps Higanbana back, The Balance casts it (Iaijutsu uses no Meikyo stack).
+    # The same under Meikyo: the former rule keeps Higanbana back, The Balance and SAM_Reborn cast it (Iaijutsu uses no
+    # Meikyo stack).
     s.meikyo_stacks, s.meikyo_until = 2, 15.0
-    assert choose_gcd(s, 0.0) != "higanbana"
-    assert choose_gcd(s, 0.0, policy="balance") == "higanbana"
-    # Higanbana due, no Sen and no combo begun: SAM_Reborn holds Meikyo, The Balance presses it (15 second rule).
+    assert choose_gcd(s, 0.0, policy="hold") != "higanbana"
+    assert choose_gcd(s, 0.0, policy="balance") == "higanbana" == choose_gcd(s, 0.0)
+    # Higanbana due, no Sen and no combo begun: the former rule holds Meikyo, The Balance and SAM_Reborn press it.
     s = new_state()
     s.fugetsu_until = s.fuka_until = 30.0
     s.higan_until, s.higan_casts, s.meikyo_charges = 8.0, 1, 1.0
-    assert not choose_meikyo(s, 0.0, "rsr") and choose_meikyo(s, 0.0, "balance")
+    assert not choose_meikyo(s, 0.0, "hold") and choose_meikyo(s, 0.0, "balance") and choose_meikyo(s, 0.0, "rsr")
     # Constructed defect: Higanbana never refreshed must show as lost uptime - a silent full uptime would not be.
     broken = run(no_refresh=True)
     assert summary(broken)["higanbana uptime"] < 0.5, summary(broken)
@@ -313,7 +316,7 @@ def self_test():
 
 
 def grid():
-    """The Balance's use against SAM_Reborn's across GCD lengths, Higanbana refresh windows and fight lengths: the gain
+    """The Balance's use (SAM_Reborn's since A962) against the former rule across GCD lengths, Higanbana refresh windows and fight lengths: the gain
     in potency, in percent, for each combination."""
     global GCD, REFRESH_GCDS
     keep = GCD, REFRESH_GCDS
@@ -322,7 +325,7 @@ def grid():
         for GCD in (2.10, 2.14, 2.17, 2.20):
             for REFRESH_GCDS in (2, 4, 6):
                 for fight in (180.0, 300.0, 420.0, 600.0, 900.0):
-                    r = summary(run(fight=fight), fight)["potency"]
+                    r = summary(run(fight=fight, policy="hold"), fight)["potency"]
                     b = summary(run(fight=fight, policy="balance"), fight)["potency"]
                     gains.append(100 * (b - r) / r)
     finally:
@@ -332,18 +335,18 @@ def grid():
 
 if __name__ == "__main__":
     self_test()
-    policy = "balance" if "-b" in sys.argv else "rsr"
+    policy = "hold" if "-h" in sys.argv else "rsr"
     s = run(trace="-t" in sys.argv, policy=policy)
     print("policy:", policy, "- 600 s, GCD", GCD, "- refresh", REFRESH_GCDS, "GCDs")
     for k, v in summary(s).items():
         print(f"   {k}: {v}")
     if policy == "rsr":
-        b = summary(run(policy="balance"))
-        print("policy: balance")
+        b = summary(run(policy="hold"))
+        print("policy: hold (before A962)")
         for k, v in b.items():
             print(f"   {k}: {v}")
         g = grid()
-        print(f"The Balance's Meikyo use against SAM_Reborn's over {len(g)} combinations of GCD, refresh window and fight"
+        print(f"The Balance's Meikyo use (SAM_Reborn's) against the former rule over {len(g)} combinations of GCD, refresh window and fight"
               f" length: mean {sum(g) / len(g):+.2f} %, from {min(g):+.2f} % to {max(g):+.2f} %, lower in"
               f" {sum(1 for x in g if x < 0)}")
     if "-t" in sys.argv:

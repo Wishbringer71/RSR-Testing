@@ -272,7 +272,7 @@ public partial class BeastmasterRotation
 	}
 
 	private static List<TeamCandidate> LevelTeam(uint board, int size, List<TeamCandidate> all, Dictionary<uint, int> weight,
-		bool interrupting, List<BeastmasterPet> team, TeamHealth health, Dictionary<BeastmasterPet, bool> learning, out string note,
+		KinNeeds needs, List<BeastmasterPet> team, TeamHealth health, Dictionary<BeastmasterPet, bool> learning, out string note,
 		out int laggers)
 	{
 		var maxRank = CrucibleBoard.MaxRank;
@@ -295,11 +295,11 @@ public partial class BeastmasterRotation
 		// limit is the cap, or the next board's recommended rank where that lies higher).
 		var limit = LevelLimit(board);
 		var belowLimit = BelowLimit(all, sync, limit);
-		var order = ChooseTeam(new List<TeamCandidate>(all), all.Count, weight, interrupting, LastRunTeam(team), out _, sync, recommended,
+		var order = ChooseTeam(new List<TeamCandidate>(all), all.Count, weight, needs, LastRunTeam(team), out _, sync, recommended,
 			belowLimit);
 		var chosen = new List<TeamCandidate>(size);
 		var above = new List<TeamCandidate>();
-		var roles = RoleHolders(order, interrupting);
+		var roles = RoleHolders(order, needs);
 		foreach (var pick in order)
 		{
 			if (chosen.Count < size && (BelowCap(pick) || roles.ContainsKey(pick.Pet)))
@@ -333,7 +333,7 @@ public partial class BeastmasterRotation
 				}
 			}
 
-			swapped = Strengthen(board, chosen, outside, interrupting, sync, recommended, health, false);
+			swapped = Strengthen(board, chosen, outside, needs, sync, recommended, health, false);
 		}
 
 		var below = 0;
@@ -390,11 +390,11 @@ public partial class BeastmasterRotation
 	// before them -, as few as carry the board's measured losses with one in reserve (no smaller one is endangered); the
 	// full size while unmeasured (the safe side).
 	private static List<TeamCandidate> FewestStrong(uint board, int size, List<TeamCandidate> pool, Dictionary<uint, int> weight,
-		bool interrupting, List<BeastmasterPet> team, TeamHealth health, out int keep)
+		KinNeeds needs, List<BeastmasterPet> team, TeamHealth health, out int keep)
 	{
 		var sync = CrucibleBoard.SyncRank(board);
 		var recommended = CrucibleBoard.RecommendedRank(board);
-		var order = ChooseTeam(new List<TeamCandidate>(pool), pool.Count, weight, interrupting, LastRunTeam(team), out var roles, -Math.Max(sync, 1),
+		var order = ChooseTeam(new List<TeamCandidate>(pool), pool.Count, weight, needs, LastRunTeam(team), out var roles, -Math.Max(sync, 1),
 			recommended);
 		keep = Math.Min(size, order.Count);
 		for (var n = Math.Max(Math.Min(roles, keep), 1); n < keep; n++)
@@ -414,13 +414,13 @@ public partial class BeastmasterRotation
 	// stronger takes the team's weakest place, one at a time: the fewest HP at the rank it fights with, at equal the later
 	// in the team's order (the one it wanted last); a place that holds a role only goes to one that holds the same. The
 	// number of such swaps.
-	private static int Strengthen(uint board, List<TeamCandidate> team, List<TeamCandidate> outside, bool interrupting, int sync,
+	private static int Strengthen(uint board, List<TeamCandidate> team, List<TeamCandidate> outside, KinNeeds needs, int sync,
 		int recommended, TeamHealth health, bool unknownEndangers)
 	{
 		var swaps = 0;
 		while (TeamEndangered(board, team, recommended, health) is var danger && (danger == true || (unknownEndangers && danger == null)))
 		{
-			var roles = RoleHolders(team, interrupting);
+			var roles = RoleHolders(team, needs);
 			var place = -1;
 			var stronger = -1;
 			var weakest = long.MaxValue;
@@ -437,7 +437,7 @@ public partial class BeastmasterRotation
 				var role = roles.GetValueOrDefault(team[i].Pet);
 				for (var j = 0; j < outside.Count; j++)
 				{
-					if (Strength(outside[j]) > strength && Holds(outside[j], role, interrupting))
+					if (Strength(outside[j]) > strength && Holds(outside[j], role))
 					{
 						place = i;
 						stronger = j;
@@ -467,29 +467,31 @@ public partial class BeastmasterRotation
 			: CrucibleBoard.FightingRank(candidate.Rank, candidate.OverRank, sync);
 	}
 
-	// K7 (A807): the roles a familiar of the team holds - healing or protecting before the boss (B5), interrupting (K4).
-	private readonly record struct TeamRole(bool Safe, bool Interrupter);
+	// K7 (A807, A971): the roles a familiar of the team holds - healing or protecting before the boss (B5), and the kin a
+	// mechanic of the board asks for (interrupting, K4; dispelling, cleansing, ignoring a knockback); None for no kin role.
+	private readonly record struct TeamRole(bool Safe, BeastmasterKinType Kin);
 
-	// K7 (A807): whether `candidate` can take a place holding `role`.
-	private static bool Holds(TeamCandidate candidate, TeamRole role, bool interrupting)
+	// K7 (A807, A971): whether `candidate` can take a place holding `role` - a kin role only with the same kin.
+	private static bool Holds(TeamCandidate candidate, TeamRole role)
 		=> (!role.Safe || candidate.Safe)
-		&& (!role.Interrupter || (interrupting && KinOf(candidate.Pet) == BeastmasterKinType.Soulkin));
+		&& (role.Kin == BeastmasterKinType.None || KinOf(candidate.Pet) == role.Kin);
 
-	// K7 (A806, A807): the roles in a team, counted as the order counts them (ChooseTeam) - the first two that heal or
-	// protect, and the first Soulkin where enemies cast interruptibly; a Soulkin that heals holds both, and a Soulkin among
-	// the first two that heal is the interrupter. A third healer, or a Soulkin without interruptible enemies, holds none.
-	private static Dictionary<BeastmasterPet, TeamRole> RoleHolders(List<TeamCandidate> team, bool interrupting)
+	// K7 (A806, A807, A971): the roles in a team, counted as the order counts them (ChooseTeam) - the first two that heal or
+	// protect, and the first familiar of each kin the board asks for; a healer of such a kin holds both, and one among the
+	// first two that heal holds its kin's role. A third healer, or a second of a kin, holds none.
+	private static Dictionary<BeastmasterPet, TeamRole> RoleHolders(List<TeamCandidate> team, KinNeeds needs)
 	{
 		var roles = new Dictionary<BeastmasterPet, TeamRole>();
 		var safe = 0;
-		var soul = false;
+		var seen = new HashSet<BeastmasterKinType>();
 		foreach (var pick in team)
 		{
-			var kin = KinOf(pick.Pet) == BeastmasterKinType.Soulkin;
-			var role = new TeamRole(pick.Safe && safe < BossSafeFamiliars, interrupting && kin && !soul);
+			var kin = KinOf(pick.Pet);
+			var role = new TeamRole(pick.Safe && safe < BossSafeFamiliars,
+				needs.Asks(kin) && !seen.Contains(kin) ? kin : BeastmasterKinType.None);
 			safe += pick.Safe ? 1 : 0;
-			soul |= kin;
-			if (role.Safe || role.Interrupter)
+			_ = seen.Add(kin);
+			if (role.Safe || role.Kin != BeastmasterKinType.None)
 			{
 				roles[pick.Pet] = role;
 			}
@@ -603,7 +605,8 @@ public partial class BeastmasterRotation
 		var interrupting = false;
 		foreach (var fight in CrucibleBoard.FightsOfBoard(board))
 		{
-			// K4 (A587): a fight with an enemy kind seen casting interruptibly asks for a Soulkin familiar (Soul Crush).
+			// K4 (A587): a fight with an enemy kind seen casting interruptibly asks for a Soulkin familiar (Soul Crush); A971:
+			// with the kin BossModReborn names for the board's opponents (KinNeeds.Of below).
 			interrupting |= CrucibleBoard.CastsInterruptibly(CrucibleBoard.EnemiesOf(fight));
 			foreach (var enemy in CrucibleBoard.EnemiesOf(fight))
 			{
@@ -614,6 +617,7 @@ public partial class BeastmasterRotation
 			}
 		}
 
+		var needs = KinNeeds.Of(board, interrupting);
 		var team = CrucibleTeamNow();
 		var party = AgentXBMPetParty.Instance();
 		var candidates = new List<TeamCandidate>();
@@ -670,7 +674,7 @@ public partial class BeastmasterRotation
 		}
 
 		var scoreOffered = reachedCap
-			|| TeamEndangered(board, FewestStrong(board, size, all, weight, interrupting, team, health, out _), recommended, health) == false;
+			|| TeamEndangered(board, FewestStrong(board, size, all, weight, needs, team, health, out _), recommended, health) == false;
 		CrucibleGoalsOffered = (belowCap, true, scoreOffered);
 		var chosenGoal = goal;
 		goal = goal switch
@@ -688,7 +692,7 @@ public partial class BeastmasterRotation
 
 		if (goal == CrucibleGoal.Level && party != null)
 		{
-			chosen = LevelTeam(board, size, all, weight, interrupting, team, health, learning, out var levelNote, out var laggers);
+			chosen = LevelTeam(board, size, all, weight, needs, team, health, learning, out var levelNote, out var laggers);
 			leveled = laggers > 0;
 			CrucibleTeamSizeNote = levelNote;
 		}
@@ -697,11 +701,11 @@ public partial class BeastmasterRotation
 		{
 			// The lowest first; while the team is endangered - measured not to carry the board's losses, or unmeasured - the
 			// lowest outside that fights stronger takes its weakest place, a role only for the same role (Strengthen).
-			var order = ChooseTeam(new List<TeamCandidate>(all), all.Count, weight, interrupting, LastRunTeam(team), out _, int.MaxValue,
+			var order = ChooseTeam(new List<TeamCandidate>(all), all.Count, weight, needs, LastRunTeam(team), out _, int.MaxValue,
 				recommended);
 			chosen = order.Count > size ? order.GetRange(0, size) : order;
 			var outside = order.Count > size ? order.GetRange(size, order.Count - size) : [];
-			var swapped = Strengthen(board, chosen, outside, interrupting, sync, recommended, health, true);
+			var swapped = Strengthen(board, chosen, outside, needs, sync, recommended, health, true);
 
 			CrucibleTeamSizeNote = "Safe win: the full team, the lowest in rank as long as passing is safe"
 				+ (swapped > 0 ? $"; {swapped} stronger in place of low ones - the low team does not carry the losses measured on this board, "
@@ -711,7 +715,7 @@ public partial class BeastmasterRotation
 		{
 			// Score, and Level once none lags behind: the strongest first, as few as carry the board's measured losses with one
 			// in reserve; unmeasured, the full team (the safe side).
-			chosen = FewestStrong(board, size, all, weight, interrupting, team, health, out var keep);
+			chosen = FewestStrong(board, size, all, weight, needs, team, health, out var keep);
 			var squad = SquadPoints(board, chosen.Count);
 			CrucibleTeamSizeNote = (leveled || goal == CrucibleGoal.Level ? CrucibleTeamSizeNote + " " : string.Empty)
 				+ $"Score: the {chosen.Count} strongest"
@@ -719,7 +723,7 @@ public partial class BeastmasterRotation
 					: " - no smaller team is measured to carry this board.");
 
 			// A699: a team of one kin where one holds what the mixed one holds - its bonus on top.
-			if (GambitTeam(all, size, weight, interrupting, team, board, chosen, keep, health) is { } gambit)
+			if (GambitTeam(all, size, weight, needs, team, board, chosen, keep, health) is { } gambit)
 			{
 				chosen = gambit.Team;
 				CrucibleTeamSizeNote = gambit.Note;
@@ -732,6 +736,7 @@ public partial class BeastmasterRotation
 				+ "The game gave no familiar's rank, and no result window showed one: ranks count by the board's sync only.";
 		}
 
+		var holders = RoleHolders(chosen, needs);
 		foreach (var pick in chosen)
 		{
 			var hit = new List<string>();
@@ -743,7 +748,10 @@ public partial class BeastmasterRotation
 				}
 			}
 
+			// A971: the mechanic only on the familiar that holds the kin's role - a second of the kin holds none.
+			var roleKin = holders.TryGetValue(pick.Pet, out var held) ? held.Kin : BeastmasterKinType.None;
 			var why = (pick.Safe ? "heals or protects; " : string.Empty)
+				+ (needs.Reasons.TryGetValue(roleKin, out var mechanic) ? $"{roleKin} the board asks for ({mechanic}); " : string.Empty)
 				+ (hit.Count > 0 ? $"hits {string.Join(", ", hit)}" : "no weakness of this board")
 				+ (pick.OverRank ? string.Empty : "; below the board's rank")
 				+ (learning.TryGetValue(pick.Pet, out var learns)
@@ -765,7 +773,7 @@ public partial class BeastmasterRotation
 	// at equal worth one above the board's rank first, then below it the higher rank, then one in the team already. `core`
 	// counts up to the last pick that covers a weakness anew or is needed as a healer or interrupter (A698).
 	private static List<TeamCandidate> ChooseTeam(List<TeamCandidate> candidates, int size, Dictionary<uint, int> weight,
-		bool interrupting, List<BeastmasterPet> team, out int core, int lowFirstFrom = 0, int fightsFrom = 0,
+		KinNeeds needs, List<BeastmasterPet> team, out int core, int lowFirstFrom = 0, int fightsFrom = 0,
 		HashSet<BeastmasterPet>? levelFirst = null)
 	{
 		var lowFirst = lowFirstFrom > 0;
@@ -776,21 +784,21 @@ public partial class BeastmasterRotation
 		var chosen = new List<TeamCandidate>();
 		var covered = new Dictionary<uint, int>();
 		var safeTaken = 0;
-		var soulTaken = false;
+		var kinsTaken = new HashSet<BeastmasterKinType>();
 		core = 0;
 		while (chosen.Count < size && candidates.Count > 0)
 		{
 			// A805 review: only while one that heals or protects is left - with fewer than the boss asks for, the phase would
 			// otherwise last the whole team, and no weakness, interrupter or core would count.
 			var needSafe = safeTaken < BossSafeFamiliars && HasSafe();
-			var needSoul = !needSafe && interrupting && !soulTaken && HasSoul();
+			var needKin = needSafe ? BeastmasterKinType.None : NextKin();
 			var best = -1;
 			var bestWorth = -1f;
 			var bestCovers = false;
 			for (var i = 0; i < candidates.Count; i++)
 			{
 				var candidate = candidates[i];
-				if ((needSafe && !candidate.Safe) || (needSoul && KinOf(candidate.Pet) != BeastmasterKinType.Soulkin))
+				if ((needSafe && !candidate.Safe) || (needKin != BeastmasterKinType.None && KinOf(candidate.Pet) != needKin))
 				{
 					continue;
 				}
@@ -807,12 +815,12 @@ public partial class BeastmasterRotation
 				// rank; a weakness covered anew only at equal rank (not asked while a healer or the interrupter is wanted - any
 				// of those is needed), then worth, then one not in the last run's team (in turns). Whether the team carries the
 				// board, LevelTeam measures.
-				covers &= !needSafe && !needSoul;
+				covers &= !needSafe && needKin == BeastmasterKinType.None;
 				var adequate = Adequate(candidate);
 
 				// A806 (review, high): a role goes first to one the horn choice sends in - over the sync or at least the
 				// recommended rank (K6); one below only where none at it carries the role.
-				if ((lowFirst || highFirst) && (needSafe || needSoul) && best >= 0 && Fights(candidate) != Fights(candidates[best]))
+				if ((lowFirst || highFirst) && (needSafe || needKin != BeastmasterKinType.None) && best >= 0 && Fights(candidate) != Fights(candidates[best]))
 				{
 					if (Fights(candidate))
 					{
@@ -855,11 +863,11 @@ public partial class BeastmasterRotation
 			}
 
 			safeTaken += pick.Safe ? 1 : 0;
-			soulTaken |= KinOf(pick.Pet) == BeastmasterKinType.Soulkin;
+			_ = kinsTaken.Add(KinOf(pick.Pet));
 
 			// A796: the core ends with the last pick that covers a weakness anew (A698). Counting every pick that hits one at
 			// all made the core the whole team: no smaller team for points, and no room for familiars that lag behind.
-			if (anew || needSafe || needSoul)
+			if (anew || needSafe || needKin != BeastmasterKinType.None)
 			{
 				core = chosen.Count;
 			}
@@ -880,17 +888,26 @@ public partial class BeastmasterRotation
 			return false;
 		}
 
-		bool HasSoul()
+		// A971: the first kin the board asks for that no pick holds yet and a candidate still has; None when none is left.
+		BeastmasterKinType NextKin()
 		{
-			foreach (var candidate in candidates)
+			foreach (var kin in needs.Kins)
 			{
-				if (KinOf(candidate.Pet) == BeastmasterKinType.Soulkin)
+				if (kinsTaken.Contains(kin))
 				{
-					return true;
+					continue;
+				}
+
+				foreach (var candidate in candidates)
+				{
+					if (KinOf(candidate.Pet) == kin)
+					{
+						return kin;
+					}
 				}
 			}
 
-			return false;
+			return BeastmasterKinType.None;
 		}
 
 		// At equal worth: above the board's rank first, then below it the higher rank (A804), then one in the team already.
@@ -961,12 +978,12 @@ public partial class BeastmasterRotation
 	// K7 (A699): the team of one kin that hits every weakness of the board the mixed team hits, holds as many that heal or
 	// protect as the mixed one needs before a boss and its interrupter, under the same size rule - the one with the most
 	// points beyond the mixed team's; null where none holds that.
-	private static GambitPick? GambitTeam(List<TeamCandidate> all, int size, Dictionary<uint, int> weight, bool interrupting,
+	private static GambitPick? GambitTeam(List<TeamCandidate> all, int size, Dictionary<uint, int> weight, KinNeeds needs,
 		List<BeastmasterPet> team, uint board, List<TeamCandidate> mixed, int mixedKeep, TeamHealth health)
 	{
 		var needed = new HashSet<uint>();
 		var safe = 0;
-		var soul = false;
+		var roleKins = new HashSet<BeastmasterKinType>();
 		foreach (var pick in mixed)
 		{
 			foreach (var element in pick.Hits)
@@ -978,7 +995,10 @@ public partial class BeastmasterRotation
 			}
 
 			safe += pick.Safe ? 1 : 0;
-			soul |= KinOf(pick.Pet) == BeastmasterKinType.Soulkin;
+			if (needs.Asks(KinOf(pick.Pet)))
+			{
+				_ = roleKins.Add(KinOf(pick.Pet));
+			}
 		}
 
 		var safeNeeded = Math.Min(safe, BossSafeFamiliars);
@@ -987,8 +1007,9 @@ public partial class BeastmasterRotation
 		foreach (var (kin, row, name) in Gambits())
 		{
 			var points = CrucibleBoard.BonusPoints(board, row);
-			// Its interrupter only where the board asks for one - a Soulkin in the mixed team by chance bars no other kin.
-			if (points <= 0 || (soul && interrupting && kin != BeastmasterKinType.Soulkin))
+			// A kin role only where the board asks for that kin - one of another kin in the mixed team by chance bars no team
+			// of one kin; one the board asks for does, as the interrupter did (A971).
+			if (points <= 0 || RolesOfOtherKin(kin))
 			{
 				continue;
 			}
@@ -1002,7 +1023,7 @@ public partial class BeastmasterRotation
 				}
 			}
 
-			var picks = FewestStrong(board, size, pool, weight, interrupting, team, health, out var keep);
+			var picks = FewestStrong(board, size, pool, weight, needs, team, health, out var keep);
 
 			// A806 (review): smaller than the board's size only where measured not endangered - unmeasured, the full size.
 			if (picks.Count < size && TeamEndangered(board, picks, CrucibleBoard.RecommendedRank(board), health) != false)
@@ -1028,10 +1049,92 @@ public partial class BeastmasterRotation
 
 			bestPoints = total;
 			best = new GambitPick(picks, kin, $"\"{name}\": a team of only {kin}, {points} points - it hits every weakness the mixed "
-				+ $"team hits, heals or protects as much and interrupts where that one does. {sizeNote}");
+				+ $"team hits, heals or protects as much and holds the kin the board asks for where that one does. {sizeNote}");
 		}
 
 		return best;
+
+		bool RolesOfOtherKin(BeastmasterKinType kin)
+		{
+			foreach (var held in roleKins)
+			{
+				if (held != kin)
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
+	}
+
+	// K7 (A971): the kin a board asks for, first the one most of its enemies name - from BossModReborn's preferred kinships of
+	// its opponents (each with the mechanic it answers), and a Soulkin where RSR saw an enemy of the board cast interruptibly.
+	internal sealed class KinNeeds
+	{
+		internal static readonly KinNeeds None = new([], []);
+
+		internal KinNeeds(List<BeastmasterKinType> kins, Dictionary<BeastmasterKinType, string> reasons)
+		{
+			Kins = kins;
+			Reasons = reasons;
+		}
+
+		/// <summary>The kin asked for, in their order.</summary>
+		internal IReadOnlyList<BeastmasterKinType> Kins { get; }
+
+		/// <summary>Why, per kin: the mechanics BossModReborn names, or the interruptible casts RSR saw.</summary>
+		internal IReadOnlyDictionary<BeastmasterKinType, string> Reasons { get; }
+
+		internal bool Asks(BeastmasterKinType kin) => kin != BeastmasterKinType.None && Reasons.ContainsKey(kin);
+
+		internal static KinNeeds Of(uint board, bool interruptibleSeen)
+		{
+			var count = new Dictionary<BeastmasterKinType, int>();
+			var reasons = new Dictionary<BeastmasterKinType, List<string>>();
+			var content = CrucibleBoard.ContentOf(board);
+			foreach (var opponent in DataCenter.BMRCrucibleOpponents)
+			{
+				if (content == 0 || opponent.GroupID != content || opponent.Kinships == null)
+				{
+					continue;
+				}
+
+				foreach (var kinship in opponent.Kinships)
+				{
+					var kin = (BeastmasterKinType)kinship.Kinship;
+					if (kin is BeastmasterKinType.None || !Enum.IsDefined(kin))
+					{
+						continue;
+					}
+
+					count[kin] = count.GetValueOrDefault(kin) + 1;
+					if (!reasons.TryGetValue(kin, out var list))
+					{
+						reasons[kin] = list = [];
+					}
+
+					list.Add($"{opponent.Opponent}: {kinship.Reason}");
+				}
+			}
+
+			if (interruptibleSeen && !count.ContainsKey(BeastmasterKinType.Soulkin))
+			{
+				count[BeastmasterKinType.Soulkin] = 1;
+				reasons[BeastmasterKinType.Soulkin] = ["an enemy of this board was seen casting interruptibly"];
+			}
+
+			List<BeastmasterKinType> kins = [.. count.Keys];
+			kins.Sort((a, b) => count[a] != count[b] ? count[b].CompareTo(count[a]) : a.CompareTo(b));
+			// The window names the first mechanic and how many more ask for the kin - all of them ran to eight on a board.
+			var joined = new Dictionary<BeastmasterKinType, string>(reasons.Count);
+			foreach (var (kin, list) in reasons)
+			{
+				joined[kin] = list.Count > 1 ? $"{list[0]}; {list.Count - 1} more" : list[0];
+			}
+
+			return new KinNeeds(kins, joined);
+		}
 	}
 
 	// K7: a familiar the team recommendation weighs - what it hits, whether it heals or protects, its rank on this board.

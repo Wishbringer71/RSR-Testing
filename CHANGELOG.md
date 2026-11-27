@@ -23,6 +23,13 @@ are not reconstructed here.
 
 ## Unreleased
 
+### Removal from RotationSolver: `BlackMageRotation.PolyglotWhileCastBlocked`
+
+Upstream replaced `BLM_Default` with `BLM_Reborn`, whose movement fallback now spends Polyglot, and Foul only where it
+out-damages Xenoglossy, also when no cast can start. The protected helper `PolyglotWhileCastBlocked(out IAction? act)`
+had no caller left and is gone. A derived rotation that called it can ask `CastStartBlocked` and use `XenoglossyPvE` or
+`FoulPvE` itself; the potency comparison it made (`ActionTooltip`) is internal to the plugin.
+
 ## 7.5.8.7+wsh1
 
 ### Addition to RotationSolver: the spoils of a Crucible fight

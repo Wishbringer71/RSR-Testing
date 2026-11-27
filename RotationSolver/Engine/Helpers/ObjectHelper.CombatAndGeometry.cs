@@ -19,11 +19,11 @@ namespace RotationSolver.Engine.Helpers;
 
 public static partial class ObjectHelper
 {
+	// A788, A983 (concept 11, "Ein Toter in Bewegung, einmal je Bild"): the answer is kept for the sample, so every caller
+	// in a frame gets the same one; the sample is a fixed time, so the distance threshold does not depend on the frame rate.
+	private const long MovingSampleIntervalMs = 75;
+	private static readonly Dictionary<ulong, (long Tick, Vector3 Pos, bool IsMoving)> LastPositions = [];
 
-
-	// A788 (concept 11, "Ein Toter in Bewegung, einmal je Bild"): the answer is kept for the frame, so every caller in it
-	// gets the same one; before, each call stored the position and a second call in the frame saw no movement.
-	private static readonly Dictionary<ulong, (Vector3 Position, long Tick, bool Moving)> LastPositions = [];
 	internal static bool IsTargetMoving(this IBattleChara battleChara)
 	{
 		if (battleChara == null)
@@ -39,21 +39,20 @@ public static partial class ObjectHelper
 		var id = battleChara.GameObjectId;
 		var currentPos = battleChara.Position;
 		var now = Environment.TickCount64;
-		if (LastPositions.TryGetValue(id, out var last))
+		if (LastPositions.TryGetValue(id, out var entry))
 		{
-			if (now - last.Tick < DataCenter.FrameCacheMs)
+			if (now - entry.Tick < MovingSampleIntervalMs)
 			{
-				return last.Moving;
+				return entry.IsMoving;
 			}
 
-			var lastPos = last.Position;
-			var isMoving = Vector3.Distance(currentPos, lastPos) > 0.01f;
-			LastPositions[id] = (currentPos, now, isMoving);
+			var isMoving = Vector3.Distance(currentPos, entry.Pos) > 0.01f;
+			LastPositions[id] = (now, currentPos, isMoving);
 			return isMoving;
 		}
 		else
 		{
-			LastPositions[id] = (currentPos, now, false);
+			LastPositions[id] = (now, currentPos, false);
 			return false;
 		}
 	}
@@ -164,6 +163,15 @@ public static partial class ObjectHelper
 	private static readonly ConcurrentDictionary<ulong, DateTime> _aliveStartTimes = [];
 	private static readonly ConcurrentDictionary<ulong, DateTime> _deadStartTimes = [];
 
+	internal static void ClearTrackingCaches()
+	{
+		LastPositions.Clear();
+		_aliveStartTimes.Clear();
+		_deadStartTimes.Clear();
+		_healthRatioCache.Clear();
+		_losCache.Clear();
+	}
+
 	internal static float TimeAlive(this IBattleChara? battleChara)
 	{
 		if (battleChara == null)
@@ -177,6 +185,11 @@ public static partial class ObjectHelper
 			return 0;
 		}
 
+		if (_aliveStartTimes.Count > 4096)
+		{
+			_aliveStartTimes.Clear();
+		}
+
 		return SecondsSinceFirstSeen(_aliveStartTimes, battleChara.GameObjectId);
 	}
 
@@ -187,10 +200,15 @@ public static partial class ObjectHelper
 			return float.NaN;
 		}
 
-		if (!battleChara.IsDead)
+		if (!battleChara.IsDead || Svc.Condition[ConditionFlag.BetweenAreas])
 		{
 			_ = _deadStartTimes.TryRemove(battleChara.GameObjectId, out _);
 			return 0;
+		}
+
+		if (_deadStartTimes.Count > 4096)
+		{
+			_deadStartTimes.Clear();
 		}
 
 		return SecondsSinceFirstSeen(_deadStartTimes, battleChara.GameObjectId);
@@ -210,11 +228,15 @@ public static partial class ObjectHelper
 		}
 
 		var now = DateTime.Now;
-		foreach ((var id, var time) in DataCenter.AttackedTargets)
+		var targetId = battleChara.GameObjectId;
+		lock (DataCenter._attackedTargetsLock)
 		{
-			if (id == battleChara.GameObjectId)
+			foreach ((var id, var time) in DataCenter.AttackedTargets)
 			{
-				return now - time >= TimeSpan.FromSeconds(1);
+				if (id == targetId)
+				{
+					return now - time >= TimeSpan.FromSeconds(1);
+				}
 			}
 		}
 		return false;
@@ -299,7 +321,13 @@ public static partial class ObjectHelper
 	private static unsafe bool Raycast(Vector3 origin, Vector3 direction, float maxDistance, out Vector3 point)
 	{
 		point = default;
-		var module = Framework.Instance()->BGCollisionModule;
+		var framework = Framework.Instance();
+		if (framework == null)
+		{
+			return false;
+		}
+
+		var module = framework->BGCollisionModule;
 		if (module == null)
 		{
 			return false;
@@ -513,7 +541,7 @@ public static partial class ObjectHelper
 		}
 
 		double dotProduct = Vector3.Dot(vec1, vec2);
-		return Math.Acos(dotProduct / lengthProduct);
+		return Math.Acos(Math.Clamp(dotProduct / lengthProduct, -1.0, 1.0));
 	}
 
 	/// <summary>

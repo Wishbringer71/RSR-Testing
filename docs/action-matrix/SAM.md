@@ -1,6 +1,6 @@
 # SAM — Abhängigkeitsmatrix
 
-Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-07; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
+Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-21; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `SamuraiRotation`
 - Rotation: `RotationSolver/Rotations/Melee/Samurai/SAM_Reborn.cs`
@@ -106,15 +106,24 @@ direkt: 43 · nur gelesen: 2 · über andere Aktion: 1
 | Hagakure | Regel prüft | Midare Setsugekka |
 | Higanbana | Regel sperrt vorher | Ogi Namikiri |
 | Hissatsu: Guren | Regel prüft | Hissatsu: Senei |
+| Hissatsu: Guren | Regel prüft | Hissatsu: Shinten |
 | Hissatsu: Guren | Regel prüft | Ikishoten |
 | Hissatsu: Guren | Regel sperrt vorher | Tendo Kaeshi Setsugekka |
+| Hissatsu: Guren | Regel prüft | Zanshin |
+| Hissatsu: Kyuten | Regel prüft | Hissatsu: Shinten |
 | Hissatsu: Kyuten | Regel prüft | Ikishoten |
 | Hissatsu: Kyuten | Regel sperrt vorher | Tendo Kaeshi Setsugekka |
+| Hissatsu: Kyuten | Regel prüft | Zanshin |
+| Hissatsu: Senei | Regel prüft | Hissatsu: Shinten |
 | Hissatsu: Senei | Regel prüft | Ikishoten |
 | Hissatsu: Senei | Regel sperrt vorher | Tendo Kaeshi Setsugekka |
+| Hissatsu: Senei | Regel prüft | Zanshin |
 | Hissatsu: Shinten | Regel prüft | Ikishoten |
 | Hissatsu: Shinten | Regel sperrt vorher | Tendo Kaeshi Setsugekka |
+| Hissatsu: Shinten | Regel prüft | Zanshin |
+| Ikishoten | Regel prüft | Hissatsu: Shinten |
 | Ikishoten | Regel sperrt vorher | Tendo Kaeshi Setsugekka |
+| Ikishoten | Regel prüft | Zanshin |
 | Jinpu | ComboIds | Gyofu |
 | Jinpu | ComboIds | Hakaze |
 | Kaeshi: Goken | StatusNeed TsubamegaeshiReady | Status TsubamegaeshiReady |
@@ -122,7 +131,6 @@ direkt: 43 · nur gelesen: 2 · über andere Aktion: 1
 | Kasha | ComboIds | Shifu |
 | Mangetsu | ComboIds | Fuko |
 | Mangetsu | Regel prüft | Oka |
-| Meikyo Shisui | Regel prüft | Higanbana |
 | Midare Setsugekka | Regel prüft | Hagakure |
 | Ogi Namikiri | StatusNeed OgiNamikiriReady | Ikishoten |
 | Oka | ComboIds | Fuko |

@@ -29,20 +29,8 @@ public partial struct ActionTargetInfo
 			return null;
 		}
 
-		if (Range == 0 && EffectRange == 0)
-		{
-			// A fixed dash has no target to choose and lands here; its landing point is checked on this path or not at
-			// all - every other check sits behind it, and until A498 no fixed dash was ever checked in combat.
-			if (action.Setting.SpecialType is SpecialActionType.FixedDistanceMoveForward or SpecialActionType.FixedDistanceMoveBackward
-				&& ShouldCheckMoveSafety() && !CheckMovementSafety(Player.Object.Position))
-			{
-				return null;
-			}
-
-			return new TargetResult(Player.Object, [], Player.Object.Position);
-		}
-
-		if (action.Setting.SpecialType == SpecialActionType.ObjectBasedMovement)
+		var specialType = action.Setting.SpecialType;
+		if (specialType == SpecialActionType.ObjectBasedMovement)
 		{
 			if (ShouldCheckMoveSafety() && action.Setting.ObjectBasedMovementObjectOID != 0)
 			{
@@ -58,6 +46,19 @@ public partial struct ActionTargetInfo
 
 				return new TargetResult(Player.Object, [], position);
 			}
+		}
+
+		if (specialType is SpecialActionType.FixedDistanceMoveForward or SpecialActionType.FixedDistanceMoveBackward)
+		{
+			if (ShouldCheckMoveSafety() && !CheckMovementSafety(Player.Object.Position))
+			{
+				return null;
+			}
+		}
+
+		if (Range == 0 && EffectRange == 0)
+		{
+			return new TargetResult(Player.Object, [], Player.Object.Position);
 		}
 
 		var type = action.Setting.TargetType;
@@ -78,13 +79,27 @@ public partial struct ActionTargetInfo
 
 			var selfAffects = GetCanAffects(skipStatusProvideCheck, skipTargetStatusNeedCheck, type, targetOverride);
 			selfAffects = FilterAffectsByFacing(selfAffects);
+			// Upstream c79f584a5: each enemy the area reaches is asked as a target would be - the action's own check, the
+			// rotation's filter, the minimum HP setting -, and only those count.
+			var config = action.Config;
+			List<IBattleChara> filteredAffects = [];
+			foreach (var t in selfAffects)
+			{
+				if (action.Setting.CanTarget(t)
+					&& (targetFilter == null || targetFilter(t))
+					&& (!config.MinHPFeature || t.GetHealthRatio() > config.MinHPPercent))
+				{
+					filteredAffects.Add(t);
+				}
+			}
+
 			// "Don't pull new enemies with AoE" holds for an area around the player as for any other (concept 03, A826).
-			if (selfAffects.Count < Math.Max(1, required) || HitsUntouchable(Player.Object) || PullsAround(Player.Object, true))
+			if (filteredAffects.Count < Math.Max(1, required) || HitsUntouchable(Player.Object) || PullsAround(Player.Object, true))
 			{
 				return null;
 			}
 
-			return new TargetResult(Player.Object, [.. selfAffects], Player.Object.Position);
+			return new TargetResult(Player.Object, [.. filteredAffects], Player.Object.Position);
 		}
 
 		// The friendly counterpart: an area heal centred on the caster (Medica, Helios, Succor, Lux
@@ -152,6 +167,16 @@ public partial struct ActionTargetInfo
 		IEnumerable<IBattleChara> canTargets = GetCanTargets(skipStatusProvideCheck, skipTargetStatusNeedCheck, type, targetOverride, targetFilter);
 		var canAffects = GetCanAffects(skipStatusProvideCheck, skipTargetStatusNeedCheck, type, targetOverride);
 
+		// Concept 18, "Welches Ziel ein Sprung nimmt" (A961): a leap onto the target picks among those within "Only use
+		// damaging gap closers within this distance" whenever one stands there, before the choice by targets hit. The
+		// targeting order alone took the dummy with the most HP, 6.7 or 14.8 yalms off, the rotation's check refused the
+		// leap there, and Stardiver missed 9 of 11 windows while the Dragoon stood in his own dummy's hitbox. With none
+		// within, all stay: a rotation's switch for leaps at any range and its own check after CanUse keep their say.
+		if (action.Setting.SpecialType == SpecialActionType.HostileMovingAttack)
+		{
+			canTargets = WithinGapCloserBound(canTargets, (ActionID)action.ID);
+		}
+
 		// A Walking Dead bearer who is carried by his own attacks is supported with a HoT only, the
 		// owner's rule (concept 09): a heal action that grants no HoT does not take him as its target
 		// until StatusHelper.WalkingDeadCarriedBySelfHeal releases him. Here rather than in
@@ -174,7 +199,7 @@ public partial struct ActionTargetInfo
 
 		if (RuleTargetId != 0)
 		{
-			return FindCommandObjectTarget(RuleTargetId, canAffects, skipStatusProvideCheck, skipTargetStatusNeedCheck);
+			return FindCommandObjectTarget(RuleTargetId, canAffects, skipStatusProvideCheck, skipTargetStatusNeedCheck, targetFilter);
 		}
 
 		var commandTarget = DataCenter.GetCommandTarget(action);
@@ -186,7 +211,7 @@ public partial struct ActionTargetInfo
 
 		if (IsTargetArea)
 		{
-			return FindTargetArea(canTargets, canAffects, Range, Player.Object, targetOverride);
+			return FindTargetArea(canTargets, canAffects, Range, Player.Object, targetOverride, skipAoeCheck);
 		}
 
 		List<IBattleChara> targetsList = [.. GetMostCanTargetObjects(canTargets, canAffects, skipAoeCheck ? 0 : action.Config.AoeCount)];
@@ -248,7 +273,7 @@ public partial struct ActionTargetInfo
 	}
 
 	private readonly TargetResult? FindTargetArea(IEnumerable<IBattleChara> canTargets, IEnumerable<IBattleChara> canAffects,
-	float range, IPlayerCharacter player, TargetType targetOverride)
+	float range, IPlayerCharacter player, TargetType targetOverride, bool skipAoeCheck)
 	{
 		if (player == null || canTargets == null || canAffects == null)
 		{
@@ -281,7 +306,7 @@ public partial struct ActionTargetInfo
 			}
 			else
 			{
-				return FindTargetAreaHostile(canTargets, canAffects, action.Config.AoeCount, targetOverride);
+				return FindTargetAreaHostile(canTargets, canAffects, skipAoeCheck ? 0 : action.Config.AoeCount, targetOverride);
 			}
 		}
 	}
@@ -353,6 +378,11 @@ public partial struct ActionTargetInfo
 					}
 
 					var camera = cameraManager->CurrentCamera;
+					if (camera == null)
+					{
+						return null;
+					}
+
 					var tar = camera->LookAtVector - camera->Object.Position;
 					tar.Y = 0;
 					var length = ((Vector3)tar).Length();
@@ -488,8 +518,8 @@ public partial struct ActionTargetInfo
 				// The game moves the character along its facing by the distance the effect text states ("Quickly
 				// dash 15 yalms forward"). BossModReborn's Hints.IsFixedDashSafe takes that distance and the
 				// direction and computes the landing point from its own copy of the player's position and facing
-				// (A313, A971). Without a known distance there is nothing to measure: refused while BossModReborn
-				// could answer, allowed without it.
+				// (A313, A971); RSR computes the same point for its own floor check. Without a known distance there
+				// is nothing to measure: refused while BossModReborn could answer, allowed without it.
 				var distance = action.Setting.BackstepDistance;
 				if (distance <= 0f)
 				{
@@ -497,8 +527,13 @@ public partial struct ActionTargetInfo
 						"the action's distance is not known, so its landing point is not either", false);
 				}
 
-				return (DataCenter.IsFixedDashSafe(distance, specialType == SpecialActionType.FixedDistanceMoveBackward),
-					"the landing point is in a danger zone", true);
+				var facing = Player.Object.Rotation;
+				var backwards = specialType == SpecialActionType.FixedDistanceMoveBackward;
+				var along = backwards ? -distance : distance;
+				var landingPoint = new Vector3(playerPos.X + (MathF.Sin(facing) * along), playerPos.Y,
+					playerPos.Z + (MathF.Cos(facing) * along));
+				return WithoutFloor(landingPoint, distance)
+					?? (DataCenter.IsFixedDashSafe(distance, backwards), "the landing point is in a danger zone", true);
 			}
 
 			case SpecialActionType.HostileMovingForward:
@@ -542,8 +577,8 @@ public partial struct ActionTargetInfo
 
 			case SpecialActionType.GroundTargetMove:
 				// The spot the area-move logic placed (FindTargetAreaMove) is where the move ends.
-				return (DataCenter.IsDashSafe(playerPos, destination),
-					"the way to the chosen spot crosses a danger zone", true);
+				return WithoutFloor(destination, Vector3.Distance(playerPos, destination))
+					?? (DataCenter.IsDashSafe(playerPos, destination), "the way to the chosen spot crosses a danger zone", true);
 
 			case SpecialActionType.HostileAttackBackstep:
 				// The attack itself does not move the player towards the target; the backstep carries
@@ -563,9 +598,10 @@ public partial struct ActionTargetInfo
 				}
 
 				var landing = playerPos + (away / length * action.Setting.BackstepDistance);
-				return DataCenter.IsDashSafe(playerPos, landing)
-					? (true, string.Empty, true)
-					: (false, $"the backstep from {target.Name} lands in a danger zone", true);
+				return WithoutFloor(landing, action.Setting.BackstepDistance)
+					?? (DataCenter.IsDashSafe(playerPos, landing)
+						? (true, string.Empty, true)
+						: (false, $"the backstep from {target.Name} lands in a danger zone", true));
 
 			default:
 				return (true, string.Empty, false);
@@ -607,6 +643,9 @@ public partial struct ActionTargetInfo
 		// Kept apart: a refusal without a target can repeat every frame (FindTargetAreaMove, TODO) and
 		// would otherwise hide the refusal of a dash that was actually measured.
 		var refusal = new DataCenter.MoveSafetyRefusal(action.Name, why, DateTime.Now);
+
+		TraceRefusal(action.Name, why);
+
 		if (measured)
 		{
 			DataCenter.LastMoveSafetyRefusal = refusal;
@@ -926,7 +965,7 @@ public partial struct ActionTargetInfo
 			var toTarget = t.Position - playerPos;
 			toTarget.Y = 0;
 			var dist = toTarget.Length();
-			if (dist <= 0.001f)
+			if (dist <= 0.001f && castType != CastType.Donut)
 			{
 				result.Add(t);
 				continue;
@@ -959,7 +998,7 @@ public partial struct ActionTargetInfo
 			else if (castType == CastType.Donut)
 			{
 				var innerRadius = action.Action.XAxisModifier > 0 ? action.Action.XAxisModifier : 8f;
-				var d = dist - t.HitboxRadius;
+				var d = dist + t.HitboxRadius;
 				if (d >= innerRadius)
 				{
 					result.Add(t);

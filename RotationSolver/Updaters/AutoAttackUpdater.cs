@@ -120,7 +120,7 @@ namespace RotationSolver.Updaters
 			var prevent = false;
 			try
 			{
-				prevent = value && Player.Available && DataCenter.IsActivated() && PlayerHasNoCastingStatus();
+				prevent = value && Player.Available && DataCenter.State && PlayerHasNoCastingStatus();
 				if (prevent)
 				{
 					PluginLog.Debug("[AutoAttackUpdater] Prevented auto attack activation due to NoCastingStatus.");

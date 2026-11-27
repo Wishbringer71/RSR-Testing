@@ -42,10 +42,11 @@ public sealed partial class RotationSolverPlugin : IAsyncDalamudPlugin
 	private static readonly Random _random = new();
 
 	internal static IPCProvider IPCProvider { get; private set; } = null!;
+	private static volatile bool _disposed;
 
 	public RotationSolverPlugin(IDalamudPluginInterface pluginInterface)
 	{
-		ECommonsMain.Init(pluginInterface, this, ECommons.Module.DalamudReflector, ECommons.Module.ObjectFunctions);
+		ECommonsMain.Init(pluginInterface, this, ECommons.Module.DalamudReflector, ECommons.Module.ObjectFunctions, ECommons.Module.SplatoonAPI);
 
 		M3.ElementBaseline = 0.75f;
 		M3.Initialize(pluginInterface, Service.Config);
@@ -109,6 +110,7 @@ public sealed partial class RotationSolverPlugin : IAsyncDalamudPlugin
 
 	public async Task LoadAsync(CancellationToken cancellationToken)
 	{
+		_disposed = false;
 		var textureWarmupTask = Svc.Framework.Run(() =>
 		{
 			_ = ThreadLoadImageHandler.TryGetIconTextureWrap(0, true, out _);
@@ -161,32 +163,43 @@ public sealed partial class RotationSolverPlugin : IAsyncDalamudPlugin
 			PluginLog.Warning("Texture warmup was canceled; continuing plugin load.");
 		}
 
-		await Svc.Framework.Run(() =>
+		try
 		{
-			ExceptionTrace.Enable(); // A798: every exception in RSR's code reported once per place, caught or not
+			await Svc.Framework.Run(() =>
+			{
+				if (cancellationToken.IsCancellationRequested || _disposed)
+				{
+					return;
+				}
 
-			MajorUpdater.Enable();
-			AutoAttackUpdater.Enable();
-			NoFallDamageUpdater.Enable();
-			Watcher.Enable();
-			ActionQueueManager.Enable();
-			ActionManagerEx.Enable();
-			BMRPlanUpdater.Enable();
-			ActionContextMenu.Init();
-			HotbarHighlightManager.Init();
-			BestiaryTrace.Enable();
-			CrucibleWindowTrace.Enable();
-			// A739 (concept 24): the core compiled ahead, off the game's thread, before the first fight calls it.
-			WarmUp.Core();
+				ExceptionTrace.Enable(); // A798: every exception in RSR's code reported once per place, caught or not
 
-			Svc.DutyState.DutyStarted += DutyState_DutyStarted;
-			Svc.DutyState.DutyWiped += DutyState_DutyWiped;
-			Svc.DutyState.DutyCompleted += DutyState_DutyCompleted;
-			Svc.ClientState.TerritoryChanged += ClientState_TerritoryChanged;
-			ClientState_TerritoryChanged(Svc.ClientState.TerritoryType);
+				MajorUpdater.Enable();
+				AutoAttackUpdater.Enable();
+				NoFallDamageUpdater.Enable();
+				Watcher.Enable();
+				ActionQueueManager.Enable();
+				ActionManagerEx.Enable();
+				BMRPlanUpdater.Enable();
+				ActionContextMenu.Init();
+				HotbarHighlightManager.Init();
+				BestiaryTrace.Enable();
+				CrucibleWindowTrace.Enable();
+				// A739 (concept 24): the core compiled ahead, off the game's thread, before the first fight calls it.
+				WarmUp.Core();
 
-			ChangeUITranslation();
-		}, CancellationToken.None);
+				Svc.DutyState.DutyStarted += DutyState_DutyStarted;
+				Svc.DutyState.DutyWiped += DutyState_DutyWiped;
+				Svc.DutyState.DutyCompleted += DutyState_DutyCompleted;
+				Svc.ClientState.TerritoryChanged += ClientState_TerritoryChanged;
+				ClientState_TerritoryChanged(Svc.ClientState.TerritoryType);
+
+				ChangeUITranslation();
+			}, cancellationToken);
+		}
+		catch (OperationCanceledException)
+		{
+		}
 	}
 
 	private static void BackupUnreadableConfig()
@@ -210,6 +223,11 @@ public sealed partial class RotationSolverPlugin : IAsyncDalamudPlugin
 		var delay = TimeSpan.FromSeconds(_random.Next(4, 6));
 		_ = Svc.Framework.RunOnTick(() =>
 		{
+			if (_disposed)
+			{
+				return;
+			}
+
 			_ = Service.Config.DutyEnd.AddMacro();
 
 			if (Service.Config.AutoOffWhenDutyCompleted)
@@ -224,6 +242,11 @@ public sealed partial class RotationSolverPlugin : IAsyncDalamudPlugin
 		DataCenter.ResetAllRecords();
 		DataCenter.ResetHealMeasurements();
 		PositionalWatch.AreaChanged();
+		PositionalMove.AreaChanged();
+		ArenaEdgeWatch.AreaChanged();
+		ActionTargetInfo.AreaChanged();
+		DynamicRotation.AreaChanged();
+		MacroUpdater.Clear();
 
 		if (id == 0)
 		{
@@ -231,7 +254,12 @@ public sealed partial class RotationSolverPlugin : IAsyncDalamudPlugin
 			return;
 		}
 
-		var territory = Service.GetSheet<TerritoryType>().GetRow(id);
+		if (!Service.GetSheet<TerritoryType>().TryGetRow(id, out var territory))
+		{
+			PluginLog.Warning($"Unknown territory id: {id}");
+			return;
+		}
+
 		DataCenter.Territory = new TerritoryInfo(territory);
 
 		// Each area in the trace, and the file open again if it had failed since (A417).
@@ -433,6 +461,7 @@ public sealed partial class RotationSolverPlugin : IAsyncDalamudPlugin
 	public async ValueTask DisposeAsync()
 	{
 		ExceptionTrace.Disable();
+		_disposed = true;
 		MajorUpdater.Dispose();
 		WarmUp.Dispose();
 
@@ -454,9 +483,13 @@ public sealed partial class RotationSolverPlugin : IAsyncDalamudPlugin
 		ActionQueueManager.Disable();
 		ActionManagerEx.DisposeInstance();
 		BMRPlanUpdater.Disable();
+		// A928: BossMod's movement preset does not stay on without RSR.
+		PositionalMove.Dispose();
 		ActionContextMenu.Dispose();
 		BestiaryTrace.Disable();
 		CrucibleWindowTrace.Disable();
+		IPCProvider?.Dispose();
+		ActionUpdater.Dispose();
 		Svc.PluginInterface.UiBuilder.OpenConfigUi -= OnOpenConfigUi;
 		Svc.PluginInterface.UiBuilder.OpenMainUi -= OnOpenConfigUi;
 		Svc.PluginInterface.UiBuilder.Draw -= OnDraw;
@@ -480,6 +513,7 @@ public sealed partial class RotationSolverPlugin : IAsyncDalamudPlugin
 		BMRInfo_IPCSubscriber.Dispose();
 		BMRTimeline_IPCSubscriber.Dispose();
 		BMRPlan_IPCSubscriber.Dispose();
+		Navmesh_IPCSubscriber.Dispose();
 		BMRCrucible_IPCSubscriber.Dispose();
 		Wrath_IPCSubscriber.Dispose();
 

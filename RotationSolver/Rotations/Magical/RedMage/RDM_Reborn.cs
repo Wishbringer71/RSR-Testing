@@ -92,13 +92,7 @@ public sealed partial class RDM_Reborn : RedMageRotation
 	[RotationDesc(ActionID.AddlePvE, ActionID.MagickBarrierPvE)]
 	protected override bool DefenseAreaAbility(IAction nextGCD, out IAction? act)
 	{
-		if (ShouldSustainMitigationDebuff(StatusID.Addle)
-			&& AddlePvE.CanUse(out act, skipStatusProvideCheck: true))
-		{
-			return true;
-		}
-
-		if (AddlePvE.CanUse(out act))
+		if (UseAddle(out act))
 		{
 			return true;
 		}

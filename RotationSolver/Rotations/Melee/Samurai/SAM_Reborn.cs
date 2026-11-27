@@ -131,8 +131,22 @@ public sealed partial class SAM_Reborn : SamuraiRotation
 		var isTargetBoss = CurrentTarget?.IsBossFromTTK() ?? false;
 		var isTargetDying = CurrentTarget?.IsDying() ?? false;
 
+		// Concept 14, "Samurai: Meikyo Shisui und Higanbana" (A962): The Balance's use. Meikyo no longer waits while Higanbana
+		// falls into its refresh window ("Higanbana refresh", GCDs) - Higanbana goes under Meikyo, Iaijutsu takes no stack.
+		// And when Higanbana is due while the Sen are not one and no combo is begun, Meikyo brings the Sen, the last charge
+		// included (The Balance calls it its "15 second rule"; no time is fixed here, the window is the refresh setting).
+		var higanbanaOn = CurrentTarget?.HasStatus(true, StatusID.Higanbana) ?? false;
+		var higanbanaDue = !higanbanaOn
+			|| (CurrentTarget?.WillStatusEndGCD(HiganbanaPvE.Config.StatusRefreshGcdCount, 0, true, StatusID.Higanbana) ?? false);
+		var senForHiganbanaLate = higanbanaDue && SenCount != 1 && !IsLastGCD(true, HakazePvE, GyofuPvE, JinpuPvE, ShifuPvE)
+			&& (!HasFugetsuAndFuka || higanbanaOn);
+		if (senForHiganbanaLate && HasHostilesInRange && MeikyoShisuiPvE.CanUse(out act, usedUp: true))
+		{
+			return true;
+		}
+
 		if (MeikyoShisuiPvE.CanUse(out act, usedUp: !EnhancedMeikyoShisuiTrait.EnoughLevel || (EnhancedMeikyoShisuiTrait.EnoughLevel && MeikyoShisuiPvE.Cooldown.WillHaveXChargesGCD(2, 1)) || TsubamegaeshiActionReady)
-			&& HasHostilesInRange && (!HasFugetsuAndFuka || (isTargetBoss && isTargetDying) || (CurrentTarget?.HasStatus(true, StatusID.Higanbana) ?? false) && !(CurrentTarget?.WillStatusEndGCD(HiganbanaPvE.Config.StatusRefreshGcdCount, 0, true, StatusID.Higanbana) ?? false)))
+			&& HasHostilesInRange && (!HasFugetsuAndFuka || (isTargetBoss && isTargetDying) || higanbanaOn))
 		{
 			if ((!EnhancedHissatsuTrait.EnoughLevel && SenCount == 0 && !TsubamegaeshiActionReady) || !HasFugetsuAndFuka)
 			{
@@ -158,7 +172,10 @@ public sealed partial class SAM_Reborn : SamuraiRotation
 			}
 		}
 
-		if (!HasZanshinReady)
+		// Concept 14, "Samurai: Kenki-Verklemmung" (A925): with Zanshin ready the spenders still go while Zanshin's cost
+		// stays after them. Held entirely, Kenki climbed to 100 whenever Zanshin could not go, every combo weaponskill
+		// refused itself against the overflow, and no GCD came until Zanshin Ready ran out.
+		if (!HasZanshinReady || Kenki >= ZanshinPvE.Action.PrimaryCostValue + HissatsuShintenPvE.Action.PrimaryCostValue)
 		{
 			if (!CombatElapsedLessGCD(2) && Kenki <= 50 && IkishotenPvE.CanUse(out act))
 			{
@@ -230,7 +247,7 @@ public sealed partial class SAM_Reborn : SamuraiRotation
 			}
 		}
 
-		if ((!HiganbanaTargets || NumberOfAllHostilesInRange < 2) && HasFugetsuAndFuka && !WillFugetsuEnd && !WillFukaEnd && !HasMeikyoShisui && !MidareSetsugekkaReady)
+		if ((!HiganbanaTargets || NumberOfAllHostilesInRange < 2) && HasFugetsuAndFuka && !WillFugetsuEnd && !WillFukaEnd && !MidareSetsugekkaReady)
 		{
 			if (HiganbanaPvE.CanUse(out act, skipComboCheck: true, skipTTKCheck: isTargetBoss || IsInHighEndDuty))
 			{

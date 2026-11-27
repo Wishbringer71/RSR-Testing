@@ -16,6 +16,7 @@ internal static class MovingUpdater
 	{
 		if (Player.Object == null)
 		{
+			Service.CanMove = true;
 			return;
 		}
 
@@ -52,20 +53,28 @@ internal static class MovingUpdater
 		}
 
 		ActionID action;
+		bool checkCastTime;
 		if (DateTime.Now - RSCommands._lastUsedTime < TimeSpan.FromMilliseconds(100f))
 		{
 			action = (ActionID)RSCommands._lastActionID;
+			checkCastTime = RSCommands._lastActionIsBaseAction;
 		}
 		else if (doNextAction)
 		{
 			action = (ActionID)(ActionUpdater.NextAction?.AdjustedID ?? 0);
+			checkCastTime = ActionUpdater.NextAction is IBaseAction;
 		}
 		else
 		{
 			action = 0;
+			checkCastTime = false;
 		}
 
-		var castTime = action.GetCastTime();
+		// Upstream c79f584a5: only an action has a cast to read - an item id read as an action row named a cast it does not have -,
+		// and not one the game lets run while moving.
+		var castTime = action != 0 && checkCastTime && Array.IndexOf(ActionBasicInfo.ActionsNoNeedCasting, (uint)action) < 0
+			? action.GetCastTime()
+			: 0f;
 		if (castTime > 0f)
 		{
 			yields = MovementLock.PreCastYields(castTime, out reason);

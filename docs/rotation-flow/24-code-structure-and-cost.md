@@ -231,6 +231,27 @@ noch (17.11.2026). Aufwand ein Textvergleich je Datei.
 *Nicht angewandt:* das Fensterverhalten der Infofenster – zwei der drei Fenster gehören Upstream, und eine gemeinsame
 Hilfe nur im Fork-Fenster spart nichts.
 
+**Eine Zielbedingung je Aufruf geht als Zielfilter, nie als getauschte Einstellung** (A971). `CanUse` nimmt seit
+Upstream 7.5.8.11 (38afb1730, 21.11.2026) einen Filter, den die Zielwahl zusätzlich zu `CanTarget` der Aktion fragt,
+für diesen einen Aufruf. Vorher tauschten Nascent Flash des Kriegers, die Barriere des Dunkelritters auf das
+schwächste Mitglied unter der Schwelle (`CanUseOnLowestBelow`), der Schlaf auf den gewählten Gegner
+(`CustomRotation_GCD.HitResponse`) und die Hilfe für das Ziel eines Tankbusters (`HelpTankbusterTarget`) `CanTarget` der
+geteilten Einstellung aus und stellten es im `finally` zurück. Im Kampf wählt der Filter dieselben Ziele; anders wird
+der Bau: Keine geteilte Einstellung trägt während eines Aufrufs die Bedingung eines Aufrufers, und vier Stellen
+schreiben den Tausch nicht mehr selbst, die Upstream an seiner eigenen (Nascent Flash) schon ersetzt hat und die sonst
+bei jedem Merge gegen seine Fassung stünden. Einen Leser, der den getauschten Wert im Kampf falsch las, gab es nicht
+(alles läuft im Frame nacheinander). Der Filter wirkt auf jedem Weg, der
+`CanTarget` fragt: auf den gewöhnlichen Kandidaten, den Figuren, die nur Heilung besiegt, den Gegnern mit Stacheln,
+einem Ziel aus dem Befehlsfenster, dem Ziel einer Regel (`RuleTargetId`) und, bei einer Flächenheilung um den Wirker, auf dem Wirker selbst. Ohne die
+beiden Fork-Wege hätte Nascent Flash mit „By danger“ (`TargetType.Heal`) eine Figur über der Schwelle wählen
+können, die der getauschte Filter ausgeschlossen hatte. Nicht als Filter: die eigene Sprungweite einer Rotation
+(Konzept 18, „Warum kein harter Filter“) – ein Filter ist so hart wie der Tausch und setzte die Schalter für Sprünge
+auf jeden Abstand außer Kraft.
+*Prüfmittel:* `check_setting_swap.py` weist jeden Tausch ab – ein Mitglied einer Einstellung gesichert, anders gesetzt
+und zurückgesetzt –, außer in den fremden Rotationen. Am Stand vor der Umstellung meldet es die vier Fork-Stellen und
+Upstreams frühere in `PhantomDefault`. Anforderung: Eine neue Regel oder ein Merge brächte den Tausch sonst unbemerkt
+zurück; er kompiliert und wählt dieselben Ziele. Aufwand ein Textvergleich je Datei.
+
 ### Fork-Code in eigenen Teildateien
 
 *Befund.* Rund 5.850 Zeilen ganzer Fork-Member stehen in fünf Dateien von Upstream. Jede Änderung von Upstream neben
@@ -450,7 +471,7 @@ trägt, ist nicht gemessen (unbelegt; Upstream nennt „drastically improved per
 hardware“ ohne Zahl).
 *Antithese 2 – das Risiko ist angekündigt und abgedeckt:* ClientStructs entfernt einen Member erst nach einer Zeit als
 Warnung. Er baut den Branch vor dem Spielen; ein entfernter Member wird dann ein Fehler beim Bauen, nicht im Kampf. Der
-Abgleich mit Upstream prüft die Referenzen gegen die laufende Dalamud-Fassung (Skill `upstream-sync`, `RefCheck`).
+Abgleich mit Upstream prüft die Referenzen gegen die laufende Dalamud-Fassung (Skill `upstream-sync`, `refscan`).
 *Antithese 3 – Logistik:* Zurück zu Dalamuds Weg hieße, Upstreams Kerndatei dauerhaft abweichend zu führen; jeder Sync
 brächte Konflikte an derselben Stelle.
 *Ergebnis:* Upstreams direkter Weg bleibt, eingeschränkt auf die zentrale Stelle: Status liest der Fork nur über
@@ -461,6 +482,19 @@ der Fork zuerst Dalamud oder ECommons, ClientStructs nur, wo es dort keinen Weg 
 bevor RSR neu erscheint; dasselbe gilt heute schon für jeden der übrigen ClientStructs-Zugriffe.
 
 ## Wie es gemessen bleibt
+
+### Referenzen fertig gebauter Bibliotheken gegen Dalamud
+
+ECommons und RebornMaterial kommen fertig gebaut, gegen die Dalamud-Fassung ihres Builds. Fehlt einer ihrer Member im
+Dalamud, das beim Spieler läuft, baut RSR trotzdem, und erst der Pfad, der den Member ruft, fällt im Spiel aus
+(`MissingMethodException`): ein Fenster, eine Regel, im Kampf. *Anforderung:* Bei jedem Sync, der ECommons,
+RebornMaterial oder die Dalamud-Fassung ändert, prüft `.github/tools/refscan` jede Referenz dieser Bibliotheken und von
+RSR selbst auf eine andere Assembly gegen die Dalamud-Bibliotheken: Name und Signatur am Typ oder an einem Basistyp,
+Weiterleitungen gefolgt. Ein Selbsttest baut zwei Fassungen einer Bibliothek, von denen die zweite eine gerufene Methode
+nicht mehr hat, und verlangt genau diesen einen Befund. Ungeprüft bleiben nur Referenzen innerhalb derselben Assembly
+und die Array-Zugriffe der Laufzeit; das Werkzeug zählt sie getrennt. Es ersetzt `RefCheck` aus Retainer-Repricer, das
+eine zweite Sitzung mit diesem Repository verlangte (A423), und ist eigener Code (A972). Nicht in der CI: Es kostet zwei
+Builds je Lauf und sagt nur nach einem solchen Sync etwas Neues (Kosten der CI, unten).
 
 ### Kosten der CI
 

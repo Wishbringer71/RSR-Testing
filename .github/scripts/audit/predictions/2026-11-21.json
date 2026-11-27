@@ -1,0 +1,9 @@
+[
+ {
+  "id": "burstwatch-leaps-listed",
+  "archive": "A960",
+  "kind": "present",
+  "situation": "combat started.*(Sauberer Stoß|Schallspitze)",
+  "match": "ready but unused over the fight: .*(Sternensturz|Wyrmodem) [0-9]+[,.][0-9] s in [0-9]+"
+ }
+]

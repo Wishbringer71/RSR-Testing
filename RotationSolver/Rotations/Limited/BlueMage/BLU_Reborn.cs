@@ -26,6 +26,10 @@ public sealed class BLU_Reborn : BlueMageRotation
 	[RotationConfig(CombatType.PvE, Name = "Use Low Chance abilities")]
 	public bool LowChance { get; set; } = false;
 
+	[RotationConfig(CombatType.PvE, Name = "Use Wild Rage for damage",
+		Tooltip = "In a fight: Wild Rage hits a pack at the HP cost its effect text states. Skipped as tank or healer, and while a hit is announced.")]
+	public bool UseWildRage { get; set; } = false;
+
 	[RotationConfig(CombatType.PvE, Name = "Moon Flute only when it is safe: not as tank or healer, no member in danger, no raidwide or tankbuster on you announced within its window",
 		Tooltip = "In a fight: Moon Flute also waits under tank or healer mimicry, while a member is or would be "
 			+ "in danger, and before an announced raidwide or tankbuster.\nOff: only its damage value decides.")]
@@ -115,14 +119,17 @@ public sealed class BLU_Reborn : BlueMageRotation
 		return base.HealSingleAbility(nextGCD, out act);
 	}
 
+	// Addle as for every caster (concept 01, "Minderung", A943).
+	[RotationDesc(ActionID.AddlePvE)]
 	protected override bool DefenseAreaAbility(IAction nextGCD, out IAction? act)
 	{
-		return base.DefenseAreaAbility(nextGCD, out act);
+		return UseAddle(out act) || base.DefenseAreaAbility(nextGCD, out act);
 	}
 
+	[RotationDesc(ActionID.AddlePvE)]
 	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
 	{
-		return base.DefenseSingleAbility(nextGCD, out act);
+		return UseAddle(out act) || base.DefenseSingleAbility(nextGCD, out act);
 	}
 
 	#endregion
@@ -356,6 +363,18 @@ public sealed class BLU_Reborn : BlueMageRotation
 			return true;
 		}
 
+		// Deep Clean turns each enemy under the own Begrimed into a stack of Regen; Peat Pelt lays Begrimed on a pack for the
+		// tank (concept 01, "Matschkuchen und Reinemachen", A942).
+		if (DeepCleanPvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		if (PeatPeltPvE.CanUse(out act) && PeatPeltOpensDeepClean(PeatPeltPvE))
+		{
+			return true;
+		}
+
 		if (GobskinSpam && GobskinPvE.CanUse(out act))
 		{
 			return true;
@@ -462,6 +481,12 @@ public sealed class BLU_Reborn : BlueMageRotation
 			return true;
 		}
 
+		// Burns until the target dies: only where its ticks pay for the cast (concept 01, "Ewige Flammen", A940).
+		if (MortalFlamePvE.CanUse(out act) && MortalFlamePays(MortalFlamePvE))
+		{
+			return true;
+		}
+
 		if (SongOfTormentPvE.CanUse(out act, skipStatusProvideCheck: true) && SongOfTormentPvE.Target.Target != null && (SongOfTormentPvE.Target.Target?.WillStatusEndGCD(3, 0, true, SongOfTormentPvE.Setting.TargetStatusProvide ?? []) ?? false))
 		{
 			if (BristlePvE.Info.IsOnSlot && StatusHelper.PlayerHasStatus(true, StatusID.Boost_1716))
@@ -515,7 +540,16 @@ public sealed class BLU_Reborn : BlueMageRotation
 			return true;
 		}
 
-		if (TheRoseOfDestructionPvE.CanUse(out act))
+		// The Rose and Ruby Dynamics take Chelonian Gate's recast: under tank mimicry not while a buster on the player is
+		// announced within it (concept 01, A946).
+		if (TheRoseOfDestructionPvE.CanUse(out act) && MayTakeGateRecast(TheRoseOfDestructionPvE))
+		{
+			return true;
+		}
+
+		// Shares its recast with the Rose, which takes it first where it is in the set; a cone for a pack only, its 2 s cast
+		// loses to Sonic Boom on one target (concept 01, "Angriffs- und Kontrollzauber", A944).
+		if (RubyDynamicsPvE.CanUse(out act) && OverSonicBoom(RubyDynamicsPvE) && MayTakeGateRecast(RubyDynamicsPvE))
 		{
 			return true;
 		}
@@ -606,12 +640,17 @@ public sealed class BLU_Reborn : BlueMageRotation
 			return true;
 		}
 
-		if (Player?.GetEffectiveHpPercent() <= 20f)
+		// The HP cost its text states for its damage: only for a player who chose damage over safety, never as tank or healer,
+		// never while a hit on a member is announced (concept 01, "Bewusst nicht", A941, A946). Its check holds HP above the cost.
+		if (UseWildRage && !IsTank && !IsHealer && !AreaDefenseDanger(out _) && WildRagePvE.CanUse(out act) && OverSonicBoom(WildRagePvE))
 		{
-			if (RevengeBlastPvE.CanUse(out act))
-			{
-				return true;
-			}
+			return true;
+		}
+
+		// Raised potency below the stated HP share, without a price: the heal GCDs ran before this (concept 01, "Rachestoß").
+		if (RevengeBlastPvE.CanUse(out act) && RaisedPotencyBeatsFiller(RevengeBlastPvE))
+		{
+			return true;
 		}
 
 		if (WhiteDeathPvE.CanUse(out act))
@@ -746,6 +785,11 @@ public sealed class BLU_Reborn : BlueMageRotation
 		}
 
 		if (PlaincrackerPvE.CanUse(out act) && OverSonicBoom(PlaincrackerPvE))
+		{
+			return true;
+		}
+
+		if (MindBlastPvE.CanUse(out act) && OverSonicBoom(MindBlastPvE))
 		{
 			return true;
 		}
@@ -1017,6 +1061,12 @@ public sealed class BLU_Reborn : BlueMageRotation
 		}
 
 		if (DragonForcePvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		// Halves one of the two kinds of damage for 10 s; which one its text does not say (concept 01, "Minderung", A943).
+		if (ForceFieldPvE.CanUse(out act, targetOverride: TargetType.Self))
 		{
 			return true;
 		}

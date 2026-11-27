@@ -55,8 +55,10 @@ public sealed partial class WAR_Reborn : WarriorRotation
 	[RotationConfig(CombatType.PvE, Name = "Bloodwhetting/Raw intuition heal threshold")]
 	public float HealIntuition { get; set; } = 0.7f;
 
-	[RotationConfig(CombatType.PvE, Name = "Use both stacks of Onslaught during burst while standing still")]
-	public bool YEETBurst { get; set; } = true;
+	// Off by default: the owner's rule (20.11.2026, A954) keeps a tank's dash for the way to the next pack.
+	[RotationConfig(CombatType.PvE, Name = "Use both stacks of Onslaught during burst while standing still",
+		Tooltip = "In a fight: on, Onslaught hits a boss for damage in your burst while you stand. Off, and against trash, its charges stay for moving to the next pack.")]
+	public bool YEETBurst { get; set; } = false;
 
 	[RotationConfig(CombatType.PvE, Name = "Use a stack of Onslaught when its about to overcap while standing still")]
 	public bool YEETCooldown { get; set; } = false;
@@ -169,7 +171,7 @@ public sealed partial class WAR_Reborn : WarriorRotation
 			return true;
 		}
 
-		if (YEETBurst && OnslaughtPvE.CanUse(out act, usedUp: IsBurstStatus) &&
+		if (YEETBurst && DashDamageTarget && OnslaughtPvE.CanUse(out act, usedUp: IsBurstStatus) &&
 		   !IsMoving &&
 		   !IsLastAction(false, OnslaughtPvE) &&
 		   !IsLastAction(false, UpheavalPvE) &&
@@ -178,7 +180,7 @@ public sealed partial class WAR_Reborn : WarriorRotation
 			return true;
 		}
 
-		if (YEETCooldown && OnslaughtPvE.CanUse(out act, usedUp: true) &&
+		if (YEETCooldown && DashDamageTarget && OnslaughtPvE.CanUse(out act, usedUp: true) &&
 		   !IsMoving &&
 		   !IsLastAction(false, OnslaughtPvE) &&
 		   OnslaughtPvE.Cooldown.WillHaveXChargesGCD(OnslaughtMax, 1) &&

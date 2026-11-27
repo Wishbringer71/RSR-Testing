@@ -359,9 +359,10 @@ jedem 10 %. Das Protokoll nennt es: „(Reprisal kept for the announced raidwide
 geht nur, solange er vor dem Snapshot beim Server ankommt; ein Bündel ist nur wählbar, wenn seine noch zu drückenden
 Glieder bis dahin hineinpassen.
 
-1. *Erkennung (Stufe „alle", zentral, `StatusHelper.PlayerAbilitiesLocked`):* ein Status, dessen Zeile im Blatt des
-   Clients `LockActions` trägt (Fähigkeitsprüfung statt Liste), oder Amnesie (Zeilen 5, 1092, 4210, über die Namen
-   des Generators aus der englischen Fassung). Die Restzeit ist die längste dieser Status; nennt keiner ein Ende, gilt
+1. *Erkennung (Stufe „alle", zentral, `StatusHelper.PlayerAbilitiesLocked`):* ein Status, der jede Aktion sperrt –
+   dieselbe Prüfung wie Upstreams Sperre der Rotation (`LocksActions`: `LockActions` im Blatt oder „unable to execute
+   actions“ im englischen Wirktext, Konzept 03, „Status, die die eigenen Aktionen sperren“, A971) –, oder Amnesie
+   (Zeilen 5, 1092, 4210, über die Namen des Generators aus der englischen Fassung). Die Restzeit ist die längste dieser Status; nennt keiner ein Ende, gilt
    sie als jetzt endend. Die Erkennung urteilt nicht.
 2. *Ablehnung unter Sperre:* wie unter der Animationssperre keine Antwort; Neuversuch im nächsten Durchlauf, für jedes
    Glied und für die Unverwundbarkeit.

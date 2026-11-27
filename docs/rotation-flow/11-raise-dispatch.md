@@ -29,7 +29,7 @@ Bedingungen schließen einander aus:
 |---|---|---|
 | `CustomRotation_GCD.RaiseSpell`, Zweig `RaisePlayerBySwift` | wählt Spontanität **nur** bei `WeaponRemain <= 0.5f` | Auswahl |
 | `RSCommands_Actions.DoAction` | verweigert **jede** Fähigkeit bei `0 < DefaultGCDRemain <= 0.5f` | Ausführung |
-| `RSCommands_Actions.cs:43` | dieselbe Sperre im Klick-Gate (`DefaultGCDRemain`) | Ausführung |
+| `RSCommands_Actions.cs:40` | dieselbe Sperre im Klick-Gate (`DefaultGCDRemain`) | Ausführung |
 | `CustomRotation.Ability`, Einschiebesperre (`WeaponRemain <= 0.5f`) | dieselbe Sperre im Fähigkeiten-Dispatcher | Auswahl |
 
 Spontanität ist eine Fähigkeit. Die beiden Fenster decken sich bis auf den einzigen Punkt
@@ -161,8 +161,12 @@ die Prüfung für ihre Begründung ein zweites Mal und schrieb deshalb „an ene
   es binnen 0,7 s nach dem Tod viermal mit „a candidate“: der Körper glitt noch.
 - *Widerruf (C195):* Das Flackern vom 13.11.2026, das A765 als Antwort von `IsEnemy` las, ist so nicht belegt. Es kann
   ebenso diese Bewegung gewesen sein. Die Behebung aus A765 bleibt, weil sie ohne Preis ist; ihr Beleg entfällt.
-- *Regel:* Die Prüfung antwortet je Bild einmal (`DataCenter.FrameCacheMs`) und vergleicht mit der Position aus einem
-  früheren Bild. `GetDeath` wertet jede Bedingung einmal aus und begründet mit demselben Wert.
+- *Regel:* Die Prüfung antwortet für ein Raster von 75 ms einmal und vergleicht mit der Position vom Beginn des Rasters
+  (Upstream c79f584a5, 26.11.2026; der Fork hielt die Antwort vorher je Bild, `DataCenter.FrameCacheMs`). Jeder Aufruf im
+  selben Bild bekommt damit dieselbe Antwort, wie A788 verlangt, und die Schwelle von 0,01 Yalm gilt für eine feste
+  Zeit statt für ein Bild: Bei 144 Bildern je Sekunde las die Fassung je Bild erst ab 1,4 Yalm/s Bewegung, das Raster ab
+  0,13 Yalm/s, unabhängig von der Bildrate. Übernommen (A983). `GetDeath` wertet jede Bedingung einmal aus und begründet
+  mit demselben Wert.
 - *Im Kampf:* Ein Toter, dessen Körper noch gleitet, ist in allen Wegen des Bildes gleich ausgeschlossen; die
   Wiederbelebung beginnt, sobald er liegt. Bisher konnte die Zielwahl ihn im selben Bild als Ziel nehmen, während die
   Gruppenliste ihn ausschloss. Die Zeile nennt den wahren Grund.
@@ -277,8 +281,20 @@ swiftcast rezzen"; A503).
     verfügbarer Sofortzauber, sonst bliebe der Rotmagier im Laufen ohne GCD.
 - *Ohne Wiederbelebung* gibt es nichts zurückzulegen: Schwarzmagier, Piktomant, jeder Job unter der Stufe seiner
   Wiederbelebung, auch synchronisiert. Die Reborn-Heiler nehmen Swiftcast nur für die Wiederbelebung.
-- *Fremde Rotationen* lesen die Rücklage nicht: `BeirutaRDM` nimmt Swiftcast für Schaden, die Beiruta-Heiler haben
-  eigene Rücklagen. Außerhalb seines Profils; erfasst, nicht geändert.
+- *Fremde Rotationen* (A936; seine Präzisierung vom 19.11.2026: bearbeitbar, wo mit dem Fork verträglich, ohne
+  inhaltliche Entscheidung von ihm). Seine Regel gilt für jeden Job, der mit Swiftcast wiederbelebt; ein Schalter für
+  anderes ist erlaubt, wenn er ihn selbst einschaltet, ab Werk aus. Gemessen:
+  - `BeirutaAST`, `BeirutaSGE`, `BeirutaWHM`: „[Movement] Use Swiftcast“ kam eingeschaltet, im Laufen auch für
+    Schadenszauber; ihre eigene Rücklage hält Swiftcast nur, solange schon jemand tot ist. Jetzt ab Werk aus; der Text
+    bleibt.
+  - `ChurinSMN`: Swiftcast auf Ruby Ruin und Ruby Outburst unterhalb von Ruby Rite kam eingeschaltet. Jetzt ab Werk aus.
+  - `BeirutaRDM`: Swiftcast ohne Schalter im Burst, für die Fenster von Fleche und Contre Sixte, im Laufen und als
+    Füller. Jetzt nur, wo die zentrale Rücklage ihn freigibt (`SwiftcastForDamage`: „Raise with Swiftcast or
+    Dualcast“ aus oder unter der Stufe von Verraise). Acceleration bleibt in allen diesen Wegen.
+  - `BeirutaSCH`: ab Werk Swiftcast nur für Wiederbelebung und im Laufen für Schilde (Deployment, Succor), Schaden nur
+    mit eigenem Schalter, ab Werk aus – verträglich, unverändert. `BeirutaPCT` wiederbelebt nicht.
+  Im Kampf: Stirbt jemand, hat der Heiler oder Rotmagier dieser Rotationen Swiftcast bereit, statt ihn für einen Glare
+  oder ein Verthunder im Laufen verbraucht zu haben; der Preis ist der Schaden dieser Sofortzauber.
 - *Verworfen:*
   - eine Sperre in der Swiftcast-Aktion selbst (`ActionCheck`): Sie fängt jeden Aufrufer, auch fremde Rotationen, sperrt
     aber auch die eingeschalteten Schadensschalter, deren Text dann etwas verspricht, das nie geschieht. Und sie müsste

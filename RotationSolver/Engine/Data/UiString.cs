@@ -136,7 +136,7 @@ namespace RotationSolver.Engine.Data
 		[Description("If target is below this percent, do not use this action")]
 		ConfigWindow_Actions_MinHPPercent,
 
-		[Description("Skip BossModReborn position-safety check for this movement action")]
+		[Description("Skip the check where this movement action lands (BossModReborn, vnavmesh)")]
 		ConfigWindow_Actions_SkipPositionSafetyCheck,
 
 		[Description("Time-to-kill threshold required for this action to be used")]

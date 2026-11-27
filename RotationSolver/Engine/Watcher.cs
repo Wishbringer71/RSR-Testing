@@ -109,6 +109,7 @@ public static partial class Watcher
 			else if (category == ActionRejectedCategory && p2 == 1 && entityId == Player.Object?.EntityId)
 			{
 				DataCenter.AddActionRejected(p3);
+				DynamicRotation.ServerRejected(p3, p1);
 				if (Service.Config.InDebug)
 				{
 					PluginLog.Debug($"[Watcher] The server rejected action {p3} (log message {p1}).");
@@ -199,6 +200,8 @@ public static partial class Watcher
 			ActionPenaltyWatch.ObserveLanding(set);
 			// A783: whether a gaze RSR turned for still harmed the player.
 			GazeWatch.ObserveLanding(set);
+			// Concept 05 (A935): a death wall's ring on a party member, the first contact with the arena's edge.
+			ArenaEdgeWatch.ObserveLanding(set);
 			// Concept 03, F, K3 (A904): the raid buffs of the other members, for when the group's next window comes.
 			GroupBurstWatch.Observe(set, playerObject.GameObjectId);
 
@@ -351,6 +354,13 @@ public static partial class Watcher
 							: DataCenter.Role != JobRole.Tank || TankbusterForecast.TookCastFor(tankbusterForPlayer != 0 ? tankbusterForPlayer : marked.RowId)
 								? ", after a tankbuster marker"
 							: ", after a tankbuster marker, no cast taken for it"));
+					// A928 (concept 02): a hit while BossMod walks the player into a positional stops the move; a raidwide
+					// reaches him anywhere and says nothing about the spot.
+					if (!partyWide)
+					{
+						PositionalMove.HitOnPlayer(marked.Name.ExtractText());
+					}
+
 					TankSwapWatch.RecordHitOnPlayer(tankbusterForPlayer != 0 ? tankbusterForPlayer : marked.RowId, marked.Name.ExtractText(),
 						source.GameObjectId, hitShare, markedForPlayer, !partyWide && OtherConfiguration.HostileCastingTank.Contains(marked.RowId),
 						StatusesAppliedTo(set, playerObject.GameObjectId));
@@ -411,6 +421,10 @@ public static partial class Watcher
 						if (knock.Speed > 0)
 						{
 							DataCenter.KnockbackFinished = DateTime.Now + TimeSpan.FromSeconds(knock.Distance / (float)knock.Speed);
+						}
+						else
+						{
+							DataCenter.KnockbackFinished = DataCenter.KnockbackStart;
 						}
 
 						if (set.Action.HasValue && Service.Config.RecordKnockbackies
@@ -863,38 +877,41 @@ public static partial class Watcher
 
 			if (attackedTargetsCount > 0)
 			{
-				foreach (var effect in set.TargetEffects)
+				lock (DataCenter._attackedTargetsLock)
 				{
-					if (!effect.GetSpecificTypeEffect(ActionEffectType.Damage, out _))
+					foreach (var effect in set.TargetEffects)
 					{
-						continue;
-					}
-
-					var targetExists = false;
-					foreach ((var id, var time) in attackedTargets)
-					{
-						if (id == effect.TargetID)
+						if (!effect.GetSpecificTypeEffect(ActionEffectType.Damage, out _))
 						{
-							targetExists = true;
-							break;
+							continue;
 						}
-					}
-					if (targetExists)
-					{
-						continue;
-					}
 
-					while (attackedTargets.Count >= attackedTargetsCount && attackedTargets.Count > 0)
-					{
-						(var id, var time) = attackedTargets.Peek();
-						if (id == effect.TargetID)
+						var targetExists = false;
+						foreach ((var id, var time) in attackedTargets)
 						{
-							break;
+							if (id == effect.TargetID)
+							{
+								targetExists = true;
+								break;
+							}
 						}
-						_ = attackedTargets.Dequeue();
-					}
+						if (targetExists)
+						{
+							continue;
+						}
 
-					attackedTargets.Enqueue((effect.TargetID, DateTime.Now));
+						while (attackedTargets.Count >= attackedTargetsCount && attackedTargets.Count > 0)
+						{
+							(var id, var time) = attackedTargets.Peek();
+							if (id == effect.TargetID)
+							{
+								break;
+							}
+							_ = attackedTargets.Dequeue();
+						}
+
+						attackedTargets.Enqueue((effect.TargetID, DateTime.Now));
+					}
 				}
 			}
 

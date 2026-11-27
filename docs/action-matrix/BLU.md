@@ -1,6 +1,6 @@
 # BLU — Abhängigkeitsmatrix
 
-Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-07; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
+Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-21; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `BlueMageRotation`
 - Rotation: `RotationSolver/Rotations/Limited/BlueMage/BLU_Reborn.cs`
@@ -8,7 +8,7 @@ Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-07; nic
 
 ## Nutzung
 
-direkt: 116 · ungenutzt: 21
+direkt: 125 · ungenutzt: 12
 
 | Stufe | Aktion | Id | Art | Nutzung |
 |---|---|---|---|---|
@@ -16,7 +16,7 @@ direkt: 116 · ungenutzt: 21
 | Job | 4-tonze Weight (`_4TonzeWeightPvE`) | 11384 | Spell | direkt |
 | Job | Abyssal Transfixion (`AbyssalTransfixionPvE`) | 18300 | Spell | direkt |
 | Job | Acorn Bomb (`AcornBombPvE`) | 11392 | Spell | ungenutzt |
-| Job | Addle (`AddlePvE`) | 7560 | Ability | ungenutzt |
+| Job | Addle (`AddlePvE`) | 7560 | Ability | direkt |
 | Job | Aetherial Spark (`AetherialSparkPvE`) | 23281 | Spell | direkt |
 | Job | Aetheric Mimicry (`AethericMimicryPvE`) | 18322 | Spell | ungenutzt |
 | Job | Aetheric Mimicry (`AethericMimicryPvE_19238`) | 19238 | Spell | ungenutzt |
@@ -46,7 +46,7 @@ direkt: 116 · ungenutzt: 21
 | Job | Cold Fog (`ColdFogPvE`) | 23267 | Spell | direkt |
 | Job | Condensed Libra (`CondensedLibraPvE`) | 18321 | Spell | direkt |
 | Job | Conviction Marcato (`ConvictionMarcatoPvE`) | 34574 | Spell | direkt |
-| Job | Deep Clean (`DeepCleanPvE`) | 34570 | Spell | ungenutzt |
+| Job | Deep Clean (`DeepCleanPvE`) | 34570 | Spell | direkt |
 | Job | Devour (`DevourPvE`) | 18320 | Spell | direkt |
 | Job | Diamondback (`DiamondbackPvE`) | 11424 | Spell | direkt |
 | Job | Dimensional Shift (`DimensionalShiftPvE`) | 34573 | Spell | direkt |
@@ -67,7 +67,7 @@ direkt: 116 · ungenutzt: 21
 | Job | Flame Thrower (`FlameThrowerPvE`) | 11402 | Spell | direkt |
 | Job | Flying Frenzy (`FlyingFrenzyPvE`) | 11389 | Spell | direkt |
 | Job | Flying Sardine (`FlyingSardinePvE`) | 11423 | Spell | direkt |
-| Job | Force Field (`ForceFieldPvE`) | 34575 | Spell | ungenutzt |
+| Job | Force Field (`ForceFieldPvE`) | 34575 | Spell | direkt |
 | Job | Frog Legs (`FrogLegsPvE`) | 18307 | Spell | direkt |
 | Job | Glass Dance (`GlassDancePvE`) | 11430 | Ability | direkt |
 | Job | Glower (`GlowerPvE`) | 11404 | Spell | direkt |
@@ -89,16 +89,16 @@ direkt: 116 · ungenutzt: 21
 | Job | Malediction of Water (`MaledictionOfWaterPvE`) | 23283 | Spell | direkt |
 | Job | Matra Magic (`MatraMagicPvE`) | 23285 | Spell | direkt |
 | Job | Mighty Guard (`MightyGuardPvE`) | 11417 | Spell | direkt |
-| Job | Mind Blast (`MindBlastPvE`) | 11394 | Spell | ungenutzt |
+| Job | Mind Blast (`MindBlastPvE`) | 11394 | Spell | direkt |
 | Job | Missile (`MissilePvE`) | 11405 | Spell | direkt |
 | Job | Moon Flute (`MoonFlutePvE`) | 11415 | Spell | direkt |
-| Job | Mortal Flame (`MortalFlamePvE`) | 34579 | Spell | ungenutzt |
+| Job | Mortal Flame (`MortalFlamePvE`) | 34579 | Spell | direkt |
 | Job | Mountain Buster (`MountainBusterPvE`) | 11428 | Ability | direkt |
 | Job | Mustard Bomb (`MustardBombPvE`) | 23279 | Spell | direkt |
 | Job | Nightbloom (`NightbloomPvE`) | 23290 | Ability | direkt |
 | Job | Northerlies (`NortherliesPvE`) | 18297 | Spell | direkt |
 | Job | Off-guard (`OffguardPvE`) | 11411 | Spell | direkt |
-| Job | Peat Pelt (`PeatPeltPvE`) | 34569 | Spell | ungenutzt |
+| Job | Peat Pelt (`PeatPeltPvE`) | 34569 | Spell | direkt |
 | Job | Peculiar Light (`PeculiarLightPvE`) | 11421 | Spell | direkt |
 | Job | Peripheral Synthesis (`PeripheralSynthesisPvE`) | 23286 | Spell | direkt |
 | Job | Perpetual Ray (`PerpetualRayPvE`) | 18314 | Spell | ungenutzt |
@@ -112,14 +112,14 @@ direkt: 116 · ungenutzt: 21
 | Job | Rehydration (`RehydrationPvE`) | 34566 | Spell | direkt |
 | Job | Revenge Blast (`RevengeBlastPvE`) | 18316 | Spell | direkt |
 | Job | Right Round (`RightRoundPvE`) | 34564 | Spell | ungenutzt |
-| Job | Ruby Dynamics (`RubyDynamicsPvE`) | 34571 | Spell | ungenutzt |
+| Job | Ruby Dynamics (`RubyDynamicsPvE`) | 34571 | Spell | direkt |
 | Job | Saintly Beam (`SaintlyBeamPvE`) | 23270 | Spell | direkt |
 | Job | Schiltron (`SchiltronPvE`) | 34565 | Spell | direkt |
 | Job | Sea Shanty (`SeaShantyPvE`) | 34580 | Ability | direkt |
 | Job | Self-destruct (`SelfdestructPvE`) | 11408 | Spell | ungenutzt |
 | Job | Sharpened Knife (`SharpenedKnifePvE`) | 11400 | Spell | direkt |
 | Job | Shock Strike (`ShockStrikePvE`) | 11429 | Ability | direkt |
-| Job | Sleep (`SleepPvE`) | 25880 | Spell | ungenutzt |
+| Job | Sleep (`SleepPvE`) | 25880 | Spell | direkt |
 | Job | Snort (`SnortPvE`) | 11383 | Spell | direkt |
 | Job | Song of Torment (`SongOfTormentPvE`) | 11386 | Spell | direkt |
 | Job | Sonic Boom (`SonicBoomPvE`) | 18308 | Spell | direkt |
@@ -144,7 +144,7 @@ direkt: 116 · ungenutzt: 21
 | Job | White Death (`WhiteDeathPvE`) | 23268 | Spell | direkt |
 | Job | White Knight's Tour (`WhiteKnightsTourPvE`) | 18310 | Spell | direkt |
 | Job | White Wind (`WhiteWindPvE`) | 11406 | Spell | direkt |
-| Job | Wild Rage (`WildRagePvE`) | 34568 | Spell | ungenutzt |
+| Job | Wild Rage (`WildRagePvE`) | 34568 | Spell | direkt |
 | Job | Winged Reprobation (`WingedReprobationPvE`) | 34576 | Spell | direkt |
 | Job | the Dragon's Voice (`TheDragonsVoicePvE`) | 11420 | Spell | direkt |
 | Job | the Look (`TheLookPvE`) | 11399 | Spell | direkt |
@@ -299,6 +299,7 @@ direkt: 116 · ungenutzt: 21
 | White Knight's Tour | Regel sperrt vorher | Missile |
 | White Knight's Tour | Regel sperrt vorher | the Ram's Voice |
 | White Knight's Tour | Regel sperrt vorher | Ultravibration |
+| Wild Rage | Regel sperrt vorher | Missile |
 | 1000 Needles | Regel sperrt vorher | Missile |
 | 4-tonze Weight | Regel sperrt vorher | the Ram's Voice |
 | 4-tonze Weight | Regel sperrt vorher | Ultravibration |
@@ -356,26 +357,17 @@ Der Wirktext lässt Werte aus, die eine Eigenschaft oder die Stufe setzt (Potenz
 Maschinelle Liste; die Bewertung je Eintrag steht im Konzept.
 
 - Acorn Bomb (`AcornBombPvE`, Spell): ungenutzt
-- Addle (`AddlePvE`, Ability): ungenutzt
 - Aetheric Mimicry (`AethericMimicryPvE`, Spell): ungenutzt
 - Aetheric Mimicry (`AethericMimicryPvE_19238`, Spell): ungenutzt
 - Aetheric Mimicry (`AethericMimicryPvE_19239`, Spell): ungenutzt
 - Aetheric Mimicry (`AethericMimicryPvE_19240`, Spell): ungenutzt
 - Apokalypsis (`ApokalypsisPvE`, Ability): ungenutzt
 - Avail (`AvailPvE`, Spell): ungenutzt
-- Deep Clean (`DeepCleanPvE`, Spell): ungenutzt
 - Final Sting (`FinalStingPvE`, Spell): ungenutzt
-- Force Field (`ForceFieldPvE`, Spell): ungenutzt
 - Laser Eye (`LaserEyePvE`, Spell): ungenutzt
-- Mind Blast (`MindBlastPvE`, Spell): ungenutzt
-- Mortal Flame (`MortalFlamePvE`, Spell): ungenutzt
-- Peat Pelt (`PeatPeltPvE`, Spell): ungenutzt
 - Perpetual Ray (`PerpetualRayPvE`, Spell): ungenutzt
 - Right Round (`RightRoundPvE`, Spell): ungenutzt
-- Ruby Dynamics (`RubyDynamicsPvE`, Spell): ungenutzt
 - Self-destruct (`SelfdestructPvE`, Spell): ungenutzt
-- Sleep (`SleepPvE`, Spell): ungenutzt
-- Wild Rage (`WildRagePvE`, Spell): ungenutzt
 
 ## Abgleich Wirktext ↔ Code
 

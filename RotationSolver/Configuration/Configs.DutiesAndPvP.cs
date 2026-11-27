@@ -233,7 +233,7 @@ internal partial class Configs
 	private static readonly bool _crucibleYmir = true;
 
 	[ConditionBool, UI("Crucible of the Unbroken - Siren logic",
-	Description = "Prioritize Crawling Pieces, which bind you in place.",
+	Description = "Prioritize a Crawling Piece while it binds you: the bind lasts until it falls.\nUnbound, the most dangerous enemy comes first.",
 	Filter = DutySpecificCrucibleOfTheUnbroken)]
 	private static readonly bool _crucibleSiren = true;
 
@@ -250,7 +250,7 @@ internal partial class Configs
 	[JobConfig, UI("Use Guard below this HP",
 		Filter = DutySpecificPvP)]
 	[Range(0, 1, ConfigUnitType.Percent, 0.02f)]
-	public float HealthForGuard { get; set; } = 0.15f;
+	private readonly float _healthForGuard = 0.15f;
 
 	[ConditionBool, UI("Ignore time to kill in PvP", Filter = DutySpecificPvP)]
 	private static readonly bool _ignorePvPTTK = true;

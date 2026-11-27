@@ -42,6 +42,11 @@ public sealed partial class WHM_Reborn : WhiteMageRotation
 	[RotationConfig(CombatType.PvE, Name = "Use DOT while moving even if it does not need refresh (disabling is a damage down)")]
 	public bool DOTUpkeep { get; set; } = true;
 
+	[RotationConfig(CombatType.PvE, Name = "Use a lily instead of an early Dia while moving",
+		Tooltip = "In a fight: while you move and no spell can start, a lily goes before Dia refreshed early; one "
+			+ "lily stays.\nNot before an announced raidwide.\nOff: Dia first, lilies only near the cap.")]
+	public bool LilyWhileMoving { get; set; } = true;
+
 	[RotationConfig(CombatType.PvE, Name = "Use Lily at max stacks/about to overcap.")]
 	public bool UseLilyWhenFull { get; set; } = true;
 
@@ -456,12 +461,12 @@ public sealed partial class WHM_Reborn : WhiteMageRotation
 		}
 		if (MedicaIiPvE.EnoughLevel)
 		{
-			if (MedicaIiiPvE.EnoughLevel && MedicaIiiPvE.CanUse(out act) && hasMedica2 < partyCount / 2 && !IsLastAction(true, MedicaIiPvE))
+			if (MedicaIiiPvE.EnoughLevel && MedicaIiiPvE.CanUse(out act) && hasMedica2 < (partyCount + 1) / 2 && !IsLastAction(true, MedicaIiPvE))
 			{
 				return true;
 			}
 
-			if (!MedicaIiiPvE.EnoughLevel && MedicaIiPvE.CanUse(out act) && hasMedica2 < partyCount / 2 && !IsLastAction(true, MedicaIiPvE))
+			if (!MedicaIiiPvE.EnoughLevel && MedicaIiPvE.CanUse(out act) && hasMedica2 < (partyCount + 1) / 2 && !IsLastAction(true, MedicaIiPvE))
 			{
 				return true;
 			}
@@ -667,6 +672,25 @@ public sealed partial class WHM_Reborn : WhiteMageRotation
 		}
 
 		if (AfflatusMiseryPvE.EnoughLevel && UseLilyDowntime && (liliesNearlyFull || liliesFullNoBlood))
+		{
+			if (AfflatusRapturePvE.CanUse(out act, skipAoeCheck: true))
+			{
+				return true;
+			}
+
+			if (AfflatusSolacePvE.CanUse(out act))
+			{
+				return true;
+			}
+		}
+
+		// Concept 03, C6 (A933): lilies grow back on time and are thrown off at the cap, so one spent while no spell can
+		// start costs no heal over the fight - it replaces Dia refreshed early (about 230 potency) and spares the dump at
+		// the cap a Glare III (350). One lily stays (more than one lily's cost), the blood lilies have room (fewer than
+		// Misery costs); an announced raidwide keeps them for the heal after it.
+		if (LilyWhileMoving && CastStartBlocked && AfflatusMiseryPvE.EnoughLevel
+			&& Lily > AfflatusSolacePvE.Action.PrimaryCostValue && BloodLily < AfflatusMiseryPvE.Action.PrimaryCostValue
+			&& !HealForResourceWaitsForAreaHit(false))
 		{
 			if (AfflatusRapturePvE.CanUse(out act, skipAoeCheck: true))
 			{

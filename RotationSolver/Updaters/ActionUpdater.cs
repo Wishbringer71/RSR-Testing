@@ -5,6 +5,7 @@ using ECommons.GameHelpers;
 using ECommons.Logging;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using RotationSolver.Commands;
+using RotationSolver.Integrations.IPC;
 
 namespace RotationSolver.Updaters;
 
@@ -12,10 +13,10 @@ internal static partial class ActionUpdater
 {
 	internal static DateTime AutoCancelTime { get; set; } = DateTime.MinValue;
 
-	static ActionUpdater()
-	{
-		_ = EzIPC.Init(typeof(ActionUpdater), "RotationSolverReborn.ActionUpdater");
-	}
+	private static readonly EzIPCDisposalToken[] _disposalTokens =
+		EzIPC.Init(typeof(ActionUpdater), "RotationSolverReborn.ActionUpdater");
+
+	internal static void Dispose() => IPCSubscriber_Common.DisposeAll(_disposalTokens);
 
 	[EzIPCEvent] public static Action<uint> NextGCDActionChanged = delegate { };
 	[EzIPCEvent] public static Action<uint> NextActionChanged = delegate { };
@@ -125,6 +126,8 @@ internal static partial class ActionUpdater
 		finally
 		{
 			ActionTracer.EndFrame(NextAction);
+			// A923: a stretch with the GCD free and none coming, with what was chosen and refused.
+			GcdIdleWatch.Frame(NextGCDAction);
 			// A819: True North and the target's status change without a new GCD; the side is asked again each frame.
 			DesiredPositional = CalculateDesiredPositional();
 		}
@@ -172,6 +175,9 @@ internal static partial class ActionUpdater
 			GazeWatch.EndFight();
 			// A820 (concept 03, "Bereit, aber nicht genutzt"): which cooldowns stood ready in this fight and did not come.
 			BurstWatch.EndFight();
+			DynamicRotation.FightEnded();
+			// A969 (concept 08, "Protokoll"): a sleep chosen before the end lapses because the fight ended.
+			SleepInterruptWatch.NoteLapse(null, "the fight ended");
 			DataCenter.EnemyHitPlayerThisFight = false;
 			_startCombatTime = DateTime.MinValue;
 
@@ -204,6 +210,10 @@ internal static partial class ActionUpdater
 			BlueMageSetTrace.SlotsRead(DataCenter.BluSlots);
 			BlueMageSetTrace.BriefingRead();
 		}
+		else if (DataCenter.BluSlots.AsSpan().ContainsAnyExcept(0u))
+		{
+			Array.Clear(DataCenter.BluSlots);
+		}
 
 		if (DataCenter.IsInDuty)
 		{
@@ -211,6 +221,10 @@ internal static partial class ActionUpdater
 			{
 				DataCenter.DutyActions[i] = DutyActionManager.GetDutyActionId(i);
 			}
+		}
+		else if (DataCenter.DutyActions.AsSpan().ContainsAnyExcept(0u))
+		{
+			Array.Clear(DataCenter.DutyActions);
 		}
 	}
 
@@ -304,7 +318,7 @@ internal static partial class ActionUpdater
 			return false;
 		}
 
-		if (PlayerHasLockActions())
+		if (PlayerHasLockActions(trace: true))
 		{
 			return false;
 		}
@@ -314,7 +328,7 @@ internal static partial class ActionUpdater
 			return false;
 		}
 
-		if (player.TotalCastTime - DataCenter.CalculatedActionAhead > 0)
+		if (player.IsCasting && (player.TotalCastTime - player.CurrentCastTime) > DataCenter.CalculatedActionAhead)
 		{
 			return false;
 		}
@@ -327,7 +341,7 @@ internal static partial class ActionUpdater
 		return RSCommands.CanDoAnAction(ActionHelper.CanUseGCD);
 	}
 
-	internal static bool PlayerHasLockActions()
+	internal static bool PlayerHasLockActions(bool trace = false)
 	{
 		if (DataCenter.IsPvP)
 		{
@@ -339,6 +353,12 @@ internal static partial class ActionUpdater
 		{
 			if (StatusHelper.LocksActions(status, minRemaining))
 			{
+				// Only where the rotation is held (A971), not when the debug window asks.
+				if (trace && status.RemainingTime == 0f)
+				{
+					DynamicRotation.HeldByEndlessStatus(status.StatusId);
+				}
+
 				return true;
 			}
 		}

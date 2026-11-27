@@ -20,11 +20,16 @@ namespace RotationSolver.Engine.Helpers;
 internal static class ActionTooltip
 {
 	private static readonly Dictionary<(uint ActionId, int Level), string> _texts = [];
+	private static readonly Dictionary<(Regex Pattern, uint ActionId, int Level), float> _statedFigures = [];
 	private static readonly object _gate = new();
 
 	private static readonly Regex StatedPotency = new(@"potency of (?<value>\d[\d,]*)", RegexOptions.Compiled);
 	private static readonly Regex StatedCurePotency = new(@"Cure Potency: (?<value>\d[\d,]*)", RegexOptions.Compiled);
+	private static readonly Regex StatedPositionalPotency = new(@"(?m)^(?<value>\d[\d,]*) when executed from a target's", RegexOptions.Compiled);
+	private static readonly Regex StatedFuryPotency = new(@"Fury Potency: (?<value>\d[\d,]*)", RegexOptions.Compiled);
 	private static readonly Regex StatedHealthBelow = new(@"HP is below (?<value>\d{1,3})%", RegexOptions.Compiled);
+	private static readonly Regex StatedRaisedPotencyLowHealth = new(@"[Pp]otency is increased to (?<value>\d[\d,]*) when your HP is below", RegexOptions.Compiled);
+	private static readonly Regex StatedHealthCost = new(@"Consumes (?<value>\d{1,3})% of your maximum HP", RegexOptions.Compiled);
 	private static readonly Regex DealsWithGuard = new(@"Ignores the effects of Guard|Removes (?:target's )?Guard|Removes Guard from|defensive bonus of Guard",
 		RegexOptions.Compiled);
 	private static readonly Dictionary<uint, bool> _handlesGuard = [];
@@ -118,6 +123,35 @@ internal static class ActionTooltip
 
 	private static bool HealsParty(string text)
 		=> RestoresHp.IsMatch(text) && text.Contains("party members", StringComparison.Ordinal);
+
+	private static readonly Regex RestoresAnyHp = new(@"\brestores [^.]*HP", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+	private static readonly Dictionary<uint, bool> _restoresHp = [];
+
+	/// <summary>
+	/// A915: whether the effect text of <paramref name="actionId"/> restores HP to anyone - "Restores all of a target's HP",
+	/// "Instantly restores own HP", a heal over time's "Restores HP over time" -, kept per action. False when the sheet has
+	/// no row.
+	/// </summary>
+	public static bool RestoresHpAtAll(uint actionId)
+	{
+		if (_restoresHp.TryGetValue(actionId, out var heals))
+		{
+			return heals;
+		}
+
+		try
+		{
+			var sheet = Svc.Data.GetExcelSheet<ActionTransient>(ClientLanguage.English);
+			heals = sheet != null && sheet.TryGetRow(actionId, out var row) && RestoresAnyHp.IsMatch(row.Description.ExtractText());
+		}
+		catch (Exception)
+		{
+			heals = false;
+		}
+
+		_restoresHp[actionId] = heals;
+		return heals;
+	}
 
 	/// <summary>
 	/// Whether the effect text of <paramref name="actionId"/> says the action itself deals damage to the enemies around the
@@ -251,7 +285,115 @@ internal static class ActionTooltip
 	/// </summary>
 	public static bool TryStatedHealthBelow(uint actionId, out float ratio)
 	{
-		var stated = TryStated(actionId, StatedHealthBelow, out var percent);
+		var stated = TryStatedKept(actionId, StatedHealthBelow, out var percent);
+		ratio = percent / 100f;
+		return stated;
+	}
+
+	/// <summary>
+	/// The potency the tooltip of <paramref name="actionId"/> says it rises to while the player's HP is below a share
+	/// ("Potency is increased to 500 when your HP is below 20%", Revenge Blast); the share itself comes from
+	/// <see cref="TryStatedHealthBelow"/>. False when it states none (concept 01, "Rachestoß", A941).
+	/// </summary>
+	public static bool TryRaisedPotencyLowHealth(uint actionId, out float potency)
+	{
+		return TryStatedKept(actionId, StatedRaisedPotencyLowHealth, out potency);
+	}
+
+	// A figure read once per action and level, for a check asked every frame (Revenge Blast's and Wild Rage's ActionCheck):
+	// the text does not change at a level, and a Match per frame allocates. NaN marks "the text states none". Only a read
+	// from a text that exists is kept, so an empty text before the sheets load is asked again.
+	private static bool TryStatedKept(uint actionId, Regex pattern, out float value)
+	{
+		var key = (pattern, actionId, DataCenter.PlayerSyncedLevel());
+		lock (_gate)
+		{
+			if (_statedFigures.TryGetValue(key, out var known))
+			{
+				value = float.IsNaN(known) ? 0f : known;
+				return !float.IsNaN(known);
+			}
+		}
+
+		var stated = TryStated(actionId, pattern, out value);
+		if (Text(actionId).Length > 0)
+		{
+			lock (_gate)
+			{
+				_statedFigures[key] = stated ? value : float.NaN;
+			}
+		}
+
+		return stated;
+	}
+
+	/// <summary>
+	/// The potency one hit of <paramref name="actionId"/> deals as its tooltip states it, with its positional met: the
+	/// highest of "a potency of 310" and "370 when executed from a target's flank"; with <paramref name="fury"/>, the
+	/// highest "Fury Potency" (Pouncing Coeurl's "Coeurl's Fury Potency: 460", "Flank Coeurl's Fury Potency: 520") where
+	/// the text states one. False when it states no potency. Concept 14, "Monk: Perfect Balance und das Burstfenster"
+	/// (A963): the order of a Solar sequence.
+	/// </summary>
+	public static bool TryHitPotency(uint actionId, bool fury, out float potency)
+	{
+		if (fury && TryStatedHighestKept(actionId, StatedFuryPotency, out potency))
+		{
+			return true;
+		}
+
+		var stated = TryStatedKept(actionId, StatedPotency, out potency);
+		if (TryStatedHighestKept(actionId, StatedPositionalPotency, out var positional) && positional > potency)
+		{
+			potency = positional;
+			stated = true;
+		}
+
+		return stated;
+	}
+
+	// The highest figure a pattern matches in the text, kept like TryStatedKept.
+	private static bool TryStatedHighestKept(uint actionId, Regex pattern, out float value)
+	{
+		var key = (pattern, actionId, DataCenter.PlayerSyncedLevel());
+		lock (_gate)
+		{
+			if (_statedFigures.TryGetValue(key, out var known))
+			{
+				value = float.IsNaN(known) ? 0f : known;
+				return !float.IsNaN(known);
+			}
+		}
+
+		var text = Text(actionId);
+		var highest = float.NaN;
+		foreach (Match match in pattern.Matches(text))
+		{
+			if (float.TryParse(match.Groups["value"].Value.Replace(",", string.Empty), NumberStyles.Float,
+				CultureInfo.InvariantCulture, out var figure) && (float.IsNaN(highest) || figure > highest))
+			{
+				highest = figure;
+			}
+		}
+
+		if (text.Length > 0)
+		{
+			lock (_gate)
+			{
+				_statedFigures[key] = highest;
+			}
+		}
+
+		value = float.IsNaN(highest) ? 0f : highest;
+		return !float.IsNaN(highest);
+	}
+
+	/// <summary>
+	/// The share of the player's maximum HP the tooltip of <paramref name="actionId"/> says it consumes ("Consumes 50% of
+	/// your maximum HP when executed", Wild Rage), as a ratio; false when it states none (concept 01, A941).
+	/// </summary>
+	public static bool TryStatedHealthCost(uint actionId, out float ratio)
+	{
+		var stated = TryStatedKept(actionId, StatedHealthCost, out var percent);
 		ratio = percent / 100f;
 		return stated;
 	}

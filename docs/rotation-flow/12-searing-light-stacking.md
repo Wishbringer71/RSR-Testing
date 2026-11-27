@@ -13,7 +13,8 @@ Die Prüfhistorie steht in `AUDIT_LOG.md` (A78, A89, A112–A115, A126, A127, A1
 - **Ein Beschwörer:** Searing Light fällt im Einschiebeplatz **vor** der Burst-Beschwörung (Solar Bahamut,
   unterhalb seiner Stufe Demi-Bahamut), und die Beschwörung wartet dafür, wenn der Buff bereit ist oder in den
   Platz des Warte-GCDs zurückkehrt. So steht der Buff vor dem ersten Burstschaden, und sein Takt bleibt an
-  Solar gebunden.
+  Solar gebunden. Läuft Solar dem Buff davon (schnellerer GCD), geht er bei Abklingzeit, wenn andere Mitglieder
+  in diesem Kampf Raidbuffs setzen, sonst in der nächsten Demi-Phase (A957, A974).
 - **Mehrere Beschwörer:** Die Ladung bleibt bei Solar, bis ein anderer dort zuvorkommt. Stand im letzten
   eigenen Solar-Fenster ein fremder Searing Light, ist jede große Beschwörung ein Zündfenster. Sind alle
   Burstphasen dauerhaft von anderen belegt, weicht die Ladung in den Titan-Block aus, in den Ifrit-Block nur,
@@ -124,8 +125,55 @@ Henne-Ei-Problem wie bei der Wiederbelebung (Konzept 11): Der Buff wartete darau
 werden, und die Ankündigung auf den Buff.
 
 **„Bereit bis zum nächsten GCD", nicht „bereit".** Die Abklingzeit der Beschwörung endet auf dem
-GCD-Raster, weil die vorige Beschwörung selbst ein GCD war und 60 s ein Vielfaches des GCDs sind. Fragte
-die Regel nach abgelaufener Abklingzeit, wäre der Platz davor schon vorbei (A126).
+GCD-Raster, weil die vorige Beschwörung selbst ein GCD war und ihre Abklingzeit mit dem Zaubertempo
+mitläuft. Fragte die Regel nach abgelaufener Abklingzeit, wäre der Platz davor schon vorbei (A126).
+
+**Sol-Bahamut läuft dem Buff davon (Upload 20.11.2026, A957).** Die Abklingzeit der Demi-Beschwörungen
+verkürzt sich mit dem Zaubertempo (The Balance, Summoner Basic Guide, Patch 7.55, gelesen 21.11.2026:
+„the summon demi-primal abilities also scale with spell speed“; „With higher spell speed, subsequent
+Summon Solar Bahamuts will become available before Searing Light“). Gemessen bei deinem GCD von 2,35 s:
+eine Demi alle 57 s, Sol-Bahamut alle 114 s, Searing Light alle 120 s. Jede Solar-Phase beginnt damit
+etwa 6 s früher gegenüber dem Buff: 18:48:58 Solar, Buff 6 s später; 18:50:53 Solar, Buff 11 s später.
+Im nächsten Zyklus wäre er erst nach dem Ende der 15-s-Phase frei geworden (Solar um 18:52:47, Buff um
+18:53:04, gerechnet; der Kampf endete 18:54:07). Bis hierher wartete er dann auf die nächste Solar-Phase,
+rund 95 s seiner 120-s-Abklingzeit [Schätzung aus den gemessenen Abständen]. *Die Regel:* Bin ich der
+einzige Beschwörer und steht Burst an, geht ein bereiter Buff außerhalb von Solar auch dann, wenn Solar
+nicht bis zum nächsten GCD bereit ist – bei Abklingzeit, wie The Balance es verlangt („Searing Light
+should be used on cooldown to align with all other two minute party buffs“; „Aligning with other party
+buffs should be prioritized over aligning with your own burst phases“). Die Beschwörung wartet weiter
+höchstens einen GCD (`searingSettled`); The Balance verlangt dasselbe („do not delay your demi-primals“).
+*Im Kampf:* Bei 2,50 s GCD fallen Buff und Solar weiter zusammen, bei schnellerem GCD läuft der Buff bei
+seiner Abklingzeit, und keiner geht verloren. Mit einem zweiten Beschwörer gilt das Phasenbuch (seine
+Vorgabe, oben) unverändert. *Gegenthese:* „Ein Buff vor Bahamut oder Phönix ist schwächer als in Solar.“
+Trifft für die Phase zu; Warten kostet aber bis zu 95 s Buff, und die Gruppen-Buffs der anderen liegen
+auf dem Zwei-Minuten-Raster, nicht auf deinem Solar. Die Annahme, Buff und Solar fielen beim einzigen
+Beschwörer ohnehin zusammen, ist für GCDs unter 2,50 s widerlegt.
+
+**„Bei Abklingzeit" nur, wo Gruppen-Buffs kommen (A974, seine Meldung vom 26.11.2026: „beschwörer abweichung
+searing light von burstphase").** Die Begründung von A957 trägt nur dort, wo andere Mitglieder Zwei-Minuten-Buffs
+setzen; ohne sie gibt es kein Raster, auf das der Buff fallen könnte, und er fällt neben jede Burstphase.
+*Gemessen (seine Mitschnitte vom 20. bis 25.11.2026, 63 eigene Searing Lights):* In Pilgers Pfad (ohne
+Raidbuff eines anderen) fiel er fünfmal 17 bis 32 s **vor** Sol-Bahamut – bei 20 s Buff und 15 s Phase deckt er
+die Phase dann zu höchstens 3 s oder gar nicht –, in Mistwake 3 bis 14 s nach Solar und danach 17 bis 25 s vor
+Phönix und Bahamut, also in keiner Demi-Phase. In Edens Tor fiel er bei der Litanei des Dragoons (+1 bis +2 s),
+während Bahamut 8 bis 15 s davor lag – dort trug die Regel. *Die Regel jetzt:* Bin ich der einzige Beschwörer,
+und hat in diesem Kampf noch kein anderes Mitglied einen Raidbuff gesetzt (`GroupBurstWatch`, K3 in Konzept 03),
+zündet der Buff nur in einer Burstphase – jeder großen Beschwörung (Solar, Bahamut, Phönix) – oder im Platz
+unmittelbar davor; Solar bleibt die erste Wahl, weil die Burst-Beschwörung weiter höchstens einen GCD auf ihn
+wartet. Kommt ein Gruppen-Buff, gilt „bei Abklingzeit" wie bisher. Der Vorrang der Burstphasen ist seine Vorgabe
+(oben: „nächste anstehende Burstphase (Bahamut oder Phoenix)"). *Im Kampf:* Pilgers Pfad, 23.11.2026 20:40:46:
+Der Buff ging 27,6 s vor Solar und lief 7,6 s vor ihrem Beginn aus; jetzt wartet er bis in den Platz vor Solar.
+Mistwake, 19:03:28: Er ging 23,8 s vor Phönix; jetzt kommt er mit Phönix. *Gegenthese 1 (Buff geht verloren):* Das
+Warten kostet je Zyklus höchstens den Abstand bis zur nächsten Demi (rund 57 s bei 2,35 s GCD) statt bis zur nächsten
+Solar (bis 95 s, A957). Ein Buff außerhalb jeder Demi trägt nur Füller und Searing Flash; die Demi-Phase trägt die
+Beschwörung, Enkindle und Astral Flow [Schätzung: der Anteil, um den eine Demi-Phase je Sekunde mehr bringt, ist nicht
+gemessen]. *Gegenthese 2 (Gruppe ohne beobachteten Buff):* Am Pull kennt die Uhr noch keinen Gruppen-Buff. Dort geht
+der Buff ohnehin mit Solar; danach zählen die beobachteten. Ein Mitglied, das seinen Buff in einem Rudel nicht
+setzt, zählt in diesem Rudel nicht – der Buff folgt dann deiner Burstphase. *Gegenthese 3 (ausgeliefert, und nichts
+ändert sich):* Läge der Buff schon in einer Demi-Phase, änderte sich nichts; gemessen lag er in Pilgers Pfad und
+Mistwake außerhalb. *In einer Gruppe mit Buffs* folgt er der eigenen Abklingzeit, nicht einer Uhr der Gruppe; in
+Mistwake lag er 10 bis 13 s hinter den Buffs des Barden. Auf die vorhergesagte Gruppe zu warten ist gemessen verworfen:
+ihre Bursts kamen in seinen Inhalten zu selten zur vorhergesagten Zeit (Konzept 03, K3, A977).
 
 **Keine Sonde:** Die Entscheidung fällt im Code, aus der Bereitschaft der Beschwörung und des Buffs, die
 beide hier und jetzt lesbar sind. Eine Messung, deren Auswertung über das Modell liefe, kostete je Wert
@@ -290,7 +338,7 @@ Zündung hängt damit vom Zeitpunkt ab:
 | nach 19 s (Restzeit 1 s) | 19 s |
 | nach Ablauf | 20 s, volle Wirkung |
 
-`IsStatusProvided` (`ActionBasicInfo.cs:639`) sperrt die Zündung, solange der Status nicht innerhalb von
+`IsStatusProvided` (`ActionBasicInfo.cs:662`) sperrt die Zündung, solange der Status nicht innerhalb von
 `StatusRefreshGcdCount` GCDs endet (`ActionConfig.cs:71`, ab Werk 2), also etwa fünf Sekunden vor Ablauf.
 Entscheidend dafür ist `StatusFromSelf = false` in `ModifySearingLightPvE`: `PlayerHasStatus`
 (`StatusHelper.PlayerHasStatus`, Quellenfilter in `AnyStatusMatches`) filtert nur bei `isFromSelf` auf die
@@ -542,9 +590,10 @@ Slipstream 520, Mountain Buster 160, Inferno 800, Earthen Fury 800, Aerial Blast
 **The Balance** (Summoner Basic Guide, 02.10.2026): „Searing Light should be used on cooldown to align with
 all other two minute party buffs, unless a specific buff delay is agreed upon by the entire party. Aligning
 with other party buffs should be prioritized over aligning with your own burst phases." Für einen einzelnen
-Beschwörer trifft RSR das: Die Abklingzeit von 120 s ist genau ein Demi-Zyklus, und die Zündung im
-Beschwörungsfenster fällt mit „on cooldown" zusammen. Mehrere Beschwörer behandelt The Balance nicht; dort
-gilt seine Vorgabe. Swiftcast auf Slipstream nennt The Balance als situativen Gewinn; nach seiner Spielweise
+Beschwörer trifft RSR das seit A957: Der Buff geht bei Abklingzeit und wartet höchstens einen GCD auf Solar
+(oben, „Sol-Bahamut läuft dem Buff davon“); die frühere Annahme, die Zündung im Beschwörungsfenster falle mit
+„on cooldown" zusammen, gilt nur bei 2,50 s GCD, weil die Demi-Abklingzeit mit dem Zaubertempo schrumpft. Mehrere
+Beschwörer behandelt The Balance nicht; dort gilt seine Vorgabe. Swiftcast auf Slipstream nennt The Balance als situativen Gewinn; nach seiner Spielweise
 bleibt Swiftcast für Wiederbelebungen.
 
 ### Gemessen: was im Kampf ankommt
@@ -805,8 +854,9 @@ Verlust, aber der Pfad gibt das nicht her: `AttackAbility` wird in `CustomRotati
   29.10.2026). Der erste gibt Searing Light frei, sobald es bereit ist; der zweite hält es in der Variante „Balance"
   die ersten 5 s des Kampfes zurück, damit es mit den Buffs der Gruppe fällt, die meist nach zwei GCDs kommen. Beides
   richtet Searing Light nach den anderen aus – eine Annahme über sie, die nach seiner Spielweise kein tragender Grund
-  ist; die Bindung an die Lage ist seine Vorgabe (Abschnitt „Seine Vorgabe"), und für einen Beschwörer fällt „on
-  cooldown" mit dem Solar-Fenster ohnehin zusammen. Die 5 s sind zudem ein fester Wert ohne Herleitung. Übernommen
+  ist; die Bindung an die Lage ist seine Vorgabe (Abschnitt „Seine Vorgabe"). „On cooldown" fällt für einen
+  Beschwörer nur bei 2,50 s GCD mit dem Solar-Fenster zusammen; darunter gilt „Sol-Bahamut läuft dem Buff davon"
+  (A957). Die 5 s sind zudem ein fester Wert ohne Herleitung. Übernommen
   sind aus demselben Commit Energy Drain unter dem eigenen Searing Light – außerhalb einer Demi wirkt das nur auf einen
   sterbenden Boss – und Ruin IV in der Ifrit-Phase (Konzept 14, „Beschwörer").
 - **Das Solar-Fenster nur beim Betreten beobachten**, wie das Phasenbuch bucht. Ein fremder Buff, der einen

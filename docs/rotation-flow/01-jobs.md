@@ -125,6 +125,11 @@ kennt — die acht Stufen sind größtenteils diesem Modell geschuldet. Der frü
 Erneuerungsgrund; Schaden verbraucht sie, und der Zweig legte sie im Pull alle paar Sekunden neu auf. Die
 Barriere im Pull läuft über die gemeinsame Heilerregel `TryPullUpkeepOnTank` als Eukrasia-Ziel in Stufe 1
 (`PullBarrierDue`, Option `UsePreEukrasianDiagnosis`, ab Werk an; Konzept 15, V1).
+Unter Eukrasia geht keiner der Grundzauber, die Eukrasia umwandelt (Dosis I–III, Diagnosis, Prognosis, Dyskrasia I–II;
+`ActionCheck`, Upstream 7.5.8.11, 38afb1730, ausgewertet A971): Das Spiel macht aus dem gedrückten Grundzauber die
+eukrasische Fassung, ein Dosis III unter einem Eukrasia, das für eine Barriere gesetzt war, legte also Eukrasian Dosis
+statt der Barriere. Die Rotation drückt unter Eukrasia die eukrasische Aktion selbst (Stufe 1 und Anti-Brick); sie
+verliert dadurch nichts.
 
 **Kardia folgt der Aggro (A567).** Kardion heilt seinen Träger, wenn der Weise bestimmte Schadenszauber landet (170
 Potenz je Treffer; Kardia ist eine Fähigkeit ohne Mana mit 5 s Wiederverwendung, Job-Guide und xivapi, 05.11.2026).
@@ -405,15 +410,17 @@ gegeneinander abwägt statt eine gegen eine Schwelle.
 Die 12 Farbaktionen sind faktisch eine Level-Kette mit sechs parallelen
 Strängen — die breiteste Filler-Struktur im Repo.
 
-### BLM — 818 LOC, 5 Configs *(BLM_Default)*
+### BLM — rund 1700 LOC, 10 Configs *(BLM_Reborn)*
+
+Gezählt am 27.11.2026.
 
 ```
-├ 1  Burst     Flare Star
-├ 2  Phase     InFireOrIce (Kernautomat, ausgelagert)
-├ 3  Element   AddElementBase
-├ 4  Bewegung  PolyglotWhileCastBlocked, Firestarter in Astral Fire (kein Zauber startbar, A602)
-├ 5  Filler    Scathe
-└ 6  Erhalt    MaintainStatus
+├ 1  Notfall   Manafont am Ende von Astral Fire (NeedManafont)
+├ 2  Element   TryEnterStanceFromNeutral, TrySingleTargetGCD / TryAoeGCD
+├ 3  Polyglot  TryUsePolyglot (Überlauf, Burst; Foul nur, wo es Xenoglossy übertrifft, A344)
+├ 4  Bewegung  TryMovementFallbackGCD (im Laufen oder kein Zauber startbar; Firestarter in Astral Fire, A602, A983)
+├ 5  Filler    Scathe (Einstellung, ab Werk aus)
+└ 6  Pause     TryDowntimeMaintenance (Transpose und Umbral Soul ohne Gegner, Konzept 03 K6)
 ```
 
 Fast die gesamte Logik liegt in privaten Hilfsmethoden statt in `GeneralGCD` — **das architektonische Gegenmodell zu
@@ -551,13 +558,17 @@ statt Reihenfolge" und „Mondflöte"):
       (`ActionManager` führt 24, `FixedSizeArray24`) und hätte dann hinter dem Feld weitergelesen.
     - Er rief im Konstruktor der Rotation. Das ist beim Laden, ohne Prüfung auf Kampf und ohne Gewähr, dass es auf dem
       Spiel-Thread lief.
-- *Widerspruch, offen:* Code und Spielregel sagen, 1000 Nadeln geht nur im aktiven Set. Seine Beobachtung sagt etwas
-  anderes. Möglich sind drei Dinge:
+- *Widerspruch, aufgelöst durch Beobachtung (A970):* Code und Spielregel sagen, 1000 Nadeln geht nur im aktiven Set.
+  Seine Beobachtung vom 03.11.2026 sagte etwas anderes. In vier Blaumagier-Sitzungen mit dem Messmittel (15.11.2026
+  dreimal, 20.11.2026) stand das Set in der Spur, und keine Zeile „blue mage spell outside the active set“ – RSR wirkte
+  keinen Zauber außerhalb des Sets. Am wahrscheinlichsten trifft der erste der drei Fälle unten zu, den der alte Setzer
+  hinterließ [Schätzung: Der Setzer ist seither ersetzt, belegt ist nur das Ausbleiben]. Die drei Fälle, die vorher
+  offen waren:
   - Das aktive Set enthält den Zauber doch; gespeicherte Sets und Hotbar zeigen etwas anderes. Möglich ist, dass der
     alte Setzer ihn einmal gesetzt hat (Schluss).
   - Die Lesung liefert etwas anderes als erwartet.
   - Ein Weg umgeht die Prüfung.
-  Statisch nicht entscheidbar; Messmittel unter Stufe 0.
+  Statisch nicht entscheidbar; Messmittel unter Stufe 0 – es fand in vier Sitzungen keinen Fall.
 
 **Synergien aus den Wirktexten** (Spielblätter; wo eine Wirkung über den Text hinaus angenommen ist, steht es dabei):
 
@@ -606,8 +617,114 @@ statt Reihenfolge" und „Mondflöte"):
 - *Bewusst nicht:*
   - Schlussstich, Selbstzerstörung, Assimilation (der Blaumagier stirbt; Assimilation bleibt hinter seinem Schalter,
     ab Werk aus).
-  - Bestialischer Zorn (kostet 50 % der max. HP) und Rachestoß (500 nur unter 20 % HP): nur als Option für Spieler,
-    die Schaden vor Sicherheit stellen, ab Werk aus (CLAUDE.md, „Spielweise").
+  - Bestialischer Zorn (kostet laut Wirktext 50 % der maximalen LP): nur als Option für Spieler, die Schaden vor
+    Sicherheit stellen, ab Werk aus (CLAUDE.md, „Spielweise"; Option „Use Wild Rage for damage“, A941). Auch mit Option
+    nur, wenn die LP über seinen Kosten liegen (ob das Spiel ihn darunter sperrt oder den Spieler tötet, ist unbelegt), nicht
+    unter Tank- oder Heiler-Mimikry (der Heiler ist die Rettung der Gruppe; Code-Review A946) und nicht, solange `AreaDefenseDanger` einen Treffer auf ein Mitglied meldet; er geht vor dem
+    Füller nur, wo seine Potenz über alle Ziele je Zeit den Überschallknall schlägt (`OverSonicBoom`). Preis, den die
+    Option nennt: Ein Treffer, den nichts ankündigt, trifft danach einen Spieler mit halben LP.
+
+**Rachestoß: Schaden aus niedrigen LP, ohne Preis** (Befund 20.11.2026, A941)
+- Wirktext (Rachestoß, 18316): Potenz 50, „Potency is increased to 500 when your HP is below 20%“. Er kostet keine LP und
+  hält den Spieler nicht unten; die Heil-GCDs laufen vor `GeneralGCD` (`CustomRotation_GCD.cs`, Heilzweig vor dem
+  allgemeinen Zweig), also nimmt er nur einen GCD, den die Heilregel dem Schaden überlassen hat. Darum keine Option –
+  meine frühere Einordnung (03.11.2026, zusammen mit Bestialischem Zorn hinter einer Option) trug für ihn keinen Grund.
+- Defekt, den das behebt: Upstreams Rotation verlangte effektive LP von höchstens 20 %, seine Einstellung
+  (`ModifyRevengeBlastPvE`, a1013370d) LP über 20 % – beides zugleich gilt nie, er fiel nie.
+- Regel: nur, solange die LP ohne Schild unter dem Anteil liegen, den sein Text nennt (`TryStatedHealthBelow`; das Spiel
+  prüft die LP, ein Schild hebt sie nicht), und nur, wo die erhöhte Potenz je Zeit den Füller schlägt (Carnivale-Faktor
+  des Ziels eingerechnet). Ohne Zahl im Text fällt er nicht.
+- Synergie: Bestialischer Zorn aus 51 bis 69 % LP führt unter die Schwelle; das bleibt Sache der Option, die nur prüft,
+  dass die LP über seinen Kosten liegen.
+
+**Minderung: Stumpfsinn, Kraftfeld, Absichern** (Befund 20.11.2026, A943)
+- *Stumpfsinn (Addle, 7560):* „Lowers target's physical damage dealt by 5% and magic damage dealt by 10%“. Der Blaumagier
+  fragte es nie; jeder andere Magier legt es über dieselbe Regel (`UseAddle`, zentral auf `CustomRotation`: vor
+  vorhergesagtem Schaden oder auf einem Rudel erneuert, sonst wenn der Abwehrzweig offen ist und das Ziel es nicht trägt;
+  Konzept 02, „Identisch in allen vier“). Der Blaumagier nutzt sie jetzt in beiden Abwehrzweigen; die vier Kopien der
+  Regel bei Beschwörer, Rotmagier, Piktomant und Schwarzmagier rufen denselben Helfer.
+- *Kraftfeld (34575):* 10 s „either Physical Vulnerability Down or Magic Vulnerability Down“, je 50 % weniger
+  erlittener Schaden dieser Art, eigene Abklingzeit. Welche der beiden Wirkungen kommt, sagt der Text nicht (unbelegt);
+  auch dann halbiert es eine der beiden Schadensarten des angekündigten Treffers. Es steht im Abwehrzweig für Einzelziele
+  nach Drachenkraft, auf den Spieler selbst – derselbe Zweig, der für einen Tankbuster auf ihn öffnet.
+- *Absichern (18306):* lenkt den Schaden, der dem Spieler gilt, 12 s auf ein Mitglied in 10 Yalm, „Does not activate with
+  certain attacks“ ohne Liste. Bewusst nicht: Es verschiebt Schaden auf einen anderen, dessen Überleben RSR nicht
+  vorhersagt, und welche Angriffe es nicht deckt, sagt keine Quelle (CLAUDE.md, „Spielweise“: Sicherheit der Gruppe).
+
+**Angriffs- und Kontrollzauber, die RSR nie fragte** (Befund 20.11.2026, A944). Wirktexte aus `ActionId.resx`, Wirk- und
+Abklingzeiten aus dem Blatt (xivapi v2, 20.11.2026).
+- *Geiststoß (Mind Blast, 11394):* 200 auf alle Gegner um den Spieler (6 Yalm), jeder weitere 50 % weniger, dazu
+  Paralyse; 1 s Wirkzeit. Ein Flächenfüller wie die übrigen: in der Füllregel, wo `OverSonicBoom` ihn vorn sieht.
+- *Rubin-Dynamo (Ruby Dynamics, 34571):* 220 im Kegel (12 Yalm), 2 s Wirkzeit, 30 s Abklingzeit, teilt sie mit
+  Schildkrötentor und Rose der Zerstörung. Nach der Rose: Liegt sie im Set, nimmt sie die gemeinsame Abklingzeit zuerst;
+  sonst Rubin-Dynamo, wo `OverSonicBoom` ihn vorn sieht – auf ein einzelnes Ziel nie, weil seine Wirkzeit länger ist
+  als die des Überschallknalls.
+- *Gemeinsame Abklingzeit mit dem Schildkrötentor* (Code-Review 20.11.2026, A946): Unter Tank-Mimikry und mit dem Tor
+  im Set nehmen Rose und Rubin-Dynamo die 30 s nur, wenn innerhalb ihrer Abklingzeit kein Tankbuster auf den Spieler
+  angekündigt ist (`TankbusterOnMeWithin`); sonst bliebe dem Tank für den Treffer kein Tor. Ohne Ankündigung (kein
+  Modul, kein gemessener Wirkbeginn) geht der Schaden vor – sonst läge die Abklingzeit im Trash ungenutzt; der Preis:
+  Ein Tankbuster, den nichts ankündigt, trifft ohne Tor. Für die Rose galt das vorher nicht; ihre Abklingzeit nahm das
+  Tor ebenso.
+- *Bewusst nicht:*
+  - Laserauge (34577): 220 um das Ziel (8 Yalm) und 5 Yalm Rückstoß für alle Gegner darin – der Rückstoß zerstreut das
+    Rudel, auf das sein Flächenwert zählt; auf ein Ziel schlägt ihn der Überschallknall (2 s gegen 1 s Wirkzeit).
+  - Perpetueller Strahl (18314) als Öffner für Blankes Messer: Seine Betäubung hält 1 s, Blankes Messer wirkt 1 s
+    (Blatt) – die Betäubung endet vor dem Treffer. WrathCombo kombiniert beide (Werkzeugquelle, a457838); das trägt
+    gegen die Zeiten nicht. Als Füller schon ausgeschlossen (Füllreihenfolge).
+  - Eichelbombe (11392): Schlaf auf Ziel und Umgebung; der erste Treffer weckt, und RSR plant keine Kontrolle (Konzept
+    14, „Hilfsaktionen“). Schlaf (25880) dagegen nutzt RSR zentral, um einen gegnerischen Zauber zu stoppen
+    (`StopEnemyCast`); die Aktionsmatrix führte ihn bei allen Magiern und Heilern als ungenutzt, weil sie den Aufruf über
+    eine lokale Variable nicht las (A944).
+- *Offen:* Apokalypsis (34581), ein Kanal für 140 Schaden über Zeit in einer Linie, 10 s, 120 s Abklingzeit, teilt sie
+  mit Sterblichkeit (die RSR nutzt). Ob er sich gegen vier GCDs lohnt, hängt an seinem Tickabstand, den weder Text noch
+  Blatt nennen (weiß nicht); RSR drückt ihn nicht, hält ihn aber, wenn der Spieler ihn drückt (Konzept 14). Warten auf einen Mitschnitt: TODO,
+  „Blaumagier: Apokalypsis“.
+
+**Matschkuchen und Reinemachen: Erhaltung des Tanks aus dem Rudel** (Befund 20.11.2026, A942)
+- Wirktexte: Mjam Mjam Matschkuchen (34569) 100 Potenz auf Ziel und Umgebung, jeder weitere 50 % weniger, dazu Begrimed
+  (10 Potenz je Tick, 9 s). Großes Reinemachen (34570) 220 auf alle nahen Gegner, jeder weitere 50 % weniger; je Gegner
+  mit Begrimed ein Stapel Spick-and-span (Regen 50, mit den Stapeln bis 300, 15 s; weitere Stapel verlängern nicht),
+  Begrimed endet. Vorher fragte der Code keinen der beiden (Aktionsmatrix: „ungenutzt“).
+- *Regel:* Reinemachen, sobald ein Gegner in Reichweite die eigene Begrimed trägt und die Stapel unter der Höchstzahl
+  liegen, die das Statusblatt nennt (`Status.MaxStacks`; Upstream hielt sie als feste 6). Matschkuchen nur unter
+  Tank-Mimikry, nur mit Reinemachen im Set und auf Stufe, nur auf mehr als einen Gegner (sonst bringen zwei Füller mehr
+  Schaden und das Regen nur einen Stapel), und nur, solange Spick-and-span fehlt oder vor dem Ende von Matschkuchen und
+  Reinemachen ausläuft. Beide stehen nach Göttlichem Katarakt im Zweig für Hilfe und Schwächung. Die Setverbesserung
+  nimmt zu einem von beiden im Set den anderen auf; einer allein wirkt nicht.
+- *Im Kampf:* Der Tank-Blaumagier vor einem Rudel aus drei Gegnern gibt zwei GCDs mit 200 + 90 und 440 Potenz statt
+  zweier Flächenfüller und erhält Regen mit drei Stapeln für 15 s; gegen einen einzelnen Boss ändert sich nichts.
+- *Nicht als DPS:* Ohne Tank-Mimikry trägt das Regen keinen Druck, und zwei GCDs mit 100er-Einstieg schlagen die
+  Flächenzauber nicht; Reinemachen geht dort nur, wenn Begrimed schon liegt.
+- *Unbelegt:* wie die Heilwirkung mit den Stapeln wächst (der Text nennt nur 50 bis 300); die Regel hängt nicht daran.
+
+**Ewige Flammen: eine Wirkung, die bis zum Tod brennt** (Befund 20.11.2026, A940). Die Ziel-Rotation nennt Ewige Flammen,
+`MaintainDoTs` fragte ihn nie (Aktionsmatrix: „ungenutzt"); legte der Spieler ihn ins Set, ging er nie, und in jedem
+längeren Kampf fehlte sein Schaden über Zeit.
+- *Wirktext und Blatt:* 40 Potenz je Tick, „Only one effect inflicted by this action can be active at a time", wirkt nur
+  im Kampf und endet mit ihm; der Status (3643, „Flames will continue to burn until death", im Blatt dauerhaft) hat keine
+  Dauer. Ein Tick alle 3 s (`DotTickTracker.TickMs`). Denselben Satz „only one effect" trägt nur noch Zauberatem; über
+  alle Jobs keine weitere Aktion (Wirktexte, 20.11.2026) – die Regel sitzt deshalb beim Blaumagier.
+- *Regel:* Ewige Flammen geht auf das Ziel, wenn seine Ticks bis zum geschätzten Tod mehr Potenz bringen, als der
+  Füllzauber in der Wirkzeit von Ewige Flammen brächte: Potenz × (Lebenszeit ÷ Tick) gegen Füllpotenz × Wirkzeit ÷
+  Füllzeit, beides aus den Wirktexten; der gemessene Schaden je Potenz kürzt sich heraus. Trägt schon ein anderer
+  lebender Gegner die eigene Wirkung, zieht sie nur um, wenn das Ziel um diesen Betrag mehr Ticks vor sich hat als
+  der Träger – sonst kostet jeder Zielwechsel einen GCD und nimmt dem Träger seine Ticks. Ist die Lebenszeit des
+  Ziels unbekannt, zählt sie als lang, wie beim Rösselsprung und dem Messer; ist die des Trägers oder des Ziels beim
+  Umzug unbekannt, bleibt die Wirkung, wo sie ist.
+- *Reihenfolge:* nach dem Gesang der Gemarterten und Zauberatem, die mehr Potenz je Tick bringen und ablaufen; vor dem
+  Füllzauber.
+- *Im Kampf anders:* Gegen einen Boss trägt Ewige Flammen vom zweiten GCD an bis zum Ende; über zehn Minuten sind das
+  200 Ticks, 8.000 Potenz für einen GCD. Ein Gegner, der stirbt, bevor sich der GCD bezahlt macht, bekommt ihn nicht.
+- *Setverbesserung* (A945): Ist Ewige Flammen gelernt und fehlt im Set, nimmt sie ihn nach den Kettenpartnern und vor
+  den Zaubern mit Abklingzeit auf, nur auf einen freien Platz oder den eines Füllers, den RSR nicht wirkt. Grund: Er
+  macht sich ab etwa sechs Ticks bezahlt (Überschallknall 210 gegen 40 je Tick), also auf jedem Ziel, das länger als
+  rund 18 s lebt; ob er auf ein Ziel geht, entscheidet die Regel oben im Kampf, der Platz kostet sonst nichts. Als
+  Schaden über Zeit ist er kein schlichter Füller (`IsPlainFiller` liest „over time“ als Bedingung) und macht später
+  keinem anderen Zauber Platz.
+- *Gegenthese:* „Ewige Flammen lohnt nur im Boss" – trifft die Regel, weil sie an der Lebenszeit rechnet, nicht an der
+  Gegnerart. „Zauberatem trägt dieselbe Einschränkung und verschiebt sich ebenso" – Zauberatem dauert 60 s und erneuert
+  sich über `TargetStatusProvide` am Ziel; ein Umzug kostet dort einen GCD, gewinnt aber eine volle Dauer am neuen
+  Ziel; nicht geändert, ohne Messung kein Befund.
 
 **Wert statt Reihenfolge** (die Behebung von D1, D3 bis D5 und D8 bis D10 als Klasse; Stufe 1, gebaut mit A507):
 - *Schaden je Potenz:* RSR misst ihn an den eigenen Treffern, im Effekt-Handler, der jeden Treffer sieht.
@@ -718,7 +835,8 @@ statt Reihenfolge" und „Mondflöte"):
   - *Hinzu kommen*, in dieser Reihenfolge, auf freie oder ersetzbare Plätze: Schallwelle als Füllzauber, wenn sie fehlt;
     die Partner der Ketten, deren einer Teil schon im Set steht (Dreizack mit Pfeife und Kribbeln, Schwinge mit Mette,
     Stimme des Widders mit Ultravibration, ein Rösselsprung mit dem anderen, Replikator mit Senfbombe, Matra-Magie mit
-    Borstigkeit); dann gelernte Schadenszauber mit Abklingzeit aus Abklinggruppen ohne Vertreter im Set, nach Potenz je
+    Borstigkeit, Matschkuchen und Reinemachen je mit dem anderen, A942); Ewige Flammen, wenn gelernt (A945); dann
+    gelernte Schadenszauber mit Abklingzeit aus Abklinggruppen ohne Vertreter im Set, nach Potenz je
     Sekunde.
   - Ein Platz wird nur überschrieben, wenn sein Zauber nicht abklingt; UltimateCombo tauscht ebenso nur bereite Zauber.
   - *Sein Set ist seine Entscheidung:* Ändert der Spieler das Set selbst (ein gespeichertes Set geladen, ein Zauber für
@@ -1425,7 +1543,9 @@ Beastmaster noch, nicht alle Fähigkeiten stehen am Anfang zur Verfügung.
   (Versteinerung), Silkscreen und Syrup (Fessel), Formic Pheromones und Regurgitate (Verlangsamung), Pins and Nails
   (Lähmung), Bad Breath (alle drei).
 - *Borrow nach Familie:* Beastkin – Beastskin (−25 % physischer Schaden, +5 % kritisch, 30 s); Vilekin – Vileskin (Block
-  100 %, kein Rückstoß); Cloudkin – Cloud Skim (Bewegung); Seedkin – Seedsower (Gegner −10 % Schaden, Gift); Wavekin –
+  100 %, kein Rückstoß); Cloudkin – Cloud Skim (Bewegung in die Richtung, die der Spieler wählt, +5 % Ausweichen 60 s; RSR
+  drückt ihn nie, weil er ihn aus seiner Stellung holt – CLAUDE.md, „Spielweise“ –, und 5 % Ausweichen tragen keinen
+  Druck; drückt er ihn selbst, prüft Konzept 05 den Landeort; A940); Seedkin – Seedsower (Gegner −10 % Schaden, Gift); Wavekin –
   Quelling Wave (350, TP); Scalekin – Scaleskin (Barriere 8 % gegen Magie); Soulkin – Soul Crush (Unterbrechung, 1.000);
   Ashkin – Scouring Ash (reinigt, heilt 10 %).
 
@@ -1945,6 +2065,23 @@ kurzen Einsätze der anderen (Entfesseln, Scheidender Schlag).
     fiel schon früh im GCD – dann bleibt es bei 2,5 s; die kann nur ein Ruf ohne Abtreten kürzen (unbelegt).
   - *Messmittel:* Je Abtreten des Zyklus schreibt RSR, wie lange der Begleiter bis zum Verschwinden brauchte und wie
     lange danach kein Begleiter draußen war; hält die Regel den Schlag, eine Zeile mit dem Grund, einmal je Halt.
+  - *Wo der Ruf ausbleibt (A975):* *Anforderung:* Am 21.11.2026 auf Brett 3 kam nach dem Fall des Geists zweimal kein
+    Begleiter mehr, 18 und 19 s bis zu seinem Tod, obwohl Gigantoad und Lamb auf bereiten Hörnern standen und er
+    stillstand; kein Ruf begann zu wirken (ACT, Zeile 20). W1 verspricht höchstens einen GCD Verzug. Die Spur zeigt
+    nicht, woran es lag: Die Ablehnungen der Hörner zählt sie nur über den ganzen Kampf (Animationssperre,
+    `CastRunsIntoGCD`), eine Ablehnung durch das Spiel nur einmal je Kampf, eine Ablehnung des Servers gab es in diesem
+    Build noch nicht als Zeile (A971). Ohne Messung bleibt jede Behebung eine Vermutung; der Schaden ist ein Begleiter,
+    der 18 s fehlt, und mit ihm das Ziel der nächsten Deckung. *Bauart:* Die Ablöse misst ohnehin die Strecke ohne
+    Begleiter; sie beginnt jetzt auch, wenn der Begleiter fällt (nicht nur beim Fortschicken), und zu Kampfbeginn ohne
+    Begleiter – ein ausbleibender erster Ruf kostet dasselbe –, dann mit „from the pull“ in der Zeile, damit die Auswertung
+    der Ablöse sie nicht mitzählt (Code-Review A980). Sie zählt je Frame, ob ein
+    Horn mit Begleiter bereit ist, ob die Rotation es als nächste Aktion gewählt hat, ob das Tor zum Drücken dabei zu ist
+    (Wirkzeit oder Animationssperre, `ActionUpdater.GateClosedByCastOrLock`) und wie oft ein Ruf zu wirken beginnt. Ist
+    die Strecke länger als ein GCD, steht das am Ende in ihrer Zeile – auch wenn kein Begleiter mehr kommt (Kampfende,
+    eigener Fall). *Auswertung:* „chosen 0 s" bei bereitem Horn heißt, die Wahl lehnt ab – die Gründe nennt die Zeile
+    „ready but unused"; gewählt, aber das Tor zu, heißt, das Drücken wartet; gewählt, Tor offen und kein Wirkbeginn
+    heißt, das Spiel oder der Server nimmt den Ruf nicht („the server rejected …", A971). Kosten je Frame: ein Vergleich
+    und drei Abfragen, nur ohne Begleiter im Kampf.
   - *Vorrang des Rufs (A800):* Ist kein Begleiter draußen, geht der Ruf des nächsten Horns vor jede andere Fähigkeit;
     davor bleibt nur Schutz in der Gefahr (Scaleskin, B2). *Gemessen (sein Lauf vom 14.11.2026, Brett 2):* Nach dem
     Abtreten kam der Nachfolger 0,9 s später, wo keine andere Fähigkeit dazwischenkam, und 3,1 bis 3,4 s später, wo RSR

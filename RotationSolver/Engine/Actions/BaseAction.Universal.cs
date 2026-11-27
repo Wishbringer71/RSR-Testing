@@ -19,4 +19,32 @@ public partial class BaseAction : IBaseAction
 	/// <see cref="Setting"/> is assigned once during construction.
 	/// </summary>
 	private ActionConfig DefaultConfig => _defaultConfig ??= Setting.CreateConfig?.Invoke() ?? new ActionConfig();
+
+	// A929 (concept 07, "Der Heil-GCD für ein Mitglied der kritischen Klasse"): the target is one of them, or an area heal
+	// covers one.
+	private static bool ReachesAny(TargetResult result, List<IBattleChara> members)
+	{
+		foreach (var member in members)
+		{
+			if (result.Target?.GameObjectId == member.GameObjectId)
+			{
+				return true;
+			}
+
+			if (result.AffectedTargets == null)
+			{
+				continue;
+			}
+
+			foreach (var affected in result.AffectedTargets)
+			{
+				if (affected?.GameObjectId == member.GameObjectId)
+				{
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
 }

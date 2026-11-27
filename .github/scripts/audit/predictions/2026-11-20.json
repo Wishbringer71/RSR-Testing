@@ -1,0 +1,9 @@
+[
+  {
+    "id": "positional-move-opens",
+    "archive": "A948",
+    "kind": "present",
+    "situation": "positional move:",
+    "match": "positional move: BossMod walks you to the (rear|flank) for .+$"
+  }
+]

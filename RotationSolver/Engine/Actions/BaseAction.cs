@@ -255,6 +255,19 @@ public partial class BaseAction : IBaseAction
 			return ActionTracer.Reject(this, "NoTarget");
 		}
 
+		// A930 (concept 03, "Dynamische Rotation", D1): what the game refused on this target waits until the game takes it.
+		if (!TargetInfo.IsTargetArea
+			&& DynamicRotation.StillRefused(this, PreviewTarget.Value.Target?.GameObjectId ?? Player.Object?.GameObjectId ?? 0))
+		{
+			return ActionTracer.Reject(this, "RefusedByGame");
+		}
+
+		// A929 (concept 07): while the heal path asks only for the member in the critical class, no other target.
+		if (IBaseAction.CriticalHealTargets is { } critical && !ReachesAny(PreviewTarget.Value, critical))
+		{
+			return ActionTracer.Reject(this, "MissesTheCriticalMember");
+		}
+
 		// A defence that protects only the player is spent only on a hit that reaches him. "Only the
 		// player" is read from the game data and the target: it lands on him and has no effect radius -
 		// Rampart, Damnation, Arm's Length, a barrier aimed at himself - while Reprisal, Shake It Off or
@@ -377,13 +390,13 @@ public partial class BaseAction : IBaseAction
 		var adjustId = AdjustedID;
 		if (TargetInfo.IsTargetArea)
 		{
-			if (adjustId != ID || !target.Position.HasValue)
+			if (!target.Position.HasValue)
 			{
 				return false;
 			}
 
 			var loc = target.Position.Value;
-			return actionManager->UseActionLocation(ActionType.Action, ID, Player.Object.GameObjectId, &loc);
+			return actionManager->UseActionLocation(ActionType.Action, adjustId, Player.Object.GameObjectId, &loc);
 		}
 
 		var targetId = target.Target?.GameObjectId ?? Player.Object.GameObjectId;

@@ -603,35 +603,84 @@ internal static partial class DataCenter
 			return true;
 		}
 
+		var aimedAt = CastAimedAt(h);
+
+		// A920: circles and lines come from the one description the area display draws.
+		if (PlainAreaShape(h, act, aimedAt, degrees, inner) is { } shape)
+		{
+			return shape.Reaches(member);
+		}
+
+		// A731: a cone by the angle its omen names, in the cast's direction (A766); a ring with a sector in its omen counts as
+		// that cone without its inner circle.
+		if ((IsConeCastType(act.CastType) || (CastType)act.CastType == CastType.Donut) && degrees > 0f)
+		{
+			return InCone(h.Position, CastDirection(h), act.EffectRange + CasterRadius(h, act), degrees, member);
+		}
+
+		// A731: a ring spares who stands wholly inside its inner circle.
+		var centre = act.Range > 0 && !act.CanTargetSelf && aimedAt != null ? aimedAt.Position : h.Position;
+		var distance = HorizontalDistance(member.Position, centre);
+		return distance - member.HitboxRadius <= act.EffectRange && distance + member.HitboxRadius >= inner;
+	}
+
+	// The target a cast names, while it is another valid character than the caster.
+	private static IBattleChara? CastAimedAt(IBattleChara h)
+	{
 		var aimedAt = h.CastTargetObjectId != h.GameObjectId
 			? Svc.Objects.SearchById(h.CastTargetObjectId) as IBattleChara
 			: null;
-		if (aimedAt != null && !aimedAt.IsValid())
-		{
-			aimedAt = null;
-		}
+		return aimedAt != null && aimedAt.IsValid() ? aimedAt : null;
+	}
 
+	// A731: types 3, 4 and 5 reach past the caster's hitbox, 2, 12 and 13 do not (BossModReborn's analysis, "range X+R").
+	private static float CasterRadius(IBattleChara h, Action act)
+		=> (CastType)act.CastType is CastType.Cone or CastType.StraightLine or CastType.Unknown5 ? h.HitboxRadius : 0f;
+
+	/// <summary>
+	/// A920 (concept 13, "Flächenanzeige: eine richtige Anzeige je Wirken"): a circle or a line as the game lays it for an enemy cast - a line
+	/// from the caster in the direction the game keeps (A766), a circle on the place the game keeps, on the target it names
+	/// (moving with it) or around the caster. The reach is measured without the struck member's hitbox. Null for a cone by
+	/// its omen and a ring with its inner circle, which only the hit test knows.
+	/// </summary>
+	internal readonly record struct AreaShape(bool Line, Vector3 Centre, Vector3 Direction, float Reach, float HalfWidth, ulong Follows)
+	{
+		internal bool Reaches(IBattleChara member)
+		{
+			if (!Line)
+			{
+				return HorizontalDistance(member.Position, Follows != 0 && Svc.Objects.SearchById(Follows) is { } followed ? followed.Position : Centre)
+					- member.HitboxRadius <= Reach;
+			}
+
+			var toMember = member.Position - Centre;
+			toMember.Y = 0;
+			var along = Vector3.Dot(Direction, toMember);
+			var across = Vector3.Cross(Direction, toMember).Length();
+			return along >= -member.HitboxRadius && along <= Reach + member.HitboxRadius && across <= HalfWidth + member.HitboxRadius;
+		}
+	}
+
+	internal static AreaShape? PlainAreaShape(IBattleChara h, Action act)
+	{
+		var (degrees, inner) = OmenShape(act);
+		return PlainAreaShape(h, act, CastAimedAt(h), degrees, inner);
+	}
+
+	private static AreaShape? PlainAreaShape(IBattleChara h, Action act, IBattleChara? aimedAt, float degrees, float inner)
+	{
 		if ((CastType)act.CastType == CastType.Circle && act.Range > 0 && !act.CanTargetSelf && !act.TargetArea && aimedAt != null)
 		{
-			return HorizontalDistance(member.Position, aimedAt.Position) - member.HitboxRadius - aimedAt.HitboxRadius <= act.EffectRange;
+			return new(false, aimedAt.Position, default, act.EffectRange + aimedAt.HitboxRadius, 0f, aimedAt.GameObjectId);
 		}
 
-		// A731: types 3, 4 and 5 reach past the caster's hitbox, 2, 12 and 13 do not (BossModReborn's analysis, "range X+R").
-		var casterRadius = (CastType)act.CastType is CastType.Cone or CastType.StraightLine or CastType.Unknown5 ? h.HitboxRadius : 0f;
-
+		var casterRadius = CasterRadius(h, act);
 		if (act.CastType is (byte)CastType.StraightLine or LineFromCasterCastType && act.XAxisModifier > 0)
 		{
 			var direction = CastDirection(h);
 			if (direction.LengthSquared() > 0f)
 			{
-				direction = Vector3.Normalize(direction);
-				var toMember = member.Position - h.Position;
-				toMember.Y = 0;
-				var along = Vector3.Dot(direction, toMember);
-				var across = Vector3.Cross(direction, toMember).Length();
-				return along >= -member.HitboxRadius
-					&& along <= act.EffectRange + casterRadius + member.HitboxRadius
-					&& across <= (act.XAxisModifier / 2f) + member.HitboxRadius;
+				return new(true, h.Position, Vector3.Normalize(direction), act.EffectRange + casterRadius, act.XAxisModifier / 2f, 0);
 			}
 		}
 
@@ -639,26 +688,17 @@ internal static partial class DataCenter
 		{
 			// A766: around the place the game keeps for the cast; without one, from the caster with both hitboxes.
 			return CastLocation(h) is { } place
-				? HorizontalDistance(member.Position, place) - member.HitboxRadius <= act.EffectRange
-				: HorizontalDistance(member.Position, h.Position) - member.HitboxRadius - h.HitboxRadius <= act.EffectRange;
+				? new(false, place, default, act.EffectRange, 0f, 0)
+				: new(false, h.Position, default, act.EffectRange + h.HitboxRadius, 0f, 0);
 		}
 
-		// A731: a cone by the angle its omen names, in the cast's direction (A766); a ring with a sector in its omen counts as
-		// that cone without its inner circle.
-		if ((IsConeCastType(act.CastType) || (CastType)act.CastType == CastType.Donut) && degrees > 0f)
+		if (((IsConeCastType(act.CastType) || (CastType)act.CastType == CastType.Donut) && degrees > 0f)
+			|| ((CastType)act.CastType == CastType.Donut && inner > 0f))
 		{
-			return InCone(h.Position, CastDirection(h), act.EffectRange + casterRadius, degrees, member);
+			return null;
 		}
 
-		// A731: a ring spares who stands wholly inside its inner circle.
-		if ((CastType)act.CastType == CastType.Donut && inner > 0f)
-		{
-			var centre = act.Range > 0 && !act.CanTargetSelf && aimedAt != null ? aimedAt.Position : h.Position;
-			var distance = HorizontalDistance(member.Position, centre);
-			return distance - member.HitboxRadius <= act.EffectRange && distance + member.HitboxRadius >= inner;
-		}
-
-		return HorizontalDistance(member.Position, h.Position) - member.HitboxRadius <= act.EffectRange + casterRadius;
+		return new(false, h.Position, default, act.EffectRange + casterRadius, 0f, 0);
 	}
 
 	// A766 (concept 13, "Wirkrichtung und Ort aus dem Spiel"): the direction the game keeps for the cast, as BossMod reads
@@ -695,7 +735,7 @@ internal static partial class DataCenter
 	// A731: cast type 13 is a cone like type 3 (Cone), which the enum does not name, measured from the caster's centre.
 	private const byte ConeFromCentreCastType = 13;
 
-	private static bool IsConeCastType(byte castType) => castType == (byte)CastType.Cone || castType == ConeFromCentreCastType;
+	internal static bool IsConeCastType(byte castType) => castType == (byte)CastType.Cone || castType == ConeFromCentreCastType;
 
 	// A731: whether <member> stands in a cone from <origin> towards <direction> - within its reach and its angle, its hitbox
 	// in favour of the hit.

@@ -1416,6 +1416,9 @@ public sealed partial class BST_Reborn : BeastmasterRotation
 	private static string _reliefHold = string.Empty;
 	private static DateTime _windowHoldSince = DateTime.MinValue;
 
+	// A975 (concept 01, B6 "Wo der Ruf ausbleibt"): the last frame of a stretch without a familiar (BST_Reborn.Relief.cs).
+	private static DateTime _reliefFrame = DateTime.MinValue;
+
 	// B6: measures each retreat - from the sending action until no familiar is out - and the time without a familiar
 	// until the next one is called; one trace line per relief.
 	private void FollowRelief()
@@ -1430,6 +1433,7 @@ public sealed partial class BST_Reborn : BeastmasterRotation
 		_wasLeaving = leaving;
 		if (ActiveBattlehorn == 0)
 		{
+			FollowStretchWithoutFamiliar(now);
 			if (_sentOffAt != DateTime.MinValue)
 			{
 				var took = (float)(now - _sentOffAt).TotalSeconds;
@@ -1441,7 +1445,7 @@ public sealed partial class BST_Reborn : BeastmasterRotation
 				}
 
 				_sentOffAt = DateTime.MinValue;
-				_noneOutSince = InCombat ? now : DateTime.MinValue;
+				StartStretchWithoutFamiliar(InCombat ? now : DateTime.MinValue);
 				if (InCombat)
 				{
 					DefenseTrace.Line($"horn relief: the familiar was gone {took:F2} s after it was sent off (longest {_leaveSeconds:F2} s)");
@@ -1451,17 +1455,19 @@ public sealed partial class BST_Reborn : BeastmasterRotation
 			return;
 		}
 
+		NoteFamiliarOut();
 		if (_noneOutSince != DateTime.MinValue)
 		{
 			if (InCombat)
 			{
 				DefenseTrace.Line($"horn relief: {(now - _noneOutSince).TotalSeconds:F1} s without a familiar until "
-					+ $"{(HornOrder)ActiveBattlehorn} ({CurrentPet}) came");
+					+ $"{(HornOrder)ActiveBattlehorn} ({CurrentPet}) came{StretchDetail(now)}");
 			}
 
 			_noneOutSince = DateTime.MinValue;
 		}
 	}
+
 
 	// B6: whether the familiar that follows can be called as soon as the one out is gone - the retreat ends before the
 	// call window of the next GCD closes (the GCD's rest, a whole GCD, less the horn's cast time and the window kept free

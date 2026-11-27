@@ -25,7 +25,13 @@ internal static partial class TargetUpdater
 
 	private static readonly List<IBattleChara> _raiseCandidates = [];
 	private static readonly List<IBattleChara> _dispelCandidates = [];
+	private static readonly List<IBattleChara> _allTargetsCache = [];
+	private static readonly List<IBattleChara> _deathTanksCache = [];
+	private static readonly List<IBattleChara> _deathHealersCache = [];
+	private static readonly List<IBattleChara> _deathOffHealersCache = [];
+	private static readonly List<IBattleChara> _deathOthersCache = [];
 
+	// A new list each update: DeepDungeonCrowd and the trace keep what one update handed them (fork, A834).
 	private static List<IBattleChara> _outOfDutyPlayers = [];
 
 	private static long _lastUpdateTimeToKill;
@@ -334,7 +340,7 @@ internal static partial class TargetUpdater
 
 	private static List<IBattleChara> GetAllTargets()
 	{
-		List<IBattleChara> allTargets = [];
+		_allTargetsCache.Clear();
 		var skipDummyCheck = !Service.Config.DisableTargetDummys;
 
 		var objects = Svc.Objects;
@@ -353,13 +359,13 @@ internal static partial class TargetUpdater
 						&& battleChara.HasNativeState()
 						&& !battleChara.IsPet())
 					{
-						allTargets.Add(battleChara);
+						_allTargetsCache.Add(battleChara);
 					}
 				}
 			}
 		}
 
-		return allTargets;
+		return _allTargetsCache;
 	}
 
 	// Every hostile target that satisfies the predicate, in the order of the hostile list.
@@ -512,10 +518,15 @@ internal static partial class TargetUpdater
 			return null;
 		}
 
-		List<IBattleChara> deathTanks = [];
-		List<IBattleChara> deathHealers = [];
-		List<IBattleChara> deathOffHealers = [];
-		List<IBattleChara> deathOthers = [];
+		_deathTanksCache.Clear();
+		_deathHealersCache.Clear();
+		_deathOffHealersCache.Clear();
+		_deathOthersCache.Clear();
+
+		var deathTanks = _deathTanksCache;
+		var deathHealers = _deathHealersCache;
+		var deathOffHealers = _deathOffHealersCache;
+		var deathOthers = _deathOthersCache;
 
 		foreach (var chara in validRaiseTargets)
 		{
@@ -541,19 +552,18 @@ internal static partial class TargetUpdater
 			}
 		}
 
-		if (raiseType == RaiseType.PartyAndAllianceHealers && deathHealers.Count > 0)
-		{
-			return deathHealers[0];
-		}
-
 		// H2 as its option text states it: "Raise non-Healers from bottom of party list to the top".
-		// Healers keep the list order; the tank, off-healer and remaining lists turn. It used to
-		// turn the healer list too, against the text - the owner's rule: the UI settings bind.
+		// Healers keep the list order; the tank, off-healer and remaining lists turn.
 		if (Service.Config.H2)
 		{
 			deathTanks.Reverse();
 			deathOffHealers.Reverse();
 			deathOthers.Reverse();
+		}
+
+		if (raiseType == RaiseType.PartyAndAllianceHealers && deathHealers.Count > 0)
+		{
+			return deathHealers[0];
 		}
 
 		if (deathTanks.Count > 1)

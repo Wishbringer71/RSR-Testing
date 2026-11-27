@@ -27,7 +27,9 @@ internal static partial class DataCenter
 	/// Concept 03 (A833): whether <paramref name="enemy"/> is not fighting yet - it holds no target and its figure is not in
 	/// combat (a fighting enemy can hold no target for a moment, casting at the ground or between phases).
 	/// </summary>
-	internal static bool NotFightingYet(IBattleChara enemy) => enemy.TargetObject == null && !enemy.InCombat();
+	// A923: a training dummy never fights and pulls nothing - an area that grazes the next one in a row stays an attack on
+	// the chosen target.
+	internal static bool NotFightingYet(IBattleChara enemy) => enemy.TargetObject == null && !enemy.InCombat() && !enemy.IsDummy();
 
 	/// <summary>
 	/// Whether an action may not reach an enemy that is not fighting yet: in a deep dungeon its own options decide - the one
@@ -519,7 +521,8 @@ internal static partial class DataCenter
 	public static bool IsHostileCastingTank(IBattleChara h)
 	{
 		return h != null && IsHostileCastingBase(h, act => OtherConfiguration.HostileCastingTank.Contains(act.RowId)
-			|| h.CastTargetObjectId == h.TargetObjectId);
+			// Upstream c79f584a5: a cast at no one (0, or E0000000) by an enemy without a target is no cast at its target.
+			|| (h.CastTargetObjectId is not 0 and not 0xE0000000 && h.CastTargetObjectId == h.TargetObjectId));
 	}
 
 	public static bool IsHostileCastingArea(IBattleChara h)

@@ -29,7 +29,12 @@ public sealed class PLD_Reborn : PaladinRotation
 	[RotationConfig(CombatType.PvE, Name = "Use Hallowed Ground with Cover")]
 	private bool HallowedWithCover { get; set; } = true;
 
-	[RotationConfig(CombatType.PvE, Name = "Use up both stacks of Intervene during burst window")]
+	// The owner's rule (20.11.2026, A954): a tank's dash keeps its charges for the way to the next pack unless he chooses.
+	[RotationConfig(CombatType.PvE, Name = "Use Intervene for damage in combat",
+		Tooltip = "In a fight: on, Intervene also hits a boss for damage while you stand at it. Off, and on trash, its charges stay for the next pack.")]
+	private bool UseInterveneForDamage { get; set; } = false;
+
+	[RotationConfig(CombatType.PvE, Name = "Use up both stacks of Intervene during burst window", Parent = nameof(UseInterveneForDamage))]
 	private bool UseInterveneFight { get; set; } = true;
 
 	[Range(0, 100, ConfigUnitType.Pixels)]
@@ -355,7 +360,7 @@ public sealed class PLD_Reborn : PaladinRotation
 			return true;
 		}
 
-		if (!IsMoving && IntervenePvE.CanUse(out act, usedUp: UseInterveneFight && HasFightOrFlight))
+		if (UseInterveneForDamage && DashDamageTarget && !IsMoving && IntervenePvE.CanUse(out act, usedUp: UseInterveneFight && HasFightOrFlight))
 		{
 			return true;
 		}

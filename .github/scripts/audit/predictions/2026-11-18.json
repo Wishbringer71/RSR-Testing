@@ -81,7 +81,7 @@
   "archive": "A892",
   "kind": "each",
   "situation": "crucible spoils:",
-  "match": "crucible spoils: [0-9]+ pieces, [0-9]+ item and [0-9]+ gear slots free - (take all|take .+; leave .+)$"
+  "match": "crucible spoils: [0-9]+ pieces, [0-9]+ item and [0-9]+ gear slots free - (take all|take .+; leave .+|nothing offered)$"
  },
  {
   "id": "crucible-team-screen-line-form",

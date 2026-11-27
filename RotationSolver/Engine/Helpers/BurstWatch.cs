@@ -6,7 +6,7 @@ namespace RotationSolver.Engine.Helpers;
 /// <summary>
 /// Cooldowns that stood ready in a fight and did not come (concept 03, "Bereit, aber nicht genutzt", A820). Every job or
 /// role action of the running rotation for the current mode with a recast group of its own beside the GCD - abilities and GCDs like Technical Step - counts
-/// while a charge of it is ready, the player is in combat and a hostile is in range; defence and movement do not. Each
+/// while a charge of it is ready, the player is in combat and a hostile is in range; defence and movement do not, the damaging leaps do (A960). Each
 /// stretch longer than a GCD is added up with the reasons <c>CanUse</c> refused it for (<see cref="Refused"/>, fed by
 /// <see cref="ActionTracer.Reject"/>), and one trace line per fight names them. It decides nothing: it shows where a
 /// rotation waits on purpose - charges pooled, a window awaited - and where a check holds it.
@@ -169,7 +169,9 @@ internal static class BurstWatch
 			var row = action.Action;
 			if (!row.IsInJob() || row.ClassJobCategory.RowId <= 1 || row.CooldownGroup == ActionHelper.GCDCooldownGroup
 				|| DefensiveValues.For(action.ID) != default
-				|| action.Setting.SpecialType is not (SpecialActionType.None or SpecialActionType.MeleeRangedAttack)
+				// A960: the damaging leaps count as well (Stardiver stood unasked in 9 of 11 windows, unseen here).
+				|| action.Setting.SpecialType is not (SpecialActionType.None or SpecialActionType.MeleeRangedAttack
+					or SpecialActionType.HostileMovingAttack)
 				|| _byId.ContainsKey(action.ID))
 			{
 				continue;

@@ -599,8 +599,15 @@ public sealed partial class SMN_Reborn : SummonerRotation
 		var burstAboutToStart = IsBurst && bigSummonReady
 			&& (NextBigSummonIsBurst || minorSummonsOpen);
 
+		var demiAboutToStart = !inBigInvocation
+			&& (SummonBahamutPvE.Cooldown.WillHaveOneCharge(WeaponRemain)
+				|| (SummonSolarBahamutPvE.EnoughLevel
+					&& SummonSolarBahamutPvE.Cooldown.WillHaveOneCharge(WeaponRemain)));
+
 		var mayFireSearingLight = burstInSolar
 			|| burstAboutToStart
+			|| SearingLightOnCooldownAlone(bigSummonReady)
+			|| SearingLightInAnyDemiAlone(bigSummonReady, inBigInvocation || demiAboutToStart)
 			|| (AnotherSummonerInParty
 				&& ((inBigInvocation && BurstPhaseHeldByAnother)
 					|| (AllSearingPhasesHeld && fallbackBlockIsWorthIt && !HasAnySearingLight)));
@@ -610,10 +617,6 @@ public sealed partial class SMN_Reborn : SummonerRotation
 		// this Searing Light took the only slot before the demi and the shield was locked out for the
 		// phase (RadiantAegisDueBeforeDemi). Any demi, not only the burst one, and with burst switched
 		// off as well: every demi replaces Carbuncle.
-		var demiAboutToStart = !inBigInvocation
-			&& (SummonBahamutPvE.Cooldown.WillHaveOneCharge(WeaponRemain)
-				|| (SummonSolarBahamutPvE.EnoughLevel
-					&& SummonSolarBahamutPvE.Cooldown.WillHaveOneCharge(WeaponRemain)));
 		if (demiAboutToStart && RadiantAegisAheadOfRaidwide
 			&& RadiantAegisPvE.CanUse(out act, usedUp: true, skipStatusProvideCheck: true))
 		{
@@ -762,8 +765,12 @@ public sealed partial class SMN_Reborn : SummonerRotation
 		// the gauge otherwise is one GCD a stack, a weave slot each (A375).
 		var drainIn = EnergyDrainPvE.Cooldown.RecastTimeRemainOneCharge;
 		var burstSummon = SummonSolarBahamutPvE.EnoughLevel ? SummonSolarBahamutPvE : SummonBahamutPvE;
+		// Asked every pass, outside the chain below, so the time the summon stands ready is never left over from an earlier
+		// window: the wait ends when the summon stood ready for a GCD and the window did not open (A952).
+		var burstSummonHeld = BurstSummonHeldElsewhere(burstSummon);
 		var aetherflowWaitsForBurst = !inBigInvocation && IsBurst && NextBigSummonIsBurst && SearingLightPvE.EnoughLevel
-			&& burstSummon.Cooldown.WillHaveOneCharge(drainIn) && SearingLightPvE.Cooldown.WillHaveOneCharge(drainIn);
+			&& burstSummon.Cooldown.WillHaveOneCharge(drainIn) && SearingLightPvE.Cooldown.WillHaveOneCharge(drainIn)
+			&& !burstSummonHeld;
 
 		if (PainflarePvE.CanUse(out act))
 		{
@@ -776,6 +783,13 @@ public sealed partial class SMN_Reborn : SummonerRotation
 				return true;
 			}
 			if ((PainflarePvE.Target.Target.IsBossFromTTK() || PainflarePvE.Target.Target.IsBossFromIcon()) && PainflarePvE.Target.Target.IsDying())
+			{
+				return true;
+			}
+
+			// Before Energy Siphon (Energy Drain's recast) comes back, as for Necrotize: without this the gauge stayed full
+			// before a pack outside the window, and Energy Siphon and Energy Drain with it (A952).
+			if (EnergyDrainPvE.Cooldown.WillHaveOneChargeGCD(AetherflowStacks) && !aetherflowWaitsForBurst)
 			{
 				return true;
 			}

@@ -30,22 +30,7 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
 
 ## Defekte
 
-- Keine offenen Defekte.
-
 ## Offene Arbeit
-
-- **Rotationen aller Jobs über den Augenblick hinaus** (sein Auftrag vom 19.11.2026; A901). *Wirkung im Kampf:*
-  Verstärker, Zeitgeber und DoTs laufen heute in vorhergesagte Pausen, Ressourcen bleiben beim Tod des Ziels übrig, der
-  eigene Burst richtet sich nach der eigenen Uhr statt nach den Raidbuffs, die wirklich auf dir liegen. *Nächster
-  Schritt:* K3 – Beobachtung gebaut (A904); nach seinem nächsten Upload aus einer Gruppe mit Raidbuffs die Spur
-  „group burst:“ auswerten, dann eigene Verstärker auf den Gruppenburst warten lassen; danach K1 mit
-  Rechnung über den Rest des Kampfes in `BasicCheck`, dann K2, K5, K4, K6. *Konzept:* 03, „F · Über den
-  Augenblick hinaus".
-
-- **Splatoons Flächenanzeige als Ersatz, wo BossMod kein Modul hat** (sein Vorschlag vom 19.11.2026). *Wirkung im
-  Kampf:* Ohne Modul wirken Wirkzeitsperre und Bewegungssperre nur reaktiv. *Nächster Schritt:* Splatoons Quelltext
-  lesen, seine Fehler (falsch, versetzt) an RSRs eigenen Formen aus den Blättern messen, Nutzen im Loop prüfen.
-  *Konzept:* 13, „Flächen ohne BossMod-Modul".
 
 ## Technische Schuld
 
@@ -59,12 +44,6 @@ jede solche Änderung trägt im selben Commit die Anpassung des Modus „plugin"
 ### Status-Einstellungen auf der falschen Seite der Aktion · N, U
 Fundstellen in Bozja (`scan11.py`), außerhalb seines Profils; je eine Richtungsentscheidung, die eine Beobachtung im
 Inhalt verlangt. *Auflösung:* erst, wenn er Bozja nennt. *Konzept:* 19.
-
-### Die Beiruta-Heiler lesen das Ziel des letzten Erfolgs · N, R
-BeirutaAST, BeirutaWHM und BeirutaSGE lesen `X.Target.Target` vor `X.CanUse`, an 17 Stellen, und prüfen so das Ziel des
-letzten Erfolgs, anfangs keines (A415); der eigene Code liest überall das Ziel derselben Entscheidung. Fremde
-Rotationen, außerhalb seines Profils. *Auflösung:* wenn er sie nennt – dann eine seiteneffektfreie Zielabfrage im Paket,
-die ihr Muster trägt. *Konzept:* 03.
 
 ### `HasSurvivingShield` misst die kürzeste Schildrestzeit · N, R
 Öffentlich, ohne Leser im Baum; der Tankbuster-Plan liest dieselbe Regel aus der Statusliste. Das Maximum tauschte den
@@ -114,6 +93,8 @@ ohne Schaden, die keine Rotation fragt; die Ausnahmen gelten nur Aktionen aller 
 (A855, A864). *Kosten:* eine Angabe ohne Wirkung im Kampf in jeder Zeile des Beastmasters. *Auflösung:* ein
 Merkmal aus den Blättern, das Hilfsaktionen von Fähigkeiten mit Wirkung trennt, ohne echte Abklingzeiten wie Buffs
 auszuschließen; bis dahin bleibt die Vorhersage `burstwatch-no-general-actions` für den Beastmaster widerlegt (A897).
+Gesucht am 20.11.2026 (A937): Im Aktionsblatt gleicht Gauge in Kategorie, Ziel, Reichweite, Abklingzeit und Kosten
+Capture; kein Feld trennt sie.
 *Konzept:* 03, „Bereit, aber nicht genutzt".
 
 ### Plugin-Identität ist die des Upstreams · N
@@ -124,15 +105,61 @@ nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigt
 
 ## Warten auf Daten oder Fremde
 
+- **Lumina: `ExtractText` veraltet** (A971). *Im Kampf:* nichts; der Build bricht an 127 Stellen, sobald Dalamud die
+  Lumina-Fassung ab 88c106d (24.11.2026) liefert, und ohne Build kein Plugin. *Auflösung:* mit dieser Dalamud-Fassung
+  auf `ToString()` umstellen, im selben Build gegen eine Stichprobe von Texten mit Makros geprüft. *Konzept:* 24.
+
+- **Weißmagier, Astrologe und Blaumagier am ersten Puppenmitschnitt gegen The Balance** (A967). *Im Kampf:* Spielt der
+  Code anders als seine Regel, fehlt Schaden, ohne dass der Regelabgleich es zeigt (viermal am 20.11.2026 bei anderen
+  Jobs). *Auflösung:* sein nächster Puppenmitschnitt mit einem dieser Jobs: GCD-Lücken, Abklinggruppen und Burstfenster
+  wie in A957 gegen den Guide. *Konzept:* 14, „Seine These vom 20.11.2026“.
+
+- **Ninja: Stillstand, wenn die Puppe ihn fallen lässt** (seine Meldung, 20.11.2026; Ursache A956). *Im Kampf:* Die Puppe
+  setzt ihr Ziel auf keines, der Kampf endet, RSR greift nicht wieder an, bis er selbst anschlägt. *Ort:* Zielwahl an
+  Puppen (`ObjectHelper.IsAttackable`), nach seinem Ziel. *Auflösung:* sein nächster Puppen-Upload mit einem
+  Build ab a45c8cc8e: Nach einem Fallenlassen kommt die nächste Aktion des Spielers auf die Puppe binnen eines GCD.
+  *Konzept:* 03 („Welche Puppe dein Kampf ist“).
+
+- **Rotation jedes Jobs: Synergien und Kaskaden innerhalb des Jobs** (sein Auftrag vom 19.11.2026: „danach die
+  rotationen jedes jobs auf verbesserungspotential prüfen. innerhalb des jobs durch auswertung der eigenschaften der
+  funktionen, angriffe, skills, talente und allen drumrum, auf synergieeffekte und kaskaden. im vollen kritischen loop
+  mit antithese, audit und codereview mit fehlerbehebung“); seine Präzisierung desselben Tages: „ziel ist die
+  aufrechterhaltung der schadensgeneriereung, aufrechterhaltung der gruppengesundheit und erhöhung des schadensoutputs bei
+  bosskämpfen, raids und prüfungen. danach bei allen anderen inhalten und kämpfen“ – Maßstab je Befund: Schaden ohne
+  Lücke, Gesundheit der Gruppe, mehr Schaden; Reihenfolge Boss, Raid, Prüfung vor allem anderen. Umfang (seine Präzisierung, 19.11.2026: „ich habe nicht
+  gesagt, dass du nur die jobs bearbeiten sollst, die ich spiele. ich habe alle gesagt“): alle Jobs – die 21 Kampfjobs,
+  Blaumagier und Beastmaster –, je Job jede Rotation; Churin und Beiruta, soweit mit den Änderungen des Forks verträglich (CLAUDE.md, seine Präzisierung). Ziel (seine Vorgabe, 19.11.2026): „ziel für alle rotationen ist es, besser als
+  die von the balance zu werden.“ – gemessen an Potenz über den Kampf; wo eine Sicherheitsregel bewusst Schaden kostet,
+  zählt das nicht als schlechter (CLAUDE.md, „Spielweise“). *Wirkung im Kampf:* Wo ein Merkmal, ein Status oder eine
+  Aktion eine andere verstärkt oder freischaltet und die Rotation das nicht nutzt, fehlt Schaden in jedem Kampf.
+  *Stand:* drei Durchgänge über alle Rotationen, die er in den Mitschnitten vom 10. bis 19.11.2026 spielte (A931 bis
+  A933): Freischalter, Burst-Procs, Burstfenster und die messbaren Regeln von xivanalysis; gebaut daraus Lilie im Laufen
+  (Weißmagier) und Life Surge (Dragoon); diese beiden Klassen auch in den 13 Churin- und Beiruta-Rotationen geprüft,
+  ohne Befund. Die 13 Churin- und Beiruta-Rotationen sind verträglich (A936).
+  Ihre 157 Einstellungstexte decken sich mit dem Code (A936). Blaumagier statisch: jeder Zauber, den die Matrix als
+  ungenutzt führte, gebaut oder mit Grund ausgeschlossen (A940 bis A945). Beastmaster am Mitschnitt vom 21. bis 23.11.2026 (21 Kämpfe auf Brett 2 und 3, A979): Ketten getragen, Abschlüsse aus Grund gehalten, kein Verlust außer der Hornlücke (Wartepunkt „Beastmaster: nach dem Fall des Begleiters kein Horn mehr“). *Nächster Schritt:* Blaumagier und die
+  Burstfolgen der 13 am nächsten Mitschnitt, in dem sie laufen. *Konzept:* 14 (je Job), 03 „F · Über den Augenblick hinaus“.
+
+- **Blaumagier: Apokalypsis** (A944). *Im Kampf:* Liegt Apokalypsis ohne Sterblichkeit im Set, wirkt RSR ihn nie.
+  Ob der Kanal (140 über Zeit, 10 s, 120 s Abklingzeit) vier GCDs schlägt, hängt am Tickabstand, den weder Wirktext
+  noch Blatt noch die gelesenen Quellen nennen. Auflösung: ein Mitschnitt, in dem er gewirkt wird (ACT Zeile 24 je
+  Tick oder FFLogs-Ticks); dann Wert gegen den Füller im Loop. *Konzept:* 01, „Angriffs- und Kontrollzauber“.
+
+- **Todeswand ohne BossMod-Modul lernen** (A934, O3 in Konzept 05, „Arenagrenzen ohne BossMod-Modul“). Sein Hinweis
+  und Vorschlag vom 20.11.2026, in Arbeit (A935): „meist enteht in der anfangsphase dort ein vfx, um den rand optisch
+  anzuzeigen oder die texturbeschaffenheit oder meshes sind ort anders (stecheln, zacken oder was, wasdas spielfeld
+  nicht hat. kann man das erkennen? voller loop“; sein Hinweis desselben Tages: „manche arenen sind eckig, andere rund,
+  einige haben sonderformen“. Geprüft in A935: Effekt und Textur sagen nicht, wo die Grenze liegt; als erster Kontakt dient
+  die Spurzeile „arena edge: …“. Auflösung jetzt: diese Zeile in einem Upload, dann die Lernregel nach
+  Winkelsektoren im Loop. Abgrund und
+  Löcher prüft vnavmesh; eine Todeswand ohne Modul kennt RSR nicht – sie ist keine Kollision, und ihr Blatt nennt den
+  inneren Radius nicht. Im Kampf: Ein Sprung von RSR könnte in sie landen. Auflösung: der erste beobachtete Treffer
+  einer namenlosen Ringaktion ohne Wirkzeit auf ihn oder ein Mitglied ohne Modul (ACT-Mitschnitt); dann Lernregel je
+  Gebiet im Loop.
+
 - **Nebenprojekt: Charakterwerte, Stufen und Materia-Empfehlung** (A874, A875). Konzept 26 steht; seine Angabe
   (17.11.2026): „nebenthema zuende. wird irgendwann von mir neu angesprochen“. Auflösung: sein neuer Auftrag.
 
-
-- **Maschinist: Schachmatt sperrt Doppelschach** (A868). Ist Schachmatt gewählt, aber gesperrt, kommt auch Doppelschach
-  nicht – an der Puppe nach einem Jobwechsel rund 30 s ohne Ability [Schätzung: im Inhalt kaum]. Ort:
-  `MCH_Reborn.AttackAbility`, Auswahl `whichToUse` ohne Rückfall. Auflösung: nächste Puppensitzung mit Maschinist nach
-  einem anderen Job, Vorhersage `mch-checkmate-hides-double-check`; trifft sie zu, Konzept 03 fortschreiben und den
-  Rückfall bauen. Konzept 03, „Bereit, aber nicht genutzt“.
 
 - **Absturz einer zweiten Installation am 11.11.2026, 21:18** (A736). Das Spiel endete als Dunkelritter in der
   Azim-Steppe 0,5 s nach Kampfbeginn, ohne die Plugins zu entladen; Build b184ee7fc (08.11.2026). Das `DefenseTrace.log`
@@ -150,9 +177,18 @@ nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigt
   Auflösung: Zeilen „a kill by an item granted", „a hit the … tome converted" und die Flucht in einem Lauf, der diese
   Gegenstände hält; dann je Abweichung Loop. Konzept 21, K8 („Über das Brett", „Zauberbücher"), Weg.
 
+- **Beastmaster: nach dem Fall des Begleiters kein Horn mehr** (A973, A975). *Im Kampf:* Am 21.11.2026 auf Brett 3 kam
+  nach dem Fall des Geists zweimal kein Begleiter mehr (18 und 19 s bis zu seinem Tod), obwohl zwei Hörner bereit waren
+  und er stillstand; kein Ruf begann zu wirken. Die Ursache zeigt die Spur nicht. *Gebaut (A975):* die Zeile „horn
+  relief: … | a horn ready …, chosen …, of that with the gate closed …; calls begun …“ für jede Strecke ohne Begleiter
+  über einen GCD, auch ohne Ankunft. *Auflösung:* sein nächster Lauf mit einer solchen Strecke: „chosen 0 s“ – die Wahl
+  lehnt ab (Gründe in „ready but unused“); gewählt, Tor zu – das Drücken wartet; gewählt, Tor offen, kein Ruf – Spiel oder
+  Server („the server rejected …“); dann Loop an der Stelle. *Konzept:* 01, B6 „Wo der Ruf ausbleibt“ und W1.
+
 - **Beastmaster: Bretter 3 bis 5 und die Meisterbretter am ersten Mitschnitt prüfen** (Crucible-Strategien K1 bis K14,
   zuletzt A643, A644). Brett 2 lief am 08.11.2026 (A683): Die Tablitauren fielen gemeinsam, die Aetheric Charges zählten
-  nach ihrer gemessenen Gefahr. Gebaut, aber an keinem seiner Läufe gesehen, sind diese Regeln (Quellen: Blätter,
+  nach ihrer gemessenen Gefahr. Brett 3 lief am 21., 22. und 23.11.2026 (A973), ohne eine der Regeln unten zu
+  brauchen; auf Brett 2 fielen die Taurus-Ebenbilder am 21.11. gemeinsam („kill rule … held/released“). Gebaut, aber an keinem seiner Läufe gesehen, sind diese Regeln (Quellen: Blätter,
   BossMod-Module, Daedalus' Feldnotizen, GluttonyCombos Aufzeichnungen):
   - Tötungsregeln für Lamien, Morpho und Abaddon, Myconid in der Pfütze und die Sanduhr des Todes beim
     Königs-Ahriman-Ebenbild (A675);
@@ -171,11 +207,6 @@ nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigt
   RSR" gegen „[AI] Movement will interrupt cast" oder „[CancelCast]"); liegt es an BossMod, Meldung dort. Konzept 03,
   „Limit Break allein", Absatz „Von Hand gedrückt".
 
-- **Blaumagier: 1000 Nadeln gewirkt, obwohl nicht im Set** (sein Hinweis, 03.11.2026; A506). Im Kampf: RSR wirkt
-  laut ihm einen Zauber außerhalb des Sets; der Code lässt das nicht zu. Auflösung: die Zeilen „blue mage set" und
-  „blue mage spell outside the active set" im nächsten `DefenseTrace.log` als Blaumagier. Konzept 01, „Blaumagier",
-  „Das Set".
-
 - **Samurai nutzt Feint und Tengentsu nicht** (fremde Meldung, PR #11, unbestätigt; statisch geprüft A265). Auflösung:
   ein Protokoll eines Samurai-Kampfs („area defence open, nothing chosen" gegen „hit you"). Konzept 13.
 - **Treffer aus einer Quelle, die die Objekttabelle nicht hält** (Verdacht). Offen ist der Treffer ohne Objekt; der
@@ -187,8 +218,3 @@ nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigt
   23.10. und 27.10.2026). Offen: ob Schlaf unterbrechbares Wirken stoppt, welche Anzahl bis zur Immunität die Regel
   lernt, welchen Rest beim Eintreffen. Auflösung: Protokolle mit Heiler oder Magier in Instanzen, danach die Bewertung,
   ob die Regel experimentell bleibt. Konzept 08, „Ein gegnerisches Wirken stoppen".
-- **Ein gewählter Schlaf geht nicht hinaus** (siebenmal an zwei Abenden, A453, A457). Ein oGCD schließt das Fenster
-  nicht (ein bereiter GCD geht vor, Fähigkeiten ruhen in den letzten 0,5 s); übrig bleiben Bewegung und ein Mitglied
-  in der kritischen Klasse, beides gewollt (A738: Bewegung). Auflösung: der erste Grund, den die Zeile „sleep not
-  cast …" nennt; heißt er „too little time" kurz nach der Wahl, ist die Bedarfsrechnung ein Defekt. Konzept 08, „Ein gegnerisches Wirken
-  stoppen".

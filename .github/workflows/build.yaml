@@ -17,6 +17,8 @@ on:
 concurrency:
   group: build-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
+permissions:
+  contents: read
 jobs:
   DispatchChain:
     # The checks first, then the build in the same job (A893, section 6): one checkout, one job's rounding up to the
@@ -113,6 +115,11 @@ jobs:
       - name: Check the heal target measure matches the action
         run: python3 .github/scripts/audit/check_heal_target_measure.py
 
+      # Every reader of the generated sheets reads their effect texts in one shape (A982): upstream c79f584a5 split each
+      # text into one <para> per line, and the readers saw only the last line.
+      - name: Self-test of the effect text shape
+        run: python3 .github/scripts/audit/resx_doc.py --self-test
+
       # The once-per-cooldown full heal has to be tied to actual danger, or it goes out on whoever
       # happens to stand lowest - a player who was just raised, most visibly - and is missing when a
       # tank needs it. Nothing fails when the condition is lost; an upstream merge simply brings the
@@ -145,6 +152,12 @@ jobs:
       # changes (concept 24, "Spieldaten lesen").
       - name: Check statuses are read through GetStatuses, not StatusList
         run: python3 .github/scripts/audit/check_status_list.py
+
+      # A rule that swaps an action's shared setting for one call and restores it picks the same targets as CanUse's
+      # target filter, so nothing fails when one comes back; every merge sets it against upstream's form again
+      # (concept 24, "Eine Zielbedingung je Aufruf geht als Zielfilter", A971).
+      - name: Check no rule swaps an action's shared setting for one call
+        run: python3 .github/scripts/audit/check_setting_swap.py
 
       # A stored list is written back whole on every save, so one that is never loaded destroys its
       # own file on the first save of the session. That happened to the learned damage potentials:
@@ -246,6 +259,9 @@ jobs:
       # The shipped area and tankbuster lists carry the casts cactbot announces (concept 13, A620). The file is generated
       # from a cactbot checkout; this holds its reading of the triggers and every id against the Action sheet (an enemy
       # action, no player action), skipping the sheet part when xivapi is unreachable.
+      # Action ids for searches in his recordings come from the action matrix, never from memory (A940, A949).
+      - name: Check the action id lookup
+        run: python3 .github/scripts/audit/action_ids.py --self-test
       - name: Check the cast lists taken from cactbot
         run: python3 .github/scripts/audit/cactbot_casts.py --self-test
       - name: Check the cactbot cast ids against the Action sheet
@@ -441,7 +457,7 @@ jobs:
       - name: Run the models whose script changed
         shell: bash
         run: |
-          MODELS="smn_phase_potency searing_light_coverage tankbuster_model machinist_balance_model samurai_balance_model monk_balance_model melee_gapcloser_model damage_area_model party_ttk_model tank_pull_defense_model dot_hot_model learned_revision_model learned_store_model heal_policy_model filler_heal_model emergency_weave_model area_series_model learned_oldfile_model bst_horn_model bst_compass_model bst_control_model bst_assign_model bst_capture_model window_layout_model roulette_needle_model crucible_route_model approach_model action_timing_model burst_downtime_model"
+          MODELS="smn_phase_potency searing_light_coverage tankbuster_model machinist_balance_model samurai_balance_model monk_balance_model melee_gapcloser_model damage_area_model party_ttk_model tank_pull_defense_model dot_hot_model learned_revision_model learned_store_model heal_policy_model filler_heal_model emergency_weave_model area_series_model learned_oldfile_model bst_horn_model bst_compass_model bst_control_model bst_assign_model bst_capture_model window_layout_model roulette_needle_model crucible_route_model approach_model action_timing_model burst_downtime_model redmage_balance_model"
           before="${{ github.event.before }}"
           after="${{ github.event.pull_request.head.sha || github.sha }}"
           if [ "${{ github.event_name }}" != "pull_request" ] || [ -z "$before" ] || ! git cat-file -e "$before^{commit}" 2>/dev/null; then

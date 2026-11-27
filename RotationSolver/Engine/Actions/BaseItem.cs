@@ -11,11 +11,32 @@ public partial class BaseItem : IBaseItem
 {
 	private readonly struct ItemCooldown(uint id) : ICooldown
 	{
-		unsafe float ICooldown.RecastTimeOneChargeRaw => ActionManager.Instance()->GetRecastTime(ActionType.Item, id);
+		unsafe float ICooldown.RecastTimeOneChargeRaw
+		{
+			get
+			{
+				var actionManager = ActionManager.Instance();
+				return actionManager == null ? 0f : actionManager->GetRecastTime(ActionType.Item, id);
+			}
+		}
 
-		unsafe float ICooldown.RecastTimeElapsedRaw => ActionManager.Instance()->GetRecastTimeElapsed(ActionType.Item, id);
+		unsafe float ICooldown.RecastTimeElapsedRaw
+		{
+			get
+			{
+				var actionManager = ActionManager.Instance();
+				return actionManager == null ? 0f : actionManager->GetRecastTimeElapsed(ActionType.Item, id);
+			}
+		}
 
-		unsafe bool ICooldown.IsCoolingDown => ActionManager.Instance()->IsRecastTimerActive(ActionType.Item, id);
+		unsafe bool ICooldown.IsCoolingDown
+		{
+			get
+			{
+				var actionManager = ActionManager.Instance();
+				return actionManager != null && actionManager->IsRecastTimerActive(ActionType.Item, id);
+			}
+		}
 
 		ushort ICooldown.MaxCharges => 0;
 
@@ -43,8 +64,15 @@ public partial class BaseItem : IBaseItem
 	public Func<bool>? ItemCheck { get; set; }
 
 	/// <inheritdoc/>
-	public unsafe bool HasIt => InventoryManager.Instance()->GetInventoryItemCount(ID, false) > 0
-		|| InventoryManager.Instance()->GetInventoryItemCount(ID, true) > 0;
+	public unsafe bool HasIt
+	{
+		get
+		{
+			var inventory = InventoryManager.Instance();
+			return inventory != null
+				&& (inventory->GetInventoryItemCount(ID, false) > 0 || inventory->GetInventoryItemCount(ID, true) > 0);
+		}
+	}
 
 	/// <summary>
 	/// Icon Id.
@@ -194,7 +222,8 @@ public partial class BaseItem : IBaseItem
 			36109 => 196625,
 			_ => 65535, //TODO: better A4!
 		};
-		SortKey = (uint)ActionManager.Instance()->GetRecastGroup((int)ActionType.Item, ID);
+		var actionManager = ActionManager.Instance();
+		SortKey = actionManager == null ? 0u : (uint)actionManager->GetRecastGroup((int)ActionType.Item, ID);
 		Cooldown = new ItemCooldown(ID);
 	}
 
@@ -222,11 +251,18 @@ public partial class BaseItem : IBaseItem
 			return false;
 		}
 
+		var actionManager = ActionManager.Instance();
+		var inventory = InventoryManager.Instance();
+		if (actionManager == null || inventory == null)
+		{
+			return false;
+		}
+
 		// A730 (concept 03, "Was das Spiel hier ablehnt"): the game's answer for the quality UseItem sends - high quality when
 		// held, else normal. Asked for both at once, an item refused as normal ("You do not have that item.", 583) passed on the
 		// 0 the game gave for a high quality the player did not hold, and was chosen again in the same area (11.11.2026).
-		var sent = InventoryManager.Instance()->GetInventoryItemCount(ID, true) > 0 ? ID + 1000000 : ID;
-		if (ConfigurationHelper.BadStatus.Contains((ActionStatus)ActionManager.Instance()->GetActionStatus(ActionType.Item, sent)))
+		var sent = inventory->GetInventoryItemCount(ID, true) > 0 ? ID + 1000000 : ID;
+		if (ConfigurationHelper.BadStatus.Contains((ActionStatus)actionManager->GetActionStatus(ActionType.Item, sent)))
 		{
 			return false;
 		}
@@ -268,25 +304,37 @@ public partial class BaseItem : IBaseItem
 			return false;
 		}
 
-		if (_item.RowId == 4570 && DataCenter.DeathTarget != null)
+		var actionManager = ActionManager.Instance();
+		var inventory = InventoryManager.Instance();
+		if (actionManager == null || inventory == null)
 		{
-			if (InventoryManager.Instance()->GetInventoryItemCount(ID, true) > 0)
+			return false;
+		}
+
+		if (_item.RowId == 4570)
+		{
+			if (DataCenter.DeathTarget == null)
 			{
-				return ActionManager.Instance()->UseAction(ActionType.Item, ID + 1000000, DataCenter.DeathTarget.GameObjectId, 65535);
+				return false;
+			}
+
+			if (inventory->GetInventoryItemCount(ID, true) > 0)
+			{
+				return actionManager->UseAction(ActionType.Item, ID + 1000000, DataCenter.DeathTarget.GameObjectId, 65535);
 			}
 			else
 			{
-				return ActionManager.Instance()->UseAction(ActionType.Item, ID, DataCenter.DeathTarget.GameObjectId, 65535);
+				return actionManager->UseAction(ActionType.Item, ID, DataCenter.DeathTarget.GameObjectId, 65535);
 			}
 		}
 
-		if (InventoryManager.Instance()->GetInventoryItemCount(ID, true) > 0)
+		if (inventory->GetInventoryItemCount(ID, true) > 0)
 		{
-			return ActionManager.Instance()->UseAction(ActionType.Item, ID + 1000000, Player.Object.GameObjectId, A4);
+			return actionManager->UseAction(ActionType.Item, ID + 1000000, Player.Object.GameObjectId, A4);
 		}
 		else
 		{
-			return ActionManager.Instance()->UseAction(ActionType.Item, ID, Player.Object.GameObjectId, A4);
+			return actionManager->UseAction(ActionType.Item, ID, Player.Object.GameObjectId, A4);
 		}
 	}
 

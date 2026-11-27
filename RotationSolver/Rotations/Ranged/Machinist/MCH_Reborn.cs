@@ -121,7 +121,9 @@ public sealed class MCH_Reborn : MachinistRotation
 					return true;
 				}
 			}
-			if (HasWildfire && IsLastAction(false, FullMetalFieldPvE))
+			// A964: Wildfire without a Full Metal Field pending is followed by Hypercharge as well.
+			if (HasWildfire && (IsLastAction(false, FullMetalFieldPvE) || IsLastGCD(false, FullMetalFieldPvE)
+				|| (FullMetalFieldPvE.EnoughLevel && !HasFullMetalMachinist)))
 			{
 				if (HyperchargePvE.CanUse(out act, skipTTKCheck: true))
 				{
@@ -319,6 +321,10 @@ public sealed class MCH_Reborn : MachinistRotation
 			{
 				if (Heat >= 50 || HasHypercharged)
 				{
+					// Concept 14, "Wildfire im Zwei-Minuten-Fenster" (A957): late in the weave before Full Metal Field, or - when
+					// Full Metal Field went while Wildfire was still in its last half second - in the weave right after it, ahead
+					// of Hypercharge (The Balance: "Excavator > Full Metal Field > (Hypercharge + Wildfire)"). Before, it then
+					// waited two minutes for the next Full Metal Field.
 					if (WeaponRemain < (GCDTime(1) / 2) && nextGCD.IsTheSameTo(false, FullMetalFieldPvE))
 					{
 						if (WildfirePvE.CanUse(out act))
@@ -328,6 +334,24 @@ public sealed class MCH_Reborn : MachinistRotation
 								return true;
 							}
 						}
+					}
+
+					if (!IsOverheated && IsLastGCD(false, FullMetalFieldPvE) && WildfirePvE.CanUse(out act)
+						&& (!WildfireBoss || WildfirePvE.Target.Target.IsBossFromIcon()))
+					{
+						return true;
+					}
+
+					// Concept 14, "Wildfire im Zwei-Minuten-Fenster" (A964): with no Full Metal Field pending and Barrel Stabilizer
+					// not back within Wildfire's duration, Wildfire goes with the next Overheat, once Hypercharge may (The Balance:
+					// "Not drifting ... Wildfire"). It waited for the next Full Metal Field; a window without one carries the
+					// same six stacks.
+					if (!IsOverheated && !HasFullMetalMachinist && CanLateWeave
+						&& !BarrelStabilizerPvE.Cooldown.WillHaveOneCharge(DefensiveValues.DurationOf(WildfirePvE.ID))
+						&& ToolChargeSoon(out _) && WildfirePvE.CanUse(out act)
+						&& (!WildfireBoss || WildfirePvE.Target.Target.IsBossFromIcon()))
+					{
+						return true;
 					}
 				}
 			}

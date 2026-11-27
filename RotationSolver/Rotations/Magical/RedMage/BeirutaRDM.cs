@@ -554,7 +554,7 @@ public sealed class BeirutaRDM : RedMageRotation
 			return true;
 		}
 
-		if (!blockSwift && SwiftcastPvE.CanUse(out act, usedUp: true, skipCastingCheck: true))
+		if (!blockSwift && SwiftcastForDamage && SwiftcastPvE.CanUse(out act, usedUp: true, skipCastingCheck: true))
 		{
 			return true;
 		}
@@ -775,16 +775,6 @@ public sealed class BeirutaRDM : RedMageRotation
 			return act;
 		}
 
-		if (HasAccelerate && remainTime < 0f)
-		{
-			StatusHelper.StatusOff(StatusID.Acceleration);
-		}
-
-		if (HasSwift && remainTime < 0f)
-		{
-			StatusHelper.StatusOff(StatusID.Swiftcast);
-		}
-
 		return base.CountDownAction(remainTime);
 	}
 	#endregion
@@ -840,7 +830,7 @@ public sealed class BeirutaRDM : RedMageRotation
 
 		if (IsOpen && IsBurst)
 		{
-			if (SwiftcastPvE.CanUse(out act, usedUp: true, skipCastingCheck: true))
+			if (SwiftcastForDamage && SwiftcastPvE.CanUse(out act, usedUp: true, skipCastingCheck: true))
 			{
 				return true;
 			}
@@ -923,7 +913,7 @@ public sealed class BeirutaRDM : RedMageRotation
 			if (IsOpen)
 			{
 				if (canUseSwiftForMovement &&
-					SwiftcastPvE.CanUse(out act, usedUp: true, skipCastingCheck: true))
+					SwiftcastForDamage && SwiftcastPvE.CanUse(out act, usedUp: true, skipCastingCheck: true))
 				{
 					return true;
 				}
@@ -953,7 +943,7 @@ public sealed class BeirutaRDM : RedMageRotation
 				}
 
 				if (canUseSwiftForMovement &&
-					SwiftcastPvE.CanUse(out act, usedUp: true, skipCastingCheck: true))
+					SwiftcastForDamage && SwiftcastPvE.CanUse(out act, usedUp: true, skipCastingCheck: true))
 				{
 					return true;
 				}
@@ -1032,21 +1022,21 @@ public sealed class BeirutaRDM : RedMageRotation
 		{
 			if (!CanVerFire && !CanVerStone &&
 				IsLastGCD(false, VerthunderPvE, VerthunderIiiPvE, VeraeroPvE, VeraeroIiiPvE) &&
-				SwiftcastPvE.CanUse(out act))
+				SwiftcastForDamage && SwiftcastPvE.CanUse(out act))
 			{
 				return true;
 			}
 
 			if (!CanVerStone &&
 				nextGCD.IsTheSameTo(false, VeraeroPvE, VeraeroIiiPvE) &&
-				SwiftcastPvE.CanUse(out act))
+				SwiftcastForDamage && SwiftcastPvE.CanUse(out act))
 			{
 				return true;
 			}
 
 			if (!CanVerFire &&
 				nextGCD.IsTheSameTo(false, VerthunderPvE, VerthunderIiiPvE) &&
-				SwiftcastPvE.CanUse(out act))
+				SwiftcastForDamage && SwiftcastPvE.CanUse(out act))
 			{
 				return true;
 			}
@@ -1073,7 +1063,7 @@ public sealed class BeirutaRDM : RedMageRotation
 			}
 
 			if (!HasSwift &&
-				SwiftcastPvE.CanUse(out act, usedUp: true, skipCastingCheck: true))
+				SwiftcastForDamage && SwiftcastPvE.CanUse(out act, usedUp: true, skipCastingCheck: true))
 			{
 				return true;
 			}

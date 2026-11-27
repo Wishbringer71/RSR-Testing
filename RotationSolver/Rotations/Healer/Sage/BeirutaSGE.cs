@@ -116,7 +116,7 @@ public sealed class BeirutaSGE : SageRotation
 	[RotationConfig(CombatType.PvE, Name = "[Movement] Use Swiftcast", Tooltip =
 		"Swiftcast while moving. Raise always takes priority.\n" +
 		"Instant options: Toxikon > spare Phlegma > Eukrasian Prognosis (not in raid buffs) > early Eukrasian Dosis.")]
-	public bool UseSwiftcastForMovement { get; set; } = true;
+	public bool UseSwiftcastForMovement { get; set; } = false; // A936: Swiftcast stays for raises unless switched on
 
 	[RotationConfig(CombatType.PvE, Name = "    > When to use it", Parent = nameof(UseSwiftcastForMovement), Tooltip =
 		"Last resort: only when no instant option is available. First: before the instant options.")]

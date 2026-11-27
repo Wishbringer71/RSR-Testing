@@ -1,6 +1,6 @@
 # WHM — Abhängigkeitsmatrix
 
-Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-11; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
+Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-21; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `WhiteMageRotation`
 - Rotation: `RotationSolver/Rotations/Healer/WhiteMage/WHM_Reborn.cs`
@@ -8,14 +8,14 @@ Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-11; nic
 
 ## Nutzung
 
-direkt: 42 · ungenutzt: 2
+direkt: 43 · ungenutzt: 1
 
 | Stufe | Aktion | Id | Art | Nutzung |
 |---|---|---|---|---|
 | alle | Sprint (`SprintPvE`) | 3 | System | direkt |
 | Heiler | Esuna (`EsunaPvE`) | 7568 | Spell | direkt |
 | Heiler | Lucid Dreaming (`LucidDreamingPvE`) | 7562 | Ability | direkt |
-| Heiler | Repose (`ReposePvE`) | 16560 | Spell | ungenutzt |
+| Heiler | Repose (`ReposePvE`) | 16560 | Spell | direkt |
 | Heiler | Rescue (`RescuePvE`) | 7571 | Ability | ungenutzt |
 | Heiler | Surecast (`SurecastPvE`) | 7559 | Ability | direkt |
 | Heiler | Swiftcast (`SwiftcastPvE`) | 7561 | Ability | direkt |
@@ -84,6 +84,7 @@ direkt: 42 · ungenutzt: 2
 | Aero II | Regel prüft | Dia |
 | Aero | Regel prüft | Aero II |
 | Afflatus Rapture | Regel prüft | Afflatus Misery |
+| Afflatus Rapture | Regel prüft | Afflatus Solace |
 | Afflatus Solace | Regel prüft | Afflatus Misery |
 | Aquaveil | Regel prüft | Divine Benison |
 | Asylum | Regel sperrt vorher | Benediction |
@@ -162,5 +163,4 @@ Ohne Eintrag in `ActionId.resx` und ohne Wirktext; RSR castet keine PvE-Limit-Br
 
 Maschinelle Liste; die Bewertung je Eintrag steht im Konzept.
 
-- Repose (`ReposePvE`, Spell): ungenutzt
 - Rescue (`RescuePvE`, Ability): ungenutzt

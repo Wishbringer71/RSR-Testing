@@ -1130,6 +1130,9 @@ internal static partial class GazeWatch
 	/// </summary>
 	internal static void Idle() => _movedTick = long.MinValue;
 
+	/// <summary>Whether a gaze on the player is due: walking turns the figure (concept 02, A928).</summary>
+	internal static bool AnyPending() => Gazers().Count > 0;
+
 	// Every gaze on the player with its eye and the seconds left, once per frame.
 	private static List<Gazer> Gazers()
 	{

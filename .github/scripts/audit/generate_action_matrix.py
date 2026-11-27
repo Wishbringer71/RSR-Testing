@@ -35,6 +35,9 @@ from datetime import date
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import layout  # noqa: E402
+import os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from resx_doc import normalize  # noqa: E402  (A982: the sheets' effect texts in one shape)
 
 ROOT = Path(__file__).resolve().parents[3]
 PROPERTIES = ROOT / "RotationSolver.SourceGenerators" / "Properties"
@@ -70,7 +73,7 @@ ROTATION_FILES = {
     "DRG": ["Melee/DRG_Reborn.cs"], "NIN": ["Melee/NIN_Reborn.cs"], "SAM": ["Melee/SAM_Reborn.cs"],
     "RPR": ["Melee/RPR_Reborn.cs"], "VPR": ["Melee/VPR_Reborn.cs"], "BRD": ["Ranged/BRD_Reborn.cs"],
     "MCH": ["Ranged/MCH_Reborn.cs"], "DNC": ["Ranged/DNC_Reborn.cs"],
-    "BLM": ["Magical/BLM_Default.cs", "Magical/BLM_RP.cs"], "SMN": ["Magical/SMN_Reborn.cs"],
+    "BLM": ["Magical/BLM_Reborn.cs"], "SMN": ["Magical/SMN_Reborn.cs"],
     "RDM": ["Magical/RDM_Reborn.cs"], "PCT": ["Magical/PCT_Reborn.cs"],
     "BLU": ["Limited Jobs/BLU_Reborn.cs"], "BST": ["Limited Jobs/BST_Reborn.cs"],
 }
@@ -609,7 +612,7 @@ def settings_of(body):
 
 
 def load():
-    ids = html.unescape((PROPERTIES / "ActionId.resx").read_text(encoding="utf-8"))
+    ids = normalize(html.unescape((PROPERTIES / "ActionId.resx").read_text(encoding="utf-8")))
     actions = {}
     for name, kind, jobs, _row, category, raw, ident, row in ENTRY.findall(ids):
         if kind != "PvE":
@@ -622,7 +625,7 @@ def load():
             "text": clean_text(raw), "all": jobs.strip() == "All Classes",
         }
 
-    rot = html.unescape((PROPERTIES / "Rotation.resx").read_text(encoding="utf-8"))
+    rot = normalize(html.unescape((PROPERTIES / "Rotation.resx").read_text(encoding="utf-8")))
     job_actions = {}
     traits = {}
     limit_breaks = {}
@@ -642,7 +645,7 @@ def load():
         limit_breaks[job] = sorted(p for p in props if p in lbs)
         traits[job] = [(n, clean_text(t)) for n, _j, t, _i in TRAIT.findall(body)]
 
-    general = html.unescape((PROPERTIES / "Action.resx").read_text(encoding="utf-8"))
+    general = normalize(html.unescape((PROPERTIES / "Action.resx").read_text(encoding="utf-8")))
     general_actions = [p for p in PROPERTY.findall(general) if p in actions]
     return actions, job_actions, traits, general_actions, limit_breaks
 
@@ -660,9 +663,47 @@ def central_code():
     return "\n".join(strip_code(p.read_text(encoding="utf-8")) for p in CENTRAL.glob("CustomRotation*.cs"))
 
 
+HELPER_DEF = re.compile(r"\b(?:protected|private|public|internal)\s+(?:static\s+)?bool\s+(\w+)\s*\(\s*out\s+IAction\?\s+act\s*\)\s*\{")
+LOCAL_ACTION = re.compile(r"\bvar\s+(\w+)\s*=\s*([^;]*\w+PvE(?:_\d+)?[^;]*);")
+
+
+def local_casts(code):
+    """Actions cast through a local: `var sleep = healer ? ReposePvE : SleepPvE;` then `sleep.CanUse(out act ...)`. A local
+    is resolved within its method, so two methods reusing a name do not lend each other their actions (A946)."""
+    casts = set()
+    spans = method_spans(code) or [(0, len(code))]
+    for start, end in spans:
+        body = code[start:end]
+        for local, expr in LOCAL_ACTION.findall(body):
+            if re.search(rf"\b{local}\s*\.\s*CanUse\s*\(\s*out\s+(?!_\s*[,)])", body):
+                casts |= set(re.findall(r"\b(\w+PvE(?:_\d+)?)\b", expr))
+    return casts
+
+
+def casts_in(code):
+    return set(CAST.findall(code)) | set(RETURNED.findall(code)) | local_casts(code)
+
+
+def central_helpers(code):
+    """Central `bool Name(out IAction? act)` methods that the central code never calls itself: a rotation calls them, so
+    what they cast counts only for a job whose rotation calls them (`UseAddle`, A943). Name -> (span, casts)."""
+    found = {}
+    for m in HELPER_DEF.finditer(code):
+        start = m.end() - 1
+        end = block_end(code, start)
+        name = m.group(1)
+        outside = code[:m.start()] + code[end:]
+        if not re.search(rf"\b{name}\s*\(", outside):
+            found[name] = ((m.start(), end), casts_in(code[start:end]))
+    return found
+
+
 def central_uses(code):
-    """Actions the central dispatch casts for every job (role actions, Sprint, ...)."""
-    return set(CAST.findall(code)) | set(RETURNED.findall(code))
+    """Actions the central dispatch casts for every job (role actions, Sprint, the sleep that stops a cast, ...); a
+    central helper only rotations call is left out (see central_helpers)."""
+    for (start, end), _casts in sorted((v for v in central_helpers(code).values()), reverse=True):
+        code = code[:start] + code[end:]
+    return casts_in(code)
 
 
 def analyse(job, actions, job_actions, traits, general_actions, central, central_src, limit_breaks=None):
@@ -720,6 +761,10 @@ def analyse(job, actions, job_actions, traits, general_actions, central, central
     direct |= set(RETURNED.findall(rotation_code)) | set(RETURNED.findall(base_outside))
     probed = (set(CANUSE.findall(rotation_code)) | set(CANUSE.findall(base_outside))) - direct
     direct |= {a for a in central if a in nodes}
+    # A central helper a rotation calls casts for that job only (A943).
+    for name, (_span, casts) in central_helpers(central_src).items():
+        if re.search(rf"\b{name}\s*\(", rotation_code) or re.search(rf"\b{name}\s*\(", base_outside):
+            direct |= {a for a in casts if a in nodes}
     # Through a property the base rotation points at one action and the dispatch casts.
     alias_calls = set(ALIAS_CANUSE.findall(central_src)) | set(ALIAS_CANUSE.findall(rotation_code))
     for prop, target in PROPERTY_ALIAS.findall(base_code):
@@ -1317,6 +1362,36 @@ def self_test():
     if s["StatusNeed"] != ["Delirium_1972"] or s["StatusProvide"] != ["Darkside"] \
             or s["ComboIds"] != ["HardSlashPvE"] or "YPvE" not in s["reads"]:
         return f"base settings read as {s}"
+
+    # A943: a cast through a local counts; a helper the central code calls itself is dispatch for every job, one only
+    # rotations call is not - and a local that is only probed with CanUse(out _) casts nothing.
+    central = strip_code('''
+        private bool StopEnemyCast(out IAction? act)
+        {
+            var sleep = role == JobRole.Healer ? ReposePvE : SleepPvE;
+            if (sleep.CanUse(out act)) { return true; }
+            var probe = FootGrazePvE;
+            return probe.CanUse(out _);
+        }
+        protected bool UseAddle(out IAction? act)
+        {
+            return AddlePvE.CanUse(out act);
+        }
+        private bool Dispatch(out IAction? act) { return StopEnemyCast(out act); }
+    ''')
+    used = central_uses(central)
+    if not {"ReposePvE", "SleepPvE"} <= used:
+        return f"a cast through a local was not read as central: {sorted(used)}"
+    if "AddlePvE" in used or "FootGrazePvE" in used:
+        return f"a helper only rotations call, or a probe, counted as central dispatch: {sorted(used)}"
+    if central_helpers(central).get("UseAddle", (None, set()))[1] != {"AddlePvE"}:
+        return "a central helper's casts were not read"
+    reused = strip_code('''
+        private bool A(out IAction? act) { var stop = FootGrazePvE; return stop.CanUse(out _); }
+        private bool B(out IAction? act) { var stop = SleepPvE; return stop.CanUse(out act); }
+    ''')
+    if local_casts(reused) != {"SleepPvE"}:
+        return f"a local name reused in another method lent its action: {sorted(local_casts(reused))}"
     return None
 
 

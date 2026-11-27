@@ -368,6 +368,37 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
   Vorgabe kein Grund. *Ergebnis:* C, entschieden (seine Frage zeigt den Wunsch, „auf Wunsch" schließt D aus): Wahl nach
   Abdeckung der Schwächen aller Kämpfe des Bretts, gewichtet nach Zahl der Gegner, dazu ein Heiler und, wo Gegner
   unterbrechbar wirken, einer, der unterbricht.
+  - *Gattungen, die eine Mechanik des Bretts verlangt (A971):* BossModReborn (a4fd07db9, 25.11.2026, Werkzeugquelle)
+    nennt je Gegner des Crucible, welche Gattung eine seiner Mechaniken löst (`PreferredKinship`, 47 Angaben an 31 Modulen, über
+    `Crucible.PreferredKinships`; Upstream 7.5.8.11, 98ca4da98, zeigt die Liste nur an): Seelen-Begleiter unterbrechen
+    (Soul Crush: Fanaticism, Ossify, Rallying Cheer, Void Paralyze, Confound …), Wellen-Begleiter nehmen Buffs (Quelling
+    Wave: Damage Up nach Fanaticism oder Clear Mind, Blaze und Ice Spikes, Popoto Skin), Aschen-Begleiter reinigen
+    (Scouring Ash: Gift, Lähmung, Blindheit, Erfrierung, Windburn), Unholde ignorieren Rückstoß (Vileskin: Typhoon,
+    Shockwave, Tsunami, Landslip …). Die Rotation setzt jede dieser Fähigkeiten genau dafür ein (`InterruptAbility`,
+    `DispelAbility`, `AntiKnockbackAbility`, Quelling Wave über ihre Statusbedingung). *Regel:* Eine Gattung, die
+    BossModReborn für einen Gegner des Bretts nennt (Brett über `XBMContent` → `ContentFinderCondition`, wie
+    BossModReborns Gruppe), ist eine Rolle wie der Unterbrecher: nach den Heilern ein Begleiter je verlangter Gattung, in
+    der Reihenfolge, wie viele Gegner des Bretts sie nennen; der Seelen-Begleiter kommt wie bisher auch ohne
+    BossModReborn, sobald RSR ein unterbrechbares Wirken gesehen hat. Jede Rolle zählt zum Kern, eine Rolle wird nur mit
+    derselben Gattung getauscht, und ein Team einer Gattung entfällt, wo das gemischte eine Rolle anderer Gattung hält –
+    wie bisher beim Unterbrecher. Die Begründung im Teamfenster nennt beim Träger der Rolle die erste Mechanik aus
+    BossModReborn und wie viele Gegner die Gattung verlangen. *Im Kampf:* Brett 1
+    nennt Seele, Welle und Asche (Pas de Seul, Bone Bishop, Banemite, Piscodemon); vorher kam der Seelen-Begleiter erst
+    nach einer Sichtung und Welle oder Asche nur, wenn sie eine Schwäche trafen. Jetzt reinigt im ersten Lauf ein
+    Aschen-Begleiter das Gift von Venom Web, und ein Wellen-Begleiter nimmt Damage Up, wenn Fanaticism durchgeht. Die
+    übrigen vier Bretter nennen alle vier Gattungen. *Preis:* bis zu vier Plätze im Kern; unter „Score“ ist das kleinste
+    sichere Team damit größer (weniger In-Unterzahl-Bonus), und ein Team einer Gattung kommt auf Brettern mit mehreren
+    verlangten Gattungen nicht mehr in Frage (750 Punkte); unter „Level“ behält jede Rolle ihren Begleiter auch über der
+    Obergrenze des Bretts, bis zu vier Plätze weniger für Nachzügler, die leveln. Sicherheit vor Punkten, nach seiner Regel gewichtet mit der
+    Wahrscheinlichkeit: Die genannten Mechaniken stehen im Ablauf des Gegners, sie kommen in jedem Kampf.
+    *Gegenthese 1 (kein Gewinn):* Ein Rückstoß ohne Wand oder Fläche dahinter kostet nichts. Hält teilweise: Ob jeder
+    der genannten Rückstöße schadet, ist unbelegt; BossModReborn nennt den Grund, nicht die Folge. Der Platz kostet
+    höchstens eine Schwächenabdeckung, die der Rest des Teams meist mitträgt [Schätzung: bei 10 bis 15 Plätzen und
+    neun Schwächenarten]. *Gegenthese 2:*
+    Ohne BossModReborn oder mit einer Fassung ohne die Schnittstelle bleibt alles wie vorher. *Gegenthese 3 (ausgeliefert,
+    und nichts ändert sich):* Fehlt ihm ein Begleiter der Gattung, gibt es die Rolle nicht; die Wahl übernimmt er selbst
+    (Option C). *Ausgeschlossen:* die Liste nur anzeigen (Upstreams Weg): Sie bliebe neben einer Empfehlung stehen, die
+    sie nicht kennt.
   - *Teamgröße nach Punkten (A698):* Ein kleineres Team bringt In Unterzahl I bis III (`XBMScoreBonus` 4 bis 6: 6 oder
     7, 4 oder 5, 1 bis 3 Begleiter; 1.250, 2.500, 4.250 auf jedem Brett). Die Größen liest RSR aus den Bedingungen des
     Blatts („a team of 6 or 7 familiars"), die Punkte aus `XBMContent` (K15); `TeamSize` (10 bis 15) ist die Obergrenze,
@@ -626,7 +657,8 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     Gegenstände"): der Anteil deiner LP, den jedes Angebot über die Kämpfe bis zum Endgegner bringt. Gewählt wird Stück
     für Stück das mit dem größten Wert je Marke, neu gerechnet nach jedem Stück (Ausrüstung auf die gewählte, Tränke auf
     die gewählten), über jede Startwahl wie in 3; von allen Auswahlen gilt die mit dem größten Wert, bei Gleichstand die
-    billigere. Ein Heilgegenstand zählt höchstens, was du noch heilen kannst: die Kämpfe auf dem schwersten Weg bis
+    billigere. Das Bestien-Ausdauermittel zählt hier mit seinem Heilanteil, weil K8 es unter der Linie nimmt (A973, K8
+    Regel 1). Ein Heilgegenstand zählt höchstens, was du noch heilen kannst: die Kämpfe auf dem schwersten Weg bis
     einschließlich des Endkampfs, jeder mit seiner Last je Kampf (Campsite oben, A661), ein noch ungelernter so schwer wie
     dein schwerster gemessener, plus was dir jetzt fehlt, abzüglich der Heilung, die du schon hältst und die die Auswahl
     schon nahm. Grund: Vorher stand jede Ausrüstung mit messbarem Gewinn vor jedem Trank. Im Laden auf Zug 8 von Brett 1
@@ -1751,6 +1783,36 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
       Schaden. Atomic Ray der Durga (49272, „pet cover will not take it", Daedalus nach icy-veins): RSR löst
       Zähnefletschen nach LP aus, nicht nach angekündigten Flächen (K9), und rechnet nirgends mit der Deckung gegen sie.
 
+- *K12a – Das Crawling Piece der Sirene* (A913; Brett 3, Namensblatt 14586, deutsch „kriechendes Ebenbild“). *Was
+  gilt:* Upstreams Einstellung „Crucible of the Unbroken - Siren logic“ (ab Werk an) setzt es an die Spitze der Ziele,
+  solange es dich gebunden hat (Status Fessel 5710 auf dir); sonst wählt die allgemeine Zielwahl nach Gefahr (Konzept
+  03), wie bei jedem Gegner. Die Spur schreibt je Fessel einmal „crucible siren: bound - …“.
+  - *Mechanik (sein Lauf vom 18.11.2026, zwei Stücke; Spielblätter, xivapi v2, 19.11.2026):* Es erscheint bei der
+    Beschwörung der Sirene, hat dich als Ziel (BossModReborn: Haltestrick 17 vom Stück zu dir) und kriecht auf dich zu.
+    Bei Berührung – 1,3 Yalm und rund 3 Yalm Abstand in den beiden Fällen – wirkt es Agonales Klammern (Death Throes,
+    48568, ohne Wirkzeit) und legt Fessel (5710, „Bewegungsunfähig“, Dauer 9.999 s). Die Fessel endet mit seinem Tod: in
+    beiden Fällen in derselben Zeile, in der seine LP auf 0 fielen (19:15:45.319 und 19:17:12.170); die Todeszeile des
+    Mitschnitts folgt 2 s später. Gebunden weichst du weder Feral Lunge (Rechteck 50 × 16) noch Dead Man's Dirge (Kreis
+    12, Ring 3–43) aus. Gebunden war er 5,7 s und 7,4 s.
+  - *Optionen:* (0) wie Upstream: immer an der Spitze. (A) an der Spitze nur, solange du gebunden bist (BossMod
+    02a16b442, das ihm sonst mit seiner KI ausweicht). (B) wie A, ungebunden zusätzlich nie Ziel. (C) wie A, ungebunden
+    an der Spitze nur, wenn es ohne Schritt in deiner Reichweite steht.
+  - *Abwägung im Kampf:* Gebunden ist sein Tod der einzige Weg aus der Fessel – alle Optionen außer keiner Regel
+    nehmen es dann zuerst. Ungebunden zieht (0) den Schaden von den shambling pieces ab, die dich mit Wallop treffen
+    (5 und 6 % deiner LP je Treffer in diesem Lauf, Gefahr 15,8 LP/s gegen 7,2 bis 7,5 LP/s des Crawling Piece in RSRs
+    Schätzung): Um 19:15:38.124 wählte die Zielwahl nach Gefahr das shambling piece, die Regel setzte 0,5 s später das
+    Crawling Piece. Folgt deine Bewegung dem Ziel – du oder eine KI –, führt (0) dich zu ihm: Im zweiten Fall wechselte
+    das Ziel um 19:17:03.123, und 1,0 s später band es dich. Der Gewinn von (0), Schaden vor der Berührung, war ein
+    Treffer (341 von 3.365 LP) in zwei Fällen. (B) verschenkt den Schaden eines Gegners, der dich ohnehin erreicht. (C)
+    trifft fast nur den Augenblick der Berührung selbst. (A) überwiegt.
+  - *Falsifikation:* (1) *Kein Defekt:* Die Regel kostet nichts. Widerlegt: Sie übersteuerte die Gefahrenwahl
+    (19:15:38.124 → 38.641). (2) *Option falsch:* Ohne Vorrang erreicht es dich später mit voller LP, und die Fessel
+    dauert länger. Die Fessel dauert ab Berührung bis zu seinem Tod; der Vorrang davor brachte einen Treffer.
+    *Preis:* rund 10 % längere Fessel, wo der Schaden davor ein Treffer gewesen wäre. (3) *Ausgeliefert, und nichts ändert
+    sich:* RSR erkennt die Fessel nicht – dann fehlt der Vorrang, wenn er zählt, und es ist schlechter als vorher. RSR
+    prüft den Status 5710 auf dir, von wem auch immer (`PlayerHasStatus`); die Spurzeile zeigt je Fessel, dass er griff,
+    Vorhersage `crucible-siren-bound`.
+
 - *K11 – Begleiter über das Brett planen* (sein Hinweis und seine Vorgabe vom 05.11.2026: „da begleiter über die
   spielfelder des brettes hinweg schaden ansammeln und hp sinkt, auch strategische planung, falls begleiter mehrfach
   eingesetzt werden sollen, damit diese an den spielfeldern, wo sie unbedingt notwendig sind, auch bereitstehen").
@@ -2040,6 +2102,31 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
      Normale Heiltränke sperrt das Brett.
      Die LP liest RSR wie beim Heiltrank: jetzt und, da im Brett kein Heiler lebt, beim nächsten Webfenster einen GCD
      voraus (Konzept 03, „Die Schwelle nach der Vorhersage, wo kein Heiler lebt", A641).
+     *Das Bestien-Ausdauermittel heilt mit* (A973): Sein Wirktext stellt einen Anteil der LP wieder her („Grants Liquid
+     Constitution while also restoring 10% of HP to self or familiar"; die wilde Fassung ebenso, „… and restoring 10% of
+     HP"). Unter der Linie zählt es deshalb als Heilgegenstand mit diesem Anteil, auch gegen Gegner ohne Boss-Symbol.
+     Hebt auch ein Gegenstand, der nur heilt, über die Linie, geht dieser vor, auch wenn er mehr heilt; das
+     Ausdauermittel kommt erst, wo keiner das schafft, und unter mehreren, die es nicht schaffen, bei gleicher Heilung
+     nach dem reinen. So bleibt es für den Boss (11), wo es zusätzlich das Maximum hebt (Code-Review A980: Bis dahin nahm
+     K8 das kleinste Mittel, das hebt, und damit das Ausdauermittel vor jedem größeren Heiltrank; der Preis der Regel ist
+     ein Heiltrank, der mehr heilt als nötig). Nicht in den Wegen, die auf volle LP füllen (das letzte Auffüllen im Endkampf, A695;
+     der Begleiter für „Unversehrte Bestien"; die Heilung, die keiner mehr braucht, A664): Es hebt das Maximum, das die
+     Heilung füllen soll (A717). Laden und Weg zählen seinen Anteil wie den eines Heilgegenstands, weil Regel 1 ihn nimmt.
+     *Im Kampf (21.11.2026, Brett 3):* Nach Kampf 15 stand er bei 34 %; der Laden auf Zug 3 nannte „no way is safe", ein
+     Kampf kostete ihn im Mittel 51 %, und er empfahl für 1190 von 1500 Marken die Genji-Handschuhe (Tempo ×1,08 auf
+     28 % Auto-Angriffe, rund 2 % weniger Last je Kampf). Heilung bot der Laden nur als Bestien-Ausdauermittel (105) und
+     Bestien-Blutsaugerserum (840); RSR zählte keines als Heilung, weil das Ausdauermittel als „mehr maximale LP" mit dem
+     Wert null geführt war und K8 es nur gegen einen Boss nahm. Im Elitekampf 16 fiel er von 34 % ohne Heilung auf null.
+     Mit der Regel zählt jedes Ausdauermittel 10 % für 105 Marken – je Marke rund das Zwanzigfache der Handschuhe.
+     *Gegenthese 1 (Reserve für den Boss):* Ein Ausdauermittel unter der Linie fehlt dem Endkampf. Widerlegt, soweit es
+     reicht: Unter der Linie entscheidet das Überleben dieses Kampfs, und hebt ein reiner Heiltrank über die Linie, geht
+     er vor. *Gegenthese 2 (es hätte ihn nicht gerettet):* 10 % sind 515 von 5.146 LP, bei 55 LP je Sekunde rund 9 s. Für
+     Kampf 16 allein stimmt das; der Laden hätte aber mehrere gekauft (sechs freie Gegenstandsplätze), und jeder zählt
+     im nächsten Kampf wieder. *Gegenthese 3 (ausgeliefert, und nichts ändert sich):* Es wirkt nur, wenn er Ausdauermittel
+     hält. Laden und Schatz zählen sie jetzt (eine Skala, K13); die Beute nimmt sie wie bisher, solange Plätze frei
+     sind. *Preis:* Das Blutsaugerserum (10 % des
+     eigenen Schadens als LP, 60 s) bleibt ohne Heilwert: Wie viel es heilt, hängt an deinem Schaden in den 60 s, und
+     K8 setzt es nicht gezielt gegen eine Gefahr ein (unbelegt, welcher Anteil dabei herauskäme).
   2. Im Kampf gegen Gift oder Blindheit auf dir das passende Mittel.
   3. Steht kein Reraise, die stärkere Bestien-Lebensfeder, im Kampf und außerhalb. Ihr Wirktext nennt keine Dauer, also
      gilt sie bis zu einem Fall. Geht Reraise, ohne dass du fielst, schreibt die Spur das, und von da an kommt eine

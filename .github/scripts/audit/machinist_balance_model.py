@@ -20,6 +20,11 @@ Not a code scanner - a model calculator. Two questions:
    to every enemy with 10 Heat. Heat is worth what Hypercharge makes of it: 50 Heat buy five Blazing Shots (or Auto
    Crossbow where it wins) in the time of three filler GCDs; Battery is worth 266 potency per 10 (The Balance).
 
+4. Wildfire without a pending Full Metal Field (A964): Barrel Stabilizer comes back later than Wildfire (a job change, a
+   death); Wildfire with the next Overheat against waiting for the next Full Metal Field, as the stacks it gathers
+   (effect text: 240 potency per weaponskill landed, 6 at most, 10 s). The rotation's Wildfire branches are mirrored by
+   hand from MCH_Reborn.AttackAbility and EmergencyAbility as of A964.
+
 Simplifications of the queen model: no movement, no downtime, no raid buffs, no potion; Reassemble spent in the
 countdown; the Queen takes 16 s from summon to finish (The Balance: "roughly 16 seconds"), the effect text's 12 s
 of action plus her start.
@@ -34,6 +39,7 @@ import sys
 GCD = 2.5
 OH_GCD = 1.5
 COMBO = 30.0
+WF_TIME, WF_PER_STACK, WF_STACKS = 10.0, 240, 6   # Wildfire effect text: 10 s, 240 per weaponskill landed, 6 at most
 QUEEN_ACTIVE = 16.0  # The Balance: "roughly 16 seconds from start to finish"; effect text: 12 s of action
 
 
@@ -44,6 +50,9 @@ class S:
 def new_state(excavator_policy="asap", queen_active=QUEEN_ACTIVE, cap_guard=True):
     s = S()
     s.cap_guard = cap_guard
+    s.wf_desync = True     # A964: Wildfire with the next Overheat when no Full Metal Field is pending
+    s.wf_windows = []      # (start, end) of each Wildfire
+    s.ws_times = []        # every weaponskill landed
     s.t = 0.0
     s.heat = 0
     s.battery = 0
@@ -238,8 +247,8 @@ def choose_ogcd(s, t, late, next_gcd, combat_time):
         s.step += 1
     s.was_active = active
     found = s.step < len(STEPS) and s.last_summon == STEPS[s.step][0] and s.battery == STEPS[s.step][1]
-    # Emergency: Hypercharge after FMF under Wildfire
-    if s.wf_until > t and s.last_action == "fmf" and can_hypercharge(s, t):
+    # Emergency: Hypercharge after FMF under Wildfire; since A964 also after a Wildfire with no FMF pending
+    if s.wf_until > t and (s.last_action == "fmf" or (s.wf_desync and s.fmm_until <= t)) and can_hypercharge(s, t):
         do_hypercharge(s, t)
         return "hc"
     if s.fmm_until > t and s.last_action == "wf":
@@ -266,7 +275,16 @@ def choose_ogcd(s, t, late, next_gcd, combat_time):
         return "barrel"
     if (s.heat >= 50 or s.hyperd_until > t) and late and next_gcd == "fmf" and s.wf_ready <= t:
         s.wf_ready = t + 120.0
-        s.wf_until = t + 10.0
+        s.wf_until = t + WF_TIME
+        s.wf_windows.append((t, t + WF_TIME))
+        s.last_action = "wf"
+        return "wf"
+    # A964: no Full Metal Field pending, Barrel Stabilizer not back within Wildfire's duration, Hypercharge may go
+    if (s.wf_desync and late and s.wf_ready <= t and not overheated(s, t) and s.fmm_until <= t
+            and s.barrel > t + WF_TIME and not tool_charge_soon(s, t) and can_hypercharge(s, t)):
+        s.wf_ready = t + 120.0
+        s.wf_until = t + WF_TIME
+        s.wf_windows.append((t, t + WF_TIME))
         s.last_action = "wf"
         return "wf"
     # UseQueen
@@ -297,8 +315,11 @@ def choose_ogcd(s, t, late, next_gcd, combat_time):
     return None
 
 
-def run(fight=600.0, excavator_policy="asap", queen_active=QUEEN_ACTIVE, trace=False, cap_guard=True):
+def run(fight=600.0, excavator_policy="asap", queen_active=QUEEN_ACTIVE, trace=False, cap_guard=True,
+        barrel_offset=0.0, wf_desync=True):
     s = new_state(excavator_policy, queen_active, cap_guard)
+    s.barrel = barrel_offset   # > 0: Barrel Stabilizer comes back later than Wildfire, as after a job change
+    s.wf_desync = wf_desync
     # countdown: Reassemble at -4.75 (one charge spent), Air Anchor at 0
     s.reassembled = True
     t = 0.0
@@ -307,6 +328,7 @@ def run(fight=600.0, excavator_policy="asap", queen_active=QUEEN_ACTIVE, trace=F
         tick_charges(s, t)
         g = choose_gcd(s, t)
         do_gcd(s, t, g)
+        s.ws_times.append(t)
         if g == "blazing":
             pass
         if s.wf_until > t:
@@ -390,6 +412,28 @@ def flame_breakpoint(gauge_usable):
     return None
 
 
+def wildfire_potency(s, fight):
+    """Wildfire's potency over the fight: each window counts the weaponskills landed in it, six at most."""
+    total = 0
+    for start, end in s.wf_windows:
+        if end <= fight:
+            total += WF_PER_STACK * min(WF_STACKS, sum(1 for w in s.ws_times if start < w <= end))
+    return total
+
+
+def wildfire_grid():
+    """Part 4 (A964): Barrel Stabilizer back 0 to 110 s after Wildfire (a job change, a death), fights of 3 to 15
+    minutes - Wildfire's potency with the next Overheat against waiting for Full Metal Field."""
+    gains = []
+    for offset in range(0, 120, 10):
+        for minutes in range(3, 16):
+            fight = minutes * 60.0
+            new = wildfire_potency(run(fight, barrel_offset=float(offset))[0], fight)
+            old = wildfire_potency(run(fight, barrel_offset=float(offset), wf_desync=False)[0], fight)
+            gains.append((offset, minutes, new - old, new, old))
+    return gains
+
+
 def self_test():
     # Hand-computed: three enemies, all reached: 540 against 260 + 2 * 0.5 * (180 + 2 * 126) = 692.
     assert abs(blazing_value(3) - 692) < 1e-9, blazing_value(3)
@@ -414,6 +458,11 @@ def self_test():
     assert broken.wasted > 0, "the cap guard switched off must show as lost battery"
     # The Balance's even-minute Queens follow Air Anchor at 100 battery.
     assert all(b == 100 for t, b in BALANCE if 115 <= t % 120 or t % 120 <= 5), BALANCE
+    # Part 4: aligned at the start, both rules cast every Wildfire with six stacks; offset, the new rule never loses.
+    aligned = run(600.0)[0]
+    assert all(min(WF_STACKS, sum(1 for w in aligned.ws_times if a < w <= b)) == WF_STACKS
+               for a, b in aligned.wf_windows if b <= 600.0), aligned.wf_windows
+    assert all(g >= 0 for _, _, g, _, _ in wildfire_grid()), "Wildfire with the next Overheat lost potency"
     print("self-test ok: breakpoints 6 and 4 as The Balance states them, Flamethrower from 2 without the gauge, no"
           " battery lost, the switched-off cap guard shows as lost battery")
 
@@ -431,6 +480,11 @@ if __name__ == "__main__":
     print("Flamethrower per GCD against the filler (enemies: flamethrower / filler / filler with gauge):")
     for n in range(1, 7):
         print(f"   {n}: {flamethrower(n):.0f} / {filler_raw(n):.0f} / {filler_with_gauge(n):.0f}")
+    g = wildfire_grid()
+    print(f"Wildfire without a pending Full Metal Field ({len(g)} cases, Barrel Stabilizer 0-110 s later, 3-15 min):"
+          f" gain {min(x[2] for x in g)} to {max(x[2] for x in g)} potency, higher in {sum(1 for x in g if x[2] > 0)},"
+          f" lower in {sum(1 for x in g if x[2] < 0)}; six stacks in every window:"
+          f" {all(n % (WF_PER_STACK * WF_STACKS) == 0 for _, _, _, n, _ in g)}")
     if "-t" in sys.argv:
         for e in log:
             print(e)

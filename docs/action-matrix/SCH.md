@@ -1,6 +1,6 @@
 # SCH — Abhängigkeitsmatrix
 
-Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-31; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
+Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-21; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `ScholarRotation`
 - Rotation: `RotationSolver/Rotations/Healer/Scholar/SCH_Reborn.cs`
@@ -8,14 +8,14 @@ Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-31; nic
 
 ## Nutzung
 
-direkt: 45 · ungenutzt: 4 · über andere Aktion: 2
+direkt: 46 · ungenutzt: 3 · über andere Aktion: 2
 
 | Stufe | Aktion | Id | Art | Nutzung |
 |---|---|---|---|---|
 | alle | Sprint (`SprintPvE`) | 3 | System | direkt |
 | Heiler | Esuna (`EsunaPvE`) | 7568 | Spell | direkt |
 | Heiler | Lucid Dreaming (`LucidDreamingPvE`) | 7562 | Ability | direkt |
-| Heiler | Repose (`ReposePvE`) | 16560 | Spell | ungenutzt |
+| Heiler | Repose (`ReposePvE`) | 16560 | Spell | direkt |
 | Heiler | Rescue (`RescuePvE`) | 7571 | Ability | ungenutzt |
 | Heiler | Surecast (`SurecastPvE`) | 7559 | Ability | direkt |
 | Heiler | Swiftcast (`SwiftcastPvE`) | 7561 | Ability | direkt |
@@ -172,6 +172,5 @@ Ohne Eintrag in `ActionId.resx` und ohne Wirktext; RSR castet keine PvE-Limit-Br
 Maschinelle Liste; die Bewertung je Eintrag steht im Konzept.
 
 - Embrace (`EmbracePvE`, Spell): ungenutzt — nicht zuweisbar: Begleiter oder Automatik
-- Repose (`ReposePvE`, Spell): ungenutzt
 - Rescue (`RescuePvE`, Ability): ungenutzt
 - Seraphic Veil (`SeraphicVeilPvE`, Spell): ungenutzt — nicht zuweisbar: Begleiter oder Automatik

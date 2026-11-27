@@ -127,14 +127,7 @@ public sealed class PCT_Reborn : PictomancerRotation
 			return true;
 		}
 
-		if ((!BurstDefense || (BurstDefense && !InBurstStatus))
-			&& ShouldSustainMitigationDebuff(StatusID.Addle)
-			&& AddlePvE.CanUse(out act, skipStatusProvideCheck: true))
-		{
-			return true;
-		}
-
-		if ((!BurstDefense || (BurstDefense && !InBurstStatus)) && AddlePvE.CanUse(out act))
+		if ((!BurstDefense || (BurstDefense && !InBurstStatus)) && UseAddle(out act))
 		{
 			return true;
 		}
@@ -150,14 +143,7 @@ public sealed class PCT_Reborn : PictomancerRotation
 			return true;
 		}
 
-		if ((!BurstDefense || (BurstDefense && !InBurstStatus))
-			&& ShouldSustainMitigationDebuff(StatusID.Addle)
-			&& AddlePvE.CanUse(out act, skipStatusProvideCheck: true))
-		{
-			return true;
-		}
-
-		if ((!BurstDefense || (BurstDefense && !InBurstStatus)) && AddlePvE.CanUse(out act))
+		if ((!BurstDefense || (BurstDefense && !InBurstStatus)) && UseAddle(out act))
 		{
 			return true;
 		}

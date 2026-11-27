@@ -171,8 +171,10 @@ public partial class BeastmasterRotation
 			(verdict.Recommended ? taken : left).Add($"{verdict.Name} ({verdict.Verdict})");
 		}
 
+		// A973: a window read before the game filled it lists no piece - "take nothing; leave " said nothing about the spoils.
 		DefenseTrace.Line($"crucible spoils: {offers.Count} pieces, {itemsFree} item and {gearFree} gear slots free - "
-			+ (takeAll ? "take all" : $"take {(taken.Count > 0 ? string.Join(", ", taken) : "nothing")}; leave {string.Join(", ", left)}"));
+			+ (list.Count == 0 ? "nothing offered"
+				: takeAll ? "take all" : $"take {(taken.Count > 0 ? string.Join(", ", taken) : "nothing")}; leave {string.Join(", ", left)}"));
 
 		// A slot of the piece's kind is free: then it is counted as taken.
 		bool TakeSlot(ushort id)

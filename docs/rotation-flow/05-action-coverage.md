@@ -126,8 +126,8 @@ SAM `HissatsuYatenPvE` liegt in `SAM_Reborn.MoveBackAbility` (f90c7bf7, A7). Es 
 Bewegungsfähigkeit, sondern eine Schadensaktion mit Rücksprung, die zusätzlich Enhanced Enpi gewährt. Im
 Rückzugsslot fällt es nur bei gesetztem `AutoStatus.MoveBack`, also nur, wenn ein Rückzug ohnehin gewollt ist.
 
-**Sicherheit des Landepunkts (A313, A498).** Vor jeder Bewegungsaktion fragt RSR BossModReborn, ob der Weg in eine
-Gefahrenzone führt (`ActionTargetInfo.CheckMovementSafety`, Schalter „Skip BossModReborn position-safety check for this movement action" je Aktion, `SkipPositionSafetyCheck`). Den
+**Sicherheit des Landepunkts (A313, A498, A934).** Vor jeder Bewegungsaktion fragt RSR BossModReborn, ob der Weg in eine
+Gefahrenzone führt (`ActionTargetInfo.CheckMovementSafety`, Schalter „Skip the check where this movement action lands (BossModReborn, vnavmesh)" je Aktion, `SkipPositionSafetyCheck`). Den
 Landepunkt rechnet RSR selbst und fragt `Hints.IsDashSafe(from, to)`:
 - Sprung auf ein Ziel: bis zum Rand seiner Trefferfläche; steht der Spieler schon dort (0 Yalm), nichts zu prüfen.
 - fester Sprung entlang der Blickrichtung: die Weite aus dem Wirktext (`ActionSetting.BackstepDistance`) – Hell's
@@ -146,6 +146,119 @@ hinter ihm: Kein fester Sprung wurde im Kampf geprüft, Hell's Ingress lief auf 
 Fläche, während das Aktionsfenster „Fail" zeigte. Im Kampf jetzt: Auf einen Bewegungsbefehl bleibt der feste Sprung aus,
 solange sein Landepunkt in einer Gefahrenzone liegt. Der Befehl gilt weiter, solange seine Dauer läuft („Special
 state duration", ab Werk 3 s); vergeht die Fläche oder dreht sich der Spieler in der Zeit, geht der Sprung, sonst gar nicht.
+
+**Arenagrenzen ohne BossMod-Modul** (sein Auftrag vom 19.11.2026: „wie erkennt man aber diese umrandungen bei inhalten
+ohne bmr? über das gelände? über vnavmesh? konzept im vollen kritischen loop mit antithese und research“; A934).
+
+*Sachstand.* Die Prüfung oben lief nur mit „Check movement actions with BossModReborn (Experimental)“, und die stand ab
+Werk aus (Upstream 33e6acb1f, 07.05.2026); der Satz „Vor jeder Bewegungsaktion fragt RSR BossModReborn“ galt also nur
+eingeschaltet. Mit ihr antwortet BossModReborn aus der Arena seines Moduls; ohne Modul gilt seine Vorgabe, ein Quadrat
+von 30 Yalm Halbbreite um den Spieler (`AIHints.DefaultBounds`, 8d5ff8e21), und ohne BossModReborn ist jeder Landepunkt
+sicher (`DataCenter.IsFixedDashSafe`). Im Kampf: Ohne Modul springt Elusive Jump, Hell's Egress, Displacement, Repelling
+Shot oder Hissatsu: Yaten rückwärts, En Avant, Smudge oder Aetherial Shift vorwärts, ohne dass etwas den Rand kennt.
+Rückstöße betrifft das nicht: Arm's Length und Surecast gehen auf jeden gelisteten Rückstoß, der den Spieler erreicht
+(Konzept 13, A701).
+
+*Grundlagen (Quellen, 19.11.2026).*
+- *Wie das Spiel den Rand führt:* drei Arten. Ein Abgrund, wo der Boden endet; eine unsichtbare Wand, die nur hält;
+  eine Todeswand am Rand, die beim Pull entsteht. Die Todeswand ist ein Objekt in der Mitte (BossModReborn führt es als
+  „Deathwall“, 43 Dateien) und trifft mit einer namenlosen Ringaktion ohne Wirkzeit; ihr Blatt nennt den Ring als Form
+  (`CastType` 10) und den äußeren Radius (`EffectRange` 30 oder 60), nicht den inneren, also nicht den Rand (Action 24246,
+  24711, 41400, 49557 u. a., xivapi). Ihr Name steht nur in BossModReborns Listen, nicht im Spielblatt.
+- *vnavmesh* (awgil/ffxiv_navmesh 38d2a24, 06.11.2026) baut sein Netz aus der Kollision der Zone: Löcher in Arenen
+  (Materialbit 0x2000000) und unsichtbare Zonenwände sind nicht begehbar. Über IPC fragt man `Nav.IsReady` und
+  `Query.Mesh.IsPointOnMesh(Punkt, halbe Höhe, auch Unerreichbares)`: ob unter einem Punkt Netz liegt. Eine Todeswand
+  kennt es nicht – sie ist keine Kollision; keine Stelle im Quelltext nennt sie.
+- *BossModReborn* führt jede Arena von Hand je Modul (`ArenaBounds`), die Todeswand meist als Änderung der Arena beim
+  Pull; ohne Modul hat es keine.
+- *Seine Mitschnitte* (20 Dateien, 10. bis 19.11.2026): keine der 20 Todeswand-Aktionen, die BossModReborn kennt, traf ihn
+  oder ein Mitglied; kein Tod durch Sturz. Gemessen, wie oft die Lage eintrat: nie – sie zählt über alle Inhalte, nicht
+  über seine Abende (CLAUDE.md, „Maßstab“).
+
+*Optionen.*
+- *O0 Nullvariante:* unverändert. Ohne Schalter und ohne Modul springt RSR blind.
+- *O1 Schalter ab Werk an:* die bestehende Prüfung läuft immer; mit Modul kennt sie Rand und Flächen.
+- *O2 Boden über vnavmesh:* unter dem Landepunkt muss Netz liegen; zuvor die Gegenprobe, dass unter dem Spieler selbst
+  Netz liegt – sonst beschreibt das Netz diese Arena nicht (eine Plattform, die erst im Kampf erscheint), und die Frage
+  bleibt offen.
+- *O3 Todeswand lernen:* trifft eine namenlose Ringaktion ohne Wirkzeit und ohne Omen ein Mitglied, liegt der Rand
+  innerhalb seines Abstands zur Quelle; Mitglieder, die sie nicht traf, liegen innen. Je Gebiet gelernt.
+- *O4 Ohne Modul in einem Bosskampf kein fester Sprung.*
+
+*Abwägung im Kampf.*
+- *O1:* Stärke: Jeder Sprung eines Moduls geht nicht mehr in eine angekündigte Fläche oder über den Rand. Schwäche: Ein
+  Sprung, dessen Weg eine Fläche kreuzt, bleibt aus – der Nahkämpfer erreicht das Ziel einen Moment später, ein
+  Rücksprung mit Proc (Elusive Jump, Hell's Egress) fällt, solange die Fläche liegt. Seine Regel „Sicherheit vor Schaden“
+  und das Text-Code-Gebot (Konzept 05 sagt „vor jeder Bewegungsaktion“) sprechen für an.
+- *O2:* Stärke: ein Abgrund oder ein Loch im Boden ohne Modul und mit Modul, dessen Arena das Loch nicht kennt. Schwäche:
+  braucht vnavmesh mit geladenem Netz für das Gebiet; ohne es wie bisher. Netz endet einen halben Yalm vor der Kante
+  (Agentenradius): ein Sprung bis knapp an die Kante bleibt aus – der Preis ist ein Sprung, nicht ein Leben.
+- *O3:* Stärke: kennt die Todeswand nach dem ersten Treffer. Schwäche: der erste Treffer, und in seinen Mitschnitten trat
+  die Lage nie ein; ein Ring ohne Wirkzeit ist auch manche gewöhnliche Mechanik (Bedrohung: falsch gelernter Rand sperrt
+  Sprünge in der Mitte). Bauen ohne einen einzigen beobachteten Fall hieße Mechanik ohne Anforderung (CLAUDE.md,
+  „Prüfgrad“).
+- *O4:* kappt die Entscheidung statt sie zu verbessern (CLAUDE.md, „Optimum“): Jeder Sprung fiele auch auf sicherem
+  Boden weg.
+
+*Antithesen.* (1) *Kein Defekt:* Er springt selten, BossModReborn hat für fast jeden Inhalt seines Profils ein Modul –
+widerlegt für die Lage ohne Schalter: Dann fragt RSR auch mit Modul nicht, und der Schalter stand ab Werk aus. (2) *O2
+falsch:* Das Netz kennt keine Plattformen, die eine Phase bringt – abgefangen durch die Gegenprobe am eigenen Standort.
+(3) *Ausgeliefert, und nichts ändert sich:* Ohne vnavmesh oder ohne Netz für das Gebiet antwortet O2 nicht. Bei ihm
+läuft vnavmesh und lädt beim Gebietswechsel sein Netz (Dalamud-Protokoll vom 16.11.2026, „Starting transition … to
+'ffxiv/…'“); offen bleibt, ob es das Netz einer Instanz rechtzeitig fertig hat – bis dahin antwortet es „nicht bereit“,
+und es gilt O1 allein. Eine Todeswand ohne Modul bleibt unbekannt (O3, offen).
+
+*Entscheidung.* O1 und O2 zusammen, O3 als offene Arbeit mit Auflösungsbedingung: der erste beobachtete Treffer einer
+Todeswand ohne Modul. Die Prüfung heißt jetzt „Check where movement actions land“ und steht ab Werk an; ihr
+Name in der gespeicherten Konfiguration bleibt (`BmrSafetyCheckAuto`). Ein Landepunkt ohne Boden gilt als unsicher,
+ein unbekannter (kein vnavmesh, kein Netz, der Spieler selbst nicht auf dem Netz) als sicher, wie ohne BossModReborn.
+Geprüft werden die Landepunkte, die RSR selbst rechnet: fester Sprung, Rücksprung vom Ziel und Ort am Boden; ein Sprung
+auf ein Ziel endet bei dem, der auf dem Boden steht. Kein unabhängiger Prüfer: Die Regel bewegt nicht, sie hält eine
+Bewegung zurück, und ihr Fehler kostet einen Sprung.
+
+*Am Effekt, an Textur oder Mesh erkennen?* (sein Hinweis und Vorschlag vom 20.11.2026: „meist enteht in der
+anfangsphase dort ein vfx, um den rand optisch anzuzeigen oder die texturbeschaffenheit oder meshes sind ort anders
+(stecheln, zacken …). kann man das erkennen?“; sein Hinweis desselben Tages: „manche arenen sind eckig, andere rund,
+einige haben sonderformen“; A935.)
+- *Was der Client führt* (FFXIVClientStructs 80cb4a7b, 10.11.2026): Das Layout der Zone hält seine Teile getrennt nach
+  Art, darunter Effekte (`VfxLayoutInstance`: Lage, Drehung, Größe, Prüfsumme des Pfads), Gruppen mit Zeitleiste
+  (`SharedGroupLayoutInstance`: Lage, laufende Zeitleiste), Modelle (`BgPart`) und Kollision. Ein Rand, der beim Pull
+  erscheint, ist im Client ein Effekt oder eine Gruppe, die ein Kartenereignis einschaltet (ACT-Zeile 257).
+- *Was das sagt:* *dass* und *wo* etwas erscheint – der Mittelpunkt aus der Lage –, nicht, *wie weit* es reicht und
+  welche Form es hat. Die Ausdehnung steckt in der Effektdatei (Emitter, Partikel), und die sichtbare Linie ist nicht
+  zwingend die Linie, an der der Server trifft. Seine Formen – eckig, rund, Sonderform – lassen sich aus Lage und Größe
+  nicht ablesen.
+- *Beleg aus dem Vorbild:* BossModReborn (8d5ff8e21) liest dasselbe Ereignis (`OnMapEffect`/`OnEventEnvControl`, 237
+  Module) und trägt die Form danach von Hand ein – `new ArenaBoundsSquare(20f)` in D062Amalgam; kein Modul leitet sie
+  aus dem Effekt ab.
+- *In seinen Mitschnitten:* Kartenereignisse in fast jedem Inhalt, hundertfach (Second Board 1278, M4 400, Pilgrim's
+  Traverse 91–100 288) – auch Licht, Plattformen, Türen; allein ist das Ereignis kein Rand.
+- *Textur und Mesh (Stacheln, Zacken):* Das sind Modelle mit Material zum Zeichnen. Die Materialbits der Kollision, die
+  vnavmesh auswertet, heißen Durchflug, nicht landbar, nicht begehbar, Angelplatz – kein Schaden [Schätzung: Das Spiel
+  führt Schaden am Rand nur am Server; belegt ist, dass weder vnavmesh noch BossModReborn ein solches Bit lesen]. Haben sie Kollision, stehen sie in vnavmeshs Netz und gelten als
+  nicht begehbar; dann deckt sie die Bodenprüfung oben.
+- *Was die Grenze wirklich verrät:* der Treffer. Eine Todeswand trifft mit einer Ringaktion ohne Wirkzeit und ohne
+  Namen im Spielblatt; ihr Ursprung ist die Mitte. In seinen Mitschnitten trafen 452 verschiedene ungewirkte
+  Gegneraktionen Spieler, darunter 4 Ringe, alle mit Namen (Bastion of Twilight, Bog Bequest, Rapid Rotary, Growing
+  Circles of Ablution) – keine Todeswand. Der fehlende Name trennt beides.
+- *Daraus O3 in einer Form, die jede Form trägt:* je Gebiet die Trefferpunkte einer namenlosen Ringaktion ohne Wirkzeit,
+  um ihren Ursprung nach Richtung geordnet (Winkelsektoren); ein Landepunkt im selben Sektor mindestens so weit draußen
+  gilt als unsicher. Eckig, rund und Sonderform ergeben je Sektor ihren eigenen Abstand.
+- *Entscheidung:* Kein Erkennen am Effekt oder an der Textur – beides sagt nicht, wo die Grenze liegt. Als ersten
+  billigen Kontakt (archiv-todo.md) schreibt RSR jetzt jeden solchen Treffer einmal je Aktion und Gebiet in die Spur
+  („arena edge: …“, `ArenaEdgeWatch`); die Lernregel nach Sektoren folgt, wenn die Zeile im Spiel erscheint und ihre
+  Annahmen trägt (Ursprung in der Mitte, kein Name). Antithesen: (1) *kein Defekt* – richtig für Inhalte mit Modul, nicht
+  für neue Inhalte in den Tagen nach einem Patch, bevor BossMod Module hat; (2) *Option falsch* – eine namenlose
+  Ringaktion, die kein Rand ist, lernte einen falschen Rand; die Spur zeigt das, bevor eine Regel danach handelt;
+  (3) *ausgeliefert, und nichts ändert sich* – trifft der Rand niemanden, entsteht keine Zeile; das ist der erwünschte
+  Fall.
+
+| Anforderung | Kriterium | Stelle | Beleg | Messweg |
+|---|---|---|---|---|
+| Kein Sprung von RSR über einen Abgrund | Landepunkt ohne Netz → abgelehnt | `ActionTargetInfo.MovementSafety`, `DataCenter.FloorAt` | vnavmesh `IsPointOnMesh` | Spurzeile „… lands where vnavmesh has no floor“ |
+| Jede Ablehnung lesbar, ohne Flut | je Aktion und Grund eine Zeile je Gebiet, auch wenn mehrere Sprünge im selben Frame abgelehnt werden (Code-Review A934) | `ActionTargetInfo.TraceRefusal` | – | Spurzeile „movement check: … held - …“ |
+| Kein falscher Abbruch auf unbekanntem Boden | Spieler nicht auf dem Netz → keine Antwort | `DataCenter.FloorAt` | Gegenprobe | keine Ablehnung aus diesem Grund, wo er steht |
+| Prüfung ab Werk | Schalter an | `Configs.CombatAndTarget` | seine Regel „Sicherheit vor Schaden“ | Einstellungsfenster |
 
 **Welche Aktion bewegt, sagen die Blätter** (`Action.AffectsPosition`). `check_movement_types.py` hält jede
 Aktion des PvE mit diesem Merkmal gegen einen Bewegungstyp in ihrer Basisrotation: jede Jobaktion, der Blaumagier
@@ -171,8 +284,8 @@ Jetzt gilt:
 - Kreszenter Schritt ist ein fester Sprung mit 15 Yalm aus dem Wirktext.
 - Im Kampf: Gewissenstritt und Rasender Sturz gehen erst, wenn der Blaumagier nah genug am Ziel steht (ab Werk unter
   3 Yalm), auf einen Bewegungsbefehl, im Countdown oder wenn er sie selbst drückt; sonst bleiben sie bereit, und im
-  Mondflöten-Fenster fehlt dann Gewissenstritt. Die Prüfung des Wegs läuft nur mit „Check movement actions with
-  BossModReborn (Experimental)" (ab Werk aus); die Abstandsgrenze gilt immer.
+  Mondflöten-Fenster fehlt dann Gewissenstritt. Die Prüfung des Wegs läuft mit „Check where movement actions land" (seit
+  A934 ab Werk an); die Abstandsgrenze gilt immer.
 
 Ausnahmen, je mit Grund im Skript:
 - Rescue: bewegt das Gruppenmitglied, nicht den Spieler.

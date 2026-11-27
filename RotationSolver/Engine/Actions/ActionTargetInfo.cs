@@ -132,7 +132,7 @@ public partial struct ActionTargetInfo(IBaseAction action)
 			foreach (var figure in DataCenter.HealToDefeatTargets.GetObjectInRadius(Range))
 			{
 				if (CheckStatus(figure, skipStatusProvideCheck, skipTargetStatusNeedCheck) && CanUseTo(figure)
-					&& action.Setting.CanTarget(figure))
+					&& action.Setting.CanTarget(figure) && (targetFilter?.Invoke(figure) ?? true))
 				{
 					validTargets.Add(figure);
 				}
@@ -147,7 +147,7 @@ public partial struct ActionTargetInfo(IBaseAction action)
 			foreach (var spiked in DataCenter.SpikedHostiles.GetObjectInRadius(Range))
 			{
 				if (CheckStatus(spiked, skipStatusProvideCheck, skipTargetStatusNeedCheck) && CanUseTo(spiked)
-					&& action.Setting.CanTarget(spiked))
+					&& action.Setting.CanTarget(spiked) && (targetFilter?.Invoke(spiked) ?? true))
 				{
 					validTargets.Add(spiked);
 				}
@@ -255,7 +255,8 @@ public partial struct ActionTargetInfo(IBaseAction action)
 				continue;
 			}
 
-			if (CheckStatus(tar, skipStatusProvideCheck, skipTargetStatusNeedCheck) && CheckTimeToKill(tar, timeToKill) && CheckResistance(tar, range))
+			if (CheckStatus(tar, skipStatusProvideCheck, skipTargetStatusNeedCheck) && CheckTimeToKill(tar, timeToKill) && CheckResistance(tar, range)
+				&& LivesUntilItLands(tar))
 			{
 				validTargets.Add(tar);
 			}
@@ -399,20 +400,23 @@ public partial struct ActionTargetInfo(IBaseAction action)
 
 		if (action.Setting.TargetStatusNeed != null && !skipTargetStatusNeedCheck && action.Config.ShouldCheckTargetStatus)
 		{
+			var hasKnownWeakness = false;
 			if (DataCenter.IsInOccultCrescentOp && battleChara.NameId != 0)
 			{
 				foreach (var id in action.Setting.TargetStatusNeed)
 				{
 					if (StatusHelper.IsOccultWeaknessStatus(id) && StatusHelper.HasKnownOccultWeakness(battleChara.NameId, id))
 					{
-						return true;
+						hasKnownWeakness = true;
+						break;
 					}
 				}
 			}
 
 			// As on the player side (ActionBasicInfo.IsStatusNeeded): the needed status has to last until the
-			// action goes off and its cast ends, not the refresh horizon of a provided one.
-			if (battleChara.WillStatusEnd(action.Info.NeededStatusMargin, action.Setting.StatusFromSelf, action.Setting.TargetStatusNeed))
+			// action goes off and its cast ends, not the refresh horizon of a provided one. Upstream: a weakness the
+			// Occult Crescent records for this enemy counts as present.
+			if (!hasKnownWeakness && battleChara.WillStatusEnd(action.Info.NeededStatusMargin, action.Setting.StatusFromSelf, action.Setting.TargetStatusNeed))
 			{
 				return false;
 			}

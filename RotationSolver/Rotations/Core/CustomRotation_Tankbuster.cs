@@ -450,20 +450,10 @@ public partial class CustomRotation
 	protected static bool HelpTankbusterTarget(IBaseAction help, out IAction? act, bool tanksOnly = false,
 		Func<IBattleChara, bool>? alsoTakes = null, bool skipTargetStatusNeedCheck = false)
 	{
-		// The target filter is swapped in for this call only and restored afterwards, as for Nascent Flash.
-		var setting = help.Setting;
-		var canTarget = setting.CanTarget;
+		// The conditions go in as this call's target filter, on top of the action's own CanTarget (concept 24, A971).
 		var playerId = Player?.GameObjectId ?? 0;
-		setting.CanTarget = t => canTarget(t) && t.GameObjectId != playerId
-			&& (!tanksOnly || t.IsJobCategory(JobRole.Tank)) && (alsoTakes == null || alsoTakes(t));
-		try
-		{
-			return help.CanUse(out act, skipTargetStatusNeedCheck: skipTargetStatusNeedCheck, targetOverride: TargetType.Tankbuster);
-		}
-		finally
-		{
-			setting.CanTarget = canTarget;
-		}
+		return help.CanUse(out act, skipTargetStatusNeedCheck: skipTargetStatusNeedCheck, targetOverride: TargetType.Tankbuster,
+			targetFilter: t => t.GameObjectId != playerId && (!tanksOnly || t.IsJobCategory(JobRole.Tank)) && (alsoTakes == null || alsoTakes(t)));
 	}
 
 	/// <summary>Whether a plan stands for a measured tankbuster cast at you (any state).</summary>

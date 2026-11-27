@@ -27,6 +27,9 @@ import subprocess
 import sys
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import layout  # noqa: E402
+import os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from resx_doc import normalize  # noqa: E402  (A982: the sheets' effect texts in one shape)
 
 ROOT = pathlib.Path(__file__).resolve().parents[3]
 RESX = ROOT / 'RotationSolver.SourceGenerators' / 'Properties' / 'ActionId.resx'
@@ -191,7 +194,7 @@ def main():
     if rows is None:
         print('xivapi unreachable: the comparison against the Action sheet is skipped.')
         return 0
-    ids = identifiers(RESX.read_text(encoding='utf-8-sig'))
+    ids = identifiers(normalize(RESX.read_text(encoding='utf-8-sig')))
     bases = layout.base_rotation_files() + sorted(layout.DUTIES.glob('*.cs'))
     assert bases, 'no base rotation found - the layout moved again (layout.py)'
     types = special_types(p.read_text(encoding='utf-8-sig') for p in bases)

@@ -64,6 +64,19 @@ internal static class GroupBurstWatch
 		}
 	}
 
+	/// <summary>
+	/// Concept 12 (A974): whether another member has set a raid buff in this fight - the two-minute grid a buff of one's own can
+	/// fall on. Without one there is no grid, and a buff fired on cooldown falls beside every burst phase.
+	/// </summary>
+	internal static bool AnySeen
+	{
+		get
+		{
+			Sync();
+			return _uses.Count > 0;
+		}
+	}
+
 	/// <summary>Every action effect: a raid buff of another member of the party, in combat.</summary>
 	internal static void Observe(ActionEffectSet set, ulong playerId)
 	{

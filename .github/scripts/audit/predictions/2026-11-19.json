@@ -11,7 +11,7 @@
   "archive": "A904",
   "kind": "each",
   "situation": "group burst:",
-  "match": "group burst: ([A-Z]{3}|NPC) used .+, status #[0-9]+ (on the enemy|on [0-9]+ members), recast ([0-9]+ s|unknown) - next group buff in ([0-9]+ s|unknown)$"
+  "match": "group burst: ([A-ZÄÖÜ]{3}|NPC) used .+, status #[0-9]+ (on the enemy|on [0-9]+ members), recast ([0-9]+ s|unknown) - next group buff in ([0-9]+ s|unknown)$"
  },
  {
   "id": "crucible-eyes-recognized",
@@ -19,5 +19,124 @@
   "kind": "each",
   "situation": "crucible items read:",
   "match": "crucible items read: [0-9]+, token and loot boosts: (?=.*\\(TokenBoost\\))(?=.*\\(LootBoost\\)).+$"
+ },
+ {
+  "id": "crucible-siren-bound",
+  "archive": "A913",
+  "kind": "each",
+  "situation": "crucible siren:",
+  "match": "crucible siren: bound - the crawling piece comes first until it falls, its fall ends the bind$"
+ },
+ {
+  "id": "downtime-hold-line-form",
+  "archive": "A914",
+  "kind": "each",
+  "situation": "downtime hold:",
+  "match": "downtime hold: .+ waits - pause in -?[0-9]+[.,][0-9] s for [0-9]+[.,][0-9] s, its window is [0-9]+ s, (alone|in a group)$"
+ },
+ {
+  "id": "out-of-combat-heal-line-form",
+  "archive": "A915",
+  "kind": "each",
+  "situation": "out-of-combat heal held:",
+  "match": "out-of-combat heal held: .+ waits for the fight - natural regeneration and a heal over time cover the time until the next enemy$"
+ },
+ {
+  "id": "fight-end-charges-line-form",
+  "archive": "A916",
+  "kind": "each",
+  "situation": "fight end:",
+  "match": "fight end: .+ charges released - the boss falls in [0-9]+[.,][0-9] s, before they cap in [0-9]+[.,][0-9] s and before the burst \\((unknown|[0-9]+ s)\\)$"
+ },
+ {
+  "id": "area-display-connected",
+  "archive": "A920",
+  "kind": "present",
+  "situation": "area display:",
+  "match": "area display: connected to Splatoon$"
+ },
+ {
+  "id": "area-display-blocked-ring-line-form",
+  "archive": "A921",
+  "kind": "each",
+  "situation": "area display: .+ blocked in Splatoon",
+  "match": "area display: .+ #[0-9]+ blocked in Splatoon's projection - it draws [0-9]+-[0-9]+ from the marker's name, the game lays the marker to [0-9]+$"
+ },
+ {
+  "id": "area-display-settings-readable",
+  "archive": "A921",
+  "kind": "absent",
+  "situation": "area display:",
+  "match": "area display: Splatoon's projection settings are not readable"
+ },
+ {
+  "id": "gcd-idle-line-form",
+  "archive": "A923",
+  "kind": "each",
+  "situation": "gcd idle:",
+  "match": "gcd idle: [0-9]+[.,][0-9] s without a GCD - chosen [^;]+(; refused .+)?$"
+ },
+ {
+  "id": "pull-prepared-line-form",
+  "archive": "A924",
+  "kind": "each",
+  "situation": "pull prepared:",
+  "match": "pull prepared: .+ before .+, no countdown$"
+ },
+ {
+  "id": "positional-move-line-form",
+  "archive": "A928",
+  "kind": "each",
+  "situation": "positional move: BossMod walks you",
+  "match": "positional move: BossMod walks you to the (rear|flank) for .+$"
+ },
+ {
+  "id": "positional-move-arrives",
+  "archive": "A928",
+  "kind": "present",
+  "situation": "positional move: .+ pressed",
+  "match": "positional move: .+ pressed [0-9]+[.,][0-9]° inside its side, true north no - hit$"
+ },
+ {
+  "id": "positional-move-preset-taken",
+  "archive": "A928",
+  "kind": "absent",
+  "situation": "positional move:",
+  "match": "BossMod refused the preset"
+ },
+ {
+  "id": "critical-heal-gcd-line-form",
+  "archive": "A929",
+  "kind": "each",
+  "situation": "critical heal GCD ->",
+  "match": "critical heal GCD -> .+ #[0-9]+ on .+ at [0-9]+\\s?%, critical .+ at -?[0-9]+% forecast$"
+ },
+ {
+  "id": "dynamic-refused-line-form",
+  "archive": "A930",
+  "kind": "each",
+  "situation": "dynamic rotation: .+ refused by the game on",
+  "match": "dynamic rotation: .+ refused by the game on .+ \\(\\w+\\) - left out until the game takes it$"
+ },
+ {
+  "id": "dynamic-fallback-line-form",
+  "archive": "A930",
+  "kind": "each",
+  "situation": "dynamic rotation: .+ instead of none",
+  "match": "dynamic rotation: .+ instead of none - no GCD for [0-9]+[.,][0-9] s$"
+ },
+ {
+  "id": "movement-check-line-form",
+  "archive": "A934",
+  "kind": "each",
+  "situation": "movement check: .+ held - ",
+  "match": "movement check: .+ held - .+$"
+ },
+ {
+  "id": "arena-edge-line-form",
+  "archive": "A935",
+  "kind": "each",
+  "situation": "arena edge: nameless ring",
+  "match": "arena edge: nameless ring #[0-9]+ without cast reached .+ [0-9]+[.,][0-9] y from its source, which reaches [0-9]+ y$"
  }
 ]
