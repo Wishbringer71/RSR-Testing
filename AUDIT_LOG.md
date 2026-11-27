@@ -28563,6 +28563,29 @@ Wirkzeit statt Scathe (156).
 die Fork-Einstellungen der Basis `BlackMageRotation`: 4 von 4; Merge-Reste: 128 von 128 `.cs`-Dateien, die Upstream
 zwischen 42efb269e und 7688affca änderte, mechanisch, die 17 übrigen Treffer nach den zwei Behebungen von Hand.
 
+### A984 · Release 7.5.8.12+wsh1 ohne Plugin-Paket: Pfad aus Upstreams Workflow-Fix (27.11.2026)
+
+*Auftrag:* seine Anweisung „danach branch zu main, compile, release, neuer branch“. PR #28 gemergt (375ae9d5c, Baum
+gleich dem geprüften 4351b8c98; `build.yaml` per `workflow_dispatch` grün, Lauf 1387), `publish.yaml` per
+`workflow_dispatch` mit 7.5.8.12+wsh1 grün (Lauf 18).
+*Befund:* Das Release trägt keinen Anhang; 7.5.8.7+wsh1 trug `latest.zip`. *Wirkung:* Wer 7.5.8.12+wsh1 lädt, bekommt
+kein Plugin. *Ursache, am Log und am Diff gemessen:* Upstream 7688affca („Fix publish im dumb“) nahm `--output .\build`
+aus dem Build und stellte `files:` von `./build/RotationSolver/latest.zip` auf `./bin/Release/RotationSolver/latest.zip`.
+Mein Merge in main (A982) behielt das Fork-`--output` und übernahm Upstreams Pfad; der Prüfschritt davor las
+`build/…` und war grün, `action-gh-release` fand unter `bin/Release` nichts und veröffentlichte ohne Datei, nur mit einer
+Warnung (`src/run.ts`, v3.0.4: ohne `fail_on_unmatched_files` nur `console.warn`). Klasse: Konfliktauflösung, die eine
+Hälfte einer zusammengehörigen Upstream-Änderung nahm (wie die Merge-Reste in A983); in 7688affca die einzige
+Workflow-Änderung dieser Art – die übrigen Zeilen (Dalamud nach `$env:TEMP`, `--locked-mode`, Prüfung des Tag-Formats)
+stehen im Fork vollständig oder sind Fork-Fassung.
+*Behebung:* Upstreams Form im Ganzen – Build ohne `--output`, Prüfung und Anhang auf `bin/Release/RotationSolver/latest.zip`,
+wie `build.yaml` es schon prüft – und `fail_on_unmatched_files: true`: Eine fehlende Datei bricht den Lauf ab, bevor
+Release und Tag entstehen (an der Quelle der Action gelesen, v3.0.4). Bearbeiten eines Releases ist dieser Sitzung
+gesperrt; deshalb ein Folge-Release 7.5.8.12+wsh2 mit demselben Code und dem Paket.
+*Übergabe:* Der Release-Text von 7.5.8.12+wsh1 steht nach Thema in `fork-changes-in-play.md`; der neue Arbeits-Branch heißt
+`claude/fixes-after-7.5.8.12`. Der Branch `claude/fixes-after-7.5.8.7` ist vollständig gemergt (Löschfall, Löschen von Refs
+ist dieser Sitzung gesperrt).
+*Prüfgrad:* Workflow-Lauf gemessen (Jobschritte, Release ohne Anhang); die Behebung vor dem Folge-Release durch dessen Lauf.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

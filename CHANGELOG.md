@@ -23,6 +23,10 @@ are not reconstructed here.
 
 ## Unreleased
 
+## 7.5.8.12+wsh2
+
+The code of 7.5.8.12+wsh1, which was published without its package.
+
 ### Removal from RotationSolver: `BlackMageRotation.PolyglotWhileCastBlocked`
 
 Upstream replaced `BLM_Default` with `BLM_Reborn`, whose movement fallback now spends Polyglot, and Foul only where it
