@@ -1,6 +1,6 @@
 # What this fork does differently in a fight
 
-The whole distance from upstream **7.5.8.12**, as of release `7.5.8.12+wsh1`. What a single
+The whole distance from upstream **7.5.8.12**, as of release `7.5.8.12+wsh2`. What a single
 release changed is in [`fork-changes-since-last-release.md`](fork-changes-since-last-release.md),
 which is the text of the release description; this document is the standing picture and takes
 each release's text over once it has shipped.

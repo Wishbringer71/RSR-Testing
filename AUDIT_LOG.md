@@ -28584,7 +28584,10 @@ gesperrt; deshalb ein Folge-Release 7.5.8.12+wsh2 mit demselben Code und dem Pak
 *Übergabe:* Der Release-Text von 7.5.8.12+wsh1 steht nach Thema in `fork-changes-in-play.md`; der neue Arbeits-Branch heißt
 `claude/fixes-after-7.5.8.12`. Der Branch `claude/fixes-after-7.5.8.7` ist vollständig gemergt (Löschfall, Löschen von Refs
 ist dieser Sitzung gesperrt).
-*Prüfgrad:* Workflow-Lauf gemessen (Jobschritte, Release ohne Anhang); die Behebung vor dem Folge-Release durch dessen Lauf.
+*Ergebnis:* PR #29 gemergt (636b14651; `build.yaml` grün, Lauf 1389), `publish.yaml` mit 7.5.8.12+wsh2 grün (Lauf 19);
+das Release trägt `latest.zip` (3.872.029 Bytes, gemessen über die Release-API, 27.11.2026). 7.5.8.12+wsh1 bleibt ohne
+Anhang stehen, weil diese Sitzung Releases nicht bearbeiten oder löschen darf.
+*Prüfgrad:* Workflow-Läufe und Release gemessen; das Paket selbst nicht im Spiel geladen.
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
