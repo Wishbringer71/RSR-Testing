@@ -28379,6 +28379,26 @@ Savage und Ultimate, Texte der Optionen und eine Liste abwählbarer Planaktionen
 ändert sie nichts, was eine Regel des Forks trägt; die Schutzregeln des Forks lesen BossModReborn, nicht diese Pläne.
 Kein Nutzen, fortgeschrieben. priestkos/FrontlineAdvisor nicht erreichbar (wie zuvor). Upstream: kein neuer Commit.
 
+### A981 · Upload vom 26.11.2026 (XIVLauncher): Absturz 20:43 in DailyDuty, nicht in RSR (27.11.2026)
+
+*Anlass:* Sein Upload `XIVLauncher.7z` mit „Versuch es noch einmal“: Crash-Log und Dump vom 26.11.2026, 20:43:10
+Ortszeit, dazu `dalamud.old.log`, `dalamud.boot.old.log`, `dalamud.injector.log`.
+*Befund:* `System.AccessViolationException` im Spielthread, in `Dalamud.Game.NativeWrapper.AtkValuePtr.get_ValueType`, gerufen
+von `DailyDuty.Modules.GrandCompanySquadron.AgentGcArmyExpeditionReceiveEvent` über `AgentLifecycle.InvokeListenersSafely`,
+ausgelöst von einem Fenster aus KamiToolKit (`NativeAddon.OnFireCallback`): DailyDuty liest beim Ereignis des Agenten der
+Staffel-Expedition einen Fensterwert an einer Adresse, die das Spiel nicht hält. RSR kommt im Crash-Log in keinem Thread
+vor (0 Treffer für „RotationSolver“, 21 Threads), im Dump einmal als Text.
+*Gegenstück in RSR (Defektklasse „Fensterwert über eine Adresse aus einem Ereignis gelesen“):* `BestiaryTrace` hängt
+denselben Agent-Listener an (`AgentEvent.PreReceiveEvent`), nur solange das Bestiarium offen ist, und liest jeden Wert seit
+A787 über `SafeMemory`; ein unlesbarer Wert beendet die Zeile. Kein Befund. Die übrigen Leser von `AtkValue` im Fork
+waren in A794 und A795 Teil der Prüfung der Absturzwege.
+*Übrige Dateien:* `dalamud.old.log` deckt nur 19:28:12 bis 19:28:54 ab und springt dann auf den Start um 20:43:38:
+VFXEditor schrieb in 42 s 77.329 Zeilen (Mitschnitt jeder geladenen Ressource) und füllte die 10 MB, nach denen das Log
+umläuft. Die Minuten vor dem Absturz fehlen deshalb im Upload. Darin eine Ausnahme von GatherBuddyReborn („Valid chat sfx
+values are 1 through 16“, Weckeralarm), sonst keine Fehler; keine Zeile von RSR. Boot- und Injektor-Log ohne Bezug.
+*Ergebnis:* Kein Defekt in RSR, nichts zu ändern. Ein Bericht an DailyDuty liegt bei ihm (fremdes Plugin, nicht
+seine Repositories).
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
