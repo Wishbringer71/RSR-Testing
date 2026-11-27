@@ -161,8 +161,12 @@ die Prüfung für ihre Begründung ein zweites Mal und schrieb deshalb „an ene
   es binnen 0,7 s nach dem Tod viermal mit „a candidate“: der Körper glitt noch.
 - *Widerruf (C195):* Das Flackern vom 13.11.2026, das A765 als Antwort von `IsEnemy` las, ist so nicht belegt. Es kann
   ebenso diese Bewegung gewesen sein. Die Behebung aus A765 bleibt, weil sie ohne Preis ist; ihr Beleg entfällt.
-- *Regel:* Die Prüfung antwortet je Bild einmal (`DataCenter.FrameCacheMs`) und vergleicht mit der Position aus einem
-  früheren Bild. `GetDeath` wertet jede Bedingung einmal aus und begründet mit demselben Wert.
+- *Regel:* Die Prüfung antwortet für ein Raster von 75 ms einmal und vergleicht mit der Position vom Beginn des Rasters
+  (Upstream c79f584a5, 26.11.2026; der Fork hielt die Antwort vorher je Bild, `DataCenter.FrameCacheMs`). Jeder Aufruf im
+  selben Bild bekommt damit dieselbe Antwort, wie A788 verlangt, und die Schwelle von 0,01 Yalm gilt für eine feste
+  Zeit statt für ein Bild: Bei 144 Bildern je Sekunde las die Fassung je Bild erst ab 1,4 Yalm/s Bewegung, das Raster ab
+  0,13 Yalm/s, unabhängig von der Bildrate. Übernommen (A983). `GetDeath` wertet jede Bedingung einmal aus und begründet
+  mit demselben Wert.
 - *Im Kampf:* Ein Toter, dessen Körper noch gleitet, ist in allen Wegen des Bildes gleich ausgeschlossen; die
   Wiederbelebung beginnt, sobald er liegt. Bisher konnte die Zielwahl ihn im selben Bild als Ziel nehmen, während die
   Gruppenliste ihn ausschloss. Die Zeile nennt den wahren Grund.

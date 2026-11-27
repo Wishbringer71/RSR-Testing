@@ -19,11 +19,11 @@ namespace RotationSolver.Engine.Helpers;
 
 public static partial class ObjectHelper
 {
+	// A788, A983 (concept 11, "Ein Toter in Bewegung, einmal je Bild"): the answer is kept for the sample, so every caller
+	// in a frame gets the same one; the sample is a fixed time, so the distance threshold does not depend on the frame rate.
+	private const long MovingSampleIntervalMs = 75;
+	private static readonly Dictionary<ulong, (long Tick, Vector3 Pos, bool IsMoving)> LastPositions = [];
 
-
-	// A788 (concept 11, "Ein Toter in Bewegung, einmal je Bild"): the answer is kept for the frame, so every caller in it
-	// gets the same one; before, each call stored the position and a second call in the frame saw no movement.
-	private static readonly Dictionary<ulong, (Vector3 Position, long Tick, bool Moving)> LastPositions = [];
 	internal static bool IsTargetMoving(this IBattleChara battleChara)
 	{
 		if (battleChara == null)
@@ -39,21 +39,20 @@ public static partial class ObjectHelper
 		var id = battleChara.GameObjectId;
 		var currentPos = battleChara.Position;
 		var now = Environment.TickCount64;
-		if (LastPositions.TryGetValue(id, out var last))
+		if (LastPositions.TryGetValue(id, out var entry))
 		{
-			if (now - last.Tick < DataCenter.FrameCacheMs)
+			if (now - entry.Tick < MovingSampleIntervalMs)
 			{
-				return last.Moving;
+				return entry.IsMoving;
 			}
 
-			var lastPos = last.Position;
-			var isMoving = Vector3.Distance(currentPos, lastPos) > 0.01f;
-			LastPositions[id] = (currentPos, now, isMoving);
+			var isMoving = Vector3.Distance(currentPos, entry.Pos) > 0.01f;
+			LastPositions[id] = (now, currentPos, isMoving);
 			return isMoving;
 		}
 		else
 		{
-			LastPositions[id] = (currentPos, now, false);
+			LastPositions[id] = (now, currentPos, false);
 			return false;
 		}
 	}

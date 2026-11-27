@@ -170,8 +170,8 @@ internal static class BossModUpdater
 			hintsRaidwide = DiscardPastEvent(hintsRaidwide);
 			hintsTankbuster = DiscardPastEvent(hintsTankbuster);
 
-			var genericRaidwide = (damageType == 2 && damageIn > 0f) ? damageIn : float.MaxValue;
-			var genericTankbuster = (damageType == 1 && damageIn > 0f) ? damageIn : float.MaxValue;
+			var genericRaidwide = damageType == 2 ? damageIn : float.MaxValue;
+			var genericTankbuster = damageType == 1 ? damageIn : float.MaxValue;
 
 			// BossModReborn calls a prediction "Raidwide" when it is "expected to hit everyone and deal minor
 			// damage; also used for spread components", and it is the type of every prediction a component
