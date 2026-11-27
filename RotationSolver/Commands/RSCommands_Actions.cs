@@ -14,6 +14,7 @@ namespace RotationSolver.Commands
 		private static bool started = false;
 		internal static DateTime _lastUsedTime = DateTime.MinValue;
 		internal static uint _lastActionID;
+		internal static bool _lastActionIsBaseAction;
 		private static float _lastCountdownTime = 0;
 		private static Job _previousJob = Job.ADV;
 		private static readonly Random random = Random.Shared;
@@ -32,6 +33,23 @@ namespace RotationSolver.Commands
 			}
 			_lastState = currentState;
 
+			if (!isGCD)
+			{
+				// The fork's window ahead of the GCD (ActionHelper.AbilityClipWindow) in place of a fixed half second; upstream
+				// c79f584a5 moved the check ahead of the click delay, so a refused ability no longer spends it.
+				if (DataCenter.DefaultGCDRemain <= ActionHelper.AbilityClipWindow && DataCenter.DefaultGCDRemain > 0f)
+				{
+					return false;
+				}
+
+				if (ActionUpdater.NextAction is IBaseAction nextAction
+					&& nextAction.Info.IsRealGCD
+					&& nextAction is not BaseAction { Setting.IsMudra: true })
+				{
+					return false;
+				}
+			}
+
 			if (DateTime.Now - _lastClickTime < _clickDelay)
 			{
 				return false;
@@ -40,12 +58,7 @@ namespace RotationSolver.Commands
 			_lastClickTime = DateTime.Now;
 			_clickDelay = RandomSeconds(Service.Config.ClickingDelay.X, Service.Config.ClickingDelay.Y);
 
-			if (!isGCD && DataCenter.DefaultGCDRemain <= ActionHelper.AbilityClipWindow && DataCenter.DefaultGCDRemain > 0f)
-			{
-				return false;
-			}
-
-			return isGCD || ActionUpdater.NextAction is not IBaseAction nextAction || !nextAction.Info.IsRealGCD;
+			return true;
 		}
 
 		public static void DoAction()
@@ -126,61 +139,69 @@ namespace RotationSolver.Commands
 
 			SwitchTargetForAction(nextAction);
 
-			CurrentAction = nextAction as IBaseAction;
-
-			var pulse = CapturePulseSlots(nextAction);
-
-			if (nextAction.Use())
+			try
 			{
 				// Concept 03, "Den Kampf eröffnen" (A879): a fight RSR opened itself is written.
 				PullGuard.NoteOwnAction(nextAction);
+				CurrentAction = nextAction as IBaseAction;
 
-				_lastActionID = nextAction.AdjustedID;
-				_lastUsedTime = DateTime.Now;
+				var pulse = CapturePulseSlots(nextAction);
 
-				try
+				if (nextAction.Use())
 				{
-					if (DataCenter.CurrentInterceptedAction != null && DataCenter.CurrentInterceptedAction.AdjustedID == nextAction.AdjustedID)
+
+					_lastActionID = nextAction.AdjustedID;
+					_lastActionIsBaseAction = nextAction is IBaseAction;
+					_lastUsedTime = DateTime.Now;
+
+					try
 					{
-						DataCenter.CurrentInterceptedAction = null;
-						DoSpecialCommandType(SpecialCommandType.EndSpecial, false);
+						if (DataCenter.CurrentInterceptedAction != null && DataCenter.CurrentInterceptedAction.AdjustedID == nextAction.AdjustedID)
+						{
+							DataCenter.CurrentInterceptedAction = null;
+							DoSpecialCommandType(SpecialCommandType.EndSpecial, false);
+						}
+					}
+					catch (Exception ex)
+					{
+						PluginLog.Warning($"Failed to clear CurrentInterceptedAction after execution: {ex}");
+					}
+
+					if (nextAction is BaseAction finalAct)
+					{
+						if (Service.Config.EnableClickingCount)
+						{
+							OtherConfiguration.RotationSolverRecord.ClickingCount++;
+						}
+
+						if (pulse)
+						{
+							PulseSimulation();
+						}
+
+						if (finalAct.Setting.EndSpecial)
+						{
+							ResetSpecial();
+						}
 					}
 				}
-				catch (Exception ex)
+				else
 				{
-					PluginLog.Warning($"Failed to clear CurrentInterceptedAction after execution: {ex}");
-				}
-
-				if (nextAction is BaseAction finalAct)
-				{
-					if (Service.Config.EnableClickingCount)
+					// A930 (concept 03, "Dynamische Rotation", D1): refused by the game, left out until it takes it again.
+					if (nextAction is IBaseAction refused)
 					{
-						OtherConfiguration.RotationSolverRecord.ClickingCount++;
+						DynamicRotation.PressFailed(refused);
 					}
 
-					if (pulse)
+					if (Service.Config.InDebug)
 					{
-						PulseSimulation();
-					}
-
-					if (finalAct.Setting.EndSpecial)
-					{
-						ResetSpecial();
+						PluginLog.Verbose($"Failed to use the action {nextAction} ({nextAction.AdjustedID})");
 					}
 				}
 			}
-			else
+			finally
 			{
-				// A930 (concept 03, "Dynamische Rotation", D1): refused by the game, left out until it takes it again.
-				if (nextAction is IBaseAction refused)
-				{
-					DynamicRotation.PressFailed(refused);
-				}
-
-				if (Service.Config.InDebug)
-				{
-					PluginLog.Verbose($"Failed to use the action {nextAction} ({nextAction.AdjustedID})");
-				}
+				CurrentAction = null;
 			}
 		}
 
@@ -216,7 +237,7 @@ namespace RotationSolver.Commands
 
 		private static void PulseAction(int remainingPulses)
 		{
-			if (remainingPulses <= 0)
+			if (!_commandsEnabled || remainingPulses <= 0)
 			{
 				started = false;
 				return;
@@ -225,7 +246,17 @@ namespace RotationSolver.Commands
 			try
 			{
 				MiscUpdater.PulseActionBarSlots(_pulseSlots);
-				_ = Svc.Framework.RunOnTick(() => PulseAction(remainingPulses - 1),
+				_ = Svc.Framework.RunOnTick(() =>
+					{
+						if (_commandsEnabled)
+						{
+							PulseAction(remainingPulses - 1);
+						}
+						else
+						{
+							started = false;
+						}
+					},
 					RandomSeconds(Service.Config.ClickingDelay.X, Service.Config.ClickingDelay.Y));
 			}
 			catch (Exception ex)
@@ -279,6 +310,10 @@ namespace RotationSolver.Commands
 			_ = Svc.Framework.RunOnTick(() =>
 			{
 				_targetDelayPending = false;
+				if (!_commandsEnabled)
+				{
+					return;
+				}
 				try
 				{
 					var current = Svc.Targets.Target;
@@ -426,6 +461,23 @@ namespace RotationSolver.Commands
 		{
 			try
 			{
+				var isPvPMatchStartCondition = Service.Config.AutoOnPvPMatchStart
+					&& Svc.Condition[ConditionFlag.BetweenAreas]
+					&& Svc.Condition[ConditionFlag.BoundByDuty]
+					&& (DataCenter.Territory?.IsPvP ?? false);
+
+				if (Svc.Condition[ConditionFlag.LoggingOut] ||
+					(Service.Config.AutoOffBetweenArea && !DataCenter.IsAutoDuty && !isPvPMatchStartCondition && (Svc.Condition[ConditionFlag.BetweenAreas] || Svc.Condition[ConditionFlag.BetweenAreas51])))
+				{
+					if (DataCenter.State)
+					{
+						CancelState();
+					}
+
+					ActionUpdater.AutoCancelTime = DateTime.MinValue;
+					return;
+				}
+
 				if (Player.Object == null)
 				{
 					return;
@@ -457,13 +509,11 @@ namespace RotationSolver.Commands
 						+ (Service.Config.AutoOnWhenRaised ? string.Empty : " - Turn back on when you are raised in combat is off"));
 				}
 
-				if (Svc.Condition[ConditionFlag.LoggingOut] ||
-					diesInPvE ||
+				if (diesInPvE ||
 					(Service.Config.AutoOffWhenDeadPvP && DataCenter.Territory != null && DataCenter.Territory.IsPvP && Player.Object.CurrentHp == 0) ||
 					(Service.Config.AutoOffPvPMatchEnd && Svc.Condition[ConditionFlag.PvPDisplayActive]) ||
 					(Service.Config.AutoOffCutScene && !DataCenter.IsAutoDuty && Svc.Condition[ConditionFlag.OccupiedInCutSceneEvent]) ||
 					(Service.Config.AutoOffSwitchClass && jobChanged) ||
-					(Service.Config.AutoOffBetweenArea && !DataCenter.IsAutoDuty && (Svc.Condition[ConditionFlag.BetweenAreas] || Svc.Condition[ConditionFlag.BetweenAreas51])) ||
 					(Service.Config.CancelStateOnCombatBeforeCountdown && Service.CountDownTime > 0.2f && DataCenter.InCombat) ||
 					(ActionUpdater.AutoCancelTime != DateTime.MinValue && DateTime.Now > ActionUpdater.AutoCancelTime))
 				{
@@ -496,11 +546,7 @@ namespace RotationSolver.Commands
 					}
 				}
 
-				if (Service.Config.AutoOnPvPMatchStart &&
-					Svc.Condition[ConditionFlag.BetweenAreas] &&
-					Svc.Condition[ConditionFlag.BoundByDuty] &&
-					!DataCenter.State &&
-					(DataCenter.Territory?.IsPvP ?? false))
+				if (isPvPMatchStartCondition && !DataCenter.State)
 				{
 					DoStateCommandType(StateCommandType.Auto);
 					return;

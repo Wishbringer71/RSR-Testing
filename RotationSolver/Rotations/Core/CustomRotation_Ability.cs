@@ -305,7 +305,7 @@ public partial class CustomRotation
 				return true;
 			}
 
-			if (ProvokeAbility(nextGCD, out act))
+			if (ActiveDutyRotation?.ProvokeAbility(nextGCD, out act) == true || ProvokeAbility(nextGCD, out act))
 			{
 				return true;
 			}
@@ -397,7 +397,7 @@ public partial class CustomRotation
 			IBaseAction.ShouldEndSpecial = true;
 		}
 		IBaseAction.AllEmpty = true;
-		if (DataCenter.MergedStatus.HasFlag(AutoStatus.MoveForward) && Player != null && !StatusHelper.PlayerHasStatus(true, StatusID.Bind))
+		if (DataCenter.MergedStatus.HasFlag(AutoStatus.MoveForward) && Player != null && !StatusHelper.PlayerHasStatus(false, StatusID.Bind))
 		{
 			if (ActiveDutyRotation?.MoveForwardAbility(nextGCD, out act) == true)
 			{
@@ -483,7 +483,7 @@ public partial class CustomRotation
 			return true;
 		}
 
-		return UseMpPotion(nextGCD, PotionsWaitForTincture(), out act) || GeneralUsingAbility(role, nextGCD, out act) || (DataCenter.AutoStatus.HasFlag(AutoStatus.Speed) && SpeedAbility(nextGCD, out act));
+		return UseMpPotion(nextGCD, PotionsWaitForTincture(), out act) || GeneralUsingAbility(role, nextGCD, out act) || (DataCenter.AutoStatus.HasFlag(AutoStatus.Speed) && (ActiveDutyRotation?.SpeedAbility(nextGCD, out act) == true || SpeedAbility(nextGCD, out act)));
 	}
 
 	private bool MyInterruptAbility(JobRole role, IAction nextGCD, out IAction? act)
@@ -796,6 +796,8 @@ public partial class CustomRotation
 		// raises the same corpse first shrinks to the late window.
 		if (Service.Config.RaisePlayerBySwift && DataCenter.CanRaise() && CanLateWeave
 			&& ((Raise != null && nextGCD.IsTheSameTo(true, Raise))
+				// Upstream c79f584a5: a raise of the content (Variant, Bozja, Occult Crescent) takes Swiftcast as well.
+				|| nextGCD.IsTheSameTo(true, ActionID.VariantRaisePvE, ActionID.VariantRaiseIiPvE, ActionID.LostArisePvE, ActionID.OccultRaisePvE)
 				|| RaisePendingAndCastable()))
 		{
 			if (SwiftcastPvE.CanUse(out act))

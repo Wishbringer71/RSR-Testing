@@ -210,7 +210,30 @@ public partial struct ActionTargetInfo
 					return Vector3.Distance(targetPos, subPos) - subRadius <= effectRange;
 
 				case CastType.Cone:
-					return (tdirLen - subRadius) <= effectRange;
+					{
+						if (tdirLen - subRadius > effectRange)
+						{
+							return false;
+						}
+
+						var face = player.GetFaceVector();
+						var faceLen = face.Length();
+						if (faceLen <= 0.001f)
+						{
+							return true;
+						}
+
+						var faceN = face / faceLen;
+						var tdirAdj = tdir + faceN * (subRadius / SinAlpha);
+						var tlen = tdirAdj.Length();
+						if (tlen <= 0.001f)
+						{
+							return true;
+						}
+
+						var cos = Vector3.Dot(faceN, tdirAdj) / tlen;
+						return cos >= CosAlpha;
+					}
 
 				case CastType.StraightLine:
 					{
@@ -229,9 +252,9 @@ public partial struct ActionTargetInfo
 
 				case CastType.Donut:
 					{
-						var d = Vector3.Distance(targetPos, subPos) - subRadius;
+						var centerDist = Vector3.Distance(targetPos, subPos);
 						var innerRadius = action.Action.XAxisModifier > 0 ? action.Action.XAxisModifier : 8f;
-						return d <= effectRange && d >= innerRadius;
+						return centerDist - subRadius <= effectRange && centerDist + subRadius >= innerRadius;
 					}
 
 				default:
@@ -253,7 +276,7 @@ public partial struct ActionTargetInfo
 
 					var dirN = dir / dirLen;
 
-					var tdirAdj = tdir + dirN * (target.HitboxRadius / SinAlpha);
+					var tdirAdj = tdir + dirN * (subRadius / SinAlpha);
 
 					var tlen = tdirAdj.Length();
 					if (tlen <= 0.001f)
@@ -299,9 +322,9 @@ public partial struct ActionTargetInfo
 
 			case CastType.Donut:
 				{
-					var dis = Vector3.Distance(targetPos, subPos) - subRadius;
+					var centerDist = Vector3.Distance(targetPos, subPos);
 					var innerRadius = action.Action.XAxisModifier > 0 ? action.Action.XAxisModifier : 8f;
-					return dis <= effectRange && dis >= innerRadius;
+					return centerDist - subRadius <= effectRange && centerDist + subRadius >= innerRadius;
 				}
 
 			default:

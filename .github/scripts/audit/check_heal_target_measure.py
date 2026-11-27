@@ -22,6 +22,9 @@ import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import layout  # noqa: E402
+import os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from resx_doc import normalize  # noqa: E402  (A982: the sheets' effect texts in one shape)
 
 ROOT = Path(__file__).resolve().parents[3]
 RESX = ROOT / "RotationSolver.SourceGenerators" / "Properties" / "ActionId.resx"
@@ -97,7 +100,7 @@ def main():
         print(f"{RESX} is missing - cannot establish which actions measure in shares.")
         return 1
 
-    share_actions = share_threshold_actions(RESX.read_text(encoding="utf-8", errors="replace"))
+    share_actions = share_threshold_actions(normalize(RESX.read_text(encoding="utf-8", errors="replace")))
     if "RekindlePvE" not in share_actions:
         print(
             "self-test failed: Rekindle states 'when HP falls below 75%' in its effect text and has "

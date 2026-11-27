@@ -443,6 +443,7 @@ internal class FullControlWindow : FullCtrlWindow
 		if (aoe >= 0)
 		{
 			Service.Config.AoEType = AoeTypes[aoe];
+			Service.Config.Save();
 		}
 
 		if (state >= 0)
@@ -547,6 +548,7 @@ internal class FullControlWindow : FullCtrlWindow
 		if (CurrentStateIndex() == index && IsLinked(index))
 		{
 			Service.Config.AoEType = AoeTypes[index];
+			Service.Config.Save();
 		}
 	}
 
@@ -979,7 +981,7 @@ internal class FullControlWindow : FullCtrlWindow
 		var cursor = ImGui.GetCursorPos();
 
 		var desc = action?.Name ?? string.Empty;
-		if (texture?.Handle != null && ImGuiHelper.NoPaddingNoColorImageButton(texture, Vector2.One * width, desc))
+		if (texture is { Handle.IsNull: false } && ImGuiHelper.NoPaddingNoColorImageButton(texture, Vector2.One * width, desc))
 		{
 			UseOrQueue(action);
 		}

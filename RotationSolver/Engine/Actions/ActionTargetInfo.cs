@@ -400,20 +400,23 @@ public partial struct ActionTargetInfo(IBaseAction action)
 
 		if (action.Setting.TargetStatusNeed != null && !skipTargetStatusNeedCheck && action.Config.ShouldCheckTargetStatus)
 		{
+			var hasKnownWeakness = false;
 			if (DataCenter.IsInOccultCrescentOp && battleChara.NameId != 0)
 			{
 				foreach (var id in action.Setting.TargetStatusNeed)
 				{
 					if (StatusHelper.IsOccultWeaknessStatus(id) && StatusHelper.HasKnownOccultWeakness(battleChara.NameId, id))
 					{
-						return true;
+						hasKnownWeakness = true;
+						break;
 					}
 				}
 			}
 
 			// As on the player side (ActionBasicInfo.IsStatusNeeded): the needed status has to last until the
-			// action goes off and its cast ends, not the refresh horizon of a provided one.
-			if (battleChara.WillStatusEnd(action.Info.NeededStatusMargin, action.Setting.StatusFromSelf, action.Setting.TargetStatusNeed))
+			// action goes off and its cast ends, not the refresh horizon of a provided one. Upstream: a weakness the
+			// Occult Crescent records for this enemy counts as present.
+			if (!hasKnownWeakness && battleChara.WillStatusEnd(action.Info.NeededStatusMargin, action.Setting.StatusFromSelf, action.Setting.TargetStatusNeed))
 			{
 				return false;
 			}

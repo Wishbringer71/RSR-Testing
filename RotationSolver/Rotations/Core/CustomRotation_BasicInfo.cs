@@ -2,6 +2,7 @@
 using ECommons.Logging;
 using ECommons.ExcelServices;
 using Lumina.Excel.Sheets;
+using RotationSolver.Updaters;
 
 namespace RotationSolver.Rotations;
 
@@ -167,6 +168,14 @@ public partial class CustomRotation : ICustomRotation
 	/// Updates the custom fields.
 	/// </summary>
 	protected virtual void UpdateInfo() { }
+
+	protected static IBaseAction? NextGCDAction => ActionUpdater.NextGCDAction;
+
+	protected static IAction? NextAction => ActionUpdater.NextAction;
+
+	protected static bool IsInCountdown => Service.CountDownTime > 0 && !DataCenter.InCombat;
+
+	protected virtual void OnFrameUpdate() { }
 
 	protected virtual bool ShouldDelayCommandAction(IBaseAction action) => false;
 

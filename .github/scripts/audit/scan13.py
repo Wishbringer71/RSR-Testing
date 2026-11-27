@@ -47,6 +47,9 @@ import re
 import sys
 from collections import defaultdict
 import classfile
+import os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from resx_doc import normalize  # noqa: E402  (A982: the sheets' effect texts in one shape)
 
 RESX = 'RotationSolver.SourceGenerators/Properties/Status.resx'
 ACTION_RESX = 'RotationSolver.SourceGenerators/Properties/ActionId.resx'
@@ -70,7 +73,7 @@ def parse_status_enum(path):
     """{identifier: (id, display name, scope, effect text)}."""
     members, pending, para = {}, [], ''
     with open(path, encoding='utf-8') as fh:
-        for raw in fh:
+        for raw in normalize(fh.read()).splitlines(True):
             m = SEE.search(raw)
             if m:
                 pending.append((m.group('disp'), m.group('scope')))
@@ -111,7 +114,7 @@ ACTION_BARRIER = re.compile(r'\bbarrier\b|\bnullif\w+ damage\b|\babsorbs?\b', re
 
 def parse_action_enum(path):
     """{action identifier: (PvE|PvP, description text)}."""
-    raw = open(path, encoding='utf-8').read()
+    raw = normalize(open(path, encoding='utf-8').read())
     out = {}
     for m in ACTION.finditer(raw):
         desc = re.sub(r'&lt;.*?&gt;|<.*?>', ' ', m.group('desc') or '')

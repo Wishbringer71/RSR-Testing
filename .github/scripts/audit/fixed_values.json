@@ -190,7 +190,7 @@
   },
   {
    "file": "RotationSolver/Rotations/Duties/PhantomDefault.cs",
-   "code": "if (Player?.GetEffectiveHpPercent() <= DrainTouchEmergencyOnlyThreshold * 100f)",
+   "code": "if (DrainTouchEmergencyOnly && Player?.GetEffectiveHpPercent() <= DrainTouchEmergencyOnlyThreshold * 100f",
    "values": [
     "100"
    ],
@@ -200,7 +200,7 @@
   },
   {
    "file": "RotationSolver/Rotations/Duties/PhantomDefault.cs",
-   "code": "if (Player?.GetEffectiveHpPercent() <= DrainTouchHealyOnlyThreshold * 100f)",
+   "code": "if (DrainTouchHeal && Player?.GetEffectiveHpPercent() <= DrainTouchHealyOnlyThreshold * 100f && DrainTouchPvE.CanUse(out act))",
    "values": [
     "100"
    ],
@@ -1718,6 +1718,16 @@
    "reason": "Row id of the game's LogMessage sheet that ActionManager.GetActionInRangeOrLoS returns when the target is out of range (\"Target is not in range.\", xivapi v2, 06.11.2026); RSR then leaves the sight to its own ray."
   },
   {
+   "file": "RotationSolver/Engine/State/DataCenter.AreaDamage.cs",
+   "code": "|| (h.CastTargetObjectId is not 0 and not 0xE0000000 && h.CastTargetObjectId == h.TargetObjectId));",
+   "values": [
+    "0xE0000000"
+   ],
+   "status": "exception",
+   "loop": "A982",
+   "reason": "The game's id for no object (as in DeepDungeonPomanders, A625): a cast at no one by an enemy without a target is no cast at its target. Upstream c79f584a5 tests the same value; a sentinel, not a quantity of the game."
+  },
+  {
    "file": "RotationSolver/Engine/Helpers/DeepDungeonPomanders.cs",
    "code": "if (member.EntityId is not 0 and not 0xE0000000)",
    "values": [
@@ -2153,7 +2163,7 @@
   },
   {
    "file": "RotationSolver/Engine/Actions/BaseItem.cs",
-   "code": "var sent = InventoryManager.Instance()->GetInventoryItemCount(ID, true) > 0 ? ID + 1000000 : ID;",
+   "code": "var sent = inventory->GetInventoryItemCount(ID, true) > 0 ? ID + 1000000 : ID;",
    "values": [
     "1000000"
    ],

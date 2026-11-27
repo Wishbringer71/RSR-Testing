@@ -112,6 +112,10 @@ public partial class CustomRotation
 			}
 
 			IBaseAction.TargetOverride = TargetType.Dispel;
+			if (DataCenter.CommandStatus.HasFlag(AutoStatus.Dispel))
+			{
+				IBaseAction.ShouldEndSpecial = true;
+			}
 			if (DataCenter.MergedStatus.HasFlag(AutoStatus.Dispel))
 			{
 				if (ActiveDutyRotation?.DispelGCD(out act) == true)
@@ -123,8 +127,13 @@ public partial class CustomRotation
 					return action;
 				}
 			}
+			IBaseAction.ShouldEndSpecial = false;
 
 			IBaseAction.TargetOverride = TargetType.Provoke;
+			if (DataCenter.CommandStatus.HasFlag(AutoStatus.Provoke))
+			{
+				IBaseAction.ShouldEndSpecial = true;
+			}
 			if (DataCenter.MergedStatus.HasFlag(AutoStatus.Provoke))
 			{
 				if (ActiveDutyRotation?.ProvokeGCD(out act) == true)
@@ -136,6 +145,7 @@ public partial class CustomRotation
 					return action;
 				}
 			}
+			IBaseAction.ShouldEndSpecial = false;
 
 			IBaseAction.TargetOverride = TargetType.Death;
 			if (Service.Config.RaisePlayerFirst && TryRaise(out act))
@@ -145,6 +155,10 @@ public partial class CustomRotation
 
 			IBaseAction.TargetOverride = null;
 
+			if (DataCenter.CommandStatus.HasFlag(AutoStatus.MoveForward))
+			{
+				IBaseAction.ShouldEndSpecial = true;
+			}
 			if (DataCenter.MergedStatus.HasFlag(AutoStatus.MoveForward))
 			{
 				if (ActiveDutyRotation?.MoveForwardGCD(out act) == true)
@@ -162,6 +176,7 @@ public partial class CustomRotation
 					}
 				}
 			}
+			IBaseAction.ShouldEndSpecial = false;
 
 			IBaseAction.TargetOverride = TargetType.Heal;
 			IBaseAction.HealPathRunning = true;
@@ -174,7 +189,8 @@ public partial class CustomRotation
 
 			if (DataCenter.CommandStatus.HasFlag(AutoStatus.HealAreaSpell))
 			{
-				IBaseAction.AutoHealCheck = true;
+				IBaseAction.AllEmpty = true;
+				IBaseAction.ShouldEndSpecial = true;
 				if (ActiveDutyRotation?.HealAreaGCD(out act) == true)
 				{
 					return act;
@@ -184,7 +200,8 @@ public partial class CustomRotation
 				{
 					return action;
 				}
-				IBaseAction.AutoHealCheck = false;
+				IBaseAction.AllEmpty = false;
+				IBaseAction.ShouldEndSpecial = false;
 			}
 			if (DataCenter.AutoStatus.HasFlag(AutoStatus.HealAreaSpell))
 			{
@@ -204,7 +221,8 @@ public partial class CustomRotation
 
 			if (DataCenter.CommandStatus.HasFlag(AutoStatus.HealSingleSpell))
 			{
-				IBaseAction.AutoHealCheck = true;
+				IBaseAction.AllEmpty = true;
+				IBaseAction.ShouldEndSpecial = true;
 				if (ActiveDutyRotation?.HealSingleGCD(out act) == true)
 				{
 					return act;
@@ -214,7 +232,8 @@ public partial class CustomRotation
 				{
 					return action;
 				}
-				IBaseAction.AutoHealCheck = false;
+				IBaseAction.AllEmpty = false;
+				IBaseAction.ShouldEndSpecial = false;
 			}
 			if (DataCenter.AutoStatus.HasFlag(AutoStatus.HealSingleSpell))
 			{
@@ -235,6 +254,10 @@ public partial class CustomRotation
 			IBaseAction.TargetOverride = null;
 			IBaseAction.HealPathRunning = false;
 
+			if (DataCenter.CommandStatus.HasFlag(AutoStatus.DefenseArea))
+			{
+				IBaseAction.ShouldEndSpecial = true;
+			}
 			if (DataCenter.MergedStatus.HasFlag(AutoStatus.DefenseArea))
 			{
 				IBaseAction.AreaDefenceRunning = true;
@@ -255,9 +278,14 @@ public partial class CustomRotation
 					IBaseAction.AreaDefenceRunning = false;
 				}
 			}
+			IBaseAction.ShouldEndSpecial = false;
 
 			IBaseAction.TargetOverride = TargetType.BeAttacked;
 
+			if (DataCenter.CommandStatus.HasFlag(AutoStatus.DefenseSingle))
+			{
+				IBaseAction.ShouldEndSpecial = true;
+			}
 			if (DataCenter.MergedStatus.HasFlag(AutoStatus.DefenseSingle))
 			{
 				IBaseAction.CommandedDefenceRunning = DataCenter.CommandStatus.HasFlag(AutoStatus.DefenseSingle);
@@ -278,6 +306,7 @@ public partial class CustomRotation
 					IBaseAction.CommandedDefenceRunning = false;
 				}
 			}
+			IBaseAction.ShouldEndSpecial = false;
 
 			IBaseAction.TargetOverride = TargetType.Death;
 			if (!Service.Config.RaisePlayerFirst && TryRaise(out act))
@@ -386,6 +415,8 @@ public partial class CustomRotation
 			IBaseAction.ShouldEndSpecial = false;
 			IBaseAction.TargetOverride = null;
 			IBaseAction.HealRatioOverride = null;
+			IBaseAction.AutoHealCheck = false;
+			IBaseAction.AllEmpty = false;
 		}
 
 		return null;
@@ -417,7 +448,18 @@ public partial class CustomRotation
 			_ => false,
 		};
 
-		return mayHardCast && RaiseSpell(out act, true);
+		if (mayHardCast && RaiseSpell(out act, true))
+		{
+			return true;
+		}
+
+		if (DataCenter.CommandStatus.HasFlag(AutoStatus.Raise))
+		{
+			IBaseAction.ShouldEndSpecial = true;
+		}
+		var usedPhoenix = UsePhoenixDown(AddlePvE, out act);
+		IBaseAction.ShouldEndSpecial = false;
+		return usedPhoenix;
 	}
 
 	/// <summary>

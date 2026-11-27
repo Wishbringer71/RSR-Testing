@@ -29,20 +29,8 @@ public partial struct ActionTargetInfo
 			return null;
 		}
 
-		if (Range == 0 && EffectRange == 0)
-		{
-			// A fixed dash has no target to choose and lands here; its landing point is checked on this path or not at
-			// all - every other check sits behind it, and until A498 no fixed dash was ever checked in combat.
-			if (action.Setting.SpecialType is SpecialActionType.FixedDistanceMoveForward or SpecialActionType.FixedDistanceMoveBackward
-				&& ShouldCheckMoveSafety() && !CheckMovementSafety(Player.Object.Position))
-			{
-				return null;
-			}
-
-			return new TargetResult(Player.Object, [], Player.Object.Position);
-		}
-
-		if (action.Setting.SpecialType == SpecialActionType.ObjectBasedMovement)
+		var specialType = action.Setting.SpecialType;
+		if (specialType == SpecialActionType.ObjectBasedMovement)
 		{
 			if (ShouldCheckMoveSafety() && action.Setting.ObjectBasedMovementObjectOID != 0)
 			{
@@ -58,6 +46,19 @@ public partial struct ActionTargetInfo
 
 				return new TargetResult(Player.Object, [], position);
 			}
+		}
+
+		if (specialType is SpecialActionType.FixedDistanceMoveForward or SpecialActionType.FixedDistanceMoveBackward)
+		{
+			if (ShouldCheckMoveSafety() && !CheckMovementSafety(Player.Object.Position))
+			{
+				return null;
+			}
+		}
+
+		if (Range == 0 && EffectRange == 0)
+		{
+			return new TargetResult(Player.Object, [], Player.Object.Position);
 		}
 
 		var type = action.Setting.TargetType;
@@ -78,13 +79,27 @@ public partial struct ActionTargetInfo
 
 			var selfAffects = GetCanAffects(skipStatusProvideCheck, skipTargetStatusNeedCheck, type, targetOverride);
 			selfAffects = FilterAffectsByFacing(selfAffects);
+			// Upstream c79f584a5: each enemy the area reaches is asked as a target would be - the action's own check, the
+			// rotation's filter, the minimum HP setting -, and only those count.
+			var config = action.Config;
+			List<IBattleChara> filteredAffects = [];
+			foreach (var t in selfAffects)
+			{
+				if (action.Setting.CanTarget(t)
+					&& (targetFilter == null || targetFilter(t))
+					&& (!config.MinHPFeature || t.GetHealthRatio() > config.MinHPPercent))
+				{
+					filteredAffects.Add(t);
+				}
+			}
+
 			// "Don't pull new enemies with AoE" holds for an area around the player as for any other (concept 03, A826).
-			if (selfAffects.Count < Math.Max(1, required) || HitsUntouchable(Player.Object) || PullsAround(Player.Object, true))
+			if (filteredAffects.Count < Math.Max(1, required) || HitsUntouchable(Player.Object) || PullsAround(Player.Object, true))
 			{
 				return null;
 			}
 
-			return new TargetResult(Player.Object, [.. selfAffects], Player.Object.Position);
+			return new TargetResult(Player.Object, [.. filteredAffects], Player.Object.Position);
 		}
 
 		// The friendly counterpart: an area heal centred on the caster (Medica, Helios, Succor, Lux
@@ -196,7 +211,7 @@ public partial struct ActionTargetInfo
 
 		if (IsTargetArea)
 		{
-			return FindTargetArea(canTargets, canAffects, Range, Player.Object, targetOverride);
+			return FindTargetArea(canTargets, canAffects, Range, Player.Object, targetOverride, skipAoeCheck);
 		}
 
 		List<IBattleChara> targetsList = [.. GetMostCanTargetObjects(canTargets, canAffects, skipAoeCheck ? 0 : action.Config.AoeCount)];
@@ -258,7 +273,7 @@ public partial struct ActionTargetInfo
 	}
 
 	private readonly TargetResult? FindTargetArea(IEnumerable<IBattleChara> canTargets, IEnumerable<IBattleChara> canAffects,
-	float range, IPlayerCharacter player, TargetType targetOverride)
+	float range, IPlayerCharacter player, TargetType targetOverride, bool skipAoeCheck)
 	{
 		if (player == null || canTargets == null || canAffects == null)
 		{
@@ -291,7 +306,7 @@ public partial struct ActionTargetInfo
 			}
 			else
 			{
-				return FindTargetAreaHostile(canTargets, canAffects, action.Config.AoeCount, targetOverride);
+				return FindTargetAreaHostile(canTargets, canAffects, skipAoeCheck ? 0 : action.Config.AoeCount, targetOverride);
 			}
 		}
 	}
@@ -363,6 +378,11 @@ public partial struct ActionTargetInfo
 					}
 
 					var camera = cameraManager->CurrentCamera;
+					if (camera == null)
+					{
+						return null;
+					}
+
 					var tar = camera->LookAtVector - camera->Object.Position;
 					tar.Y = 0;
 					var length = ((Vector3)tar).Length();
@@ -945,7 +965,7 @@ public partial struct ActionTargetInfo
 			var toTarget = t.Position - playerPos;
 			toTarget.Y = 0;
 			var dist = toTarget.Length();
-			if (dist <= 0.001f)
+			if (dist <= 0.001f && castType != CastType.Donut)
 			{
 				result.Add(t);
 				continue;
@@ -978,7 +998,7 @@ public partial struct ActionTargetInfo
 			else if (castType == CastType.Donut)
 			{
 				var innerRadius = action.Action.XAxisModifier > 0 ? action.Action.XAxisModifier : 8f;
-				var d = dist - t.HitboxRadius;
+				var d = dist + t.HitboxRadius;
 				if (d >= innerRadius)
 				{
 					result.Add(t);

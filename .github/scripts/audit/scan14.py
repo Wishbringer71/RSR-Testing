@@ -29,6 +29,9 @@ Usage: python3 .github/scripts/audit/scan14.py
 import re
 import sys
 from collections import defaultdict
+import os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from resx_doc import normalize  # noqa: E402  (A982: the sheets' effect texts in one shape)
 
 RESX = 'RotationSolver.SourceGenerators/Properties/Status.resx'
 HELPER = 'RotationSolver/Engine/Helpers/StatusHelper.cs'
@@ -45,7 +48,7 @@ def parse_status_enum(path):
     member = re.compile(r'^(?P<name>[A-Za-z_]\w*)\s*=\s*(?P<id>\d+),')
     members, pending, text = {}, [], ''
     with open(path, encoding='utf-8') as fh:
-        for raw in fh:
+        for raw in normalize(fh.read()).splitlines(True):
             m = see.search(raw)
             if m:
                 pending.append((m.group('disp'), m.group('scope')))

@@ -19,6 +19,9 @@ import subprocess
 import sys
 import urllib.parse
 from pathlib import Path
+import os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from resx_doc import normalize  # noqa: E402  (A982: the sheets' effect texts in one shape)
 
 ROOT = Path(__file__).resolve().parents[3]
 LOCK = ROOT / 'RotationSolver/Engine/Helpers/MovementLock.cs'
@@ -112,7 +115,7 @@ def main():
         return 0
     self_test()
     identifiers = listed_identifiers(LOCK.read_text(encoding='utf-8'))
-    listed = resolve(identifiers, ACTION_IDS.read_text(encoding='utf-8'))
+    listed = resolve(identifiers, normalize(ACTION_IDS.read_text(encoding='utf-8')))
     unresolved = [n for n in identifiers if n not in listed]
     if unresolved:
         print('MovementLock.Channels names actions without an id: ' + ', '.join(unresolved))

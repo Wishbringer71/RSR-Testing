@@ -6,7 +6,7 @@ own paths (RotationSolver/Basic/Rotations/Basic, RotationSolver/RebornRotations,
 file at all and still passed, as their glob found nothing (A878).
 
 The layout: RotationSolver/Rotations/<role>/<job>/ holds the job's base class (<Job>Rotation.cs and its parts), the
-rotations shipped with the plugin (<JOB>_Reborn*.cs, <JOB>_Default*.cs, BLM_RP.cs) and third-party rotations (any other
+rotations shipped with the plugin (<JOB>_Reborn*.cs, <JOB>_Default*.cs) and third-party rotations (any other
 file with a [Rotation(...)] attribute: Beiruta*, Rabbs*, Churin*). Rotations/Core holds CustomRotation, Rotations/Duties
 the duty rotations and their base classes.
 

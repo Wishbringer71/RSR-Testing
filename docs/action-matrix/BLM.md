@@ -1,14 +1,14 @@
 # BLM — Abhängigkeitsmatrix
 
-Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-26; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
+Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-27; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `BlackMageRotation`
-- Rotation: `RotationSolver/Rotations/Magical/BlackMage/BLM_Default.cs`, `RotationSolver/Rotations/Magical/BlackMage/BLM_RP.cs`
+- Rotation: `RotationSolver/Rotations/Magical/BlackMage/BLM_Reborn.cs`
 - Matrix als Tabelle: `BLM.csv`
 
 ## Nutzung
 
-direkt: 38 · über andere Aktion: 2
+direkt: 34 · nur gelesen: 6
 
 | Stufe | Aktion | Id | Art | Nutzung |
 |---|---|---|---|---|
@@ -34,20 +34,20 @@ direkt: 38 · über andere Aktion: 2
 | Job | Flare Star (`FlareStarPvE`) | 36989 | Spell | direkt |
 | Job | Foul (`FoulPvE`) | 7422 | Spell | direkt |
 | Job | Freeze (`FreezePvE`) | 159 | Spell | direkt |
-| Job | High Blizzard II (`HighBlizzardIiPvE`) | 25795 | Spell | über Blizzard II |
-| Job | High Fire II (`HighFireIiPvE`) | 25794 | Spell | über Fire II |
-| Job | High Thunder (`HighThunderPvE`) | 36986 | Spell | direkt |
-| Job | High Thunder II (`HighThunderIiPvE`) | 36987 | Spell | direkt |
+| Job | High Blizzard II (`HighBlizzardIiPvE`) | 25795 | Spell | direkt |
+| Job | High Fire II (`HighFireIiPvE`) | 25794 | Spell | direkt |
+| Job | High Thunder (`HighThunderPvE`) | 36986 | Spell | nur gelesen |
+| Job | High Thunder II (`HighThunderIiPvE`) | 36987 | Spell | nur gelesen |
 | Job | Ley Lines (`LeyLinesPvE`) | 3573 | Ability | direkt |
 | Job | Manafont (`ManafontPvE`) | 158 | Ability | direkt |
 | Job | Manaward (`ManawardPvE`) | 157 | Ability | direkt |
 | Job | Paradox (`ParadoxPvE`) | 25797 | Spell | direkt |
 | Job | Retrace (`RetracePvE`) | 36988 | Ability | direkt |
 | Job | Scathe (`ScathePvE`) | 156 | Spell | direkt |
-| Job | Thunder (`ThunderPvE`) | 144 | Spell | direkt |
-| Job | Thunder II (`ThunderIiPvE`) | 7447 | Spell | direkt |
-| Job | Thunder III (`ThunderIiiPvE`) | 153 | Spell | direkt |
-| Job | Thunder IV (`ThunderIvPvE`) | 7420 | Spell | direkt |
+| Job | Thunder (`ThunderPvE`) | 144 | Spell | nur gelesen |
+| Job | Thunder II (`ThunderIiPvE`) | 7447 | Spell | nur gelesen |
+| Job | Thunder III (`ThunderIiiPvE`) | 153 | Spell | nur gelesen |
+| Job | Thunder IV (`ThunderIvPvE`) | 7420 | Spell | nur gelesen |
 | Job | Transpose (`TransposePvE`) | 149 | Ability | direkt |
 | Job | Triplecast (`TriplecastPvE`) | 7421 | Ability | direkt |
 | Job | Umbral Soul (`UmbralSoulPvE`) | 16506 | Spell | direkt |
@@ -85,35 +85,38 @@ direkt: 38 · über andere Aktion: 2
 
 | Aktion | Beziehung | zu |
 |---|---|---|
-| Blizzard IV | Regel prüft | Freeze |
-| Blizzard | Regel prüft | Transpose |
-| Blizzard | Regel prüft | Umbral Soul |
+| Blizzard II | Regel sperrt vorher | Blizzard III |
+| Blizzard II | Regel sperrt vorher | Fire II |
+| Blizzard II | Regel sperrt vorher | Flare |
+| Blizzard II | Regel prüft | Freeze |
+| Blizzard II | Regel sperrt vorher | Freeze |
+| Blizzard III | Regel prüft | Fire III |
+| Blizzard III | Regel prüft | Flare |
+| Despair | Regel prüft | Fire IV |
+| Despair | Regel prüft | Paradox |
+| Fire III | Regel prüft | Blizzard IV |
 | Fire III | Regel prüft | Fire |
-| Fire IV | Regel prüft | Fire |
-| Foul | Regel prüft | Amplifier |
+| Fire IV | Regel prüft | Paradox |
+| Fire | Regel prüft | Fire III |
+| Fire | Regel sperrt vorher | Fire III |
 | Foul | Regel prüft | Xenoglossy |
-| Freeze | Regel prüft | Blizzard IV |
+| Lucid Dreaming | Regel prüft | Blizzard III |
 | Retrace | Regel prüft | Ley Lines |
 | Retrace | StatusNeed LeyLines | Ley Lines |
-| Thunder II | Regel sperrt vorher | Thunder III |
-| Thunder II | Regel sperrt vorher | Thunder IV |
-| Thunder II | Regel sperrt vorher | Thunder |
-| Thunder III | Regel sperrt vorher | Thunder II |
-| Thunder III | Regel sperrt vorher | Thunder IV |
-| Thunder III | Regel sperrt vorher | Thunder |
-| Thunder | Regel sperrt vorher | Thunder II |
-| Thunder | Regel prüft | Thunder III |
-| Thunder | Regel sperrt vorher | Thunder III |
-| Thunder | Regel sperrt vorher | Thunder IV |
-| Transpose | Regel prüft | Fire III |
-| Transpose | Regel prüft | Paradox |
+| Swiftcast | Regel prüft | Blizzard III |
+| Swiftcast | Regel prüft | Transpose |
+| Transpose | Regel prüft | Blizzard III |
+| Transpose | Regel sperrt vorher | Blizzard III |
+| Transpose | Regel prüft | Fire II |
+| Transpose | Regel sperrt vorher | Fire II |
+| Transpose | Regel prüft | Fire |
+| Transpose | Regel prüft | Flare |
+| Transpose | Regel sperrt vorher | Flare |
+| Transpose | Regel prüft | Freeze |
+| Transpose | Regel sperrt vorher | Freeze |
 | Transpose | Regel prüft | Umbral Soul |
-| Transpose | Regel sperrt vorher | Umbral Soul |
-| Triplecast | Regel sperrt vorher | Paradox |
-| Triplecast | Regel prüft | Swiftcast |
-| Triplecast | Regel sperrt vorher | Swiftcast |
-| Umbral Soul | Regel sperrt vorher | Transpose |
-| Xenoglossy | Regel prüft | Amplifier |
+| Triplecast | Regel prüft | Blizzard III |
+| Triplecast | Regel prüft | Transpose |
 
 ## Wechselwirkungen und Zeit
 
@@ -154,7 +157,14 @@ Ohne Eintrag in `ActionId.resx` und ohne Wirktext; RSR castet keine PvE-Limit-Br
 
 ## Nicht direkt genutzt
 
-keine
+Maschinelle Liste; die Bewertung je Eintrag steht im Konzept.
+
+- High Thunder (`HighThunderPvE`, Spell): nur gelesen
+- High Thunder II (`HighThunderIiPvE`, Spell): nur gelesen
+- Thunder (`ThunderPvE`, Spell): nur gelesen
+- Thunder II (`ThunderIiPvE`, Spell): nur gelesen
+- Thunder III (`ThunderIiiPvE`, Spell): nur gelesen
+- Thunder IV (`ThunderIvPvE`, Spell): nur gelesen
 
 ## Abgleich Wirktext ↔ Code
 

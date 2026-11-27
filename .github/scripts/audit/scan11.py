@@ -43,6 +43,9 @@ Usage: python3 .github/scripts/audit/scan11.py
 import re
 import subprocess
 import sys
+import os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from resx_doc import normalize  # noqa: E402  (A982: the sheets' effect texts in one shape)
 
 ROOTS = ('RotationSolver/Basic/', 'RotationSolver/')
 RESX = 'RotationSolver.SourceGenerators/Properties/Status.resx'
@@ -67,7 +70,7 @@ def parse_status_enum(path):
     """{identifier: (id, set of polarities, effect text)}."""
     members, pols, para = {}, [], ''
     with open(path, encoding='utf-8') as fh:
-        for raw in fh:
+        for raw in normalize(fh.read()).splitlines(True):
             m = SEE.search(raw)
             if m:
                 pols.append(m.group('pol'))

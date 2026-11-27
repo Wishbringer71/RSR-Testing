@@ -27,6 +27,8 @@ internal static class ActionTracer
 
 	internal static bool MirrorToPluginLog;
 
+	internal static bool Suppressed { get; set; }
+
 	internal static void Init()
 	{
 		try
@@ -133,7 +135,10 @@ internal static class ActionTracer
 		}
 
 		var n = Interlocked.Increment(ref _frameCounter);
-		_currentFrame.Clear();
+		lock (_lock)
+		{
+			_currentFrame.Clear();
+		}
 		Write($"---- frame {n} ----");
 	}
 
@@ -145,12 +150,23 @@ internal static class ActionTracer
 		}
 
 		Write($"=> chose {Format(chosen)}");
-		LastFrameSummary = _currentFrame.ToString();
+		lock (_lock)
+		{
+			LastFrameSummary = _currentFrame.ToString();
+			try
+			{
+				_writer?.Flush();
+			}
+			catch (Exception ex)
+			{
+				PluginLog.Warning($"[ActionTracer] flush failed: {ex.Message}");
+			}
+		}
 	}
 
 	internal static void Try(IBaseAction a)
 	{
-		if (!Enabled)
+		if (!Enabled || Suppressed)
 		{
 			return;
 		}
@@ -163,7 +179,7 @@ internal static class ActionTracer
 		DefenseTrace.NoteRefused(a, reason);
 		BurstWatch.Refused(a, reason);
 		GcdIdleWatch.Refused(a, reason);
-		if (!Enabled)
+		if (!Enabled || Suppressed)
 		{
 			return false;
 		}
@@ -174,7 +190,7 @@ internal static class ActionTracer
 
 	internal static void Accept(IBaseAction a)
 	{
-		if (!Enabled)
+		if (!Enabled || Suppressed)
 		{
 			return;
 		}
@@ -187,10 +203,10 @@ internal static class ActionTracer
 	private static void Write(string body)
 	{
 		var line = $"{DateTime.Now:HH:mm:ss.fff} {body}";
-		_currentFrame.AppendLine(line);
 
 		lock (_lock)
 		{
+			_currentFrame.AppendLine(line);
 			try
 			{
 				EnsureWriter();
