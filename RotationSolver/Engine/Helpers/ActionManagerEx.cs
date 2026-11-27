@@ -35,9 +35,9 @@ public sealed unsafe partial class ActionManagerEx : IDisposable
 	private delegate bool UseActionLocationDelegate(ActionManager* self, ActionType actionType, uint actionId, ulong targetId, Vector3* location, uint extraParam, byte comboRouteId);
 	private delegate void ReceiveActionEffectDelegate(uint casterEntityId, Character* casterPtr, Vector3* targetPos, ActionEffectHandler.Header* header, ActionEffectHandler.TargetEffects* effects, GameObjectId* targetEntityIds);
 
-	private readonly Hook<UpdateDelegate>? _updateHook;
-	private readonly Hook<UseActionLocationDelegate>? _useActionLocationHook;
-	private readonly Hook<ReceiveActionEffectDelegate>? _receiveActionEffectHook;
+	private Hook<UpdateDelegate>? _updateHook;
+	private Hook<UseActionLocationDelegate>? _useActionLocationHook;
+	private Hook<ReceiveActionEffectDelegate>? _receiveActionEffectHook;
 
 	private ActionManagerEx()
 	{
@@ -52,6 +52,12 @@ public sealed unsafe partial class ActionManagerEx : IDisposable
 		}
 		catch (Exception ex)
 		{
+			_updateHook?.Dispose();
+			_useActionLocationHook?.Dispose();
+			_receiveActionEffectHook?.Dispose();
+			_updateHook = null;
+			_useActionLocationHook = null;
+			_receiveActionEffectHook = null;
 			PluginLog.Error($"[ActionManagerEx] Failed to hook the action manager: {ex}");
 		}
 	}
@@ -73,10 +79,11 @@ public sealed unsafe partial class ActionManagerEx : IDisposable
 	{
 		try
 		{
-			if (Service.Config.RemoveCooldownDelay && self->ActionQueued)
+			var framework = Framework.Instance();
+			if (Service.Config.RemoveCooldownDelay && self != null && self->ActionQueued && framework != null)
 			{
 				CooldownDelayTweak.StartAdjustment(self->AnimationLock, GetRemainingCooldown(self, self->QueuedActionType, self->QueuedActionId),
-					Framework.Instance()->FrameDeltaTime);
+					framework->FrameDeltaTime);
 			}
 		}
 		catch (Exception ex)
@@ -221,7 +228,7 @@ public sealed unsafe partial class ActionManagerEx : IDisposable
 		try
 		{
 			actionManager = ActionManager.Instance();
-			packetAnimLock = header->AnimationLock;
+			packetAnimLock = header != null ? header->AnimationLock : 0f;
 			prevAnimLock = actionManager == null ? 0 : actionManager->AnimationLock;
 		}
 		catch (Exception ex)
@@ -233,7 +240,7 @@ public sealed unsafe partial class ActionManagerEx : IDisposable
 
 		try
 		{
-			if (header->SourceSequence != 0 && casterEntityId == Player.Object?.EntityId)
+			if (header != null && header->SourceSequence != 0 && casterEntityId == Player.Object?.EntityId)
 			{
 				TankbusterForecast.RecordRequestAnswered(header->SourceSequence);
 			}
@@ -246,7 +253,7 @@ public sealed unsafe partial class ActionManagerEx : IDisposable
 		try
 		{
 			// Measured with the setting off too; only the reduction asks it (A753).
-			if (actionManager == null || header->SourceSequence == 0 || casterEntityId != Player.Object?.EntityId)
+			if (actionManager == null || header == null || header->SourceSequence == 0 || casterEntityId != Player.Object?.EntityId)
 			{
 				return;
 			}
@@ -277,14 +284,47 @@ public sealed unsafe partial class ActionManagerEx : IDisposable
 
 	private static float GetRemainingCooldown(ActionManager* actionManager, ActionType actionType, uint actionId)
 	{
+		var adjustedId = actionType == ActionType.Action ? actionManager->GetAdjustedActionId(actionId) : actionId;
 		var group = actionManager->GetRecastGroup((int)actionType, actionId);
-		if (group < 0)
+		var primaryRemain = 0f;
+		if (group >= 0)
 		{
-			return 0;
+			var detail = actionManager->GetRecastGroupDetail(group);
+			if (detail != null && detail->IsActive)
+			{
+				var maxCharges = actionType == ActionType.Action
+					? Math.Max(ActionManager.GetMaxCharges(adjustedId, (uint)DataCenter.PlayerSyncedLevel()), (ushort)1)
+					: (ushort)1;
+
+				if (maxCharges > 1)
+				{
+					if (actionManager->GetCurrentCharges(adjustedId) == 0 && detail->Total > 0f)
+					{
+						var oneCharge = detail->Total / maxCharges;
+						var totalRem = Math.Max(0f, detail->Total - detail->Elapsed);
+						var mod = totalRem % oneCharge;
+						primaryRemain = mod == 0f && totalRem > 0f ? oneCharge : mod;
+					}
+				}
+				else
+				{
+					primaryRemain = Math.Max(0f, detail->Total - detail->Elapsed);
+				}
+			}
 		}
 
-		var detail = actionManager->GetRecastGroupDetail(group);
-		return detail == null || !detail->IsActive ? 0 : Math.Max(0, detail->Total - detail->Elapsed);
+		var additionalGroup = actionManager->GetAdditionalRecastGroup(actionType, actionId);
+		var additionalRemain = 0f;
+		if (additionalGroup >= 0 && additionalGroup != group)
+		{
+			var additionalDetail = actionManager->GetRecastGroupDetail(additionalGroup);
+			if (additionalDetail != null && additionalDetail->IsActive)
+			{
+				additionalRemain = Math.Max(0f, additionalDetail->Total - additionalDetail->Elapsed);
+			}
+		}
+
+		return Math.Max(primaryRemain, additionalRemain);
 	}
 
 	private static void AdjustRecast(ActionManager* actionManager, int group, float adjustment)

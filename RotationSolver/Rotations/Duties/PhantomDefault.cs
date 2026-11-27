@@ -144,6 +144,7 @@ public sealed partial class PhantomDefault : PhantomRotation
 
 	readonly HashSet<IBaseAction> _remainingCards = new(4);
 	private IBaseAction? _currentCard = null;
+	private bool _inPrediction = false;
 
 	public override void DisplayDutyStatus()
 	{
@@ -152,6 +153,11 @@ public sealed partial class PhantomDefault : PhantomRotation
 		{
 			ImGui.Text($"Remaining Cards: {_remainingCards.Count}");
 		}
+	}
+
+	public override void OnFrameUpdate()
+	{
+		UpdateOraclePrediction();
 	}
 
 	public override bool EmergencyAbility(IAction nextGCD, out IAction? act)
@@ -336,6 +342,19 @@ public sealed partial class PhantomDefault : PhantomRotation
 		}
 		#endregion Utility/Non-scaling abilities that don't care about burst
 
+		// Upstream c79f584a5: a heal from Drain Touch goes ahead of the burst hold, and is asked only when it is due - a use
+		// asked first and refused on health left its action standing.
+		if (DrainTouchEmergencyOnly && Player?.GetEffectiveHpPercent() <= DrainTouchEmergencyOnlyThreshold * 100f
+			&& DrainTouchPvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		if (DrainTouchHeal && Player?.GetEffectiveHpPercent() <= DrainTouchHealyOnlyThreshold * 100f && DrainTouchPvE.CanUse(out act))
+		{
+			return true;
+		}
+
 		#region Burst abilities
 		// A890 (concept 03): for a job without a burst window of its own, the burst clock holds them where no use is lost.
 		if (ShouldHoldBurst() || PhantomAttacksWaitForBurst())
@@ -346,22 +365,6 @@ public sealed partial class PhantomDefault : PhantomRotation
 		if (DrainTouchDPS && DrainTouchPvE.CanUse(out act))
 		{
 			return true;
-		}
-
-		if (DrainTouchEmergencyOnly && DrainTouchPvE.CanUse(out act))
-		{
-			if (Player?.GetEffectiveHpPercent() <= DrainTouchEmergencyOnlyThreshold * 100f)
-			{
-				return true;
-			}
-		}
-
-		if (DrainTouchHeal && DrainTouchPvE.CanUse(out act))
-		{
-			if (Player?.GetEffectiveHpPercent() <= DrainTouchHealyOnlyThreshold * 100f)
-			{
-				return true;
-			}
 		}
 
 		if (OccultLibraPvE.CanUse(out act))
@@ -658,11 +661,6 @@ public sealed partial class PhantomDefault : PhantomRotation
 		//	return true;
 		//}
 
-		if (OccultFeatherfootPvE.CanUse(out act))
-		{
-			return true;
-		}
-
 		return base.MoveForwardAbility(nextGCD, out act);
 	}
 
@@ -708,12 +706,9 @@ public sealed partial class PhantomDefault : PhantomRotation
 			return base.HealSingleGCD(out act);
 		}
 
-		if (OccultResuscitationPvE.CanUse(out act))
+		if (Player?.GetForecastHealthRatio() < OccultResuscitationThreshold && OccultResuscitationPvE.CanUse(out act))
 		{
-			if (Player?.GetForecastHealthRatio() < OccultResuscitationThreshold)
-			{
-				return true;
-			}
+			return true;
 		}
 
 		if (OccultCureIiPvE_49093.CanUse(out act))
@@ -935,7 +930,7 @@ public sealed partial class PhantomDefault : PhantomRotation
 				return true;
 			}
 
-			if (RedMageLevel <= 3)
+			if (RedMageLevel < 3)
 			{
 				if (OccultFireIiPvE.CanUse(out act, skipTargetStatusNeedCheck: true))
 				{
@@ -1281,60 +1276,67 @@ public sealed partial class PhantomDefault : PhantomRotation
 		return false;
 	}
 
+	private void UpdateOraclePrediction()
+	{
+		if (OracleLevel == 0)
+		{
+			_inPrediction = false;
+			_currentCard = null;
+			_remainingCards.Clear();
+			return;
+		}
+
+		var activeCard = GetActivePredictionCard();
+		if (activeCard == null)
+		{
+			_inPrediction = false;
+			_currentCard = null;
+			_remainingCards.Clear();
+			return;
+		}
+
+		if (!_inPrediction)
+		{
+			ResetDeck();
+			_inPrediction = true;
+		}
+
+		if (_currentCard != null && _currentCard != activeCard)
+		{
+			_remainingCards.Remove(_currentCard);
+		}
+
+		_currentCard = activeCard;
+	}
+
+	private IBaseAction? GetActivePredictionCard()
+	{
+		if (HasBlessing)
+		{
+			return BlessingPvE;
+		}
+		if (HasCleansing)
+		{
+			return CleansingPvE;
+		}
+		if (HasPhantomJudgment)
+		{
+			return PhantomJudgmentPvE;
+		}
+		if (HasStarfall)
+		{
+			return StarfallPvE;
+		}
+		return null;
+	}
+
 	private bool HandleOraclePrediction(IAction? nextGCD, out IAction? act)
 	{
 		act = null;
 
-		if (OracleLevel == 0)
+		if (OracleLevel == 0 || nextGCD == PredictPvE || !_inPrediction || _currentCard == null)
 		{
-			return false; // Not an oracle, don't bother doing all of this
-		}
-
-		if (nextGCD == PredictPvE)
-		{
-			// New prediction used by RSR, clear the deck
-			ResetDeck();
 			return false;
-		}
-
-		_currentCard ??= PredictPvE;
-
-		// Track the current card we're seeing and discard the previous card if it's changed
-		if (HasBlessing)
-		{
-			if (_currentCard != BlessingPvE) //card expired, remove the old card
-			{
-				_remainingCards.Remove(_currentCard);
-			}
-			_currentCard = BlessingPvE;
-		}
-		else if (HasCleansing)
-		{
-			if (_currentCard != CleansingPvE) //card expired, remove the old card
-			{
-				_remainingCards.Remove(_currentCard);
-			}
-			_currentCard = CleansingPvE;
-		}
-		else if (HasPhantomJudgment)
-		{
-			if (_currentCard != PhantomJudgmentPvE) //card expired, remove the old card
-			{
-				_remainingCards.Remove(_currentCard);
-			}
-			_currentCard = PhantomJudgmentPvE;
-		}
-		else if (HasStarfall)
-		{
-			if (_currentCard != StarfallPvE) //card expired, remove the old card
-			{
-				_remainingCards.Remove(_currentCard);
-			}
-			_currentCard = StarfallPvE;
-		}
-		else
-		{
-			return false; // We have no active cards, so we don't need to do anything
 		}
 
 		// Desired Card Actions before we get into forced actions
@@ -1438,6 +1440,7 @@ public sealed partial class PhantomDefault : PhantomRotation
 
 	private void ResetDeck()
 	{
+		_currentCard = null;
 		_remainingCards.Add(BlessingPvE);
 		_remainingCards.Add(CleansingPvE);
 		_remainingCards.Add(PhantomJudgmentPvE);

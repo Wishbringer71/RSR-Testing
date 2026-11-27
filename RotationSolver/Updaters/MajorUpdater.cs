@@ -14,6 +14,8 @@ internal static class MajorUpdater
 	private static TimeSpan _timeSinceUpdate = TimeSpan.Zero;
 	private static bool _rotationsLoaded;
 	private static bool _bmrDataLive;
+	private static bool _wasActivated;
+	private static bool _wasStateActive;
 
 	private static readonly List<VfxNewData> _vfxRemaining = [];
 	private static readonly List<string> _expiredWarnings = [];
@@ -69,7 +71,8 @@ internal static class MajorUpdater
 		Run("RotationUpdater.UpdateRotation", RotationUpdater.UpdateRotation);
 
 		var isActivated = DataCenter.IsActivated();
-		ActivatedCoreUpdate(isActivated);
+		var isStateActive = DataCenter.IsActivatedIPC();
+		ActivatedCoreUpdate(isActivated, isStateActive);
 		ActivatedHighlightUpdate(isActivated);
 		// After the frame's lists are built, on or off (concept 03, "Vierte Invariante", A576).
 		UpdateCost.Step("rotation services");
@@ -144,6 +147,20 @@ internal static class MajorUpdater
 
 	private static void InvalidUpdate()
 	{
+		if (_wasActivated)
+		{
+			_wasActivated = false;
+			ResetBmrDataIfLive();
+		}
+
+		if (_wasStateActive)
+		{
+			_wasStateActive = false;
+			Run("Wrath_IPCSubscriber.Release", Wrath_IPCSubscriber.Release);
+		}
+
+		Service.CanMove = true;
+
 		if (Svc.Condition[ConditionFlag.BetweenAreas])
 		{
 			ActionUpdater.MarkAreaChange();
@@ -154,7 +171,7 @@ internal static class MajorUpdater
 		MiscUpdater.UpdateEntry();
 	}
 
-	private static void ActivatedCoreUpdate(bool isActivated)
+	private static void ActivatedCoreUpdate(bool isActivated, bool isStateActive)
 	{
 		var autoOnEnabled = Service.Config.AutoOnYes && (Service.Config.StartOnAllianceIsInCombat2
 			|| Service.Config.StartOnAttackedBySomeone2
@@ -172,14 +189,27 @@ internal static class MajorUpdater
 
 		if (!isActivated)
 		{
+			if (_wasActivated)
+			{
+				_wasActivated = false;
+				ActionUpdater.ClearNextAction();
+			}
+
+			if (_wasStateActive)
+			{
+				_wasStateActive = false;
+				Service.CanMove = true;
+				Run("(RSRActivatedCore): Wrath_IPCSubscriber.Release", Wrath_IPCSubscriber.Release);
+			}
+
 			ResetBmrDataIfLive();
 			// A809 (concept 13, "Nachlauf bis zum Paket"): the gap between updates counts only while RSR runs.
 			GazeWatch.Idle();
 			return;
 		}
 
-		UpdateCost.Step("macro and BossModReborn");
-		Run("(RSRActivatedCore): MacroUpdater.UpdateMacro", MacroUpdater.UpdateMacro);
+		_wasActivated = true;
+		UpdateCost.Step("BossModReborn");
 
 		if (DataCenter.BMREnabled)
 		{
@@ -194,50 +224,62 @@ internal static class MajorUpdater
 
 		UpdateCost.Step("state");
 		Run("(RSRActivatedCore): StateUpdater.UpdateState", StateUpdater.UpdateState);
-		Run("(RSRActivatedCore): AutoAttackUpdater.Update", AutoAttackUpdater.Update);
 		// A774 (concept 13): turn away from a gaze about to land, before the rotation picks its next action.
 		Run("(RSRActivatedCore): GazeWatch.TurnAway", GazeWatch.TurnAway);
 		// A744 (concept 24): whether the gate below would press at all this cycle, for the cost line.
 		UpdateCost.NoteGateClosed(ActionUpdater.GateClosedByCastOrLock());
 		UpdateCost.Step("next action (rotation)");
+		Run("(RSRActivatedCore): RotationUpdater.UpdateRotationFrame", RotationUpdater.UpdateRotationFrame);
 		Run("(RSRActivatedCore): ActionUpdater.UpdateNextAction", ActionUpdater.UpdateNextAction);
 
 		UpdateCost.Step("action");
-		var canDoAction = false;
-		try
+		if (isStateActive)
 		{
-			canDoAction = ActionUpdater.CanDoAction();
-		}
-		catch (Exception ex)
-		{
-			LogOnce("(RSRActivatedCore): ActionUpdater.CanDoAction Exception", ex);
-		}
+			_wasStateActive = true;
+			Run("(RSRActivatedCore): AutoAttackUpdater.Update", AutoAttackUpdater.Update);
 
-		try
-		{
-			MovingUpdater.UpdateCanMove(canDoAction);
-		}
-		catch (Exception ex)
-		{
-			LogOnce("(RSRActivatedCore): MovingUpdater.UpdateCanMove Exception", ex);
-		}
+			var canDoAction = false;
+			try
+			{
+				canDoAction = ActionUpdater.CanDoAction();
+			}
+			catch (Exception ex)
+			{
+				LogOnce("(RSRActivatedCore): ActionUpdater.CanDoAction Exception", ex);
+			}
 
-		if (canDoAction)
-		{
-			Run("(RSRActivatedCore): RSCommands.DoAction", RSCommands.DoAction);
-		}
+			try
+			{
+				MovingUpdater.UpdateCanMove(canDoAction);
+			}
+			catch (Exception ex)
+			{
+				LogOnce("(RSRActivatedCore): MovingUpdater.UpdateCanMove Exception", ex);
+			}
 
-		if (DataCenter.IsTargetOnly)
+			if (canDoAction)
+			{
+				Run("(RSRActivatedCore): RSCommands.DoAction", RSCommands.DoAction);
+			}
+
+			if (DataCenter.IsTargetOnly)
+			{
+				Run("(RSRActivatedCore): RSCommands.UpdateTargetFromNextAction (TargetOnly)", RSCommands.UpdateTargetFromNextAction);
+			}
+
+			Run("(RSRActivatedCore): Wrath_IPCSubscriber.DisableAutoRotation", Wrath_IPCSubscriber.DisableAutoRotation);
+		}
+		else if (_wasStateActive)
 		{
-			Run("(RSRActivatedCore): RSCommands.UpdateTargetFromNextAction (TargetOnly)", RSCommands.UpdateTargetFromNextAction);
+			_wasStateActive = false;
+			Service.CanMove = true;
+			Run("(RSRActivatedCore): Wrath_IPCSubscriber.Release", Wrath_IPCSubscriber.Release);
 		}
 
 		if (!DataCenter.IsTargetOnly && Service.Config.TeachingMode && Service.Config.TeachingModeAutoTarget && DataCenter.InCombat)
 		{
 			Run("(RSRActivatedCore): RSCommands.UpdateTargetFromNextAction (TeachingMode)", RSCommands.UpdateTargetFromNextAction);
 		}
-
-		Run("(RSRActivatedCore): Wrath_IPCSubscriber.DisableAutoRotation", Wrath_IPCSubscriber.DisableAutoRotation);
 	}
 
 	private static void ResetBmrDataIfLive()
@@ -250,6 +292,7 @@ internal static class MajorUpdater
 		_bmrDataLive = false;
 		DataCenter.ResetBmrData();
 		DataCenter.ResetBmrPlanData();
+		BMRPlanUpdater.Reset();
 	}
 
 	private static void ActivatedHighlightUpdate(bool isActivated)
@@ -257,7 +300,7 @@ internal static class MajorUpdater
 		UpdateCost.Step("highlight");
 		if (!isActivated)
 		{
-			HotbarHighlightManager.ClearElements();
+			Run("Hotbar Highlight Clear", HotbarHighlightManager.ClearElements);
 
 			if (HotbarDisabledColor.HasTint)
 			{
@@ -281,7 +324,7 @@ internal static class MajorUpdater
 		}
 		else
 		{
-			HotbarHighlightManager.ClearElements();
+			Run("Hotbar Highlight Clear", HotbarHighlightManager.ClearElements);
 		}
 
 		// Its own step: "highlight" carried two thirds of the cycle in the trace of 18.10.2026, and the teaching
@@ -296,6 +339,7 @@ internal static class MajorUpdater
 	private static void CommonUpdate()
 	{
 		Run("NoFallDamageUpdater.Update", NoFallDamageUpdater.Update);
+		Run("MacroUpdater.UpdateMacro", MacroUpdater.UpdateMacro);
 		Run("CommonUpdate", RotationSolverPlugin.UpdateDisplayWindow);
 
 		Run("HotbarKeybindHelper.Update", HotbarKeybindHelper.Update);
@@ -436,6 +480,23 @@ internal static class MajorUpdater
 	public static void Dispose()
 	{
 		Svc.Framework.Update -= OnUpdate;
+
+		Service.CanMove = true;
+		try
+		{
+			Wrath_IPCSubscriber.Release();
+		}
+		catch (Exception ex)
+		{
+			LogOnce("Wrath_IPCSubscriber.Release Exception", ex);
+		}
+
+		BMRPlanUpdater.Disable();
+		DataCenter.CurrentDutyRotation?.Dispose();
+		DataCenter.CurrentDutyRotation = null;
+		MacroUpdater.Clear();
+		_wasActivated = false;
+		_wasStateActive = false;
 
 		MiscUpdater.Dispose();
 		ActionUpdater.ClearNextAction();

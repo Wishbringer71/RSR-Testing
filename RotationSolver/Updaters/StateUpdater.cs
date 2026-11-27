@@ -6,6 +6,8 @@ namespace RotationSolver.Updaters;
 
 internal static partial class StateUpdater
 {
+	private static bool _wasInCombat;
+
 	private static bool CanUseHealAction =>
 		DataCenter.IsPvP
 		// Job. AutoHealTimeToKill is a child option of UseHealWhenNotAHealer and only gates non-healers:
@@ -21,9 +23,14 @@ internal static partial class StateUpdater
 	{
 		DataCenter.CommandStatus = StatusFromCmdOrCondition();
 		DataCenter.AutoStatus = StatusFromAutomatic();
-		if (!DataCenter.InCombat && DataCenter.AttackedTargets.Count > 0)
+		if (DataCenter.InCombat)
 		{
-			DataCenter.ResetAllRecords();
+			_wasInCombat = true;
+		}
+		else if (_wasInCombat || (DataCenter.HasAttackedTargets && DataCenter.TimeSinceLastAction.TotalSeconds > 5))
+		{
+			_wasInCombat = false;
+			DataCenter.ResetCombatRecords();
 		}
 	}
 
@@ -140,8 +147,14 @@ internal static partial class StateUpdater
 
 			try
 			{
-				if (ConfigurationHelper.ActionPositional.TryGetValue((ActionID)id, out var positional)
-					&& target.HasPositional())
+				var positional = ActionUpdater.NextGCDAction.Setting.EnemyPositional;
+				if (positional == EnemyPositional.None
+					&& ConfigurationHelper.ActionPositional.TryGetValue((ActionID)id, out var configuredPositional))
+				{
+					positional = configuredPositional;
+				}
+
+				if (positional != EnemyPositional.None && target.HasPositional())
 				{
 					var current = target.FindEnemyPositional();
 					if (current == EnemyPositional.None || target.IsDying())
@@ -425,6 +438,10 @@ internal static partial class StateUpdater
 				Service.Config.HealthSingleSpellHot, false)
 			: 0;
 
+		// Upstream c79f584a5: "Only heal yourself as a non-healer" - the option's text leaves the party's area heals out.
+		var onlyHealSelf = Service.Config.OnlyHealSelfWhenNoHealer
+			&& DataCenter.Role != JobRole.Healer;
+
 		var partyCount = DataCenter.PartyMembers.Count;
 		var areaHotRatio = partyCount > 2 ? PartyHealingOfTimeRatio() : 0f;
 
@@ -459,28 +476,28 @@ internal static partial class StateUpdater
 
 		_healAheadTraced = announced;
 
-		// The counts that call for an area heal take the deficit healing can close on each member (concept 07, A544).
-		var areaAbilityCount = ShouldHealSingle(Service.Config.HealthSingleAbility, Service.Config.HealthSingleAbilityHot, true, true);
-		var areaSpellCount = canUseHealSpell
-			? ShouldHealSingle(Service.Config.HealthSingleSpell, Service.Config.HealthSingleSpellHot, false, true)
-			: 0;
-
-		if (doomNeedHealingCount > 1 || areaAbilityCount > 2
-			|| healAheadOfHit
-			|| ShouldHealArea(partyCount, Service.Config.HealthAreaAbility, Service.Config.HealthAreaAbilityHot, areaHotRatio, true))
+		if (!onlyHealSelf)
 		{
-			status |= AutoStatus.HealAreaAbility;
-		}
+			// The counts that call for an area heal take the deficit healing can close on each member (concept 07, A544).
+			var areaAbilityCount = ShouldHealSingle(Service.Config.HealthSingleAbility, Service.Config.HealthSingleAbilityHot, true, true);
+			var areaSpellCount = canUseHealSpell
+				? ShouldHealSingle(Service.Config.HealthSingleSpell, Service.Config.HealthSingleSpellHot, false, true)
+				: 0;
 
-		if (canUseHealSpell && (doomNeedHealingCount > 1 || areaSpellCount > 2
-			|| healAheadOfHit
-			|| ShouldHealArea(partyCount, Service.Config.HealthAreaSpell, Service.Config.HealthAreaSpellHot, areaHotRatio, false)))
-		{
-			status |= AutoStatus.HealAreaSpell;
-		}
+			if (doomNeedHealingCount > 1 || areaAbilityCount > 2
+				|| healAheadOfHit
+				|| ShouldHealArea(partyCount, Service.Config.HealthAreaAbility, Service.Config.HealthAreaAbilityHot, areaHotRatio, true))
+			{
+				status |= AutoStatus.HealAreaAbility;
+			}
 
-		var onlyHealSelf = Service.Config.OnlyHealSelfWhenNoHealer
-			&& DataCenter.Role != JobRole.Healer;
+			if (canUseHealSpell && (doomNeedHealingCount > 1 || areaSpellCount > 2
+				|| healAheadOfHit
+				|| ShouldHealArea(partyCount, Service.Config.HealthAreaSpell, Service.Config.HealthAreaSpellHot, areaHotRatio, false)))
+			{
+				status |= AutoStatus.HealAreaSpell;
+			}
+		}
 
 		if (onlyHealSelf)
 		{

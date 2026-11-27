@@ -30,6 +30,8 @@ import os
 import re
 import sys
 from collections import defaultdict
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from resx_doc import normalize  # noqa: E402  (A982: the sheets' effect texts in one shape)
 
 ACTIONS = 'RotationSolver.SourceGenerators/Properties/ActionId.resx'
 STATUSES = 'RotationSolver.SourceGenerators/Properties/Status.resx'
@@ -61,7 +63,7 @@ def parse_actions(path):
     member = re.compile(r'^(?P<name>[A-Za-z_]\w*)\s*=\s*(?P<id>\d+),')
     out, scope, text, disp = [], '', '', ''
     with open(path, encoding='utf-8') as fh:
-        for raw in fh:
+        for raw in normalize(fh.read()).splitlines(True):
             m = see.search(raw)
             if m:
                 disp, scope = m.group('disp'), m.group('scope')

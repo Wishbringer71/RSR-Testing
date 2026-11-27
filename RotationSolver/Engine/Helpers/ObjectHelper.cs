@@ -30,11 +30,40 @@ public static partial class ObjectHelper
 		EventHandlerContent.Quest,
 	];
 
-	private static readonly ConcurrentDictionary<string, Regex> _regexCache = [];
+	private static readonly ConcurrentDictionary<string, Regex?> _regexCache = [];
 
-	private static Regex GetCachedRegex(string pattern)
+	private static Regex? GetCachedRegex(string pattern)
 	{
-		return _regexCache.GetOrAdd(pattern, p => new Regex(p, RegexOptions.Compiled));
+		return _regexCache.GetOrAdd(pattern, static p =>
+		{
+			try
+			{
+				return new Regex(p, RegexOptions.Compiled, TimeSpan.FromMilliseconds(50));
+			}
+			catch (ArgumentException ex)
+			{
+				PluginLog.Warning($"Invalid regex pattern '{p}': {ex.Message}");
+				return null;
+			}
+		});
+	}
+
+	private static bool TryIsMatch(string pattern, string input)
+	{
+		var regex = GetCachedRegex(pattern);
+		if (regex == null)
+		{
+			return false;
+		}
+
+		try
+		{
+			return regex.IsMatch(input);
+		}
+		catch (RegexMatchTimeoutException)
+		{
+			return false;
+		}
 	}
 
 	internal static BNpcBase? GetObjectNPC(this IBattleChara battleChara)
@@ -94,7 +123,7 @@ public static partial class ObjectHelper
 		{
 			foreach (var n in ns1)
 			{
-				if (!string.IsNullOrEmpty(n) && GetCachedRegex(n).IsMatch(target.Name?.GetText() ?? string.Empty))
+				if (!string.IsNullOrEmpty(n) && TryIsMatch(n, target.Name?.GetText() ?? string.Empty))
 				{
 					return false;
 				}
@@ -161,30 +190,24 @@ public static partial class ObjectHelper
 			return false;
 		}
 
-		if (!battleChara.IsValid() || battleChara.Address == nint.Zero)
+		if (!battleChara.IsValid() || battleChara.Address == nint.Zero || battleChara.IsDead)
 		{
 			return false;
 		}
 
 		try
 		{
-			if (Svc.Objects.SearchById(battleChara.GameObjectId) is not IBattleChara fresh
-				|| !fresh.IsValid() || fresh.Address == nint.Zero || fresh.IsDead)
+			if (!battleChara.IsEnemy())
 			{
 				return false;
 			}
 
-			if (!fresh.IsEnemy())
+			if (battleChara.HasStatus(false, StatusID.DirectionalDisregard))
 			{
 				return false;
 			}
 
-			if (fresh.HasStatus(false, StatusID.DirectionalDisregard))
-			{
-				return false;
-			}
-
-			return Svc.Data.GetExcelSheet<BNpcBase>().TryGetRow(fresh.BaseId, out var dataRow) && !dataRow.IsOmnidirectional;
+			return Svc.Data.GetExcelSheet<BNpcBase>().TryGetRow(battleChara.BaseId, out var dataRow) && !dataRow.IsOmnidirectional;
 		}
 		catch
 		{
@@ -338,7 +361,7 @@ public static partial class ObjectHelper
 		{
 			foreach (var n in ns1)
 			{
-				if (!string.IsNullOrEmpty(n) && GetCachedRegex(n).IsMatch(battleChara.Name.TextValue))
+				if (!string.IsNullOrEmpty(n) && TryIsMatch(n, battleChara.Name.TextValue))
 				{
 					return false;
 				}

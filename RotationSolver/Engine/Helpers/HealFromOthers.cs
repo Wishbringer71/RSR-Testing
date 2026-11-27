@@ -124,7 +124,7 @@ internal static class HealFromOthers
 		}
 
 		var lowest = held.Lowest;
-		if (HealPrediction.HasLanded(hp, ref lowest, held.Expected))
+		if (HealPrediction.HasLanded(hp, member.MaxHp, ref lowest, held.Expected))
 		{
 			_ = _held.Remove(member.GameObjectId);
 			_landed[member.GameObjectId] = DateTime.Now;

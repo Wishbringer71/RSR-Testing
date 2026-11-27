@@ -519,7 +519,8 @@ internal static partial class DataCenter
 	public static bool IsHostileCastingTank(IBattleChara h)
 	{
 		return h != null && IsHostileCastingBase(h, act => OtherConfiguration.HostileCastingTank.Contains(act.RowId)
-			|| h.CastTargetObjectId == h.TargetObjectId);
+			// Upstream c79f584a5: a cast at no one (0, or E0000000) by an enemy without a target is no cast at its target.
+			|| (h.CastTargetObjectId is not 0 and not 0xE0000000 && h.CastTargetObjectId == h.TargetObjectId));
 	}
 
 	public static bool IsHostileCastingArea(IBattleChara h)

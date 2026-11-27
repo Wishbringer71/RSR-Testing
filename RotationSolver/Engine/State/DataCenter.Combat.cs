@@ -84,7 +84,7 @@ internal static partial class DataCenter
 		{
 			_ = _lastHp.TryGetValue(id, out var lastHp);
 
-			if (HealPrediction.HasLanded(currentHp, ref lastHp, healedHp))
+			if (HealPrediction.HasLanded(currentHp, member.MaxHp, ref lastHp, healedHp))
 			{
 				_ = HealHP.Remove(id);
 				_lastHp[id] = currentHp;
@@ -120,7 +120,7 @@ internal static partial class DataCenter
 		var hpCount = 0;
 		foreach (var member in PartyMembers)
 		{
-			if (member.IsValid() && member.GameObjectId != 0 && hpCount < _hpBuffer.Length)
+			if (member != null && member.IsValid() && member.GameObjectId != 0 && hpCount < _hpBuffer.Length)
 			{
 				var hp = GetPartyMemberHPRatio(member);
 				if (hp > 0)
@@ -272,13 +272,22 @@ internal static partial class DataCenter
 
 	public static bool HPNotFull => PartyMembersMinHP < 1;
 
-	public static uint CurrentMp => Player.Object != null ? Math.Min(10000, Player.Object.CurrentMp + MPGain) : MPGain;
+	public static uint CurrentMp
+	{
+		get
+		{
+			var mpGain = InEffectTime ? MPGain : 0u;
+			return Player.Object != null ? Math.Min(10000, Player.Object.CurrentMp + mpGain) : mpGain;
+		}
+	}
 	#endregion
 
 	#region Action Record
 	private const int QUEUECAPACITY = 48;
 	private static readonly Queue<ActionRec> _actions = new(QUEUECAPACITY);
 	private static readonly Queue<DamageRec> _damages = new(QUEUECAPACITY);
+	private static readonly Lock _actionsLock = new();
+	private static readonly Lock _damagesLock = new();
 
 	internal static CombatRole? BluRole => CurrentRotation is BlueMageRotation ? BlueMageRotation.BlueId : null;
 	public static float DPSTaken
@@ -287,26 +296,29 @@ internal static partial class DataCenter
 		{
 			try
 			{
-				var now = DateTime.Now;
-				float damages = 0;
-				DateTime? first = null, last = null;
-				foreach (var rec in _damages)
+				lock (_damagesLock)
 				{
-					if (now - rec.ReceiveTime < TimeSpan.FromSeconds(5))
+					var now = DateTime.Now;
+					float damages = 0;
+					DateTime? first = null, last = null;
+					foreach (var rec in _damages)
 					{
-						damages += rec.Ratio;
-						first ??= rec.ReceiveTime;
-						last = rec.ReceiveTime;
+						if (now - rec.ReceiveTime < TimeSpan.FromSeconds(5))
+						{
+							damages += rec.Ratio;
+							first ??= rec.ReceiveTime;
+							last = rec.ReceiveTime;
+						}
 					}
-				}
 
-				if (first == null || last == null)
-				{
-					return 0;
-				}
+					if (first == null || last == null)
+					{
+						return 0;
+					}
 
-				var time = last.Value - first.Value + TimeSpan.FromSeconds(2.5);
-				return damages / (float)time.TotalSeconds;
+					var time = last.Value - first.Value + TimeSpan.FromSeconds(2.5);
+					return damages / (float)time.TotalSeconds;
+				}
 			}
 			catch
 			{
@@ -319,15 +331,48 @@ internal static partial class DataCenter
 	{
 		get
 		{
-			var arr = new ActionRec[_actions.Count];
-			var i = _actions.Count - 1;
-			foreach (var rec in _actions)
+			lock (_actionsLock)
 			{
-				arr[i--] = rec;
+				var arr = new ActionRec[_actions.Count];
+				var i = _actions.Count - 1;
+				foreach (var rec in _actions)
+				{
+					arr[i--] = rec;
+				}
+				return arr;
 			}
-			return arr;
 		}
 	}
+
+	internal static bool AnyRecordedActionSince(DateTime since, ReadOnlySpan<ActionID> ids)
+	{
+		lock (_actionsLock)
+		{
+			foreach (var rec in _actions)
+			{
+				if (rec.UsedTime < since)
+				{
+					continue;
+				}
+
+				for (var i = 0; i < ids.Length; i++)
+				{
+					if ((uint)ids[i] == rec.Action.RowId)
+					{
+						return true;
+					}
+				}
+			}
+		}
+
+		return false;
+	}
+
+	internal static bool AnyRecordedActionWithin(double seconds, ReadOnlySpan<ActionID> ids)
+	{
+		return AnyRecordedActionSince(DateTime.Now - TimeSpan.FromSeconds(seconds), ids);
+	}
+
 	private static DateTime _timeLastActionUsed = DateTime.Now;
 	public static TimeSpan TimeSinceLastAction => DateTime.Now - _timeLastActionUsed;
 
@@ -354,13 +399,16 @@ internal static partial class DataCenter
 				return;
 		}
 
-		if (_actions.Count >= QUEUECAPACITY)
+		lock (_actionsLock)
 		{
-			_ = _actions.Dequeue();
-		}
+			if (_actions.Count >= QUEUECAPACITY)
+			{
+				_ = _actions.Dequeue();
+			}
 
-		_timeLastActionUsed = DateTime.Now;
-		_actions.Enqueue(new ActionRec(_timeLastActionUsed, act));
+			_timeLastActionUsed = DateTime.Now;
+			_actions.Enqueue(new ActionRec(_timeLastActionUsed, act));
+		}
 	}
 
 	private static readonly Dictionary<uint, long> _actionRejectedTicks = [];
@@ -375,7 +423,18 @@ internal static partial class DataCenter
 		return _actionRejectedTicks.TryGetValue(actionId, out var tick) && Environment.TickCount64 - tick < withinMs;
 	}
 
-	internal static void ResetAllRecords()
+	internal static bool HasAttackedTargets
+	{
+		get
+		{
+			lock (_attackedTargetsLock)
+			{
+				return AttackedTargets.Count > 0;
+			}
+		}
+	}
+
+	internal static void ResetCombatRecords()
 	{
 		LastAction = 0;
 		LastGCD = 0;
@@ -389,12 +448,30 @@ internal static partial class DataCenter
 		HealFromOthers.Clear();
 		ActionPenaltyWatch.Clear();
 		_partyHpStatsCacheTick = long.MinValue;
+		_refinedHpCache.Clear();
+		_refinedHpCacheTick = long.MinValue;
+		_lastHp.Clear();
+		HealHP.Clear();
+		ApplyStatus.Clear();
+		MPGain = 0;
+		_effectEndTick = long.MinValue;
 		_timeLastActionUsed = DateTime.Now;
-		_actions.Clear();
+		lock (_actionsLock)
+		{
+			_actions.Clear();
+		}
+		lock (_damagesLock)
+		{
+			_damages.Clear();
+		}
+
 		DefenseHolds.Clear();
 		_actionRejectedTicks.Clear();
 
-		AttackedTargets.Clear();
+		lock (_attackedTargetsLock)
+		{
+			AttackedTargets.Clear();
+		}
 
 		// The hold's record is per fight. Carrying it across would judge one boss by another's
 		// pattern - a fight where the hold was always right would keep it holding through a fight
@@ -402,13 +479,22 @@ internal static partial class DataCenter
 		_holdExpectsHitUntil = DateTime.MinValue;
 		_holdsVindicated = 0;
 		_holdsWasted = 0;
-
 		while (VfxDataQueue.TryDequeue(out _))
 		{ }
 		lock (_tankbusterLock)
 		{
 			TankbusterTargetIds.Clear();
 		}
+		_isHostileCastingAoe.Reset();
+		_isHostileCastingToTank.Reset();
+		_isHostileCastingStop.Reset();
+		_areHostilesCastingKnockback.Reset();
+		ObjectHelper.ClearTrackingCaches();
+	}
+
+	internal static void ResetAllRecords()
+	{
+		ResetCombatRecords();
 		AllHostileTargets.Clear();
 		AllHostileTargetIds.Clear();
 		AllianceMembers.Clear();
@@ -426,12 +512,15 @@ internal static partial class DataCenter
 			return;
 		}
 
-		if (_damages.Count >= QUEUECAPACITY)
+		lock (_damagesLock)
 		{
-			_ = _damages.Dequeue();
-		}
+			if (_damages.Count >= QUEUECAPACITY)
+			{
+				_ = _damages.Dequeue();
+			}
 
-		_damages.Enqueue(new DamageRec(DateTime.Now, damageRatio));
+			_damages.Enqueue(new DamageRec(DateTime.Now, damageRatio));
+		}
 	}
 
 	internal static DateTime KnockbackFinished { get; set; } = DateTime.MinValue;

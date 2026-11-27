@@ -24,6 +24,8 @@ import os
 import re
 import subprocess
 import sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from resx_doc import normalize  # noqa: E402  (A982: the sheets' effect texts in one shape)
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, '..', '..', '..'))
@@ -233,7 +235,7 @@ def check_against_game(data, identifiers, fetch=fetch_json):
 
 def main():
     with open(RESX, encoding='utf-8') as handle:
-        identifiers = load_identifiers(handle.read())
+        identifiers = load_identifiers(normalize(handle.read()))
     if not identifiers:
         print('could not read any identifier from %s' % RESX)
         return 1

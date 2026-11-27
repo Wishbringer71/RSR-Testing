@@ -17,6 +17,8 @@ on:
 concurrency:
   group: build-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
+permissions:
+  contents: read
 jobs:
   DispatchChain:
     # The checks first, then the build in the same job (A893, section 6): one checkout, one job's rounding up to the
@@ -112,6 +114,11 @@ jobs:
       # Rekindle was exactly that case and nothing failed over it.
       - name: Check the heal target measure matches the action
         run: python3 .github/scripts/audit/check_heal_target_measure.py
+
+      # Every reader of the generated sheets reads their effect texts in one shape (A982): upstream c79f584a5 split each
+      # text into one <para> per line, and the readers saw only the last line.
+      - name: Self-test of the effect text shape
+        run: python3 .github/scripts/audit/resx_doc.py --self-test
 
       # The once-per-cooldown full heal has to be tied to actual danger, or it goes out on whoever
       # happens to stand lowest - a player who was just raised, most visibly - and is missing when a

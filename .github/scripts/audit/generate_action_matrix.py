@@ -35,6 +35,9 @@ from datetime import date
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import layout  # noqa: E402
+import os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from resx_doc import normalize  # noqa: E402  (A982: the sheets' effect texts in one shape)
 
 ROOT = Path(__file__).resolve().parents[3]
 PROPERTIES = ROOT / "RotationSolver.SourceGenerators" / "Properties"
@@ -70,7 +73,7 @@ ROTATION_FILES = {
     "DRG": ["Melee/DRG_Reborn.cs"], "NIN": ["Melee/NIN_Reborn.cs"], "SAM": ["Melee/SAM_Reborn.cs"],
     "RPR": ["Melee/RPR_Reborn.cs"], "VPR": ["Melee/VPR_Reborn.cs"], "BRD": ["Ranged/BRD_Reborn.cs"],
     "MCH": ["Ranged/MCH_Reborn.cs"], "DNC": ["Ranged/DNC_Reborn.cs"],
-    "BLM": ["Magical/BLM_Default.cs", "Magical/BLM_RP.cs"], "SMN": ["Magical/SMN_Reborn.cs"],
+    "BLM": ["Magical/BLM_Reborn.cs"], "SMN": ["Magical/SMN_Reborn.cs"],
     "RDM": ["Magical/RDM_Reborn.cs"], "PCT": ["Magical/PCT_Reborn.cs"],
     "BLU": ["Limited Jobs/BLU_Reborn.cs"], "BST": ["Limited Jobs/BST_Reborn.cs"],
 }
@@ -609,7 +612,7 @@ def settings_of(body):
 
 
 def load():
-    ids = html.unescape((PROPERTIES / "ActionId.resx").read_text(encoding="utf-8"))
+    ids = normalize(html.unescape((PROPERTIES / "ActionId.resx").read_text(encoding="utf-8")))
     actions = {}
     for name, kind, jobs, _row, category, raw, ident, row in ENTRY.findall(ids):
         if kind != "PvE":
@@ -622,7 +625,7 @@ def load():
             "text": clean_text(raw), "all": jobs.strip() == "All Classes",
         }
 
-    rot = html.unescape((PROPERTIES / "Rotation.resx").read_text(encoding="utf-8"))
+    rot = normalize(html.unescape((PROPERTIES / "Rotation.resx").read_text(encoding="utf-8")))
     job_actions = {}
     traits = {}
     limit_breaks = {}
@@ -642,7 +645,7 @@ def load():
         limit_breaks[job] = sorted(p for p in props if p in lbs)
         traits[job] = [(n, clean_text(t)) for n, _j, t, _i in TRAIT.findall(body)]
 
-    general = html.unescape((PROPERTIES / "Action.resx").read_text(encoding="utf-8"))
+    general = normalize(html.unescape((PROPERTIES / "Action.resx").read_text(encoding="utf-8")))
     general_actions = [p for p in PROPERTY.findall(general) if p in actions]
     return actions, job_actions, traits, general_actions, limit_breaks
 

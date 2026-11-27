@@ -34,6 +34,9 @@ import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import layout  # noqa: E402
+import os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from resx_doc import normalize  # noqa: E402  (A982: the sheets' effect texts in one shape)
 
 ROOT = Path(__file__).resolve().parents[3]
 PROPERTIES = ROOT / "RotationSolver.SourceGenerators" / "Properties"
@@ -149,7 +152,7 @@ def parse(path):
         return
 
     pending = None
-    for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
+    for line in normalize(path.read_text(encoding="utf-8", errors="replace")).splitlines():
         para = PARA.search(line)
         if para:
             pending = unescape(para.group(1))
@@ -247,7 +250,7 @@ def transfers():
         if not path.exists():
             continue
         pending = None
-        for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
+        for line in normalize(path.read_text(encoding="utf-8", errors="replace")).splitlines():
             para = PARA.search(line)
             if para:
                 pending = unescape(para.group(1))
@@ -379,7 +382,7 @@ def status_texts():
     if not STATUS_SHEET.exists():
         return {}
     texts, pending = {}, None
-    for line in STATUS_SHEET.read_text(encoding="utf-8", errors="replace").splitlines():
+    for line in normalize(STATUS_SHEET.read_text(encoding="utf-8", errors="replace")).splitlines():
         para = PARA.search(line)
         if para:
             pending = unescape(para.group(1))

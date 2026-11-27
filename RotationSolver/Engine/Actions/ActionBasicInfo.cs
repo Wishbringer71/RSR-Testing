@@ -149,12 +149,18 @@ public readonly partial struct ActionBasicInfo
 			return true;
 		}
 
-		if (UnlockLink != 0 && !UIState.Instance()->IsUnlockLinkUnlockedOrQuestCompleted(UnlockLink))
+		var uiState = UIState.Instance();
+		if (uiState == null)
 		{
 			return false;
 		}
 
-		if (_action.Setting.UnlockedByQuestID != 0 && !UIState.Instance()->IsUnlockLinkUnlockedOrQuestCompleted(_action.Setting.UnlockedByQuestID))
+		if (UnlockLink != 0 && !uiState->IsUnlockLinkUnlockedOrQuestCompleted(UnlockLink))
+		{
+			return false;
+		}
+
+		if (_action.Setting.UnlockedByQuestID != 0 && !uiState->IsUnlockLinkUnlockedOrQuestCompleted(_action.Setting.UnlockedByQuestID))
 		{
 			return false;
 		}
@@ -279,7 +285,8 @@ public readonly partial struct ActionBasicInfo
 	/// </summary>
 	public unsafe bool ActionManagerStatusValid()
 	{
-		return ActionManager.Instance() != null && ActionManager.Instance()->GetActionStatus(ActionType.Action, ID) == 0;
+		var actionManager = ActionManager.Instance();
+		return actionManager != null && actionManager->GetActionStatus(ActionType.Action, AdjustedID) == 0;
 	}
 
 	/// <summary>
@@ -483,8 +490,9 @@ public readonly partial struct ActionBasicInfo
 			return RefuseBasic("BasicCheck:QuestLocked");
 		}
 
+		var actionManager = ActionManager.Instance();
 		if (!_action.Setting.IgnoresBadStatus && (IsRealGCD || IsAbility)
-			&& Array.IndexOf(ConfigurationHelper.BadStatusAction, (ActionStatus)ActionManager.Instance()->GetActionStatus(ActionType.Action, AdjustedID)) >= 0)
+			&& (actionManager == null || Array.IndexOf(ConfigurationHelper.BadStatusAction, (ActionStatus)actionManager->GetActionStatus(ActionType.Action, AdjustedID)) >= 0))
 		{
 			return RefuseBasic("BasicCheck:GameStatus");
 		}
