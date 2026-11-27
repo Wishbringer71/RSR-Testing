@@ -32,6 +32,13 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
 
 ## Offene Arbeit
 
+### Upstream 7.5.8.11 (7688affca) zu Ende einpflegen · wartet auf seine Freigabe für den Push auf main
+- *Wirkung:* Bis zum Merge spielt der Branch ohne Upstreams Fixes (Tankbuster-Erkennung bei Wirken ohne Ziel,
+  Überheilung in der Heilvorhersage, abgesicherte BossMod-Abfragen); der Schwarzmagier läuft weiter auf `BLM_Default`.
+- *Ort:* main lokal auf 91322b41a (A982); Push von der Sitzung gesperrt.
+- *Nächster Schritt:* nach Freigabe main pushen, main in den Branch mergen, die Fork-Regeln des Schwarzmagiers
+  (Konzept 03 K6, A602, A978, A980) auf `BLM_Reborn` übertragen, Konzept zuerst; die offenen Punkte aus A982 auswerten.
+
 ## Technische Schuld
 
 Ohne Wirkung im Kampf oder bewusst eingegangen; je Kosten und Auflösungsbedingung.

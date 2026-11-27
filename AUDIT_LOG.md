@@ -28399,6 +28399,91 @@ values are 1 through 16“, Weckeralarm), sonst keine Fehler; keine Zeile von RS
 *Ergebnis:* Kein Defekt in RSR, nichts zu ändern. Ein Bericht an DailyDuty liegt bei ihm (fremdes Plugin, nicht
 seine Repositories).
 
+### A982 · Upstream 7.5.8.11 (7688affca) in main gemergt, nur lokal: Push auf main von der Sitzung gesperrt (27.11.2026)
+
+*Anlass:* Abgleich am Auftragsende (A981); drei neue Upstream-Commits (c79f584a5 „Cleanup and fixes for some legacy
+systems, sourcegen fixes in prep for evercold“, 06b341ac0, 7688affca), 143 Dateien, 36 Konflikte gegen main.
+*Stand:* Merge in einem eigenen Arbeitsbaum aufgelöst, gebaut (0 Fehler, 0 Warnungen), `run_ci_checks.py` 66 von 66
+grün, lokal committet als 91322b41a. Der Push auf main wurde vom Berechtigungsklassifikator der Sitzung abgelehnt
+(„Destructive or Unwanted Actions“): Diese Sitzung darf nur auf ihren Arbeits-Branch pushen. Der Merge in den
+Arbeits-Branch und die Übertragung der Schwarzmagier-Regeln auf `BLM_Reborn` warten deshalb.
+*Auflösung je Stelle (Wirkung im Kampf, Herkunft):*
+- Generatoren (JobConfig, JobChoiceConfig): Upstream `new T()` je Job statt geteiltem Feld = Fork A646; alle drei
+  Referenzfelder leer ab Werk -> Upstream übernommen, Util.CopyOfDefault wird frei.
+- Scoring NoNewHostiles: Upstream nimmt Trainingspuppen aus (!t.IsDummy()). Fork hat die Sperre in
+  PullsAround/NotFightingYet (A826/A832/A834). Synergie: Puppe in NotFightingYet ausnehmen? -> Arbeits-Branch, Konzept
+  23/13.
+- ActionTargetInfo: Upstream lässt eine bekannte Schwäche (Kreszentia, HasKnownOccultWeakness) als vorhanden gelten;
+  mit Fork-Rand (NeededStatusMargin) kombiniert. Prüfen gegen NorthHornWeaknessRecords (Fork).
+- PheonixDownItem: Upstream Stufen 12/12/64 für Wiederbeleber; Fork hat es in AnyLivingRaiser (RaiseLevel, Allianz),
+  Datei umbenannt -> alte bleibt gelöscht.
+- SGE: Upstream verlegt das Fallenlassen von Eukrasia im Kampf (2 s ohne nächsten GCD) aus ClearEukrasia nach
+  OnFrameUpdate, wo es auch ohne Ziel greift; übernommen, Fork-Merker dort mit zurückgesetzt. (Erste Notiz „Upstream
+  streicht“ war falsch.)
+- NIN Kassatsu: Upstream macht aus dem zweiten if ein else if (Kette); im Fork mit !goka übernommen, wirkungsgleich,
+  weil die übrigen Zweige !Hyosho.EnoughLevel verlangen.
+- Hook concept_first deutet relative Pfade gegen ROOT; im Merge-Arbeitsbaum absolute Pfade, ein Merge ist ausgenommen.
+- AutoAttack: Upstream sperrt Auto-Angriff unter NoCasting nur bei State (nicht manuell/Lehrmodus); im Fork-try
+  übernommen.
+- CancelCast: Upstream setzt Verzögerung und letzte Wirkung beim Ende zurück (die nächste Wirkung beginnt frisch); mit
+  Fork _singleHealCast beide.
+- MainWindow_List: Upstream GetFilteredActionList (Cache, Suche) + ##idx; Fork-Messwerte je Eintrag beibehalten.
+- StateUpdater: Upstream nimmt bei 'Only heal yourself as a non-healer' die Flächenheilung aus (Optionstext); um die
+  Fork-Flächenlogik gelegt.
+- ActionManagerEx: Upstream-Nullprüfungen (self, framework, header) in die Fork-try-Blöcke übernommen.
+- ActionTracer: Suppressed übernommen; AutoFlush bleibt an (Spur muss einen Absturz überleben, A418/A794); Upstream
+  schaltet es aus.
+- StatusHelper: Fork-Fassungen (frisches Objekt, Vollheilung als Ende; eigene Besitzliste A514) behalten; Upstreams
+  Besitz-Cache 15 ms ist ein Teil davon.
+- PhantomDefault: Upstream zieht Drain-Touch-Heilungen vor die Burst-Sperre und fragt CanUse erst nach der LP-
+  Bedingung (act blieb sonst gesetzt); mit Fork-Maßen (GetEffectiveHpPercent, Vorhersage bei Resuscitation,
+  A890-Sperre).
+- Result: Upstream prüft fester Sprung vorn wie Fork (A498) -> Upstream-Fassung. Selbstzentrierte Fläche: Upstreams
+  Filter (CanTarget, targetFilter, MinHP) übernommen, Fork-Sperren (HitsUntouchable, PullsAround) bleiben.
+- Ability: Upstream fragt Dienstrotation für Provoke/Speed; übernommen. Swiftcast für Raise: Upstream zählt Raises des
+  Inhalts (Variant, Lost Arise, Occult Raise) dazu; ergänzt in der Fork-Bedingung.
+- IsMoving: Upstream misst Bewegung in 75-ms-Stichproben (feste Zahl), Fork je Frame (A788, FrameCacheMs) -> Fork
+  behalten; ob Fremdpositionen zwischen Frames stehen bleiben (Flackern), ist unbelegt -> Auswertung.
+- MajorUpdater: Upstream trennt aktiviert (auch manuell/Lehrmodus) von State: Auto-Angriff, Bewegungssperre, DoAction
+  nur bei State; Makro-Update läuft immer; RotationUpdater.UpdateRotationFrame je Frame. Fork-Schritte (UpdateCost,
+  GazeWatch.TurnAway, NoteGateClosed) eingesetzt.
+- Configs.Restore: Upstream liest die Sicherung abgesichert, sichert die laufenden Einstellungen und speichert die
+  wiederhergestellten (vorher: Save() auf dem alten Objekt). Fork-Migrate statt Versionsabweisung.
+- RSCommands: CanDoAnAction-Prüfung vor die Klickverzögerung (Upstream) mit Fork-Fenster AbilityClipWindow;
+  CurrentAction vor Use() und PullGuard; Abmelden/Gebietswechsel zuerst, PvP-Start als Variable; Fork-Abschaltung bei
+  Tod und Wiedereinschalten nach Raise erhalten.
+- Filtering: Kandidatenprüfung des Forks (inReach, TankbusterHelp) behalten; Deployment Tactics prüft jetzt das
+  Mitglied (Upstream-Umbenennung member, im Fork stand battleChara); Vergleicher als statische Felder (Upstream).
+- DataCenter.Combat: Upstream-Sperren um _actions/_damages/AttackedTargets übernommen, Fork-Rücksetzungen
+  (DefenseHolds, Hold-Bilanz) erhalten, Schadensaufzeichnung nur mit Schaden (A340) vor der Sperre.
+- IsHostileCastingTank: Upstream schließt Wirken ohne Ziel (0/E0000000) bei Gegner ohne Ziel aus (sonst Tankbuster
+  erkannt); im Fork-Ort DataCenter.AreaDamage.cs übernommen.
+- Plugin-Start: Upstream bricht das Einschalten bei Abbruch des Ladens ab (Token statt None, _disposed); Fork-Schritte
+  (ExceptionTrace, NoFallDamage, Bestiarium/Crucible-Spur, WarmUp) eingesetzt; Dispose: IPCProvider/ActionUpdater
+  dazu, MacroUpdater.Clear beim Gebietswechsel.
+- BossModUpdater: SafeCall um alle Fork-Abfragen; NormalizeTimer für Knockback/Hinweise wie Fork-DiscardPastEvent;
+  Ausfallzeit und Verwundbarkeit roh wie im Fork (Upstream normiert sie, 0 hieße dann nie) -> Auswertung: liefert BMR
+  in einer Ausfallzeit 0?; Enum.IsDefined für den Schadenstyp.
+- TargetUpdater: Upstreams wiederverwendete Listen nicht übernommen - Fork-Listen werden über das Update hinaus
+  gehalten (Sleepers, Spiked, Untouchable); Raise-Reihenfolge: Upstream setzt die Heiler-Prüfung nach H2,
+  gleichwertig.
+- BLM_Default/BLM_RP: Upstream ersetzt durch BLM_Reborn; Löschung übernommen; Fork-BLM-Regeln (A602, A978, A980) im
+  Arbeits-Branch auf BLM_Reborn übertragen (Konzept zuerst).
+- HealPrediction: Upstream deckelt die erwartete Heilung bei den fehlenden LP (Überheilung landete nie); Fork-Aufrufer
+  HealFromOthers mit MaxHp nachgezogen.
+*Prüfmittel (Defektklasse):* Upstreams Generator schreibt jeden Wirktext als mehrere `<para>`-Zeilen und maskiert den
+Apostroph. Jeder Leser im Fork las nur eine Zeile: Rekindle verlor „when HP falls below 75%“, die Abwehrwerte
+fanden keine Zahl, die Matrix keine Eigenschaftstexte. Behoben an einer Stelle: `resx_doc.normalize` (mit
+Selbsttest, eigener CI-Schritt) in elf Lesern; für alle 1770 verglichenen Aktionen ergibt sie den alten Text.
+Dazu: Matrixgenerator auf `BLM_Reborn`; die Release-Texte auf main nach 7.5.8.7 gewechselt (Stand 3eae4b28a,
+eine überholte Einstellungsbezeichnung „Inline descriptions“ berichtigt); drei verrutschte Zeilenangaben in den
+Konzepten 10, 11, 12; die Ausnahmeliste fester Werte (Sentinel 0xE0000000 der Tankbuster-Erkennung).
+*Hook:* `concept_first.py` deutet relative Pfade gegen das Hauptverzeichnis, nicht gegen einen Merge-Arbeitsbaum.
+*Offen (Auswertung je Änderung, nach dem Merge in den Branch):* Trainingspuppen in `NotFightingYet` (Upstreams
+`!IsDummy()`); Bewegungsstichprobe je Frame gegen 75 ms; Ausfallzeit/Verwundbarkeit roh gegen `NormalizeTimer`
+(liefert BossModReborn 0 während einer Ausfallzeit?); `BLM_Reborn` gegen Konzept 03 K6, A602, A978, A980.
+*Prüfgrad:* Compile und Prüfskripte; nicht gespielt.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
