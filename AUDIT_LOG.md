@@ -28479,6 +28479,11 @@ Dazu: Matrixgenerator auf `BLM_Reborn`; die Release-Texte auf main nach 7.5.8.7 
 eine überholte Einstellungsbezeichnung „Inline descriptions“ berichtigt); drei verrutschte Zeilenangaben in den
 Konzepten 10, 11, 12; die Ausnahmeliste fester Werte (Sentinel 0xE0000000 der Tankbuster-Erkennung).
 *Hook:* `concept_first.py` deutet relative Pfade gegen das Hauptverzeichnis, nicht gegen einen Merge-Arbeitsbaum.
+*Prüfmittel, Befund:* `check_setting_tooltips.py` maß die Fork-Einstellungen nur gegen die Spitze von upstream/main.
+Seit Upstream `BLM_Default` gelöscht hat, galten dessen Einstellungen im noch nicht gemergten Arbeits-Branch als
+Fork-Einstellungen, und das Pre-Push-Gate sperrte den Push des Branchs. Jetzt ist eine Einstellung Upstreams, wenn sie in
+der Merge-Basis oder in upstream/main unter demselben Text steht - die Konstruktion von `check_fixed_values.py` und
+`check_fork_placement.py`; Regressionsfall im Selbsttest.
 *Offen (Auswertung je Änderung, nach dem Merge in den Branch):* Trainingspuppen in `NotFightingYet` (Upstreams
 `!IsDummy()`); Bewegungsstichprobe je Frame gegen 75 ms; Ausfallzeit/Verwundbarkeit roh gegen `NormalizeTimer`
 (liefert BossModReborn 0 während einer Ausfallzeit?); `BLM_Reborn` gegen Konzept 03 K6, A602, A978, A980.

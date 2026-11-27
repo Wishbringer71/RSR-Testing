@@ -111,6 +111,27 @@ def upstream_base():
     return tags[0] if tags else None
 
 
+def upstream_refs(base):
+    """The upstream states a setting can stand in: the merge base with upstream/main and upstream/main itself, as
+    check_fixed_values and check_fork_placement read them (A982). Upstream's tip alone took every setting of a file
+    upstream had deleted since the last merge - BLM_Default's, 27.11.2026 - for the fork's."""
+    if base != 'upstream/main':
+        return [base]
+    merge_base = git('merge-base', 'upstream/main', 'HEAD').stdout.strip()
+    return [merge_base, 'upstream/main'] if merge_base else ['upstream/main']
+
+
+def fork_owned(current, upstream_versions):
+    """The fork's settings, plus upstream settings this fork relabelled - the relabelling is fork work and carries the
+    same promise. A setting in any upstream state under the same label is upstream's business."""
+    fork = {}
+    for key, value in current.items():
+        labels = [version[key][0] for version in upstream_versions if key in version]
+        if not labels or value[0] not in labels:
+            fork[key] = value
+    return fork
+
+
 def files_at(ref):
     out = git('ls-tree', '-r', '--name-only', ref).stdout.split('\n')
     return [f for f in out if f.endswith('.cs')]
@@ -290,10 +311,21 @@ def self_test():
     if 'ShowTooltips' not in ui_settings(cond_bool):
         raise AssertionError('a ConditionBool backing field did not resolve to its property')
 
+    # A982: a setting in the merge base that upstream's tip no longer has (the file deleted since the last merge) stays
+    # upstream's; one in neither, or relabelled against both, is the fork's.
+    here = {('a.cs', 'Kept'): ('Label', ''), ('a.cs', 'New'): ('Label', ''), ('a.cs', 'Renamed'): ('Mine', '')}
+    at_base = {('a.cs', 'Kept'): ('Label', ''), ('a.cs', 'Renamed'): ('Theirs', '')}
+    at_tip = {}
+    owned = fork_owned(here, [at_base, at_tip])
+    if set(owned) != {('a.cs', 'New'), ('a.cs', 'Renamed')}:
+        raise AssertionError('a setting of a file upstream deleted since the merge base was taken for the fork\'s: %s' % sorted(owned))
+    if fork_owned(here, [at_tip]) == owned:
+        raise AssertionError('the regression case does not tell the tip alone from the merge base')
+
     print('self-test ok: an explained setting is accepted; a missing explanation, one with no '
           'effect\n  statement and one that only restates its label are each caught; a private '
           'member is found\n  and its label does not cross to the next; a concatenated tooltip is '
-          'read whole; and a\n  ConditionBool field resolves to its generated property')
+          'read whole; a\n  ConditionBool field resolves to its generated property; and a setting upstream deleted since\n  the merge base stays upstream\'s')
 
 
 def main():
@@ -307,16 +339,7 @@ def main():
         return 1
 
     current = collect()
-    upstream = collect(base)
-
-    # Fork-owned, plus upstream settings this fork relabelled - the relabelling is fork work and
-    # carries the same promise. An upstream setting left untouched is upstream's business.
-    fork = {}
-    for key, value in current.items():
-        if key not in upstream:
-            fork[key] = value
-        elif value[0] != upstream[key][0]:
-            fork[key] = value
+    fork = fork_owned(current, [collect(ref) for ref in upstream_refs(base)])
 
     problems = []
     recorded = []
