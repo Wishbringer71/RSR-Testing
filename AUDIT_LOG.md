@@ -28542,6 +28542,18 @@ Tank-Schutz (`StatusHelper.TankProtection`) gibt dann volle Unterstützung frei,
 Fork-Stand bleibt. Eigener Fehler unterwegs: Eine Suche nach den Lesern war auf zehn Zeilen gekappt und zeigte den
 Tank-Schutz nicht; die Gegenprobe fand ihn.
 *Fork-Version:* Upstream taggte 7688affca nachträglich als 7.5.8.12; `Directory.Build.props` nachgezogen.
+*Quellen am Auftragsende (`check_source_updates.py`, 27.11.2026; 41 Quellen, 5 bewegt, 1 nicht erreichbar:
+FrontlineAdvisor):* ECommons a097352d0 verschiebt die Feldindizes des Bestiariums (`ReaderXBMMonsterNotebook`) – RSR liest
+dort nur, ob das Fenster offen ist, und die rohen Werte für die Spur; keine Wirkung. Daedalus 06215d972 (v0.1.133):
+Regenerationstrank der Tiefen Gewölbe bei niedrigen LP, wartend bei laufender Regeneration, gesperrten Gegenständen und
+Schutz nach der Wiederbelebung – RSR hat ihn seit A613 (Rehabilitation erkannt), gesperrte Gegenstände über die
+Ablehnungsgründe des Spiels (A683), den Schutz über `MaySpendRaiseProtection` auch für Gegenstände; Halten nach der
+Wiederbelebung – ebenso. Crucible: Rast und Trank, sobald die sichere Punktzahl 300 über der Legendary-Grenze liegt –
+nicht übernommen: Reste und Begleiter-EP kommen anteilig zur Punktzahl (Konzept 21, „Was die Wertung bringt“), Punkte
+über der Grenze sind also nicht wertlos, und unter „Safe win“ geht die Sicherheit schon vor. Beiruta 815a5a860: ein
+Fenster für die eigenen Abklingpläne seiner Heiler – kein Gegenstück im Fork, er nutzt solche Fenster nicht. Sapphire
+620aed104: Umbau der Skriptbenachrichtigungen ohne Mechanik; BlueMageSetBuilder 45a055948: nur Dokumente. Alle fünf
+festgeschrieben.
 *Prüfgrad:* Compile, `run_ci_checks.py` 68 von 68; Kampfflag-Verzug am Mitschnitt gemessen; nicht gespielt.
 *Vorhersage (ACT, von Hand):* Schwarzmagier mit `BLM_Reborn`: Nach einem Rudel ohne nächstes in 25 Yalm steht Transpose
 (149) aus Astral Fire, dann Umbral Soul (16506) vor dem nächsten Pull; nach einem Pull mit Fire III folgt kein Transpose
