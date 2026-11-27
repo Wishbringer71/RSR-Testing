@@ -28542,6 +28542,18 @@ Tank-Schutz (`StatusHelper.TankProtection`) gibt dann volle Unterstützung frei,
 Fork-Stand bleibt. Eigener Fehler unterwegs: Eine Suche nach den Lesern war auf zehn Zeilen gekappt und zeigte den
 Tank-Schutz nicht; die Gegenprobe fand ihn.
 *Fork-Version:* Upstream taggte 7688affca nachträglich als 7.5.8.12; `Directory.Build.props` nachgezogen.
+*Quellen am Auftragsende (`check_source_updates.py`, 27.11.2026; 41 Quellen, 5 bewegt, 1 nicht erreichbar:
+FrontlineAdvisor):* ECommons a097352d0 verschiebt die Feldindizes des Bestiariums (`ReaderXBMMonsterNotebook`) – RSR liest
+dort nur, ob das Fenster offen ist, und die rohen Werte für die Spur; keine Wirkung. Daedalus 06215d972 (v0.1.133):
+Regenerationstrank der Tiefen Gewölbe bei niedrigen LP, wartend bei laufender Regeneration, gesperrten Gegenständen und
+Schutz nach der Wiederbelebung – RSR hat ihn seit A613 (Rehabilitation erkannt), gesperrte Gegenstände über die
+Ablehnungsgründe des Spiels (A683), den Schutz über `MaySpendRaiseProtection` auch für Gegenstände; Halten nach der
+Wiederbelebung – ebenso. Crucible: Rast und Trank, sobald die sichere Punktzahl 300 über der Legendary-Grenze liegt –
+nicht übernommen: Reste und Begleiter-EP kommen anteilig zur Punktzahl (Konzept 21, „Was die Wertung bringt“), Punkte
+über der Grenze sind also nicht wertlos, und unter „Safe win“ geht die Sicherheit schon vor. Beiruta 815a5a860: ein
+Fenster für die eigenen Abklingpläne seiner Heiler – kein Gegenstück im Fork, er nutzt solche Fenster nicht. Sapphire
+620aed104: Umbau der Skriptbenachrichtigungen ohne Mechanik; BlueMageSetBuilder 45a055948: nur Dokumente. Alle fünf
+festgeschrieben.
 *Prüfgrad:* Compile, `run_ci_checks.py` 68 von 68; Kampfflag-Verzug am Mitschnitt gemessen; nicht gespielt.
 *Vorhersage (ACT, von Hand):* Schwarzmagier mit `BLM_Reborn`: Nach einem Rudel ohne nächstes in 25 Yalm steht Transpose
 (149) aus Astral Fire, dann Umbral Soul (16506) vor dem nächsten Pull; nach einem Pull mit Fire III folgt kein Transpose
@@ -28550,6 +28562,29 @@ Wirkzeit statt Scathe (156).
 *Umfang:* Fork-Änderungen an `BLM_Default` aus dem Diff 42efb269e..911163059: 12 von 12 gegen `BLM_Reborn` geprüft,
 die Fork-Einstellungen der Basis `BlackMageRotation`: 4 von 4; Merge-Reste: 128 von 128 `.cs`-Dateien, die Upstream
 zwischen 42efb269e und 7688affca änderte, mechanisch, die 17 übrigen Treffer nach den zwei Behebungen von Hand.
+
+### A984 · Release 7.5.8.12+wsh1 ohne Plugin-Paket: Pfad aus Upstreams Workflow-Fix (27.11.2026)
+
+*Auftrag:* seine Anweisung „danach branch zu main, compile, release, neuer branch“. PR #28 gemergt (375ae9d5c, Baum
+gleich dem geprüften 4351b8c98; `build.yaml` per `workflow_dispatch` grün, Lauf 1387), `publish.yaml` per
+`workflow_dispatch` mit 7.5.8.12+wsh1 grün (Lauf 18).
+*Befund:* Das Release trägt keinen Anhang; 7.5.8.7+wsh1 trug `latest.zip`. *Wirkung:* Wer 7.5.8.12+wsh1 lädt, bekommt
+kein Plugin. *Ursache, am Log und am Diff gemessen:* Upstream 7688affca („Fix publish im dumb“) nahm `--output .\build`
+aus dem Build und stellte `files:` von `./build/RotationSolver/latest.zip` auf `./bin/Release/RotationSolver/latest.zip`.
+Mein Merge in main (A982) behielt das Fork-`--output` und übernahm Upstreams Pfad; der Prüfschritt davor las
+`build/…` und war grün, `action-gh-release` fand unter `bin/Release` nichts und veröffentlichte ohne Datei, nur mit einer
+Warnung (`src/run.ts`, v3.0.4: ohne `fail_on_unmatched_files` nur `console.warn`). Klasse: Konfliktauflösung, die eine
+Hälfte einer zusammengehörigen Upstream-Änderung nahm (wie die Merge-Reste in A983); in 7688affca die einzige
+Workflow-Änderung dieser Art – die übrigen Zeilen (Dalamud nach `$env:TEMP`, `--locked-mode`, Prüfung des Tag-Formats)
+stehen im Fork vollständig oder sind Fork-Fassung.
+*Behebung:* Upstreams Form im Ganzen – Build ohne `--output`, Prüfung und Anhang auf `bin/Release/RotationSolver/latest.zip`,
+wie `build.yaml` es schon prüft – und `fail_on_unmatched_files: true`: Eine fehlende Datei bricht den Lauf ab, bevor
+Release und Tag entstehen (an der Quelle der Action gelesen, v3.0.4). Bearbeiten eines Releases ist dieser Sitzung
+gesperrt; deshalb ein Folge-Release 7.5.8.12+wsh2 mit demselben Code und dem Paket.
+*Übergabe:* Der Release-Text von 7.5.8.12+wsh1 steht nach Thema in `fork-changes-in-play.md`; der neue Arbeits-Branch heißt
+`claude/fixes-after-7.5.8.12`. Der Branch `claude/fixes-after-7.5.8.7` ist vollständig gemergt (Löschfall, Löschen von Refs
+ist dieser Sitzung gesperrt).
+*Prüfgrad:* Workflow-Lauf gemessen (Jobschritte, Release ohne Anhang); die Behebung vor dem Folge-Release durch dessen Lauf.
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

@@ -27,8 +27,8 @@
   },
   {
    "repo": "BeirutaNa1na/RotationSolverReborn",
-   "commit": "5acdc27f3",
-   "date": "2026-11-26",
+   "commit": "815a5a860",
+   "date": "2026-11-27",
    "use": "Beiruta-Rotationen"
   },
   {
@@ -57,8 +57,8 @@
   },
   {
    "repo": "joshua88wa/FFXIV-Dalamud-BlueMageSetBuilder",
-   "commit": "213d3d9e588e2e5425b30c56cc7074cdaa28ce74",
-   "date": "2026-10-19",
+   "commit": "45a055948",
+   "date": "2026-11-27",
    "use": "Blaumagier-Sätze"
   },
   {
@@ -105,8 +105,8 @@
   },
   {
    "repo": "NightmareXIV/ECommons",
-   "commit": "d3a332150",
-   "date": "2026-11-18",
+   "commit": "a097352d0",
+   "date": "2026-11-27",
    "use": "Client-API"
   },
   {
@@ -117,8 +117,8 @@
   },
   {
    "repo": "ofnature/Daedalus",
-   "commit": "9b7352e10",
-   "date": "2026-11-26",
+   "commit": "06215d972",
+   "date": "2026-11-27",
    "use": "Feldnotizen, Rotationen aller Jobs, Crucible (A600, A660)"
   },
   {
@@ -177,8 +177,8 @@
   },
   {
    "repo": "SapphireServer/Sapphire",
-   "commit": "53ac408ae",
-   "date": "2026-11-26",
+   "commit": "620aed104",
+   "date": "2026-11-27",
    "use": "Server-Nachbau (Mechanik)"
   },
   {
