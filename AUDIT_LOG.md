@@ -28390,8 +28390,8 @@ Staffel-Expedition einen Fensterwert an einer Adresse, die das Spiel nicht hält
 vor (0 Treffer für „RotationSolver“, 21 Threads), im Dump einmal als Text.
 *Gegenstück in RSR (Defektklasse „Fensterwert über eine Adresse aus einem Ereignis gelesen“):* `BestiaryTrace` hängt
 denselben Agent-Listener an (`AgentEvent.PreReceiveEvent`), nur solange das Bestiarium offen ist, und liest jeden Wert seit
-A787 über `SafeMemory`; ein unlesbarer Wert beendet die Zeile. Kein Befund. Die übrigen Leser von `AtkValue` im Fork
-waren in A794 und A795 Teil der Prüfung der Absturzwege.
+A787 über `SafeMemory`; ein unlesbarer Wert beendet die Zeile. Kein Befund. Alle übrigen Leser von Fensterwerten im
+Fork sind in A787 erhoben (Klasse dort).
 *Übrige Dateien:* `dalamud.old.log` deckt nur 19:28:12 bis 19:28:54 ab und springt dann auf den Start um 20:43:38:
 VFXEditor schrieb in 42 s 77.329 Zeilen (Mitschnitt jeder geladenen Ressource) und füllte die 10 MB, nach denen das Log
 umläuft. Die Minuten vor dem Absturz fehlen deshalb im Upload. Darin eine Ausnahme von GatherBuddyReborn („Valid chat sfx
